@@ -90,11 +90,12 @@
   --shadow-primary:0 4px 10px  rgba(91,158,225,0.30);
 
   /* ── Type family ────────────────────────────────────────────────────── */
-  /* The app uses the OS system font (iOS San Francisco / Android Roboto).
-     For web parity we fall back to -apple-system / Pretendard (optional).  */
+  /* Pretendard is the most popular Korean UI font and renders Latin cleanly too,
+     so it leads the stack; OS system fonts follow for non-Korean parity.  */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Pretendard",
-    "Noto Sans KR", "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
+    "Pretendard", "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR",
+    "Segoe UI", Roboto, sans-serif;
 
   /* Letter-spacing is tightened on display/h1 only */
   --ls-display: -0.5px;
