@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>JoanX — Prototype</title>
+<link rel="stylesheet" href="app/tripme-tokens.css">
+<link rel="stylesheet" href="app/joanx.css">
+<style>
+  html, body { height: 100%; background: #E9ECF2; }
+  #root { height: 100%; }
+  .stage { min-height: 100%; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 40px; gap: 18px; }
+
+  /* iOS frame */
+  .bezel { width: 390px; height: 844px; border-radius: 56px; background: #0b0b10;
+    padding: 12px; box-shadow: 0 40px 80px rgba(40,50,80,.28), 0 0 0 2px #1c1c24; position: relative; flex-shrink: 0; }
+  .screen { width: 100%; height: 100%; border-radius: 46px; overflow: hidden; background: #fff; position: relative; }
+  .island { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 122px; height: 34px;
+    background: #000; border-radius: 999px; z-index: 90; }
+  .home-ind { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px;
+    border-radius: 999px; background: rgba(0,0,0,.32); z-index: 95; }
+
+  .play-wrap { filter: saturate(1); }
+  .play-calm { filter: saturate(.82); }
+  .play-max  { filter: saturate(1.18); }
+  .jx-nofun .game-font { font-family: var(--font-sans) !important; letter-spacing: -0.3px; font-weight: 800; }
+  .jx-still .jx-float { animation: none !important; }
+
+  /* control bar */
+  .topbar { display: flex; align-items: center; gap: 10px; }
+  .seg { display: inline-flex; background: #fff; border-radius: 999px; padding: 4px; box-shadow: 0 4px 16px rgba(133,141,173,.12); }
+  .seg button { border: none; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #7D848D; padding: 8px 18px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .seg button.on { background: #5B9EE1; color: #fff; }
+  .gear { width: 42px; height: 42px; border-radius: 999px; background: #fff; border: none; box-shadow: 0 4px 16px rgba(133,141,173,.14); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* tweaks panel */
+  .tweaks { position: fixed; top: 18px; right: 18px; width: 264px; background: #fff; border-radius: 22px; box-shadow: 0 24px 60px rgba(40,50,80,.26); padding: 16px; z-index: 200; max-height: calc(100vh - 36px); overflow-y: auto; }
+  .tweaks h4 { margin: 0; font-size: 16px; font-weight: 800; }
+  .tw-label { font-size: 11px; font-weight: 800; color: #7D848D; text-transform: uppercase; letter-spacing: .4px; margin: 16px 0 8px; }
+  .tw-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tw-chip { border: 1.5px solid #F1F1F5; background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #1E1E2D; padding: 7px 12px; border-radius: 11px; cursor: pointer; }
+  .tw-chip.on { background: #EBF3FD; border-color: #5B9EE1; color: #3B7DD8; }
+  .tw-sw { width: 30px; height: 30px; border-radius: 999px; cursor: pointer; border: 3px solid #fff; box-shadow: 0 0 0 1.5px #F1F1F5; }
+  .tw-sw.on { box-shadow: 0 0 0 2.5px #1E1E2D; }
+  @media (min-width: 721px) { .stage.with-panel { padding-right: 312px; } }
+  @media (max-width: 720px) { .tweaks { position: static; width: 390px; margin: 0 auto; max-height: none; } .stage.with-panel { padding-right: 16px; } }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="22" fill="#5B9EE1"/>
+  <g transform="translate(50,52)">
+    <path d="M0 -20 L18 -13 L18 4 Q18 18 0 26 Q-18 18 -18 4 L-18 -13 Z" fill="#fff"/>
+    <path d="M-8 0 l6 7 l11 -15" stroke="#5B9EE1" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</template>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/characters.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/i18n.jsx"></script>
+<script type="text/babel" src="app/nav.jsx"></script>
+<script type="text/babel" src="app/ChildScreens.jsx"></script>
+<script type="text/babel" src="app/SafetyMoments.jsx"></script>
+<script type="text/babel" src="app/GameScreens.jsx"></script>
+<script type="text/babel" src="app/GameScreens2.jsx"></script>
+<script type="text/babel" src="app/ParentScreens.jsx"></script>
+<script type="text/babel" src="app/App.jsx"></script>
+</body>
+</html>
