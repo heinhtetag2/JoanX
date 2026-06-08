@@ -172,7 +172,7 @@ function ChildHome({ ctx }) {
 
         {/* stat row */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-          <StatCard icon="star" color={THEME.gold} bg={THEME.goldLight} value={PLAYER.points.toLocaleString()} label={L('Safe points')} big />
+          <StatCard icon="award" color={THEME.gold} bg={THEME.goldLight} value={PLAYER.points.toLocaleString()} label={L('Safe points')} big />
           <StatCard icon="flame" color={THEME.joy} bg={THEME.joyBg} value={PLAYER.streak} label={L('Day streak')} big />
         </div>
 
@@ -381,7 +381,7 @@ function Profile({ ctx }) {
 
         {/* stat row */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-          <StatCard icon="star" color={THEME.gold} bg={THEME.goldLight} value={PLAYER.points.toLocaleString()} label={L('Safe points')} />
+          <StatCard icon="award" color={THEME.gold} bg={THEME.goldLight} value={PLAYER.points.toLocaleString()} label={L('Safe points')} />
           <StatCard icon="flame" color={THEME.joy} bg={THEME.joyBg} value={PLAYER.streak} label={L('Best streak')} />
           <StatCard icon="gem" color={THEME.camping} bg={THEME.campingBg} value={owned} label={L('Buddies')} />
         </div>
