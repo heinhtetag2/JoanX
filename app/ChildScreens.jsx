@@ -143,10 +143,10 @@ function ChildHome({ ctx }) {
             <Icon name={lite ? 'shield' : 'shield-check'} size={20} color="#fff" stroke={2.3} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: lite ? '#B45309' : '#047857' }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
-            <div style={{ fontSize: 12, color: lite ? '#B45309' : '#047857', opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: lite ? '#602f0c' : '#274427' }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
+            <div style={{ fontSize: 12, color: lite ? '#602f0c' : '#274427', opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
           </div>
-          <Icon name="chevron-right" size={18} color={lite ? '#B45309' : '#047857'} stroke={2.5} />
+          <Icon name="chevron-right" size={18} color={lite ? '#602f0c' : '#274427'} stroke={2.5} />
         </div>
 
         {/* character hero */}
@@ -157,7 +157,7 @@ function ChildHome({ ctx }) {
               <div className="game-font" style={{ fontSize: 24, fontWeight: 700, marginTop: 8 }}>{c.name}</div>
               <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
             </div>
-            <Badge variant="gold"><Icon name="trending-up" size={11} color="#B26A00" stroke={2.6} />{L('Evolving')}</Badge>
+            <Badge variant="gold"><Icon name="trending-up" size={11} color="#9e7300" stroke={2.6} />{L('Evolving')}</Badge>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '2px 0 10px' }}>
             <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>
@@ -233,7 +233,7 @@ function SafetyStatus({ ctx }) {
         <div style={{ background: '#fff', borderRadius: 22, padding: '26px 18px', textAlign: 'center', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 14px' }}>
             <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: lite ? THEME.warning : THEME.success }} />
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: lite ? THEME.warning : THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: lite ? '0 10px 24px rgba(245,158,11,.4)' : '0 10px 24px rgba(16,185,129,.4)' }}>
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: lite ? THEME.warning : THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: lite ? '0 10px 24px rgba(177,97,32,.4)' : '0 10px 24px rgba(75,129,79,.4)' }}>
               <Icon name={lite ? 'shield' : 'shield-check'} size={52} color="#fff" stroke={2.1} />
             </div>
           </div>
@@ -266,15 +266,15 @@ function SafetyStatus({ ctx }) {
               <span style={{ fontSize: 14, fontWeight: 800 }}>{L('Danger zones nearby')}</span>
               <Badge variant="danger" style={{ marginLeft: 'auto' }}>2</Badge>
             </div>
-            <div style={{ position: 'relative', height: 120, borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#EAF1F8,#F3F6FA)' }}>
+            <div style={{ position: 'relative', height: 120, borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#f8f7f7,#ebebea)' }}>
               {/* faux map */}
               <svg width="100%" height="120" style={{ position: 'absolute', inset: 0 }}>
-                <path d="M0 70 H400" stroke="#DCE4EC" strokeWidth="10" />
-                <path d="M120 0 V120" stroke="#DCE4EC" strokeWidth="10" />
-                <path d="M260 0 V120" stroke="#DCE4EC" strokeWidth="7" />
+                <path d="M0 70 H400" stroke="#d8d6d4" strokeWidth="10" />
+                <path d="M120 0 V120" stroke="#d8d6d4" strokeWidth="10" />
+                <path d="M260 0 V120" stroke="#d8d6d4" strokeWidth="7" />
               </svg>
-              <div style={{ position: 'absolute', left: 100, top: 50, width: 40, height: 40, borderRadius: 999, background: 'rgba(239,68,68,.18)', border: '2px solid rgba(239,68,68,.5)' }} />
-              <div style={{ position: 'absolute', left: 244, top: 50, width: 40, height: 40, borderRadius: 999, background: 'rgba(239,68,68,.18)', border: '2px solid rgba(239,68,68,.5)' }} />
+              <div style={{ position: 'absolute', left: 100, top: 50, width: 40, height: 40, borderRadius: 999, background: 'rgba(209,69,50,.18)', border: '2px solid rgba(209,69,50,.5)' }} />
+              <div style={{ position: 'absolute', left: 244, top: 50, width: 40, height: 40, borderRadius: 999, background: 'rgba(209,69,50,.18)', border: '2px solid rgba(209,69,50,.5)' }} />
               <div style={{ position: 'absolute', left: 188, top: 56, width: 18, height: 18, borderRadius: 999, background: THEME.primary, border: '3px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,.2)' }} />
             </div>
             <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 10 }}>{L("You'll only get a heads-up if you walk toward a busy crossing — never just for passing by.")}</div>
@@ -334,7 +334,7 @@ function Notifications({ ctx }) {
       <div style={{ padding: '0 16px' }}>
         {unread === 0 && (
           <div style={{ textAlign: 'center', padding: '6px 0 16px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.successLight, color: '#047857', padding: '7px 14px', borderRadius: 999, fontSize: 12.5, fontWeight: 700 }}><Icon name="check" size={14} color={THEME.success} stroke={2.6} /> {L('All caught up')}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.successLight, color: '#274427', padding: '7px 14px', borderRadius: 999, fontSize: 12.5, fontWeight: 700 }}><Icon name="check" size={14} color={THEME.success} stroke={2.6} /> {L('All caught up')}</div>
           </div>
         )}
         <Group label={L('Today')} list={items.filter(i => i.when === 'today')} />

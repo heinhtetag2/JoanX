@@ -3,7 +3,7 @@
 
 function Phone({ children, tabs, active, dark, over, mode = 'smart' }) {
   return (
-    <div style={{ width: 390, height: 844, position: 'relative', background: THEME.surface2, borderRadius: 42, overflow: 'hidden', boxShadow: 'inset 0 0 0 1px #ECEEF3' }}>
+    <div style={{ width: 390, height: 844, position: 'relative', background: THEME.surface2, borderRadius: 42, overflow: 'hidden', boxShadow: 'inset 0 0 0 1px #ebebea' }}>
       {children}
       <StatusBar dark={dark} />
       {tabs && <TabBar tabs={tabs} active={active} />}
@@ -47,7 +47,7 @@ function MascotBoard() {
       </div>
       <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg2, marginBottom: 12, textTransform: 'uppercase', letterSpacing: .4 }}>Color variants & rarity</div>
       <div style={{ display: 'flex', gap: 18 }}>
-        {['#FF8C66', '#9D8AEE', '#5CC9A7', '#F49CBA', '#5B9EE1', '#F5A623'].map(c =>
+        {['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05'].map(c =>
           <React.Fragment key={c}>{cell(<Mascot species="cat" stage={2} color={c} size={76} />, c)}</React.Fragment>)}
       </div>
     </div>

@@ -6,7 +6,7 @@ function Battle({ ctx }) {
   const [phase, setPhase] = React.useState('select'); // select|matching|versus|result
   const [won, setWon] = React.useState(true);
   const battlesUsed = 3, battlesMax = 5;
-  const opp = { species: 'cat', name: 'Bolt', color: '#9D8AEE', level: sel.level + 1, rarity: 'rare' };
+  const opp = { species: 'cat', name: 'Bolt', color: '#9867e4', level: sel.level + 1, rarity: 'rare' };
 
   const power = c => (c.traits ? (c.traits.guard + c.traits.speed + c.traits.heart) : 180) + c.level * 4;
 
@@ -18,7 +18,7 @@ function Battle({ ctx }) {
 
   if (phase === 'matching') {
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#1E1E2D,#3B7DD8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#2b5782)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
         <div style={{ position: 'relative', width: 90, height: 90, marginBottom: 20 }}>
           <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff', opacity: .3 }} />
           <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="swords" size={40} color="#fff" stroke={2} /></div>
@@ -32,7 +32,7 @@ function Battle({ ctx }) {
   if (phase === 'versus' || phase === 'result') {
     const result = phase === 'result';
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#1E1E2D,#2A3358)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#122536)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative' }}>
           {result && won && <Confetti n={24} />}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-around' }}>
@@ -52,7 +52,7 @@ function Battle({ ctx }) {
           {result && (
             <div className="jx-pop" style={{ marginTop: 30, textAlign: 'center' }}>
               <div className="game-font" style={{ fontSize: 36, fontWeight: 700, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
-              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#B26A00', padding: '8px 16px', borderRadius: 999, fontWeight: 800, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points · +2 coins</div>}
+              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 800, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points · +2 coins</div>}
               {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{L('Still earned +40 points for trying!')}</div>}
             </div>
           )}
@@ -121,7 +121,7 @@ function Rewards({ ctx }) {
         <h1 className="game-font" style={{ fontSize: 25, fontWeight: 700, margin: '0 0 16px' }}>{L('Rewards')}</h1>
 
         {/* streak */}
-        <div style={{ borderRadius: 22, padding: 18, background: 'linear-gradient(160deg,#FFF3DC,#fff 80%)', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
+        <div style={{ borderRadius: 22, padding: 18, background: 'linear-gradient(160deg,#fff2d1,#fff 80%)', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <div style={{ width: 46, height: 46, borderRadius: 14, background: THEME.joyBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="flame" size={26} color={THEME.joy} stroke={2.3} /></div>
             <div>
@@ -145,7 +145,7 @@ function Rewards({ ctx }) {
           <div style={{ width: 44, height: 44, borderRadius: 13, background: claimed ? '#fff' : THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={claimed ? 'calendar-check' : 'gift'} size={22} color={claimed ? THEME.success : THEME.gold} stroke={2.3} /></div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800 }}>{L('Daily safe-walk reward')}</div>
-            <div style={{ fontSize: 12, color: claimed ? '#047857' : THEME.fg2 }}>{claimed ? L('Claimed — see you tomorrow!') : L('Ready to claim · +100 points')}</div>
+            <div style={{ fontSize: 12, color: claimed ? '#274427' : THEME.fg2 }}>{claimed ? L('Claimed — see you tomorrow!') : L('Ready to claim · +100 points')}</div>
           </div>
           {claimed
             ? <Badge variant="success">{L('Claimed')}</Badge>
@@ -153,14 +153,14 @@ function Rewards({ ctx }) {
         </div>
 
         {pop && (
-          <div className="jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,24,38,.34)' }}>
+          <div className="jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.34)' }}>
             <Confetti n={22} />
             <div className="jx-pop" style={{ width: 244, background: '#fff', borderRadius: 26, padding: '24px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
               <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="gift" size={32} color={THEME.gold} stroke={2.3} /></div>
               <div className="game-font" style={{ fontSize: 21, fontWeight: 700 }}>{L('Daily reward claimed!')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#B26A00', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#B26A00', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />+5</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />+5</span>
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@ function Rewards({ ctx }) {
                   </div>
                 )}
               </div>
-              <Badge variant="gold" style={{ flexShrink: 0 }}><Icon name="star" size={11} color="#B26A00" stroke={2.4} fill={THEME.gold} />{a.reward}</Badge>
+              <Badge variant="gold" style={{ flexShrink: 0 }}><Icon name="star" size={11} color="#9e7300" stroke={2.4} fill={THEME.gold} />{a.reward}</Badge>
             </div>
           ))}
         </div>
@@ -234,7 +234,7 @@ function Shop({ ctx }) {
       <ScreenHeader title={L('Coins')} onBack={() => ctx.nav('home')} />
       <div style={{ padding: '0 16px' }}>
         {/* balance */}
-        <div style={{ borderRadius: 22, padding: '20px 18px', background: 'linear-gradient(160deg,#FFF3DC,#fff 78%)', boxShadow: THEME.shadowCard, marginBottom: 14, textAlign: 'center' }}>
+        <div style={{ borderRadius: 22, padding: '20px 18px', background: 'linear-gradient(160deg,#fff2d1,#fff 78%)', boxShadow: THEME.shadowCard, marginBottom: 14, textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <Icon name="coins" size={30} color={THEME.gold} stroke={2.2} />
             <span className="game-font" style={{ fontSize: 40, fontWeight: 700, lineHeight: 1 }}>{coins}</span>

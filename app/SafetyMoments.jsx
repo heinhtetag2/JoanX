@@ -15,7 +15,7 @@ function Confetti({ n = 14 }) {
 
 function RewardToast({ secs = 2.1, pts = 30 }) {
   return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,24,38,.34)', zIndex: 5 }} className="jx-fade">
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.34)', zIndex: 5 }} className="jx-fade">
       <Confetti />
       <div className="jx-pop" style={{ width: 240, background: '#fff', borderRadius: 26, padding: '24px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
         <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
@@ -23,7 +23,7 @@ function RewardToast({ secs = 2.1, pts = 30 }) {
         </div>
         <div className="game-font" style={{ fontSize: 21, fontWeight: 700 }}>{L('Nice save!')}</div>
         <div style={{ fontSize: 13, color: THEME.fg2, margin: '4px 0 14px' }}>{L('Stopped in')} {secs}s — {L("that's an immediate stop.")}</div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#B26A00', padding: '8px 16px', borderRadius: 999, fontWeight: 800, fontSize: 16 }} className="game-font">
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 800, fontSize: 16 }} className="game-font">
           <Icon name="star" size={18} color={THEME.gold} stroke={2.4} fill={THEME.gold} /> +{pts} {L('points')}
         </div>
       </div>
@@ -47,7 +47,7 @@ function WarningOverlay({ ctx }) {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>
       {/* dimmed live screen behind */}
-      <div className="jx-fade" style={{ position: 'absolute', inset: 0, background: variant === 'spotlight' ? 'rgba(245,247,250,.86)' : 'rgba(15,20,34,.34)', backdropFilter: variant === 'spotlight' ? 'blur(3px)' : 'none' }} />
+      <div className="jx-fade" style={{ position: 'absolute', inset: 0, background: variant === 'spotlight' ? 'rgba(248,247,247,.86)' : 'rgba(43,41,38,.34)', backdropFilter: variant === 'spotlight' ? 'blur(3px)' : 'none' }} />
 
       {phase === 'reward' ? <RewardToast /> : (
         <React.Fragment>
@@ -124,7 +124,7 @@ function LiteBlock({ ctx }) {
   }, [secs]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'linear-gradient(170deg,#5B9EE1,#3B7DD8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 34px', textAlign: 'center' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'linear-gradient(170deg,#447aaf,#2b5782)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 34px', textAlign: 'center' }}>
       <div className="jx-pop jx-float"><Mascot species="fox" stage={2} color="#FFFFFF" size={150} /></div>
       <div style={{ width: 70, height: 70, borderRadius: 999, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '6px 0 18px' }}>
         <Icon name="shield" size={36} color="#fff" stroke={2.1} />

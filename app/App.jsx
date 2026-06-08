@@ -11,7 +11,7 @@ function App() {
   const [mode, setMode] = React.useState('smart');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#F49CBA', stage: 1, play: 'playful' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#e278a8', stage: 1, play: 'playful' });
   const [lang, setLangState] = React.useState('en');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -167,7 +167,7 @@ function App() {
 
               <div className="tw-label">Buddy color</div>
               <div className="tw-row">
-                {['#FF8C66', '#9D8AEE', '#5CC9A7', '#F49CBA', '#5B9EE1', '#F5A623'].map(c => (
+                {['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05'].map(c => (
                   <span key={c} className={'tw-sw' + (tw.color === c ? ' on' : '')} style={{ background: c }} onClick={() => setTw(s => ({ ...s, color: c }))} />
                 ))}
               </div>

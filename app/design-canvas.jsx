@@ -23,13 +23,13 @@
 /* END USAGE */
 
 const DC = {
-  bg: '#f0eee9',
+  bg: '#f8f7f7',
   grid: 'rgba(0,0,0,0.06)',
   label: 'rgba(60,50,40,0.7)',
   title: 'rgba(40,30,20,0.85)',
   subtitle: 'rgba(60,50,40,0.6)',
-  postitBg: '#fef4a8',
-  postitText: '#5a4a2a',
+  postitBg: '#fff2d1',
+  postitText: '#493b2c',
   font: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
 };
 
@@ -40,10 +40,10 @@ if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
   s.id = 'dc-styles';
   s.textContent = [
     '.dc-editable{cursor:text;outline:none;white-space:nowrap;border-radius:3px;padding:0 2px;margin:0 -2px}',
-    '.dc-editable:focus{background:#fff;box-shadow:0 0 0 1.5px #c96442}',
+    '.dc-editable:focus{background:#fff;box-shadow:0 0 0 1.5px #d14532}',
     '[data-dc-slot]{transition:transform .18s cubic-bezier(.2,.7,.3,1)}',
     '[data-dc-slot].dc-dragging{transition:none;z-index:10;pointer-events:none}',
-    '[data-dc-slot].dc-dragging .dc-card{box-shadow:0 12px 40px rgba(0,0,0,.25),0 0 0 2px #c96442;transform:scale(1.02)}',
+    '[data-dc-slot].dc-dragging .dc-card{box-shadow:0 12px 40px rgba(0,0,0,.25),0 0 0 2px #d14532;transform:scale(1.02)}',
     // isolation:isolate contains artboard content's z-indexes so a
     // z-indexed child (sticky navbar etc.) can't paint over .dc-header or
     // the .dc-menu popover that drops into the top of the card.
@@ -78,7 +78,7 @@ if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
     '.dc-expand,.dc-kebab{width:22px;height:22px;border-radius:5px;border:none;cursor:pointer;padding:0;',
     '  background:transparent;color:rgba(60,50,40,.7);display:flex;align-items:center;justify-content:center;',
     '  font:inherit;transition:background .12s,color .12s}',
-    '.dc-expand:hover,.dc-kebab:hover{background:rgba(0,0,0,.06);color:#2a251f}',
+    '.dc-expand:hover,.dc-kebab:hover{background:rgba(0,0,0,.06);color:#2b2926}',
     // Slot hosting an open menu floats above later siblings (which otherwise
     // paint on top — same z-index:auto, later DOM order) so the popup isn't
     // clipped by the next card.
@@ -87,10 +87,10 @@ if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
     '  box-shadow:0 8px 28px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.05);padding:4px;min-width:160px;z-index:10}',
     '.dc-menu button{display:block;width:100%;padding:7px 10px;border:0;background:transparent;',
     '  border-radius:5px;font-family:inherit;font-size:13px;font-weight:500;line-height:1.2;',
-    '  color:#29261b;cursor:pointer;text-align:left;transition:background .12s;white-space:nowrap}',
+    '  color:#2b2926;cursor:pointer;text-align:left;transition:background .12s;white-space:nowrap}',
     '.dc-menu button:hover{background:rgba(0,0,0,.05)}',
     '.dc-menu hr{border:0;border-top:1px solid rgba(0,0,0,.08);margin:4px 2px}',
-    '.dc-menu .dc-danger{color:#c96442}',
+    '.dc-menu .dc-danger{color:#d14532}',
     '.dc-menu .dc-danger:hover{background:rgba(201,100,66,.1)}',
     // Chrome (titles / labels / buttons) counter-scales against the viewport
     // zoom so it stays a constant on-screen size. --dc-inv-zoom is set by
@@ -898,7 +898,7 @@ function DCFocusOverlay({ entry, sectionMeta, sectionOrder }) {
             {meta.subtitle && <span style={{ display: 'block', fontSize: 13, opacity: .6, fontWeight: 400, marginTop: 2 }}>{meta.subtitle}</span>}
           </button>
           {ddOpen && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#2a251f', borderRadius: 8,
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#2b2926', borderRadius: 8,
               boxShadow: '0 8px 32px rgba(0,0,0,.4)', padding: 4, minWidth: 200, zIndex: 10 }}>
               {sectionOrder.filter((sid) => sectionMeta[sid].slotIds.length).map((sid) => (
                 <button key={sid} onClick={() => { setDd(false); const f = sectionMeta[sid].slotIds[0]; if (f) ctx.setFocus(`${sid}/${f}`); }}

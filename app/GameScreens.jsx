@@ -2,7 +2,7 @@
 
 function ScreenHeader({ title, onBack, right }) {
   return (
-    <div style={{ position: 'absolute', top: 50, left: 0, right: 0, zIndex: 4, height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'rgba(247,248,250,.92)', backdropFilter: 'blur(8px)' }}>
+    <div style={{ position: 'absolute', top: 50, left: 0, right: 0, zIndex: 4, height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'rgba(248,247,247,.92)', backdropFilter: 'blur(8px)' }}>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
         <button onClick={onBack} aria-label="Back" style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
@@ -101,7 +101,7 @@ function CharacterDetail({ ctx }) {
   const [evolving, setEvolving] = React.useState(false);
   const canEvolve = stage < 3 && orig.xp / orig.xpMax > 0.6;
 
-  const swatches = ['#FF8C66', '#9D8AEE', '#5CC9A7', '#F49CBA', '#5B9EE1', '#F5A623', '#9AA7D6', '#FF6B6B'];
+  const swatches = ['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb', '#e86f5f'];
   const items = [
     { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', on: stage >= 2 },
     { id: 'cape', icon: 'wind', name: 'Guardian Cape', on: stage >= 3 },
@@ -151,7 +151,7 @@ function CharacterDetail({ ctx }) {
               {canEvolve ? `${L('Evolve to Stage')} ${stage + 1}` : `${L('Reach')} ${orig.xpMax} XP ${L('to evolve')}`}
             </Button>
           ) : (
-            <div style={{ textAlign: 'center', background: THEME.successLight, color: '#047857', borderRadius: 16, padding: '12px', fontWeight: 800, fontSize: 14 }}>{L('Fully evolved — max stage!')}</div>
+            <div style={{ textAlign: 'center', background: THEME.successLight, color: '#274427', borderRadius: 16, padding: '12px', fontWeight: 800, fontSize: 14 }}>{L('Fully evolved — max stage!')}</div>
           )}
         </div>
 
@@ -196,7 +196,7 @@ function CharacterDetail({ ctx }) {
 
       {/* evolve flash */}
       {evolving && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,24,38,.4)' }} className="jx-fade">
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.4)' }} className="jx-fade">
           <Confetti n={20} />
           <div style={{ textAlign: 'center' }}>
             <div className="game-font" style={{ color: '#fff', fontSize: 30, fontWeight: 700, textShadow: '0 2px 12px rgba(0,0,0,.4)' }}>{L('Evolving!')}</div>

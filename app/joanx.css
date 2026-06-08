@@ -31,8 +31,8 @@ body { margin: 0; }
 .jx-fade { animation: jxFade .3s ease both; }
 
 @keyframes jxPulse {
-  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
-  50% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(239,68,68,0); }
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(209,69,50,.5); }
+  50% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(209,69,50,0); }
 }
 .jx-pulse { animation: jxPulse 1.6s ease-in-out infinite; }
 
@@ -40,6 +40,6 @@ body { margin: 0; }
 .jx-ring { animation: jxRing 1.4s ease-out infinite; }
 
 @keyframes jxShimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
-.jx-skeleton { background: linear-gradient(90deg, #EEF0F4 25%, #F7F8FA 37%, #EEF0F4 63%); background-size: 200% 100%; animation: jxShimmer 1.3s infinite; }
+.jx-skeleton { background: linear-gradient(90deg, #ebebea 25%, #f8f7f7 37%, #ebebea 63%); background-size: 200% 100%; animation: jxShimmer 1.3s infinite; }
 
 @keyframes jxConfetti { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(220px) rotate(420deg); opacity: 0; } }

@@ -14,15 +14,15 @@ function shade(hex, amt) {
 }
 
 const SPECIES = {
-  fox:  { name: 'Foxy',  base: '#FF8C66', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
-  cat:  { name: 'Mochi', base: '#9AA7D6', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
-  bird: { name: 'Pip',   base: '#5CC9A7', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
+  fox:  { name: 'Foxy',  base: '#e1874a', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
+  cat:  { name: 'Mochi', base: '#a8c3eb', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
+  bird: { name: 'Pip',   base: '#67c7ce', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
 };
 
 function Eyes({ mood, cx1, cx2, cy, r }) {
   if (mood === 'sleepy') {
     return (
-      <g stroke="#2B2B3A" strokeWidth="3.5" strokeLinecap="round" fill="none">
+      <g stroke="#2b2826" strokeWidth="3.5" strokeLinecap="round" fill="none">
         <path d={`M ${cx1 - r} ${cy} q ${r} ${r} ${2 * r} 0`} />
         <path d={`M ${cx2 - r} ${cy} q ${r} ${r} ${2 * r} 0`} />
       </g>
@@ -33,7 +33,7 @@ function Eyes({ mood, cx1, cx2, cy, r }) {
     <g>
       {[cx1, cx2].map((cx, i) => (
         <g key={i}>
-          <ellipse cx={cx} cy={cy} rx={er} ry={er * 1.15} fill="#2B2B3A" />
+          <ellipse cx={cx} cy={cy} rx={er} ry={er * 1.15} fill="#2b2826" />
           <circle cx={cx + er * 0.32} cy={cy - er * 0.4} r={er * 0.34} fill="#fff" />
           <circle cx={cx - er * 0.3} cy={cy + er * 0.35} r={er * 0.16} fill="#fff" opacity="0.7" />
         </g>
@@ -135,11 +135,11 @@ function Mascot({ species = 'fox', stage = 2, color, size = 160, mood = 'happy',
             {/* nose / beak / mouth */}
             {sp.feature === 'beak'
               ? <path d="M92 102 L108 102 L100 116 Z" fill={THEME.gold} />
-              : <ellipse cx="100" cy="104" rx="5.5" ry="4" fill="#2B2B3A" />}
+              : <ellipse cx="100" cy="104" rx="5.5" ry="4" fill="#2b2826" />}
             {mood !== 'sleepy' && sp.feature !== 'beak' && (
               mood === 'alert'
-                ? <ellipse cx="100" cy="116" rx="5" ry="6" fill="#2B2B3A" />
-                : <path d="M92 110 q 8 9 16 0" stroke="#2B2B3A" strokeWidth="3" fill="none" strokeLinecap="round" />
+                ? <ellipse cx="100" cy="116" rx="5" ry="6" fill="#2b2826" />
+                : <path d="M92 110 q 8 9 16 0" stroke="#2b2826" strokeWidth="3" fill="none" strokeLinecap="round" />
             )}
 
             {/* whiskers (cat) */}

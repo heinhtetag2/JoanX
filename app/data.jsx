@@ -9,21 +9,21 @@ const PLAYER = {
 
 // owned + collectible characters
 const CHARACTERS = [
-  { id: 'c1', species: 'fox',  name: 'Foxy',   color: '#FF8C66', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#9AA7D6', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
-  { id: 'c3', species: 'bird', name: 'Pip',    color: '#F49CBA', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c4', species: 'fox',  name: 'Ember',  color: '#9D8AEE', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
-  { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#5B9EE1', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
-  { id: 'c6', species: 'bird', name: 'Sunny',  color: '#F5A623', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
-  { id: 'c7', species: 'cat',  name: '???',    color: '#F49CBA', stage: 1, rarity: 'special', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
-  { id: 'c8', species: 'fox',  name: '???',    color: '#5CC9A7', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
+  { id: 'c1', species: 'fox',  name: 'Foxy',   color: '#e1874a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c3', species: 'bird', name: 'Pip',    color: '#e278a8', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
+  { id: 'c4', species: 'fox',  name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
+  { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#6697c9', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
+  { id: 'c6', species: 'bird', name: 'Sunny',  color: '#ffbc05', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
+  { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'special', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
+  { id: 'c8', species: 'fox',  name: '???',    color: '#67c7ce', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
 ];
 
 const ROOMS = [
-  { id: 'r1', name: 'Cozy Den',   unlocked: true,  slots: 3, theme: '#EBF3FD' },
-  { id: 'r2', name: 'Sky Loft',   unlocked: true,  slots: 3, theme: '#E8F8F2' },
-  { id: 'r3', name: 'Star Studio', unlocked: false, slots: 4, theme: '#F1EDF9', req: 'Collect 8 characters' },
-  { id: 'r4', name: 'Garden',     unlocked: false, slots: 4, theme: '#FFF0EB', req: 'Reach a 30-day streak' },
+  { id: 'r1', name: 'Cozy Den',   unlocked: true,  slots: 3, theme: '#ecf3fe' },
+  { id: 'r2', name: 'Sky Loft',   unlocked: true,  slots: 3, theme: '#ebf4f4' },
+  { id: 'r3', name: 'Star Studio', unlocked: false, slots: 4, theme: '#f5f1fd', req: 'Collect 8 characters' },
+  { id: 'r4', name: 'Garden',     unlocked: false, slots: 4, theme: '#f9f1ed', req: 'Reach a 30-day streak' },
 ];
 
 const ACHIEVEMENTS = [
@@ -57,8 +57,8 @@ const PARENT_METRICS = {
 };
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#FF8C66' },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#5CC9A7' },
+  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a' },
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce' },
 ];
 
 const APP_CATEGORIES = [

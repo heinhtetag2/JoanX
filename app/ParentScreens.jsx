@@ -33,7 +33,7 @@ function ParentReports({ ctx }) {
       <ParentHead sub={L("This week's progress")} title={L('Mina is improving')} right={<ChildChip />} />
       <div style={{ padding: '8px 16px 0' }}>
         {/* hero metric */}
-        <div style={{ borderRadius: 22, padding: 20, background: 'linear-gradient(160deg,#EBF3FD,#fff 75%)', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
+        <div style={{ borderRadius: 22, padding: 20, background: 'linear-gradient(160deg,#ecf3fe,#fff 75%)', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <Icon name="trending-down" size={18} color={THEME.success} stroke={2.4} />
             <span style={{ fontSize: 13, fontWeight: 700, color: THEME.fg2 }}>{L('Risky-walking moments')}</span>
@@ -98,8 +98,8 @@ function ParentReports({ ctx }) {
         <div style={{ display: 'flex', gap: 12, background: THEME.successLight, borderRadius: 18, padding: 16 }}>
           <Icon name="lightbulb" size={20} color={THEME.success} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
-            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#047857' }}>{L('What this means')}</div>
-            <div style={{ fontSize: 12.5, color: '#047857', lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{L('Mina is reacting faster and ignoring fewer warnings than two weeks ago. The habit is forming — keep it up.')}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#274427' }}>{L('What this means')}</div>
+            <div style={{ fontSize: 12.5, color: '#274427', lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{L('Mina is reacting faster and ignoring fewer warnings than two weeks ago. The habit is forming — keep it up.')}</div>
           </div>
         </div>
       </div>
@@ -172,9 +172,11 @@ function ParentSettings({ ctx }) {
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Time rules')}</div>
         <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
           {[
-            { t: 'School commute', s: 'Mon–Fri · 7:30–8:30 AM', tag: 'Strict', c: THEME.danger, bg: THEME.dangerLight },
-            { t: 'After school', s: 'Mon–Fri · 3:00–5:00 PM', tag: 'Balanced', c: THEME.warning, bg: THEME.warningLight },
-            { t: 'At home', s: 'Geofenced · home Wi-Fi', tag: 'Relaxed', c: THEME.success, bg: THEME.successLight },          ].map((r, i) => (
+            // Badges consume the system badge tokens directly: {palette}-default (20) bg + {palette}-label (70) text
+            { t: 'School commute', s: 'Mon–Fri · 7:30–8:30 AM', tag: 'Strict', c: 'var(--color-interactives-badge-rust-label)', bg: 'var(--color-interactives-badge-rust-default)' },
+            { t: 'After school', s: 'Mon–Fri · 3:00–5:00 PM', tag: 'Balanced', c: 'var(--color-interactives-badge-ember-label)', bg: 'var(--color-interactives-badge-ember-default)' },
+            { t: 'At home', s: 'Geofenced · home Wi-Fi', tag: 'Relaxed', c: 'var(--color-interactives-badge-evergreen-label)', bg: 'var(--color-interactives-badge-evergreen-default)' },
+          ].map((r, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>{L(r.t)}</div>

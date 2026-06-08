@@ -22,7 +22,7 @@ function TabBar({ tabs, active, onTab }) {
         if (t.center) {
           return (
             <button key={t.id} onClick={() => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <div style={{ marginTop: -22, width: 56, height: 56, borderRadius: 999, background: on ? THEME.success : THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: on ? '0 8px 18px rgba(16,185,129,.4)' : THEME.shadowPrimary, border: '4px solid #fff' }}>
+              <div style={{ marginTop: -22, width: 56, height: 56, borderRadius: 999, background: on ? THEME.success : THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: on ? '0 8px 18px rgba(75,129,79,.4)' : THEME.shadowPrimary, border: '4px solid #fff' }}>
                 <Icon name="shield-check" size={26} color="#fff" stroke={2.2} />
               </div>
             </button>

@@ -2,40 +2,46 @@
 // extended with a kid-facing "game" layer (XP gold, rarity, mascot palettes).
 // Exposes globals on window for other Babel scripts.
 
+// Repointed onto the new JoanX color system (see app/color-system.css).
+// Neutrals → sand · action/accent → ocean · status → rust/evergreen/ember.
+// The primary *CTA button* uses sunbeam (yellow); THEME.primary stays ocean
+// because it doubles as an icon/link/selected accent where yellow is illegible.
 const THEME = {
-  // ── TripMe core (authoritative) ──────────────────────────────────────
-  primary: '#5B9EE1', primaryDark: '#3B7DD8', primaryLight: '#EBF3FD',
-  danger: '#EF4444', dangerLight: '#FEE2E2',
-  success: '#10B981', successLight: '#D1FAE5',
-  warning: '#F59E0B', warningLight: '#FEF3C7',
-  bg: '#FFFFFF', surface: '#FFFFFF', surface2: '#F7F8FA',
-  fg1: '#1E1E2D', fg2: '#7D848D', fg3: '#B8B8C7',
-  border: '#F1F1F5', heart: '#FF5A5F',
-  // category accents (reused for the game layer)
-  beach: '#FF8C66', beachBg: '#FFF0EB',
-  mountain: '#5CC9A7', mountainBg: '#E8F8F2',
-  camping: '#9D8AEE', campingBg: '#F1EDF9',
-  culture: '#5B9EE1', cultureBg: '#EBF3FD',
-  food: '#FF6B6B', foodBg: '#FFE8E8',
-  shopping: '#F49CBA', shoppingBg: '#FDEEF4',
-  svcPurple: '#7C3AED', svcPurpleBg: '#EDE9FE',
-  svcGreen: '#059669', svcGreenBg: '#D1FAE5',
-  svcAmber: '#D97706', svcAmberBg: '#FEF3C7',
-  shadowCard: '0 4px 16px rgba(133,141,173,0.08)',
-  shadowButton: '0 4px 12px rgba(133,141,173,0.15)',
-  shadowLg: '0 8px 20px rgba(133,141,173,0.10)',
-  shadowXl: '0 12px 28px rgba(133,141,173,0.14)',
-  shadowPrimary: '0 8px 18px rgba(91,158,225,0.34)',
-  shadowDanger: '0 8px 18px rgba(239,68,68,0.34)',
+  // ── Core (authoritative) ─────────────────────────────────────────────
+  primary: '#447aaf', primaryDark: '#2b5782', primaryLight: '#ecf3fe',   // ocean 50 / 60 / 10
+  cta: '#ebf212', ctaPressed: '#d8e003', ctaInk: '#2b2826',              // sunbeam 50 / 70 + dark ink
+  danger: '#d14532', dangerLight: '#fff1ee',                            // rust 50 / 10
+  success: '#4b814f', successLight: '#ebf4eb',                          // evergreen 50 / 10
+  warning: '#b16120', warningLight: '#f9f1ed',                          // ember 50 / 10
+  bg: '#ffffff', surface: '#ffffff', surface2: '#f8f7f7',               // sand 0 / 0 / 10
+  fg1: '#2b2926', fg2: '#585450', fg3: '#b0adab',                       // sand 80 / 60 / 40
+  border: '#ebebea', heart: '#e86f5f',                                  // sand 20 · rust 40
+  // category accents (reused for the game layer) → nearest system hues
+  beach: '#ce8345', beachBg: '#f9f1ed',          // ember 40 / 10
+  mountain: '#5a9ea0', mountainBg: '#ebf4f4',    // tropic 40 / 10
+  camping: '#9d84dc', campingBg: '#f5f1fd',      // iris 40 / 10
+  culture: '#447aaf', cultureBg: '#ecf3fe',      // ocean 50 / 10
+  food: '#e86f5f', foodBg: '#fff1ee',            // rust 40 / 10
+  shopping: '#da67cf', shoppingBg: '#fbf0fb',    // sakura 40 / 10
+  svcPurple: '#603fab', svcPurpleBg: '#f5f1fd',  // iris 60 / 10
+  svcGreen: '#4b814f', svcGreenBg: '#ebf4eb',    // evergreen 50 / 10
+  svcAmber: '#b16120', svcAmberBg: '#f9f1ed',    // ember 50 / 10
+  // warm shadow base (sand-80 #2b2926) replaces the old cool blue-gray
+  shadowCard: '0 4px 16px rgba(46,43,41,0.10)',
+  shadowButton: '0 4px 12px rgba(46,43,41,0.16)',
+  shadowLg: '0 8px 20px rgba(46,43,41,0.12)',
+  shadowXl: '0 12px 28px rgba(46,43,41,0.16)',
+  shadowPrimary: '0 8px 18px rgba(216,224,3,0.45)',  // sunbeam glow under the CTA
+  shadowDanger: '0 8px 18px rgba(209,69,50,0.34)',   // rust glow
 
   // ── JoanX game layer ─────────────────────────────────────────────────
-  gold: '#F5A623', goldLight: '#FFF3DC',     // points / XP
-  joy: '#FF8C66',                            // playful warm accent
-  joyBg: '#FFF0EB',
+  gold: '#d19900', goldLight: '#fff2d1',     // data-yellow 50 / 10 — points / XP
+  joy: '#ce8345',                            // playful warm accent (ember 40)
+  joyBg: '#f9f1ed',
   // rarity
-  rCommon: '#94A3B8', rCommonBg: '#F1F5F9',
-  rRare: '#5B9EE1',   rRareBg: '#EBF3FD',
-  rSpecial: '#9D8AEE', rSpecialBg: '#F1EDF9',
+  rCommon: '#b0adab', rCommonBg: '#f8f7f7',  // sand 40 / 10
+  rRare: '#447aaf',   rRareBg: '#ecf3fe',    // ocean 50 / 10
+  rSpecial: '#7f63c5', rSpecialBg: '#f5f1fd',// iris 50 / 10
 };
 
 // rarity helper
@@ -46,7 +52,7 @@ const RARITY = {
 };
 
 // Lucide icon as React component
-function Icon({ name, size = 20, color = '#1E1E2D', stroke = 1.8, fill = 'none', style }) {
+function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none', style }) {
   const ref = React.useRef(null);
   React.useEffect(() => {
     if (ref.current && window.lucide) {
@@ -71,13 +77,13 @@ function Icon({ name, size = 20, color = '#1E1E2D', stroke = 1.8, fill = 'none',
 
 function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth, style, icon, disabled }) {
   const variants = {
-    primary:   { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },
-    secondary: { background: THEME.primaryLight, color: THEME.primary, border: 'none' },
+    primary:   { background: THEME.cta, color: THEME.ctaInk, boxShadow: THEME.shadowPrimary, border: 'none' },        // sunbeam CTA
+    secondary: { background: THEME.primaryLight, color: THEME.primaryDark, border: 'none' },                          // soft ocean
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: THEME.joy, color: '#fff', boxShadow: '0 8px 18px rgba(255,140,102,0.36)', border: 'none' },
-    gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(245,166,35,0.34)', border: 'none' },
+    play:      { background: THEME.joy, color: '#fff', boxShadow: '0 8px 18px rgba(206,131,69,0.36)', border: 'none' },
+    gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(209,153,0,0.34)', border: 'none' },
   };
   const sizes = {
     sm: { padding: '9px 16px', fontSize: 13, borderRadius: 12 },
@@ -103,14 +109,16 @@ function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth
 }
 
 function Badge({ children, variant = 'default', style }) {
+  // Each variant maps to a system badge palette: {palette}-default (step 20) bg + {palette}-label (step 70) text.
+  const bv = p => ({ bg: `var(--color-interactives-badge-${p}-default)`, fg: `var(--color-interactives-badge-${p}-label)` });
   const map = {
-    default: { bg: THEME.border, fg: THEME.fg2 },
-    primary: { bg: THEME.primaryLight, fg: THEME.primary },
-    success: { bg: THEME.successLight, fg: THEME.success },
-    danger:  { bg: THEME.dangerLight, fg: THEME.danger },
-    warning: { bg: THEME.warningLight, fg: '#B45309' },
-    gold:    { bg: THEME.goldLight, fg: '#B26A00' },
-    special: { bg: THEME.rSpecialBg, fg: THEME.rSpecial },
+    default: bv('sand'),
+    primary: bv('ocean'),
+    success: bv('evergreen'),
+    danger:  bv('rust'),
+    warning: bv('ember'),
+    special: bv('iris'),
+    gold:    { bg: THEME.goldLight, fg: '#9e7300' },  // game-layer XP accent (data-yellow, no system badge palette)
   };
   const { bg, fg } = map[variant] || map.default;
   return (
