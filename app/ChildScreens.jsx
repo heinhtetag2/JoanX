@@ -114,7 +114,7 @@ function ChildHome({ ctx }) {
   const lite = ctx.mode === 'lite';
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: 'radial-gradient(125% 78% at 0% 0%, rgba(68,122,175,0.14), transparent 52%), radial-gradient(115% 68% at 100% 0%, rgba(218,103,207,0.11), transparent 50%), var(--surface-2)' }}>
       {/* header */}
       <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
