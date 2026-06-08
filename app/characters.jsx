@@ -440,9 +440,7 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
           {/* ══ OWL (owl) ══ */}
           {species === 'owl' && (<React.Fragment>
-            {/* soft rounded feather tufts (not pointy horns) */}
-            <path d="M82 74 C75 62 76 53 82 50 C88 54 90 64 91 73 Z" fill={`url(#${gB})`} />
-            <path d="M118 74 C125 62 124 53 118 50 C112 54 110 64 109 73 Z" fill={`url(#${gB})`} />
+            {/* round-headed owl (no ear tufts) */}
             {/* talon feet */}
             <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
               <path d="M88 176 L88 185 M88 185 L82 190 M88 185 L88 191 M88 185 L94 190" />
