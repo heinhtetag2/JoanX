@@ -275,9 +275,117 @@ function MascotKR({ species = 'fox', stage = 2, color, size = 160, mood = 'happy
   );
 }
 
+// ── Toy line ("3D") — chunky soft-3D critter: big domed eyes, lighter
+// segmented belly, little teeth, dorsal scutes, gradient shading for form.
+function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happy', float = false, style }) {
+  // A cute croc/gator creature (per reference): huge domed eyes on top, a
+  // wide projecting snout with little teeth, dorsal scutes (no mammal ears),
+  // lighter segmented belly, soft-3D gradient shading. Recolours per buddy.
+  const base = color || '#59c08c';
+  const dark = shade(base, -42);
+  const ink = '#2b2826';
+  const sc = stage === 1 ? 0.9 : stage === 3 ? 1.06 : 1;
+  const uid = React.useId().replace(/[:]/g, '');
+  const gB = 'tb' + uid, gC = 'tc' + uid;
+  const er = mood === 'alert' ? 21 : 19;   // huge domed eyes
+
+  const Eye = ({ cx, cy }) => mood === 'sleepy'
+    ? <path d={`M${cx - er * 0.7} ${cy} q${er * 0.7} ${er * 0.5} ${er * 1.4} 0`} stroke={ink} strokeWidth="4" fill="none" strokeLinecap="round" />
+    : (<g>
+        <circle cx={cx} cy={cy} r={er} fill="#fff" stroke={shade(base, -20)} strokeWidth="1.4" />
+        <circle cx={cx + (cx < 100 ? 2.5 : -2.5)} cy={cy + er * 0.28} r={er * 0.46} fill={ink} />
+        <circle cx={cx + (cx < 100 ? 4.5 : -0.5)} cy={cy + er * 0.05} r={er * 0.2} fill="#fff" />
+        <circle cx={cx + (cx < 100 ? -2 : 2)} cy={cy + er * 0.5} r={er * 0.1} fill="#fff" opacity="0.8" />
+      </g>);
+
+  return (
+    <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
+      <svg viewBox="0 0 200 200" width={size} height={size} style={{ overflow: 'visible' }}>
+        <defs>
+          <radialGradient id={gB} cx="38%" cy="26%" r="84%">
+            <stop offset="0%" stopColor={shade(base, 34)} />
+            <stop offset="58%" stopColor={base} />
+            <stop offset="100%" stopColor={shade(base, -26)} />
+          </radialGradient>
+          <radialGradient id={gC} cx="42%" cy="24%" r="86%">
+            <stop offset="0%" stopColor={shade(base, 92)} />
+            <stop offset="100%" stopColor={shade(base, 44)} />
+          </radialGradient>
+        </defs>
+
+        <ellipse cx="100" cy="187" rx={48 * sc} ry="7.5" fill="#000" opacity="0.08" />
+        {stage !== 2 && [[32, 70, 3.2], [170, 82, 2.8], [166, 146, 2.8]].map(([x, y, r], i) => (
+          <circle key={i} cx={x} cy={y} r={r} fill={stage === 3 ? THEME.gold : base} opacity="0.45" />
+        ))}
+
+        <g transform={`translate(100,114) scale(${sc}) translate(-100,-114)`}>
+          {/* chunky tail with dorsal scutes, lower-right */}
+          <path d="M146 158 C180 162 196 132 190 104 C184 124 166 136 144 134 Z" fill={`url(#${gB})`} />
+          {[[168, 116], [178, 124], [184, 134]].map(([x, y], i) => (
+            <path key={i} d={`M${x - 7} ${y + 6} Q${x} ${y - 8} ${x + 7} ${y + 6} Z`} fill={dark} opacity="0.45" />
+          ))}
+
+          {/* feet with claws */}
+          <ellipse cx="80" cy="176" rx="15" ry="9" fill={dark} />
+          <ellipse cx="120" cy="176" rx="15" ry="9" fill={dark} />
+          {[71, 80, 89, 111, 120, 129].map((x, i) => <line key={i} x1={x} y1="173" x2={x} y2="181" stroke={shade(base, -60)} strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />)}
+
+          {/* dorsal scute crest over the head (instead of ears) */}
+          {[[80, 52], [100, 47], [120, 52]].map(([x, y], i) => (
+            <path key={i} d={`M${x - 11} ${y + 9} Q${x} ${y - 9} ${x + 11} ${y + 9} Z`} fill={shade(base, -8)} />
+          ))}
+
+          {/* body — one chunky shaded form */}
+          <ellipse cx="100" cy="124" rx="50" ry="54" fill={`url(#${gB})`} />
+          {/* stubby arms */}
+          <ellipse cx="54" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(12 54 132)" />
+          <ellipse cx="146" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(-12 146 132)" />
+
+          {/* lighter segmented belly */}
+          <ellipse cx="100" cy="138" rx="30" ry="36" fill={`url(#${gC})`} />
+          {[126, 140, 154].map((y, i) => (
+            <path key={i} d={`M${80 + i} ${y} Q100 ${y + 6} ${120 - i} ${y}`} stroke={shade(base, 22)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />
+          ))}
+
+          {/* ── wide projecting snout ── */}
+          <ellipse cx="100" cy="96" rx="44" ry="26" fill={`url(#${gB})`} />
+          {/* lighter lower jaw */}
+          <path d="M58 96 Q100 112 142 96 Q138 116 100 117 Q62 116 58 96 Z" fill={`url(#${gC})`} />
+          {/* nostrils on top of snout */}
+          <ellipse cx="90" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" />
+          <ellipse cx="110" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" />
+          {/* wide mouth */}
+          {mood !== 'sleepy' && <path d="M64 98 Q100 110 136 98" stroke={ink} strokeWidth="2.8" fill="none" strokeLinecap="round" />}
+          {/* little teeth */}
+          <path d="M76 100 l3.5 7 l3.5 -7 Z" fill="#fff" />
+          <path d="M124 100 l-3.5 7 l-3.5 -7 Z" fill="#fff" />
+
+          {/* cheeks + huge domed eyes on top */}
+          <ellipse cx="68" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
+          <ellipse cx="132" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
+          <Eye cx={80} cy={62} /><Eye cx={120} cy={62} />
+
+          {/* stage gear — scarf collar + shield badge */}
+          {stage >= 2 && (<g>
+            <path d="M76 118 q24 10 48 0 l0 8 q-24 9 -48 0 Z" fill={THEME.primary} />
+            <path d="M116 122 l 9 15 l -7 2 l -5 -12 Z" fill={THEME.primaryDark} />
+          </g>)}
+          {stage === 3 && (<g transform="translate(100,142)">
+            <path d="M0 -9 L8 -5.5 L8 2.5 Q8 10 0 12.5 Q-8 10 -8 2.5 L-8 -5.5 Z" fill={THEME.gold} stroke="#fff" strokeWidth="1.8" />
+            <path d="M-3.5 0 l2.6 3.5 l5.4 -7" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </g>)}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 // Dispatcher: pick the line based on the global style flag (set from Tweaks).
 function Mascot(props) {
-  return (window.JX_CHAR_STYLE === 'kr') ? <MascotKR {...props} /> : <MascotClassic {...props} />;
+  const s = window.JX_CHAR_STYLE;
+  if (s === 'kr') return <MascotKR {...props} />;
+  if (s === 'toy') return <MascotToy {...props} />;
+  return <MascotClassic {...props} />;
 }
 
 // small chip/avatar version for lists
@@ -289,4 +397,4 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-Object.assign(window, { Mascot, MascotClassic, MascotKR, MascotChip, SPECIES, shade });
+Object.assign(window, { Mascot, MascotClassic, MascotKR, MascotToy, MascotChip, SPECIES, shade });

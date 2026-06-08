@@ -149,7 +149,7 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['classic', 'Classic'], ['kr', 'Korean']].map(([v, l]) => (
+            {[['classic', 'Classic'], ['kr', 'Korean'], ['toy', '3D']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>
