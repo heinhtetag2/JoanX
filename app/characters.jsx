@@ -349,7 +349,10 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <ellipse cx="76" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" /><ellipse cx="124" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" />
             <Eye cx={85} cy={87} r={13.5} /><Eye cx={115} cy={87} r={13.5} />
             <ellipse cx="100" cy="103" rx="3.6" ry="2.9" fill={ink} />
-            {mood !== 'sleepy' && <path d="M100 106 q-5 5 -10 3 M100 106 q5 5 10 3" stroke={ink} strokeWidth="2.3" fill="none" strokeLinecap="round" />}
+            {mood !== 'sleepy' && <g stroke={ink} strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M100 106 L100 109" />
+              <path d="M89 109 Q100 117 111 109" />
+            </g>}
           </React.Fragment>)}
 
           {/* ══ CROC (croc) ══ */}
