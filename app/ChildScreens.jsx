@@ -7,7 +7,7 @@ function StatCard({ icon, color, bg, value, label, big }) {
       <div style={{ width: 34, height: 34, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
         <Icon name={icon} size={18} color={color} stroke={2.4} />
       </div>
-      <div className="game-font" style={{ fontSize: big ? 26 : 22, fontWeight: 700, color: THEME.fg1, lineHeight: 1 }}>{value}</div>
+      <div className="game-font" style={{ fontSize: big ? 26 : 22, fontWeight: 600, color: THEME.fg1, lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 3 }}>{label}</div>
     </div>
   );
@@ -47,14 +47,14 @@ function Onboarding({ ctx }) {
       {step === 0 && (
         <Hero>
           <div className="jx-float"><Mascot species="fox" stage={2} size={184} /></div>
-          <h1 className="game-font" style={{ fontSize: 27, fontWeight: 700, margin: '10px 0 8px' }}>{L('Walk safe, grow your buddy')}</h1>
+          <h1 className="game-font" style={{ fontSize: 27, fontWeight: 600, margin: '10px 0 8px' }}>{L('Walk safe, grow your buddy')}</h1>
           <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.5, margin: 0 }}>{L("JoanX gently notices when you're walking and looking at your phone — and turns staying safe into a game you win.")}</p>
         </Hero>
       )}
 
       {step === 1 && (
         <Hero>
-          <h1 className="game-font" style={{ fontSize: 24, fontWeight: 700, margin: '4px 0 6px', whiteSpace: 'nowrap' }}>{L('Pick a mode')}</h1>
+          <h1 className="game-font" style={{ fontSize: 24, fontWeight: 600, margin: '4px 0 6px', whiteSpace: 'nowrap' }}>{L('Pick a mode')}</h1>
           <p style={{ fontSize: 14, color: THEME.fg2, margin: '0 0 20px' }}>{L('You can change this anytime in the parent app.')}</p>
           {[
             { id: 'smart', t: 'Smart', d: 'Gentle warnings + character game. For kids who can self-correct.', icon: 'hand-heart' },
@@ -75,7 +75,7 @@ function Onboarding({ ctx }) {
 
       {step === 2 && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }} className="no-sb">
-          <h1 className="game-font" style={{ fontSize: 24, fontWeight: 700, margin: '4px 0 6px', whiteSpace: 'nowrap' }}>{L('Allow access')}</h1>
+          <h1 className="game-font" style={{ fontSize: 24, fontWeight: 600, margin: '4px 0 6px', whiteSpace: 'nowrap' }}>{L('Allow access')}</h1>
           <p style={{ fontSize: 14, color: THEME.fg2, margin: '0 0 18px' }}>{L("JoanX still works if you skip one — that feature just turns off. We never read your messages.")}</p>
           {PERMISSIONS.map(p => (
             <div key={p.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: 14, borderRadius: 16, border: `1.5px solid ${THEME.border}`, marginBottom: 10 }}>
@@ -121,13 +121,13 @@ function ChildHome({ ctx }) {
           <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={42} /></div>
           <div>
             <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}</div>
-            <div className="game-font" style={{ fontSize: 21, fontWeight: 700, color: THEME.fg1 }}>{PLAYER.name}</div>
+            <div className="game-font" style={{ fontSize: 21, fontWeight: 600, color: THEME.fg1 }}>{PLAYER.name}</div>
           </div>
         </button>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '7px 12px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
             <Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />
-            <span className="game-font" style={{ fontSize: 15, fontWeight: 700 }}>{PLAYER.coins}</span>
+            <span className="game-font" style={{ fontSize: 15, fontWeight: 600 }}>{PLAYER.coins}</span>
           </button>
           <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Icon name="bell" size={19} color={THEME.fg1} stroke={2} />
@@ -154,7 +154,7 @@ function ChildHome({ ctx }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
-              <div className="game-font" style={{ fontSize: 24, fontWeight: 700, marginTop: 8 }}>{c.name}</div>
+              <div className="game-font" style={{ fontSize: 24, fontWeight: 600, marginTop: 8 }}>{c.name}</div>
               <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
             </div>
             <Badge variant="gold"><Icon name="trending-up" size={11} color="#9e7300" stroke={2.6} />{L('Evolving')}</Badge>
@@ -165,7 +165,7 @@ function ChildHome({ ctx }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
             <div style={{ flex: 1 }}><Bar value={c.xp} max={c.xpMax} color={THEME.gold} glow /></div>
-            <span className="game-font" style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1 }}>{c.xp}/{c.xpMax}</span>
+            <span className="game-font" style={{ fontSize: 12, fontWeight: 600, color: THEME.fg1 }}>{c.xp}/{c.xpMax}</span>
           </div>
           <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center' }}>{c.stage < 3 ? `${c.xpMax - c.xp} XP → ${L('Stage')} ${c.stage + 1}` : L('Fully evolved — max stage!')}</div>
         </div>
@@ -180,7 +180,7 @@ function ChildHome({ ctx }) {
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ fontSize: 14, fontWeight: 800 }}>{L("Today's safe-walk goal")}</span>
-            <span className="game-font" style={{ fontSize: 13, fontWeight: 700, color: THEME.primary }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
+            <span className="game-font" style={{ fontSize: 13, fontWeight: 600, color: THEME.primary }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
           </div>
           <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={THEME.primary} height={12} />
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
@@ -226,7 +226,7 @@ function SafetyStatus({ ctx }) {
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.surface2 }}>
       <div style={{ padding: '0 18px' }}>
-        <h1 className="game-font" style={{ fontSize: 25, fontWeight: 700, margin: '0 0 4px' }}>{L('Safety')}</h1>
+        <h1 className="game-font" style={{ fontSize: 25, fontWeight: 600, margin: '0 0 4px' }}>{L('Safety')}</h1>
         <p style={{ fontSize: 13.5, color: THEME.fg2, margin: '0 0 18px' }}>{L('JoanX is watching out for you in the background.')}</p>
 
         {/* live status */}
@@ -237,7 +237,7 @@ function SafetyStatus({ ctx }) {
               <Icon name={lite ? 'shield' : 'shield-check'} size={52} color="#fff" stroke={2.1} />
             </div>
           </div>
-          <div className="game-font" style={{ fontSize: 20, fontWeight: 700 }}>{lite ? L('Lite mode active') : L('Active & protected')}</div>
+          <div className="game-font" style={{ fontSize: 20, fontWeight: 600 }}>{lite ? L('Lite mode active') : L('Active & protected')}</div>
           <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4 }}>{lite ? L('Your phone pauses while you walk.') : L('Walking + phone use is being watched.')}</div>
           <button onClick={() => ctx.openOverlay()} style={{ marginTop: 16, background: THEME.surface2, border: `1.5px solid ${THEME.border}`, borderRadius: 12, padding: '10px 16px', fontSize: 13, fontWeight: 700, color: THEME.fg1, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
             <Icon name="play" size={15} color={THEME.primary} stroke={2.4} /> {L('Preview a safety moment')}
@@ -373,7 +373,7 @@ function Profile({ ctx }) {
         <div style={{ background: `linear-gradient(165deg, ${shade(c.color, 76)}, #fff 78%)`, borderRadius: 22, padding: '20px 18px', boxShadow: THEME.shadowCard, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 80, height: 80, borderRadius: 24, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: THEME.shadowCard, flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={72} /></div>
           <div>
-            <div className="game-font" style={{ fontSize: 24, fontWeight: 700 }}>{PLAYER.name}</div>
+            <div className="game-font" style={{ fontSize: 24, fontWeight: 600 }}>{PLAYER.name}</div>
             <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{L('Age')} {PLAYER.age} · {L('Level')} {PLAYER.level}</div>
             <div style={{ marginTop: 8 }}><Badge variant={lite ? 'warning' : 'primary'}>{lite ? L('Lite') : L('Smart')} {L('mode')}</Badge></div>
           </div>
