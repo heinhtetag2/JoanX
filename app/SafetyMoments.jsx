@@ -125,7 +125,7 @@ function LiteBlock({ ctx }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'linear-gradient(170deg,#447aaf,#2b5782)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 34px', textAlign: 'center' }}>
-      <div className="jx-pop jx-float"><Mascot species="fox" stage={2} color="#FFFFFF" size={150} /></div>
+      <div className="jx-pop jx-float"><Mascot species="croc" stage={2} color="#FFFFFF" size={150} /></div>
       <div style={{ width: 70, height: 70, borderRadius: 999, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '6px 0 18px' }}>
         <Icon name="shield" size={36} color="#fff" stroke={2.1} />
       </div>
