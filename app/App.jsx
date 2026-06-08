@@ -8,11 +8,11 @@ function App() {
   const [params, setParams] = React.useState({});
   const [stack, setStack] = React.useState([]);
   const [pScreen, setPScreen] = React.useState('p_reports');
-  const [mode, setMode] = React.useState('smart');
+  const [mode, setMode] = React.useState('lite');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#e278a8', stage: 1, play: 'playful' });
-  const [lang, setLangState] = React.useState('en');
+  const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
   setLang(lang);  // make L() reflect the active language for this render

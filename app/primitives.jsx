@@ -86,7 +86,7 @@ function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: 'linear-gradient(135deg, #e8503a 0%, #c0271a 100%)', color: '#fff', boxShadow: '0 8px 20px rgba(209,69,50,0.45)', border: 'none' },  // energetic red (rust) battle CTA
+    play:      { background: 'linear-gradient(135deg, #5a9ea0 0%, #294343 100%)', color: '#fff', boxShadow: '0 8px 20px rgba(72,126,127,0.45)', border: 'none' },  // fresh tropic-teal battle CTA
     gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(209,153,0,0.34)', border: 'none' },
   };
   const sizes = {
