@@ -274,12 +274,12 @@ function Shop({ ctx }) {
           ))}
         </div>
 
-        {/* rooms — same card style as Outfits */}
+        {/* rooms — same card style as Outfits (3-col, soft blue chip) */}
         <SectionHead title={L('Unlock rooms')} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           {rooms.map(r => (
             <div key={r.id} style={{ background: '#fff', borderRadius: 18, padding: '14px 8px 12px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: `var(--color-interactives-avatar-${r.pal}-default)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="house" size={22} color={`var(--color-interactives-avatar-${r.pal}-icon)`} stroke={2.2} /></div>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="house" size={22} color={THEME.primary} stroke={2.2} /></div>
               <span style={{ fontSize: 11.5, fontWeight: 700, textAlign: 'center', lineHeight: 1.15 }}>{L(r.name)}</span>
               <PriceBtn id={r.id} price={r.price} label={L(r.name)} />
             </div>
