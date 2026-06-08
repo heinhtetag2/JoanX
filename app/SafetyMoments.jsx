@@ -21,9 +21,9 @@ function RewardToast({ secs = 2.1, pts = 30 }) {
         <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
           <Icon name="check" size={34} color={THEME.success} stroke={3} />
         </div>
-        <div className="game-font" style={{ fontSize: 21, fontWeight: 400 }}>{L('Nice save!')}</div>
+        <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Nice save!')}</div>
         <div style={{ fontSize: 13, color: THEME.fg2, margin: '4px 0 14px' }}>{L('Stopped in')} {secs}s — {L("that's an immediate stop.")}</div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 500, fontSize: 16 }} className="game-font">
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 16 }} className="game-font">
           <Icon name="star" size={18} color={THEME.gold} stroke={2.4} fill={THEME.gold} /> +{pts} {L('points')}
         </div>
       </div>
@@ -39,7 +39,7 @@ function WarningOverlay({ ctx }) {
 
   const Msg = () => (
     <React.Fragment>
-      <div className="game-font" style={{ fontSize: 19, fontWeight: 400, lineHeight: 1.25 }}>{L('Eyes up,')} {PLAYER.name}!</div>
+      <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25 }}>{L('Eyes up,')} {PLAYER.name}!</div>
       <div style={{ fontSize: 13.5, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{L("Let's put the phone away while we're walking.")}</div>
     </React.Fragment>
   );
@@ -80,7 +80,7 @@ function WarningOverlay({ ctx }) {
           {variant === 'spotlight' && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center' }}>
               <div className="jx-pop jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} /></div>
-              <div className="game-font" style={{ fontSize: 26, fontWeight: 400, marginTop: 10 }}>{L('Eyes up,')} {PLAYER.name}!</div>
+              <div className="game-font" style={{ fontSize: 26, fontWeight: 500, marginTop: 10 }}>{L('Eyes up,')} {PLAYER.name}!</div>
               <div style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45 }}>{L("Foxy noticed you're walking. Let's put the phone away and stay safe.")}</div>
               <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280 }}>{L('I looked up')}</Button>
               <div style={{ fontSize: 12, color: THEME.fg3, marginTop: 14 }}>{L('Stop fast for bonus points')}</div>
@@ -129,7 +129,7 @@ function LiteBlock({ ctx }) {
       <div style={{ width: 70, height: 70, borderRadius: 999, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '6px 0 18px' }}>
         <Icon name="shield" size={36} color="#fff" stroke={2.1} />
       </div>
-      <div className="game-font" style={{ fontSize: 28, fontWeight: 400, color: '#fff' }}>{L("Let's walk first")}</div>
+      <div className="game-font" style={{ fontSize: 28, fontWeight: 500, color: '#fff' }}>{L("Let's walk first")}</div>
       <div style={{ fontSize: 15, color: 'rgba(255,255,255,.9)', margin: '10px 0 0', lineHeight: 1.5 }}>{L("Your phone takes a quick break while you're walking. It comes back as soon as you stop.")}</div>
 
       <div style={{ marginTop: 26, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.16)', borderRadius: 999, padding: '9px 16px' }}>

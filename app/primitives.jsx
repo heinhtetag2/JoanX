@@ -3,9 +3,8 @@
 // Exposes globals on window for other Babel scripts.
 
 // Repointed onto the new JoanX color system (see app/color-system.css).
-// Neutrals → sand · action/accent → ocean · status → rust/evergreen/ember.
-// The primary *CTA button* uses sunbeam (yellow); THEME.primary stays ocean
-// because it doubles as an icon/link/selected accent where yellow is illegible.
+// Neutrals → sand · action/accent + primary CTA → ocean (brand blue) · status → rust/evergreen/ember.
+// (Sunbeam is kept defined in the token system but no longer used as a button fill.)
 const THEME = {
   // ── Core (authoritative) ─────────────────────────────────────────────
   primary: '#447aaf', primaryDark: '#2b5782', primaryLight: '#ecf3fe',   // ocean 50 / 60 / 10
@@ -31,7 +30,7 @@ const THEME = {
   shadowButton: '0 4px 12px rgba(46,43,41,0.16)',
   shadowLg: '0 8px 20px rgba(46,43,41,0.12)',
   shadowXl: '0 12px 28px rgba(46,43,41,0.16)',
-  shadowPrimary: '0 8px 18px rgba(216,224,3,0.45)',  // sunbeam glow under the CTA
+  shadowPrimary: '0 8px 18px rgba(68,122,175,0.34)',  // ocean glow under the CTA
   shadowDanger: '0 8px 18px rgba(209,69,50,0.34)',   // rust glow
 
   // ── JoanX game layer ─────────────────────────────────────────────────
@@ -77,7 +76,7 @@ function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none',
 
 function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth, style, icon, disabled }) {
   const variants = {
-    primary:   { background: THEME.cta, color: THEME.ctaInk, boxShadow: THEME.shadowPrimary, border: 'none' },        // sunbeam CTA
+    primary:   { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },          // ocean brand CTA
     secondary: { background: THEME.primaryLight, color: THEME.primaryDark, border: 'none' },                          // soft ocean
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },

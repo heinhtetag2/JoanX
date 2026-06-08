@@ -88,9 +88,9 @@
   --shadow-xl:     0 12px 28px rgba(46,43,41,0.14);
   --shadow-card:   0 4px 16px  rgba(46,43,41,0.08);
   --shadow-button: 0 4px 12px  rgba(46,43,41,0.16);
-  /* Colored button shadows use the button's own hue: rust (SOS) / sunbeam (CTA) */
+  /* Colored button shadows use the button's own hue: rust (SOS) / ocean (CTA) */
   --shadow-danger: 0 4px 10px  rgba(209,69,50,0.35);
-  --shadow-primary:0 4px 10px  rgba(216,224,3,0.40);
+  --shadow-primary:0 4px 10px  rgba(68,122,175,0.34);
 
   /* ── Type family ────────────────────────────────────────────────────── */
   /* Pretendard is the most popular Korean UI font and renders Latin cleanly too,
