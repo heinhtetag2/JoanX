@@ -214,8 +214,8 @@ function Shop({ ctx }) {
     { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 18 },
   ];
   const rooms = [
-    { id: 'studio', name: 'Star Studio', price: 30, theme: '#F1EDF9' },
-    { id: 'garden', name: 'Garden', price: 50, theme: '#FFF0EB' },
+    { id: 'studio', name: 'Star Studio', price: 30, pal: 'iris' },
+    { id: 'garden', name: 'Garden', price: 50, pal: 'moss' },
   ];
 
   const buy = (id, price, label) => {
@@ -279,7 +279,7 @@ function Shop({ ctx }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {rooms.map(r => (
             <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard }}>
-              <div style={{ width: 46, height: 46, borderRadius: 13, background: r.theme, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="home" size={22} color={THEME.camping} stroke={2.2} /></div>
+              <div style={{ width: 46, height: 46, borderRadius: 13, background: `var(--color-interactives-avatar-${r.pal}-default)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="house" size={22} color={`var(--color-interactives-avatar-${r.pal}-icon)`} stroke={2.2} /></div>
               <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>{L(r.name)}</div>
               <PriceBtn id={r.id} price={r.price} label={L(r.name)} />
             </div>
