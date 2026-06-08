@@ -301,7 +301,7 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
   // scarf-collar / crown placement varies per creature
   const neckY = species === 'bird' ? 122 : species === 'owl' ? 120 : 118;
-  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : species === 'owl' ? 36 : 27;
+  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : species === 'owl' ? 30 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -440,7 +440,9 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
           {/* ══ OWL (owl) ══ */}
           {species === 'owl' && (<React.Fragment>
-            {/* round-headed owl (no ear tufts) */}
+            {/* soft ear tufts on the head corners (behind body, so they grow from the head) */}
+            <path d="M70 82 C63 60 70 48 78 45 C83 55 85 70 87 80 Z" fill={shade(base, -8)} />
+            <path d="M130 82 C137 60 130 48 122 45 C117 55 115 70 113 80 Z" fill={shade(base, -8)} />
             {/* talon feet */}
             <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
               <path d="M88 176 L88 185 M88 185 L82 190 M88 185 L88 191 M88 185 L94 190" />
