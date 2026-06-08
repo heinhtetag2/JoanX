@@ -86,7 +86,7 @@ function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: THEME.joy, color: '#fff', boxShadow: '0 8px 18px rgba(206,131,69,0.36)', border: 'none' },
+    play:      { background: 'linear-gradient(135deg, #7f63c5 0%, #bc44b1 100%)', color: '#fff', boxShadow: '0 8px 20px rgba(127,99,197,0.42)', border: 'none' },  // vivid iris→sakura battle CTA
     gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(209,153,0,0.34)', border: 'none' },
   };
   const sizes = {
