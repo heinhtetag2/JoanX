@@ -176,10 +176,10 @@ function Bar({ value = 0, max = 100, color = THEME.primary, track = THEME.border
 function Toggle({ on, onChange }) {
   return (
     <button onClick={() => onChange(!on)} style={{
-      width: 50, height: 30, borderRadius: 999, border: 'none', cursor: 'pointer',
+      width: 44, height: 26, borderRadius: 999, border: 'none', cursor: 'pointer',
       background: on ? THEME.primary : THEME.border, position: 'relative', transition: 'background .2s', padding: 0,
     }}>
-      <span style={{ position: 'absolute', top: 3, left: on ? 23 : 3, width: 24, height: 24, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left .2s' }} />
+      <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left .2s' }} />
     </button>
   );
 }
