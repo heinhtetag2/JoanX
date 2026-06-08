@@ -332,9 +332,9 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             {/* feet */}
             <ellipse cx="82" cy="174" rx="12" ry="8" fill={dark} /><ellipse cx="118" cy="174" rx="12" ry="8" fill={dark} />
             {/* pointy ears with cream inner */}
-            <path d="M64 78 L52 36 L98 70 Z" fill={`url(#${gB})`} /><path d="M136 78 L148 36 L102 70 Z" fill={`url(#${gB})`} />
-            <path d="M52 36 L63 56 L73 48 Z" fill={shade(base, -52)} /><path d="M148 36 L137 56 L127 48 Z" fill={shade(base, -52)} />
-            <path d="M70 70 L62 48 L88 66 Z" fill={shade(base, 84)} /><path d="M130 70 L138 48 L112 66 Z" fill={shade(base, 84)} />
+            <path d="M62 80 L55 45 L97 72 Z" fill={`url(#${gB})`} /><path d="M138 80 L145 45 L103 72 Z" fill={`url(#${gB})`} />
+            <path d="M55 45 L61 58 L69 52 Z" fill={shade(base, -48)} /><path d="M145 45 L139 58 L131 52 Z" fill={shade(base, -48)} />
+            <path d="M68 71 L62 53 L87 69 Z" fill={shade(base, 86)} /><path d="M132 71 L138 53 L113 69 Z" fill={shade(base, 86)} />
             {/* body */}
             <ellipse cx="100" cy="126" rx="48" ry="52" fill={`url(#${gB})`} />
             <ellipse cx="55" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(13 55 134)" />
@@ -346,9 +346,9 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <path d="M128 100 L150 104 L136 109 L152 115 L136 118 L144 125 L124 117 Z" fill={shade(base, 84)} />
             <path d="M80 100 Q100 105 120 100 Q115 116 100 124 Q85 116 80 100 Z" fill={`url(#${gC})`} />
             {/* face */}
-            <ellipse cx="74" cy="96" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="126" cy="96" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" />
-            <Eye cx={82} cy={88} r={16} /><Eye cx={118} cy={88} r={16} />
-            <ellipse cx="100" cy="103" rx="3.8" ry="3" fill={ink} />
+            <ellipse cx="76" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" /><ellipse cx="124" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" />
+            <Eye cx={85} cy={87} r={13.5} /><Eye cx={115} cy={87} r={13.5} />
+            <ellipse cx="100" cy="103" rx="3.6" ry="2.9" fill={ink} />
             {mood !== 'sleepy' && <path d="M100 106 q-5 5 -10 3 M100 106 q5 5 10 3" stroke={ink} strokeWidth="2.3" fill="none" strokeLinecap="round" />}
           </React.Fragment>)}
 
