@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JoanX — Component Gallery</title>
+<link rel="stylesheet" href="app/color-system.css">
+<link rel="stylesheet" href="app/tripme-tokens.css">
+<link rel="stylesheet" href="app/joanx.css">
+<style>
+  body { margin: 0; background: var(--color-base-sand-10); color: var(--color-base-sand-80); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  header { background: #fff; border-bottom: 1px solid var(--color-base-sand-20); padding: 18px 28px; }
+  header h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px; }
+  header .sub { color: var(--color-base-sand-50); font-size: 13px; margin-top: 2px; }
+  main { max-width: 980px; margin: 0 auto; padding: 8px 28px 80px; }
+  section { background: #fff; border: 1px solid var(--color-base-sand-20); border-radius: 18px; padding: 20px 22px; margin-top: 18px; box-shadow: var(--shadow-sm); }
+  section > h2 { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+  section > .desc { font-size: 12.5px; color: var(--color-base-sand-50); margin-bottom: 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .row + .subh, .grid + .subh { margin-top: 18px; }
+  .subh { font-size: 11px; font-weight: 800; color: var(--color-base-sand-50); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .tile small { font-size: 10.5px; color: var(--color-base-sand-50); font-weight: 700; }
+  /* token-driven primitives */
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .2px; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 999px; }
+  .av { width: 42px; height: 42px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: default; }
+  .field { display: flex; align-items: center; gap: 8px; background: var(--color-interactives-field-background-default); border: 1.5px solid var(--color-interactives-field-border-default); border-radius: 14px; padding: 12px 14px; font-size: 14px; min-width: 200px; }
+  .field.focus { border-color: var(--color-interactives-field-border-focus); }
+  .field.error { border-color: var(--color-interactives-field-border-error); }
+  .field.disabled { background: var(--color-interactives-field-background-disabled); color: var(--color-base-sand-40); }
+  .slider { position: relative; height: 8px; border-radius: 999px; background: var(--color-interactives-slider-background); width: 220px; }
+  .slider .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 60%; border-radius: 999px; background: var(--color-interactives-slider-default); }
+  .slider .knob { position: absolute; top: 50%; left: 60%; transform: translate(-50%,-50%); width: 20px; height: 20px; border-radius: 999px; background: #fff; border: 3px solid var(--color-interactives-slider-default); box-shadow: var(--shadow-card); }
+  .tooltip { display: inline-block; background: var(--color-interactives-tooltip-default); color: var(--color-base-sand-0); font-size: 12.5px; font-weight: 700; padding: 8px 12px; border-radius: 10px; }
+  .pageDots { display: inline-flex; gap: 8px; align-items: center; }
+  .pageDots i { width: 8px; height: 8px; border-radius: 999px; background: var(--color-interactives-pagination-default); display: block; }
+  .pageDots i.cur { width: 22px; background: var(--color-interactives-pagination-current); }
+  .aibtn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 18px; border-radius: 14px; font-weight: 800; font-size: 14px; font-family: inherit; cursor: pointer;
+    background: var(--color-interactives-button-ai-primary-bg-default); border: 1.5px solid var(--color-interactives-button-ai-primary-border-default); color: var(--color-interactives-button-ai-primary-label); }
+  .aibtn.sec { background: var(--color-interactives-button-ai-secondary-bg-default); border-color: var(--color-interactives-button-ai-secondary-border-default); color: var(--color-interactives-button-ai-secondary-label); }
+</style>
+</head>
+<body>
+<header>
+  <h1>JoanX — Component Gallery</h1>
+  <div class="sub">Every interactive role, driven by <code>app/color-system.css</code> tokens · pairs with <a href="colors.html">colors.html</a></div>
+</header>
+<main><div id="root"></div></main>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel">
+const BADGE_PALETTES = ['sand','ocean','evergreen','ember','rust','tropic','pebble','sakura','iris','moss'];
+const AVATAR_PALETTES = ['sand','ocean','evergreen','ember','rust','tropic','pebble','sakura','iris','moss'];
+const v = n => `var(${n})`;
+
+function Section({ title, desc, children }) {
+  return (
+    <section>
+      <h2>{title}</h2>
+      {desc && <div className="desc">{desc}</div>}
+      {children}
+    </section>
+  );
+}
+const Sub = ({ children }) => <div className="subh">{children}</div>;
+
+function TokenBadge({ p }) {
+  return (
+    <span className="pill" style={{ background: v(`--color-interactives-badge-${p}-default`), color: v(`--color-interactives-badge-${p}-label`) }}>
+      <span className="dot" style={{ background: v(`--color-interactives-badge-${p}-dot`) }} />{p}
+    </span>
+  );
+}
+function TokenAvatar({ p }) {
+  return (
+    <div className="tile">
+      <div className="av" style={{ background: v(`--color-interactives-avatar-${p}-default`), color: v(`--color-interactives-avatar-${p}-icon`) }}>
+        <Icon name="user" size={20} color={v(`--color-interactives-avatar-${p}-icon`)} stroke={2.4} />
+      </div>
+      <small>{p}</small>
+    </div>
+  );
+}
+
+function Gallery() {
+  const [on, setOn] = React.useState(true);
+  const [field, setField] = React.useState('Mina');
+  return (
+    <div>
+      <Section title="Buttons" desc="Button primitive variants. Primary = sunbeam CTA + dark ink; brand/growth share it; action accents use ocean.">
+        <div className="row">
+          <Button variant="primary">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="danger">Danger</Button>
+          <Button variant="play">Play</Button>
+          <Button variant="gold">Gold</Button>
+        </div>
+        <div className="subh" style={{ marginTop: 18 }}>AI buttons (iris)</div>
+        <div className="row">
+          <button className="aibtn"><Icon name="sparkles" size={16} color={v('--color-interactives-button-ai-primary-icon')} stroke={2.4} />AI primary</button>
+          <button className="aibtn sec"><Icon name="sparkles" size={16} color={v('--color-interactives-button-ai-secondary-icon')} stroke={2.4} />AI secondary</button>
+        </div>
+      </Section>
+
+      <Section title="Badges" desc="badge-{palette}-default (step 20) background · -label (70) text · -dot (50/60) accent.">
+        <div className="row">{BADGE_PALETTES.map(p => <TokenBadge key={p} p={p} />)}</div>
+        <Sub>sand-inverse</Sub>
+        <div className="row">
+          <span className="pill" style={{ background: v('--color-interactives-badge-sand-inverse-default'), color: v('--color-interactives-badge-sand-inverse-label') }}>
+            <span className="dot" style={{ background: v('--color-interactives-badge-sand-inverse-dot') }} />sand-inverse
+          </span>
+        </div>
+      </Section>
+
+      <Section title="Avatars" desc="avatar-{palette}-default background + -icon foreground.">
+        <div className="grid">{AVATAR_PALETTES.map(p => <TokenAvatar key={p} p={p} />)}</div>
+      </Section>
+
+      <Section title="Chips" desc="chip-* tokens: default / selected (sand-80) / active (pebble).">
+        <div className="row">
+          <span className="chip" style={{ background: v('--color-interactives-chip-background-default'), border: `1.5px solid ${v('--color-interactives-chip-border-default')}`, color: v('--color-interactives-chip-text-default') }}>Default</span>
+          <span className="chip" style={{ background: v('--color-interactives-chip-background-selected'), color: v('--color-interactives-chip-text-inverse') }}>Selected</span>
+          <span className="chip" style={{ background: v('--color-interactives-chip-background-active'), border: `1.5px solid ${v('--color-interactives-chip-border-active')}`, color: v('--color-interactives-chip-text-active') }}>Active</span>
+          <span className="chip" style={{ background: v('--color-interactives-chip-background-default'), border: `1.5px solid ${v('--color-interactives-chip-border-error')}`, color: v('--color-interactives-chip-icon-error') }}>Error</span>
+        </div>
+      </Section>
+
+      <Section title="Toggle, Slider, Pagination" desc="toggle / slider / pagination semantic tokens (sand ramp).">
+        <div className="row" style={{ gap: 28 }}>
+          <div className="tile"><Toggle on={on} onChange={setOn} /><small>toggle</small></div>
+          <div className="tile"><div className="slider"><div className="fill" /><div className="knob" /></div><small>slider</small></div>
+          <div className="tile"><div className="pageDots"><i className="cur" /><i /><i /><i /></div><small>pagination</small></div>
+        </div>
+      </Section>
+
+      <Section title="Fields" desc="field-* tokens: default / focus (ocean) / error (rust) / disabled.">
+        <div className="row">
+          <div className="field"><Icon name="user" size={16} color={v('--color-base-sand-50')} stroke={2} /><span>{field}</span></div>
+          <div className="field focus"><Icon name="search" size={16} color={v('--color-base-ocean-50')} stroke={2} /><span style={{ color: v('--color-base-sand-50') }}>Focused…</span></div>
+          <div className="field error"><Icon name="alert-circle" size={16} color={v('--color-base-rust-50')} stroke={2} /><span>Invalid</span></div>
+          <div className="field disabled"><span>Disabled</span></div>
+        </div>
+      </Section>
+
+      <Section title="Feedback & misc" desc="progress bar, tooltip, hyperlink, status text.">
+        <Sub>progress bar</Sub>
+        <div className="row"><div style={{ flex: 1, maxWidth: 360 }}><Bar value={62} max={100} color={v('--color-data-viz-progress-indicators-complete')} track={v('--color-data-viz-progress-indicators-remainder')} /></div></div>
+        <Sub>tooltip</Sub>
+        <div className="row"><span className="tooltip">Tooltip — sand-80</span></div>
+        <Sub>links & status text</Sub>
+        <div className="row" style={{ gap: 20 }}>
+          <a style={{ color: v('--color-interactives-links-hyperlink-text-default'), textDecorationColor: v('--color-interactives-links-hyperlink-underline-default') }} href="#">Hyperlink</a>
+          <span style={{ color: v('--color-ui-text-feedback-positive-dark'), fontWeight: 700, fontSize: 13 }}>Positive</span>
+          <span style={{ color: v('--color-ui-text-feedback-caution-dark'), fontWeight: 700, fontSize: 13 }}>Caution</span>
+          <span style={{ color: v('--color-ui-text-feedback-negative-dark'), fontWeight: 700, fontSize: 13 }}>Negative</span>
+          <span style={{ color: v('--color-ui-text-feedback-ai-dark'), fontWeight: 700, fontSize: 13 }}>AI</span>
+        </div>
+      </Section>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Gallery />);
+window.lucide && window.lucide.createIcons();
+</script>
+</body>
+</html>

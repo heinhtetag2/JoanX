@@ -28,6 +28,13 @@ function ChildChip({ active }) {
 function ParentReports({ ctx }) {
   const m = PARENT_METRICS;
   const maxRisk = Math.max(...RISK_TREND);
+  // Chart series pull from the system data-viz palette (tuned for charts / color-blindness at 40–60).
+  const SERIES = {
+    good:  'var(--color-data-green-50)',   // immediate stop
+    mid:   'var(--color-data-yellow-40)',  // delayed
+    bad:   'var(--color-data-red-50)',     // ignored
+    trend: 'var(--color-data-blue-40)',    // risk-trend series
+  };
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
       <ParentHead sub={L("This week's progress")} title={L('Mina is improving')} right={<ChildChip />} />
@@ -46,7 +53,7 @@ function ParentReports({ ctx }) {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 56, marginTop: 14 }}>
             {RISK_TREND.map((v, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{ width: '100%', height: (v / maxRisk) * 44, background: i === RISK_TREND.length - 1 ? THEME.success : THEME.primary, opacity: i === RISK_TREND.length - 1 ? 1 : 0.4 - i * 0.02 + 0.3, borderRadius: 6 }} />
+                <div style={{ width: '100%', height: (v / maxRisk) * 44, background: i === RISK_TREND.length - 1 ? SERIES.good : SERIES.trend, opacity: i === RISK_TREND.length - 1 ? 1 : 0.4 - i * 0.02 + 0.3, borderRadius: 6 }} />
                 <span style={{ fontSize: 9, color: THEME.fg3, fontWeight: 600 }}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
               </div>
             ))}
@@ -78,9 +85,9 @@ function ParentReports({ ctx }) {
               return (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
                   <div style={{ width: 18, height: 70, borderRadius: 6, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: THEME.surface2 }}>
-                    {d.ignored > 0 && <div style={{ height: (d.ignored / tot) * 70, background: THEME.danger }} />}
-                    {d.delayed > 0 && <div style={{ height: (d.delayed / tot) * 70, background: THEME.warning }} />}
-                    <div style={{ height: (d.immediate / tot) * 70, background: THEME.success }} />
+                    {d.ignored > 0 && <div style={{ height: (d.ignored / tot) * 70, background: SERIES.bad }} />}
+                    {d.delayed > 0 && <div style={{ height: (d.delayed / tot) * 70, background: SERIES.mid }} />}
+                    <div style={{ height: (d.immediate / tot) * 70, background: SERIES.good }} />
                   </div>
                   <span style={{ fontSize: 9.5, color: THEME.fg3, fontWeight: 600 }}>{d.day[0]}</span>
                 </div>
@@ -88,7 +95,7 @@ function ParentReports({ ctx }) {
             })}
           </div>
           <div style={{ display: 'flex', gap: 14, marginTop: 12, justifyContent: 'center' }}>
-            {[['Immediate', THEME.success], ['Delayed', THEME.warning], ['Ignored', THEME.danger]].map(([l, c]) => (
+            {[['Immediate', SERIES.good], ['Delayed', SERIES.mid], ['Ignored', SERIES.bad]].map(([l, c]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: c }} /><span style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600 }}>{L(l)}</span></div>
             ))}
           </div>
@@ -138,16 +145,19 @@ function ParentSettings({ ctx }) {
           <React.Fragment>
             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Block while walking')}</div>
             <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
-              {APP_CATEGORIES.map((c, i) => (
+              {APP_CATEGORIES.map((c, i) => {
+                // each category gets a distinct system avatar palette
+                const pal = { video: 'sakura', games: 'iris', social: 'ocean', browser: 'tropic', camera: 'moss', phone: 'pebble' }[c.id] || 'sand';
+                return (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={18} color={THEME.fg2} stroke={2.2} /></div>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: `var(--color-interactives-avatar-${pal}-default)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={18} color={`var(--color-interactives-avatar-${pal}-icon)`} stroke={2.2} /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 700 }}>{L(c.name)}</div>
                     {c.locked && <div style={{ fontSize: 11.5, color: THEME.success, fontWeight: 600 }}>{L('Always allowed')}</div>}
                   </div>
                   {c.locked ? <Icon name="lock" size={16} color={THEME.fg3} stroke={2.3} /> : <Toggle on={cats[c.id]} onChange={v => setCats(s => ({ ...s, [c.id]: v }))} />}
                 </div>
-              ))}
+              );})}
             </div>
           </React.Fragment>
         ) : (
@@ -212,11 +222,13 @@ function ParentChildren({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
       <ParentHead sub={L('2 connected')} title={L('Children')} right={<button style={{ width: 40, height: 40, borderRadius: 999, background: THEME.primary, border: 'none', boxShadow: THEME.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
       <div style={{ padding: '8px 16px 0' }}>
-        {CHILDREN.map(k => (
+        {CHILDREN.map((k, ki) => {
+          const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
+          return (
           <div key={k.id} onClick={() => ctx.nav('p_settings')} style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 12, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ position: 'relative' }}>
-                <MascotChip species={k.avatar} color={k.color} size={56} bg={shade(k.color, 78)} />
+                <MascotChip species={k.avatar} color={k.color} size={56} bg={`var(--color-interactives-avatar-${pal}-default)`} />
                 <span style={{ position: 'absolute', bottom: 0, right: 0, width: 14, height: 14, borderRadius: 999, background: k.online ? THEME.success : THEME.fg3, border: '2.5px solid #fff' }} />
               </div>
               <div style={{ flex: 1 }}>
@@ -239,7 +251,7 @@ function ParentChildren({ ctx }) {
               </div>
             </div>
           </div>
-        ))}
+          );})}
 
         <div style={{ display: 'flex', gap: 12, background: THEME.primaryLight, borderRadius: 18, padding: 16, marginTop: 4 }}>
           <Icon name="shield-check" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
