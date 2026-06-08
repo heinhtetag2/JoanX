@@ -287,16 +287,19 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
   const sc = stage === 1 ? 0.9 : stage === 3 ? 1.06 : 1;
   const uid = React.useId().replace(/[:]/g, '');
   const gB = 'tb' + uid, gC = 'tc' + uid;
-  const er = mood === 'alert' ? 21 : 19;   // huge domed eyes
-
-  const Eye = ({ cx, cy }) => mood === 'sleepy'
-    ? <path d={`M${cx - er * 0.7} ${cy} q${er * 0.7} ${er * 0.5} ${er * 1.4} 0`} stroke={ink} strokeWidth="4" fill="none" strokeLinecap="round" />
+  const er = mood === 'alert' ? 21 : 19;   // croc's huge domed eyes
+  const Eye = ({ cx, cy, r = er }) => mood === 'sleepy'
+    ? <path d={`M${cx - r * 0.7} ${cy} q${r * 0.7} ${r * 0.5} ${r * 1.4} 0`} stroke={ink} strokeWidth="4" fill="none" strokeLinecap="round" />
     : (<g>
-        <circle cx={cx} cy={cy} r={er} fill="#fff" stroke={shade(base, -20)} strokeWidth="1.4" />
-        <circle cx={cx + (cx < 100 ? 2.5 : -2.5)} cy={cy + er * 0.28} r={er * 0.46} fill={ink} />
-        <circle cx={cx + (cx < 100 ? 4.5 : -0.5)} cy={cy + er * 0.05} r={er * 0.2} fill="#fff" />
-        <circle cx={cx + (cx < 100 ? -2 : 2)} cy={cy + er * 0.5} r={er * 0.1} fill="#fff" opacity="0.8" />
+        <circle cx={cx} cy={cy} r={r} fill="#fff" stroke={shade(base, -20)} strokeWidth="1.4" />
+        <circle cx={cx + (cx < 100 ? r * 0.13 : -r * 0.13)} cy={cy + r * 0.28} r={r * 0.46} fill={ink} />
+        <circle cx={cx + (cx < 100 ? r * 0.24 : -r * 0.03)} cy={cy + r * 0.05} r={r * 0.2} fill="#fff" />
+        <circle cx={cx + (cx < 100 ? -r * 0.1 : r * 0.1)} cy={cy + r * 0.5} r={r * 0.09} fill="#fff" opacity="0.8" />
       </g>);
+
+  // scarf-collar / crown placement varies per creature
+  const neckY = species === 'cat' ? 118 : species === 'bird' ? 122 : 118;
+  const crownY = species === 'cat' ? 50 : species === 'bird' ? 46 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -313,67 +316,84 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
           </radialGradient>
         </defs>
 
-        <ellipse cx="100" cy="187" rx={48 * sc} ry="7.5" fill="#000" opacity="0.08" />
+        <ellipse cx="100" cy="187" rx={46 * sc} ry="7.5" fill="#000" opacity="0.08" />
         {stage !== 2 && [[32, 70, 3.2], [170, 82, 2.8], [166, 146, 2.8]].map(([x, y, r], i) => (
           <circle key={i} cx={x} cy={y} r={r} fill={stage === 3 ? THEME.gold : base} opacity="0.45" />
         ))}
 
         <g transform={`translate(100,114) scale(${sc}) translate(-100,-114)`}>
-          {/* chunky tail — base anchored deep under the body so it connects seamlessly */}
-          <path d="M118 150 C156 160 184 146 198 104 C190 130 172 152 146 162 C134 167 124 162 118 150 Z" fill={`url(#${gB})`} />
-          {[[156, 130], [172, 120], [184, 112]].map(([x, y], i) => (
-            <path key={i} d={`M${x - 7} ${y + 6} Q${x + 1} ${y - 8} ${x + 8} ${y + 4} Z`} fill={dark} opacity="0.45" />
-          ))}
 
-          {/* feet with claws */}
-          <ellipse cx="80" cy="176" rx="15" ry="9" fill={dark} />
-          <ellipse cx="120" cy="176" rx="15" ry="9" fill={dark} />
-          {[71, 80, 89, 111, 120, 129].map((x, i) => <line key={i} x1={x} y1="173" x2={x} y2="181" stroke={shade(base, -60)} strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />)}
+          {/* ══ CROC (fox) ══ */}
+          {species === 'fox' && (<React.Fragment>
+            <path d="M118 150 C156 160 184 146 198 104 C190 130 172 152 146 162 C134 167 124 162 118 150 Z" fill={`url(#${gB})`} />
+            {[[156, 130], [172, 120], [184, 112]].map(([x, y], i) => <path key={i} d={`M${x - 7} ${y + 6} Q${x + 1} ${y - 8} ${x + 8} ${y + 4} Z`} fill={dark} opacity="0.45" />)}
+            <ellipse cx="80" cy="176" rx="15" ry="9" fill={dark} /><ellipse cx="120" cy="176" rx="15" ry="9" fill={dark} />
+            {[71, 80, 89, 111, 120, 129].map((x, i) => <line key={i} x1={x} y1="173" x2={x} y2="181" stroke={shade(base, -60)} strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />)}
+            {(stage === 3 ? [[74, 54], [88, 50], [100, 47], [112, 50], [126, 54]] : [[80, 52], [100, 48], [120, 52]]).map(([x, y], i) => {
+              const h = stage === 3 ? 20 : stage === 2 ? 11 : 8;
+              return <path key={i} d={`M${x - 10} ${y + 8} Q${x} ${y - h} ${x + 10} ${y + 8} Z`} fill={shade(base, -8)} />;
+            })}
+            <ellipse cx="100" cy="124" rx="50" ry="54" fill={`url(#${gB})`} />
+            <ellipse cx="54" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(12 54 132)" />
+            <ellipse cx="146" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(-12 146 132)" />
+            <ellipse cx="100" cy="138" rx="30" ry="36" fill={`url(#${gC})`} />
+            {[126, 140, 154].map((y, i) => <path key={i} d={`M${80 + i} ${y} Q100 ${y + 6} ${120 - i} ${y}`} stroke={shade(base, 22)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />)}
+            <ellipse cx="100" cy="96" rx="44" ry="26" fill={`url(#${gB})`} />
+            <path d="M58 96 Q100 112 142 96 Q138 116 100 117 Q62 116 58 96 Z" fill={`url(#${gC})`} />
+            <ellipse cx="90" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" /><ellipse cx="110" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" />
+            {mood !== 'sleepy' && <path d="M64 98 Q100 110 136 98" stroke={ink} strokeWidth="2.8" fill="none" strokeLinecap="round" />}
+            <path d="M76 100 l3.5 7 l3.5 -7 Z" fill="#fff" /><path d="M124 100 l-3.5 7 l-3.5 -7 Z" fill="#fff" />
+            <ellipse cx="68" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" /><ellipse cx="132" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
+            <Eye cx={80} cy={62} /><Eye cx={120} cy={62} />
+          </React.Fragment>)}
 
-          {/* dorsal scute crest over the head — grows taller & spikier as it evolves */}
-          {(stage === 3 ? [[74, 54], [88, 50], [100, 47], [112, 50], [126, 54]] : [[80, 52], [100, 48], [120, 52]]).map(([x, y], i) => {
-            const h = stage === 3 ? 20 : stage === 2 ? 11 : 8;   // crest height by stage
-            return <path key={i} d={`M${x - 10} ${y + 8} Q${x} ${y - h} ${x + 10} ${y + 8} Z`} fill={shade(base, -8)} />;
-          })}
+          {/* ══ KITTEN (cat) ══ */}
+          {species === 'cat' && (<React.Fragment>
+            <path d="M140 152 q40 6 34 -26 q-4 18 -22 13" fill="none" stroke={`url(#${gB})`} strokeWidth="13" strokeLinecap="round" />
+            {/* ears */}
+            <path d="M60 80 L50 42 L96 70 Z" fill={`url(#${gB})`} /><path d="M140 80 L150 42 L104 70 Z" fill={`url(#${gB})`} />
+            <path d="M65 72 L59 50 L86 68 Z" fill="#F4A8C0" opacity="0.85" /><path d="M135 72 L141 50 L114 68 Z" fill="#F4A8C0" opacity="0.85" />
+            {/* feet + body */}
+            <ellipse cx="82" cy="174" rx="13" ry="8" fill={dark} /><ellipse cx="118" cy="174" rx="13" ry="8" fill={dark} />
+            <ellipse cx="100" cy="126" rx="48" ry="52" fill={`url(#${gB})`} />
+            <ellipse cx="55" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(13 55 134)" />
+            <ellipse cx="145" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(-13 145 134)" />
+            <ellipse cx="100" cy="140" rx="27" ry="30" fill={`url(#${gC})`} />
+            {/* face */}
+            <ellipse cx="71" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="129" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
+            <Eye cx={82} cy={92} r={16} /><Eye cx={118} cy={92} r={16} />
+            <path d="M94 104 L106 104 L100 110 Z" fill={shade('#d96a8a', 0)} />
+            {mood !== 'sleepy' && <path d="M100 110 q-6 5 -11 2 M100 110 q6 5 11 2" stroke={ink} strokeWidth="2.3" fill="none" strokeLinecap="round" />}
+            <g stroke={dark} strokeWidth="1.8" strokeLinecap="round" opacity="0.4"><path d="M70 106 L52 103 M70 111 L52 113" /><path d="M130 106 L148 103 M130 111 L148 113" /></g>
+          </React.Fragment>)}
 
-          {/* body — one chunky shaded form */}
-          <ellipse cx="100" cy="124" rx="50" ry="54" fill={`url(#${gB})`} />
-          {/* stubby arms */}
-          <ellipse cx="54" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(12 54 132)" />
-          <ellipse cx="146" cy="132" rx="12" ry="18" fill={`url(#${gB})`} transform="rotate(-12 146 132)" />
+          {/* ══ CHICK (bird) ══ */}
+          {species === 'bird' && (<React.Fragment>
+            {/* tuft */}
+            <g stroke={shade(base, -10)} strokeWidth="6.5" strokeLinecap="round"><path d="M100 84 L100 52" /><path d="M100 66 L86 52" /><path d="M100 66 L114 52" /></g>
+            {/* legs */}
+            <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
+              <path d="M89 176 L87 185 M87 185 L81 190 M87 185 L87 191 M87 185 L93 190" />
+              <path d="M111 176 L113 185 M113 185 L107 190 M113 185 L113 191 M113 185 L119 190" />
+            </g>
+            {/* wings + body */}
+            <ellipse cx="58" cy="134" rx="12" ry="18" fill={shade(base, -12)} transform="rotate(20 58 134)" />
+            <ellipse cx="142" cy="134" rx="12" ry="18" fill={shade(base, -12)} transform="rotate(-20 142 134)" />
+            <ellipse cx="100" cy="130" rx="45" ry="50" fill={`url(#${gB})`} />
+            <ellipse cx="100" cy="144" rx="28" ry="30" fill={`url(#${gC})`} />
+            {/* face */}
+            <ellipse cx="71" cy="106" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="129" cy="106" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
+            <Eye cx={83} cy={96} r={15} /><Eye cx={117} cy={96} r={15} />
+            <path d="M100 104 L110 110 L100 117 L90 110 Z" fill="#e8a23a" />
+          </React.Fragment>)}
 
-          {/* lighter segmented belly */}
-          <ellipse cx="100" cy="138" rx="30" ry="36" fill={`url(#${gC})`} />
-          {[126, 140, 154].map((y, i) => (
-            <path key={i} d={`M${80 + i} ${y} Q100 ${y + 6} ${120 - i} ${y}`} stroke={shade(base, 22)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />
-          ))}
-
-          {/* ── wide projecting snout ── */}
-          <ellipse cx="100" cy="96" rx="44" ry="26" fill={`url(#${gB})`} />
-          {/* lighter lower jaw */}
-          <path d="M58 96 Q100 112 142 96 Q138 116 100 117 Q62 116 58 96 Z" fill={`url(#${gC})`} />
-          {/* nostrils on top of snout */}
-          <ellipse cx="90" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" />
-          <ellipse cx="110" cy="80" rx="2.4" ry="2" fill={ink} opacity="0.7" />
-          {/* wide mouth */}
-          {mood !== 'sleepy' && <path d="M64 98 Q100 110 136 98" stroke={ink} strokeWidth="2.8" fill="none" strokeLinecap="round" />}
-          {/* little teeth */}
-          <path d="M76 100 l3.5 7 l3.5 -7 Z" fill="#fff" />
-          <path d="M124 100 l-3.5 7 l-3.5 -7 Z" fill="#fff" />
-
-          {/* cheeks + huge domed eyes on top */}
-          <ellipse cx="68" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
-          <ellipse cx="132" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
-          <Eye cx={80} cy={62} /><Eye cx={120} cy={62} />
-
-          {/* stage 2 — equipped a hero scarf (with a small badge knot) */}
+          {/* ══ shared stage gear ══ */}
           {stage >= 2 && (<g>
-            <path d="M74 118 q26 11 52 0 l0 9 q-26 10 -52 0 Z" fill={THEME.primary} />
-            <path d="M118 122 l 10 16 l -8 2 l -6 -13 Z" fill={THEME.primaryDark} />
-            <circle cx="100" cy="122" r="5" fill={THEME.gold} stroke="#fff" strokeWidth="1.4" />
+            <path d={`M74 ${neckY} q26 11 52 0 l0 9 q-26 10 -52 0 Z`} fill={THEME.primary} />
+            <path d={`M118 ${neckY + 4} l 10 16 l -8 2 l -6 -13 Z`} fill={THEME.primaryDark} />
+            <circle cx="100" cy={neckY + 4} r="5" fill={THEME.gold} stroke="#fff" strokeWidth="1.4" />
           </g>)}
-          {/* stage 3 — crowned hero: a golden crown perched above the head */}
-          {stage === 3 && (<g transform="translate(100,27)">
+          {stage === 3 && (<g transform={`translate(100,${crownY})`}>
             <path d="M-15 7 L-15 -3 L-7.5 3 L0 -9 L7.5 3 L15 -3 L15 7 Z" fill={THEME.gold} stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
             <rect x="-15" y="6" width="30" height="4.5" rx="2.2" fill={shade('#d19900', -6)} />
             <circle cx="0" cy="-9" r="2.4" fill="#fff" /><circle cx="-15" cy="-3" r="1.8" fill="#fff" /><circle cx="15" cy="-3" r="1.8" fill="#fff" />
