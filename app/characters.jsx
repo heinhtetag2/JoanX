@@ -451,15 +451,16 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             {/* long wings down the sides */}
             <ellipse cx="59" cy="134" rx="13" ry="26" fill={shade(base, -14)} transform="rotate(8 59 134)" />
             <ellipse cx="141" cy="134" rx="13" ry="26" fill={shade(base, -14)} transform="rotate(-8 141 134)" />
-            {/* belly + facial disk */}
+            {/* belly */}
             <ellipse cx="100" cy="150" rx="27" ry="26" fill={`url(#${gC})`} />
-            <ellipse cx="84" cy="98" rx="20" ry="22" fill={`url(#${gC})`} /><ellipse cx="116" cy="98" rx="20" ry="22" fill={`url(#${gC})`} />
-            {/* big close-set owl eyes */}
-            <Eye cx={84} cy={98} r={16} /><Eye cx={116} cy={98} r={16} />
+            {/* one soft facial disc */}
+            <ellipse cx="100" cy="101" rx="33" ry="22" fill={`url(#${gC})`} />
+            {/* big owl eyes (slight gap) */}
+            <Eye cx={84} cy={99} r={14.5} /><Eye cx={116} cy={99} r={14.5} />
             {/* beak between the eyes */}
-            <path d="M100 106 L106 112 L100 119 L94 112 Z" fill="#e8a23a" />
-            {/* belly chevron markings */}
-            {[142, 152].map((y, i) => <path key={i} d={`M90 ${y} L100 ${y + 5} L110 ${y}`} stroke={shade(base, 20)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />)}
+            <path d="M100 105 L105 111 L100 118 L95 111 Z" fill="#e8a23a" />
+            {/* belly chevrons */}
+            {[143, 153].map((y, i) => <path key={i} d={`M91 ${y} L100 ${y + 5} L109 ${y}`} stroke={shade(base, 20)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />)}
           </React.Fragment>)}
 
           {/* ══ shared stage gear ══ */}
