@@ -171,10 +171,17 @@ function CharacterDetail({ ctx }) {
         {/* customize color */}
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{L('Color')}</div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {swatches.map(s => (
-              <button key={s} onClick={() => setColor(s)} style={{ width: 38, height: 38, borderRadius: 999, background: s, border: color === s ? `3px solid ${THEME.fg1}` : '3px solid #fff', boxShadow: THEME.shadowCard, cursor: 'pointer' }} />
-            ))}
+          <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap' }}>
+            {swatches.map(s => {
+              const sel = color === s;
+              return (
+                <button key={s} onClick={() => setColor(s)} aria-label={s} style={{
+                  width: 32, height: 32, borderRadius: 999, background: s, border: 'none', padding: 0, cursor: 'pointer',
+                  boxShadow: sel ? `0 0 0 2.5px #fff, 0 0 0 4.5px ${s}` : 'inset 0 0 0 1px rgba(46,43,41,0.10)',
+                  transform: sel ? 'scale(1.06)' : 'none', transition: 'transform .12s ease',
+                }} />
+              );
+            })}
           </div>
         </div>
 
