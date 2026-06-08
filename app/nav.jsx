@@ -2,7 +2,7 @@
 // Used by both the clickable prototype (App.jsx) and the overview canvas.
 
 const CHILD_TABS = [
-  { id: 'home', root: 'home', icon: 'home', label: 'Home' },
+  { id: 'home', root: 'home', icon: 'house', label: 'Home' },
   { id: 'collection', root: 'collection', icon: 'layout-grid', label: 'Collect', alt: ['character'] },
   { id: 'safety', root: 'safety', icon: 'shield-check', label: '', center: true },
   { id: 'battle', root: 'battle', icon: 'swords', label: 'Battle' },
