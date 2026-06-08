@@ -16,7 +16,7 @@ const THEME = {
   // Shared app-screen background: a soft full-width colour wash pooled at the
   // top — warm peach (ember) → pink (sakura) → lavender (iris) — fading into
   // sand-10 by ~360px. One token drives every screen root.
-  screenBg: 'linear-gradient(180deg, rgba(248,247,247,0) 0, #f8f7f7 360px), linear-gradient(108deg, rgba(206,131,69,0.16) 0%, rgba(218,103,207,0.13) 50%, rgba(127,99,197,0.18) 100%), #f8f7f7',
+  screenBg: 'linear-gradient(180deg, rgba(248,247,247,0) 0, #f8f7f7 400px), linear-gradient(108deg, rgba(206,131,69,0.30) 0%, rgba(218,103,207,0.24) 50%, rgba(127,99,197,0.32) 100%), #f8f7f7',
   fg1: '#2b2926', fg2: '#585450', fg3: '#b0adab',                       // sand 80 / 60 / 40
   border: '#ebebea', heart: '#e86f5f',                                  // sand 20 · rust 40
   // category accents (reused for the game layer) → nearest system hues
