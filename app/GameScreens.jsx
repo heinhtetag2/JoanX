@@ -99,7 +99,7 @@ function CharacterDetail({ ctx }) {
   const [stage, setStage] = React.useState(orig.stage);
   const [level, setLevel] = React.useState(orig.level);
   const [evolving, setEvolving] = React.useState(false);
-  const canEvolve = stage < 3 && orig.xp / orig.xpMax > 0.6;
+  const canEvolve = stage < 3;   // prototype: always evolvable so you can preview each stage
 
   const swatches = ['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb', '#e86f5f'];
   const items = [
