@@ -4,7 +4,7 @@ const PLAYER = {
   name: 'Mina', age: 11, points: 1240, coins: 38,
   streak: 5, level: 7, xp: 320, xpMax: 500,
   safeMinutesToday: 47, safeWalkGoal: 60,
-  activeCharId: 'c3',
+  activeCharId: 'c4',
 };
 
 // owned + collectible characters

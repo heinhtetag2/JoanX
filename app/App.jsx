@@ -11,7 +11,7 @@ function App() {
   const [mode, setMode] = React.useState('lite');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#e278a8', stage: 1, play: 'playful', charStyle: 'toy' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'toy' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
