@@ -19,7 +19,7 @@ function Collection({ ctx }) {
   const owned = CHARACTERS.filter(c => c.owned);
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.surface2 }}>
-      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 600 }}>{owned.length}/8</span></div>} />
+      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/8</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {ROOMS.map(room => {
           const placed = owned.filter(c => c.room === room.id);
@@ -135,12 +135,12 @@ function CharacterDetail({ ctx }) {
           <div className={evolving ? 'jx-pop' : 'jx-float'} style={{ display: 'flex', justifyContent: 'center', filter: evolving ? `drop-shadow(0 0 24px ${color})` : 'none', transition: 'filter .4s' }}>
             <Mascot species={orig.species} stage={stage} color={color} size={172} />
           </div>
-          <div className="game-font" style={{ fontSize: 25, fontWeight: 600, marginTop: 4 }}>{orig.name}</div>
+          <div className="game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: 4 }}>{orig.name}</div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {level}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
             <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
             <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow /></div>
-            <span className="game-font" style={{ fontSize: 12, fontWeight: 600 }}>{orig.xp}/{orig.xpMax}</span>
+            <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
           </div>
         </div>
 
@@ -163,7 +163,7 @@ function CharacterDetail({ ctx }) {
               <Icon name={t.icon} size={16} color={t.color} stroke={2.3} />
               <span style={{ fontSize: 12.5, fontWeight: 700, width: 48 }}>{L(t.label)}</span>
               <div style={{ flex: 1 }}><Bar value={orig.traits[t.k] || 50} max={100} color={t.color} height={8} /></div>
-              <span className="game-font" style={{ fontSize: 12, fontWeight: 600, width: 24, textAlign: 'right' }}>{orig.traits[t.k] || 50}</span>
+              <span className="game-font" style={{ fontSize: 12, fontWeight: 500, width: 24, textAlign: 'right' }}>{orig.traits[t.k] || 50}</span>
             </div>
           ))}
         </div>
@@ -199,8 +199,8 @@ function CharacterDetail({ ctx }) {
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.4)' }} className="jx-fade">
           <Confetti n={20} />
           <div style={{ textAlign: 'center' }}>
-            <div className="game-font" style={{ color: '#fff', fontSize: 30, fontWeight: 600, textShadow: '0 2px 12px rgba(0,0,0,.4)' }}>{L('Evolving!')}</div>
-            <div className="game-font" style={{ color: '#fff', fontSize: 15, fontWeight: 600, marginTop: 6, opacity: .92 }}>{L('Stage')} {stage} · {L('Level')} {level}</div>
+            <div className="game-font" style={{ color: '#fff', fontSize: 30, fontWeight: 500, textShadow: '0 2px 12px rgba(0,0,0,.4)' }}>{L('Evolving!')}</div>
+            <div className="game-font" style={{ color: '#fff', fontSize: 15, fontWeight: 500, marginTop: 6, opacity: .92 }}>{L('Stage')} {stage} · {L('Level')} {level}</div>
           </div>
         </div>
       )}

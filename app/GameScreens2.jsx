@@ -23,7 +23,7 @@ function Battle({ ctx }) {
           <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff', opacity: .3 }} />
           <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="swords" size={40} color="#fff" stroke={2} /></div>
         </div>
-        <div className="game-font" style={{ color: '#fff', fontSize: 21, fontWeight: 600 }}>{L('Finding opponent…')}</div>
+        <div className="game-font" style={{ color: '#fff', fontSize: 21, fontWeight: 500 }}>{L('Finding opponent…')}</div>
         <div style={{ color: 'rgba(255,255,255,.75)', fontSize: 13, marginTop: 6 }}>{L('Matching within ±3 levels')}</div>
       </div>
     );
@@ -38,21 +38,21 @@ function Battle({ ctx }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-around' }}>
             <div style={{ textAlign: 'center', opacity: result && !won ? .4 : 1, transition: 'opacity .4s' }}>
               <div className={result && won ? 'jx-pop' : ''}><Mascot species={sel.species} stage={sel.stage} color={sel.color} size={120} /></div>
-              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 600, marginTop: 4 }}>{sel.name}</div>
+              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{sel.name}</div>
               <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {sel.level} · PWR {power(sel)}</div>
             </div>
-            <div className="game-font" style={{ color: THEME.gold, fontSize: 26, fontWeight: 600 }}>VS</div>
+            <div className="game-font" style={{ color: THEME.gold, fontSize: 26, fontWeight: 500 }}>VS</div>
             <div style={{ textAlign: 'center', opacity: result && won ? .4 : 1, transition: 'opacity .4s' }}>
               <div style={{ transform: 'scaleX(-1)' }}><Mascot species={opp.species} stage={2} color={opp.color} size={120} /></div>
-              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 600, marginTop: 4 }}>{opp.name}</div>
+              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{opp.name}</div>
               <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {opp.level} · PWR 214</div>
             </div>
           </div>
 
           {result && (
             <div className="jx-pop" style={{ marginTop: 30, textAlign: 'center' }}>
-              <div className="game-font" style={{ fontSize: 36, fontWeight: 600, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
-              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 800, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points · +2 coins</div>}
+              <div className="game-font" style={{ fontSize: 36, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
+              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points · +2 coins</div>}
               {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{L('Still earned +40 points for trying!')}</div>}
             </div>
           )}
@@ -81,12 +81,12 @@ function Battle({ ctx }) {
         <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(165deg, ${shade(sel.color, 74)}, #fff 75%)`, boxShadow: THEME.shadowCard, textAlign: 'center', marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Your fighter')}</div>
           <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={sel.species} stage={sel.stage} color={sel.color} size={150} /></div>
-          <div className="game-font" style={{ fontSize: 22, fontWeight: 600 }}>{sel.name}</div>
+          <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{sel.name}</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 8 }}>
             {[['shield', sel.traits.guard], ['gauge', sel.traits.speed], ['heart', sel.traits.heart]].map(([ic, v], i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Icon name={ic} size={14} color={THEME.fg2} stroke={2.3} />
-                <span className="game-font" style={{ fontSize: 13, fontWeight: 600 }}>{v}</span>
+                <span className="game-font" style={{ fontSize: 13, fontWeight: 500 }}>{v}</span>
               </div>
             ))}
           </div>
@@ -118,14 +118,14 @@ function Rewards({ ctx }) {
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.surface2 }}>
       <div style={{ padding: '0 18px' }}>
-        <h1 className="game-font" style={{ fontSize: 25, fontWeight: 600, margin: '0 0 16px' }}>{L('Rewards')}</h1>
+        <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 16px' }}>{L('Rewards')}</h1>
 
         {/* streak */}
         <div style={{ borderRadius: 22, padding: 18, background: 'linear-gradient(160deg,#fff2d1,#fff 80%)', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <div style={{ width: 46, height: 46, borderRadius: 14, background: THEME.joyBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="flame" size={26} color={THEME.joy} stroke={2.3} /></div>
             <div>
-              <div className="game-font" style={{ fontSize: 22, fontWeight: 600 }}>{PLAYER.streak}{L('-day streak')}</div>
+              <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{PLAYER.streak}{L('-day streak')}</div>
               <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('2 more days for a Special buddy!')}</div>
             </div>
           </div>
@@ -157,10 +157,10 @@ function Rewards({ ctx }) {
             <Confetti n={22} />
             <div className="jx-pop" style={{ width: 244, background: '#fff', borderRadius: 26, padding: '24px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
               <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="gift" size={32} color={THEME.gold} stroke={2.3} /></div>
-              <div className="game-font" style={{ fontSize: 21, fontWeight: 600 }}>{L('Daily reward claimed!')}</div>
+              <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Daily reward claimed!')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 800, fontSize: 15 }} className="game-font"><Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />+5</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />+5</span>
               </div>
             </div>
           </div>
@@ -237,7 +237,7 @@ function Shop({ ctx }) {
         <div style={{ borderRadius: 22, padding: '20px 18px', background: 'linear-gradient(160deg,#fff2d1,#fff 78%)', boxShadow: THEME.shadowCard, marginBottom: 14, textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <Icon name="coins" size={30} color={THEME.gold} stroke={2.2} />
-            <span className="game-font" style={{ fontSize: 40, fontWeight: 600, lineHeight: 1 }}>{coins}</span>
+            <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{coins}</span>
           </div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your coins')}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
