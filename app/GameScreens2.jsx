@@ -214,7 +214,7 @@ function Shop({ ctx }) {
     { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 18 },
   ];
   const rooms = [
-    { id: 'studio', name: 'Star Studio', price: 30, icon: 'sparkles' },
+    { id: 'studio', name: 'Star Studio', price: 30, icon: 'star' },
     { id: 'garden', name: 'Garden', price: 50, icon: 'flower-2' },
   ];
 
@@ -242,7 +242,7 @@ function Shop({ ctx }) {
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your coins')}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {[['swords', L('Win battles')], ['flame', L('Keep streaks')], ['gift', L('Daily reward')]].map(([ic, t], i) => (
-              <div key={i} style={{ flex: 1, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div key={i} style={{ flex: 1, background: '#fff', boxShadow: '0 2px 6px rgba(46,43,41,0.06)', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <Icon name={ic} size={16} color={THEME.gold} stroke={2.3} />
                 <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{t}</span>
               </div>

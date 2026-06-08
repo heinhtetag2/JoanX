@@ -3,7 +3,7 @@
 
 function App() {
   const [role, setRole] = React.useState('child');
-  const [onboarded, setOnboarded] = React.useState(false);
+  const [onboarded, setOnboarded] = React.useState(true);   // start on Home; "Replay onboarding" (Tweaks) shows it
   const [screen, setScreen] = React.useState('home');
   const [params, setParams] = React.useState({});
   const [stack, setStack] = React.useState([]);
