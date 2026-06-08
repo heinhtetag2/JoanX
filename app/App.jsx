@@ -11,7 +11,7 @@ function App() {
   const [mode, setMode] = React.useState('lite');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#e278a8', stage: 1, play: 'playful' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'bird', color: '#e278a8', stage: 1, play: 'playful', charStyle: 'classic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -34,6 +34,9 @@ function App() {
     c.species = tw.species; c.color = tw.color; c.stage = tw.stage;
     setBump(b => b + 1);
   }, [tw.species, tw.color, tw.stage]);
+
+  // switch the active character line (classic / korean) for every Mascot
+  React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
 
   // commit an evolved / recolored character and make it the active buddy
   const setBuddy = (id, patch) => {
@@ -141,6 +144,13 @@ function App() {
           <div className="tw-row">
             {[['smart', 'Smart'], ['lite', 'Lite']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (mode === v ? ' on' : '')} onClick={() => setMode(v)}>{l}</button>
+            ))}
+          </div>
+
+          <div className="tw-label">Character style</div>
+          <div className="tw-row">
+            {[['classic', 'Classic'], ['kr', 'Korean']].map(([v, l]) => (
+              <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>
 
