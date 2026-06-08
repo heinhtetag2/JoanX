@@ -319,10 +319,10 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
         ))}
 
         <g transform={`translate(100,114) scale(${sc}) translate(-100,-114)`}>
-          {/* chunky tail with dorsal scutes, lower-right */}
-          <path d="M146 158 C180 162 196 132 190 104 C184 124 166 136 144 134 Z" fill={`url(#${gB})`} />
-          {[[168, 116], [178, 124], [184, 134]].map(([x, y], i) => (
-            <path key={i} d={`M${x - 7} ${y + 6} Q${x} ${y - 8} ${x + 7} ${y + 6} Z`} fill={dark} opacity="0.45" />
+          {/* chunky tail — base anchored deep under the body so it connects seamlessly */}
+          <path d="M118 150 C156 160 184 146 198 104 C190 130 172 152 146 162 C134 167 124 162 118 150 Z" fill={`url(#${gB})`} />
+          {[[156, 130], [172, 120], [184, 112]].map(([x, y], i) => (
+            <path key={i} d={`M${x - 7} ${y + 6} Q${x + 1} ${y - 8} ${x + 8} ${y + 4} Z`} fill={dark} opacity="0.45" />
           ))}
 
           {/* feet with claws */}
