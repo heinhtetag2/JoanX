@@ -95,8 +95,8 @@ function Battle({ ctx }) {
         <SectionHead title={L('Choose a buddy')} />
         <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, marginBottom: 14 }} className="no-sb">
           {owned.map(c => (
-            <button key={c.id} onClick={() => setSel(c)} style={{ flexShrink: 0, width: 86, background: '#fff', borderRadius: 18, padding: '10px 4px', border: sel.id === c.id ? `2.5px solid ${THEME.joy}` : `2.5px solid transparent`, boxShadow: THEME.shadowCard, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={56} />
+            <button key={c.id} onClick={() => setSel(c)} style={{ flexShrink: 0, width: 104, background: '#fff', borderRadius: 18, padding: '12px 6px', border: sel.id === c.id ? `2.5px solid ${THEME.primary}` : `2.5px solid transparent`, boxShadow: THEME.shadowCard, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Mascot species={c.species} stage={c.stage} color={c.color} size={62} />
               <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
               <div style={{ fontSize: 10, color: THEME.fg2 }}>Lv {c.level}</div>
             </button>
