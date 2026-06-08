@@ -186,12 +186,14 @@ function MascotKR({ species = 'fox', stage = 2, color, size = 160, mood = 'happy
   const ink = '#2b2826';
   const sc = stage === 1 ? 0.88 : stage === 3 ? 1.06 : 1;
 
-  // tightly-clustered, low-centred face — the core Korean-cute cue
+  // Big round sparkly eyes — the main "cute for kids" cue.
+  const er = mood === 'alert' ? 12 : 10.5;
   const Eye = ({ cx }) => mood === 'sleepy'
-    ? <path d={`M${cx - 5} 96 q5 5 10 0`} stroke={ink} strokeWidth="3.2" fill="none" strokeLinecap="round" />
+    ? <path d={`M${cx - 8} 96 q8 7 16 0`} stroke={ink} strokeWidth="3.4" fill="none" strokeLinecap="round" />
     : (<g>
-        <circle cx={cx} cy="96" r={mood === 'alert' ? 7 : 6} fill={ink} />
-        <circle cx={cx + 1.9} cy="93.8" r="1.9" fill="#fff" />
+        <ellipse cx={cx} cy="97" rx={er} ry={er * 1.12} fill={ink} />
+        <circle cx={cx + er * 0.34} cy={97 - er * 0.42} r={er * 0.36} fill="#fff" />
+        <circle cx={cx - er * 0.3} cy={97 + er * 0.36} r={er * 0.17} fill="#fff" opacity="0.85" />
       </g>);
 
   return (
@@ -231,25 +233,25 @@ function MascotKR({ species = 'fox', stage = 2, color, size = 160, mood = 'happy
             <path d="M100 48 L100 22" /><path d="M100 34 L89 22" /><path d="M100 34 L111 22" />
           </g>)}
 
-          {/* big head — the hero shape */}
-          <ellipse cx="100" cy="92" rx="52" ry="48" fill={base} />
+          {/* big round head — the hero shape */}
+          <ellipse cx="100" cy="94" rx="54" ry="51" fill={base} />
           {species === 'bird' && (<g>
-            <ellipse cx="55" cy="118" rx="9" ry="14" fill={ear} transform="rotate(22 55 118)" />
-            <ellipse cx="145" cy="118" rx="9" ry="14" fill={ear} transform="rotate(-22 145 118)" />
+            <ellipse cx="53" cy="120" rx="9" ry="14" fill={ear} transform="rotate(22 53 120)" />
+            <ellipse cx="147" cy="120" rx="9" ry="14" fill={ear} transform="rotate(-22 147 120)" />
           </g>)}
 
-          {/* cheeks + tight face cluster */}
-          <ellipse cx="75" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
-          <ellipse cx="125" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
-          <Eye cx={88} /><Eye cx={112} />
+          {/* cheeks + big-eyed face cluster */}
+          <ellipse cx="72" cy="110" rx="9" ry="5.5" fill="#FF8FA3" opacity="0.55" />
+          <ellipse cx="128" cy="110" rx="9" ry="5.5" fill="#FF8FA3" opacity="0.55" />
+          <Eye cx={84} /><Eye cx={116} />
           {species === 'bird'
-            ? <path d="M94 101 L106 101 L100 110 Z" fill={THEME.gold} />
+            ? <path d="M94 112 L106 112 L100 121 Z" fill={THEME.gold} />
             : (<React.Fragment>
-                <ellipse cx="100" cy="103" rx="4" ry="3.2" fill={ink} />
-                {mood !== 'sleepy' && <path d="M93 108 q7 6 14 0" stroke={ink} strokeWidth="2.6" fill="none" strokeLinecap="round" />}
+                <ellipse cx="100" cy="112" rx="3.4" ry="2.8" fill={ink} />
+                {mood !== 'sleepy' && <path d="M94 117 q6 5 12 0" stroke={ink} strokeWidth="2.6" fill="none" strokeLinecap="round" />}
               </React.Fragment>)}
-          {sp.feature === 'whiskers' && (<g stroke={dark} strokeWidth="1.8" strokeLinecap="round" opacity="0.45">
-            <path d="M70 102 L54 99 M70 107 L54 109" /><path d="M130 102 L146 99 M130 107 L146 109" />
+          {sp.feature === 'whiskers' && (<g stroke={dark} strokeWidth="1.8" strokeLinecap="round" opacity="0.4">
+            <path d="M68 110 L52 107 M68 115 L52 117" /><path d="M132 110 L148 107 M132 115 L148 117" />
           </g>)}
 
           {/* stage gear */}
