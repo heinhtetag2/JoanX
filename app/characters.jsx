@@ -181,113 +181,86 @@ function MascotClassic({ species = 'fox', stage = 2, color, size = 160, mood = '
 function MascotKR({ species = 'fox', stage = 2, color, size = 160, mood = 'happy', float = false, style }) {
   const sp = SPECIES[species] || SPECIES.fox;
   const base = color || sp.base;
-  const dark = shade(base, -42);
-  const ear = shade(base, -10);
+  const dark = shade(base, -46);
+  const ear = shade(base, -14);
   const ink = '#2b2826';
-  const sc = stage === 1 ? 0.86 : stage === 3 ? 1.06 : 1;   // baby smaller, final bigger
+  const sc = stage === 1 ? 0.88 : stage === 3 ? 1.06 : 1;
 
+  // tightly-clustered, low-centred face — the core Korean-cute cue
   const Eye = ({ cx }) => mood === 'sleepy'
-    ? <path d={`M${cx - 6} 103 q6 6 12 0`} stroke={ink} strokeWidth="3.4" fill="none" strokeLinecap="round" />
+    ? <path d={`M${cx - 5} 96 q5 5 10 0`} stroke={ink} strokeWidth="3.2" fill="none" strokeLinecap="round" />
     : (<g>
-        <circle cx={cx} cy="103" r={mood === 'alert' ? 7.6 : 6.6} fill={ink} />
-        <circle cx={cx + 2.2} cy="100.6" r="2.1" fill="#fff" />
+        <circle cx={cx} cy="96" r={mood === 'alert' ? 7 : 6} fill={ink} />
+        <circle cx={cx + 1.9} cy="93.8" r="1.9" fill="#fff" />
       </g>);
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
       <svg viewBox="0 0 200 200" width={size} height={size} style={{ overflow: 'visible' }}>
-        {/* ground shadow */}
-        <ellipse cx="100" cy="184" rx={46 * sc} ry="8" fill="#000" opacity="0.07" />
-
-        {/* stage flecks */}
-        {stage !== 2 && [[34, 60, 3.4], [168, 72, 3], [156, 140, 3], [44, 132, 2.4]].map(([x, y, r], i) => (
+        <ellipse cx="100" cy="185" rx={44 * sc} ry="7.5" fill="#000" opacity="0.07" />
+        {stage !== 2 && [[36, 70, 3.2], [166, 80, 2.8], [156, 138, 2.8]].map(([x, y, r], i) => (
           <circle key={i} cx={x} cy={y} r={r} fill={stage === 3 ? THEME.gold : base} opacity="0.5" />
         ))}
 
-        <g transform={`translate(100,108) scale(${sc}) translate(-100,-108)`}>
-          {/* tail behind body */}
-          {species === 'fox' && <path d="M150 152 q42 2 38 -40 q-6 26 -32 24 q12 8 -6 16 Z" fill={base} />}
-          {species === 'cat' && <path d="M152 150 q38 6 32 -28 q-4 20 -24 16" fill="none" stroke={base} strokeWidth="12" strokeLinecap="round" />}
+        <g transform={`translate(100,104) scale(${sc}) translate(-100,-104)`}>
+          {/* short tail (kept small — 'short = cuter') */}
+          {species === 'fox' && <path d="M138 150 q30 6 26 -22 q-6 16 -22 12 q9 6 -4 10 Z" fill={base} />}
+          {species === 'cat' && <path d="M140 150 q28 8 24 -18 q-4 14 -18 10" fill="none" stroke={base} strokeWidth="11" strokeLinecap="round" />}
 
-          {/* ears / top feature */}
-          {sp.ears === 'pointy' && (
-            <g>
-              <path d="M60 64 L48 24 L94 56 Z" fill={base} />
-              <path d="M140 64 L152 24 L106 56 Z" fill={base} />
-              <path d="M64 58 L57 36 L82 54 Z" fill={ear} />
-              <path d="M136 58 L143 36 L118 54 Z" fill={ear} />
-            </g>
-          )}
-          {sp.ears === 'cat' && (
-            <g>
-              <path d="M62 62 L52 30 L92 56 Z" fill={base} />
-              <path d="M138 62 L148 30 L108 56 Z" fill={base} />
-              <path d="M68 56 L63 40 L84 54 Z" fill="#F4A8C0" opacity="0.85" />
-              <path d="M132 56 L137 40 L116 54 Z" fill="#F4A8C0" opacity="0.85" />
-            </g>
-          )}
-          {sp.ears === 'tuft' && (
-            <g stroke={dark} strokeWidth="6" strokeLinecap="round">
-              <path d="M100 56 L100 28" />
-              <path d="M100 40 L88 26" />
-              <path d="M100 40 L112 26" />
-            </g>
-          )}
+          {/* little body peeking below the big head */}
+          <ellipse cx="100" cy="150" rx="31" ry="24" fill={base} />
+          <ellipse cx="86" cy="170" rx="9" ry="6" fill={dark} />
+          <ellipse cx="114" cy="170" rx="9" ry="6" fill={dark} />
+          <ellipse cx="72" cy="150" rx="7" ry="11" fill={base} transform="rotate(20 72 150)" />
+          <ellipse cx="128" cy="150" rx="7" ry="11" fill={base} transform="rotate(-20 128 150)" />
 
-          {/* body bean (head + body merged) */}
-          <ellipse cx="100" cy="110" rx="54" ry="62" fill={base} />
+          {/* ears on the big head */}
+          {sp.ears === 'pointy' && (<g>
+            <path d="M58 60 L46 20 L92 50 Z" fill={base} />
+            <path d="M142 60 L154 20 L108 50 Z" fill={base} />
+            <path d="M62 54 L55 34 L82 50 Z" fill={ear} />
+            <path d="M138 54 L145 34 L118 50 Z" fill={ear} />
+          </g>)}
+          {sp.ears === 'cat' && (<g>
+            <path d="M60 58 L50 26 L92 50 Z" fill={base} />
+            <path d="M140 58 L150 26 L108 50 Z" fill={base} />
+            <path d="M66 52 L61 36 L84 50 Z" fill="#F4A8C0" opacity="0.85" />
+            <path d="M134 52 L139 36 L116 50 Z" fill="#F4A8C0" opacity="0.85" />
+          </g>)}
+          {sp.ears === 'tuft' && (<g stroke={dark} strokeWidth="5.5" strokeLinecap="round">
+            <path d="M100 48 L100 22" /><path d="M100 34 L89 22" /><path d="M100 34 L111 22" />
+          </g>)}
 
-          {/* feet */}
-          <ellipse cx="84" cy="170" rx="11" ry="7" fill={dark} />
-          <ellipse cx="116" cy="170" rx="11" ry="7" fill={dark} />
-          {/* stubby arms */}
-          <ellipse cx="50" cy="124" rx="9" ry="15" fill={base} transform="rotate(14 50 124)" />
-          <ellipse cx="150" cy="124" rx="9" ry="15" fill={base} transform="rotate(-14 150 124)" />
+          {/* big head — the hero shape */}
+          <ellipse cx="100" cy="92" rx="52" ry="48" fill={base} />
+          {species === 'bird' && (<g>
+            <ellipse cx="55" cy="118" rx="9" ry="14" fill={ear} transform="rotate(22 55 118)" />
+            <ellipse cx="145" cy="118" rx="9" ry="14" fill={ear} transform="rotate(-22 145 118)" />
+          </g>)}
 
-          {/* wings (bird) sit as little side nubs */}
-          {species === 'bird' && (
-            <g>
-              <ellipse cx="52" cy="118" rx="10" ry="16" fill={ear} transform="rotate(16 52 118)" />
-              <ellipse cx="148" cy="118" rx="10" ry="16" fill={ear} transform="rotate(-16 148 118)" />
-            </g>
-          )}
-
-          {/* cheeks */}
-          <ellipse cx="73" cy="115" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
-          <ellipse cx="127" cy="115" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
-
-          {/* eyes */}
-          <Eye cx={83} /><Eye cx={117} />
-
-          {/* nose / beak / mouth */}
+          {/* cheeks + tight face cluster */}
+          <ellipse cx="75" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
+          <ellipse cx="125" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
+          <Eye cx={88} /><Eye cx={112} />
           {species === 'bird'
-            ? <path d="M94 110 L106 110 L100 120 Z" fill={THEME.gold} />
+            ? <path d="M94 101 L106 101 L100 110 Z" fill={THEME.gold} />
             : (<React.Fragment>
-                <ellipse cx="100" cy="110" rx="3" ry="2.4" fill={ink} />
-                {mood !== 'sleepy' && <path d="M91 115 q9 8 18 0" stroke={ink} strokeWidth="2.8" fill="none" strokeLinecap="round" />}
+                <ellipse cx="100" cy="103" rx="4" ry="3.2" fill={ink} />
+                {mood !== 'sleepy' && <path d="M93 108 q7 6 14 0" stroke={ink} strokeWidth="2.6" fill="none" strokeLinecap="round" />}
               </React.Fragment>)}
+          {sp.feature === 'whiskers' && (<g stroke={dark} strokeWidth="1.8" strokeLinecap="round" opacity="0.45">
+            <path d="M70 102 L54 99 M70 107 L54 109" /><path d="M130 102 L146 99 M130 107 L146 109" />
+          </g>)}
 
-          {/* whiskers (cat) */}
-          {sp.feature === 'whiskers' && (
-            <g stroke={dark} strokeWidth="2" strokeLinecap="round" opacity="0.5">
-              <path d="M66 112 L48 109 M66 117 L48 120" />
-              <path d="M134 112 L152 109 M134 117 L152 120" />
-            </g>
-          )}
-
-          {/* stage accessories */}
-          {stage >= 2 && (
-            <g>
-              <path d="M66 152 q34 13 68 0 l0 9 q-34 12 -68 0 Z" fill={THEME.primary} />
-              <path d="M128 156 l 12 20 l -10 2 l -7 -16 Z" fill={THEME.primaryDark} />
-            </g>
-          )}
-          {stage === 3 && (
-            <g transform="translate(100,151)">
-              <path d="M0 -10 L9 -6 L9 3 Q9 11 0 14 Q-9 11 -9 3 L-9 -6 Z" fill={THEME.gold} stroke="#fff" strokeWidth="2" />
-              <path d="M-4 0 l3 4 l6 -8" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </g>
-          )}
+          {/* stage gear */}
+          {stage >= 2 && (<g>
+            <path d="M74 142 q26 11 52 0 l0 8 q-26 10 -52 0 Z" fill={THEME.primary} />
+            <path d="M118 146 l 10 16 l -8 2 l -5 -13 Z" fill={THEME.primaryDark} />
+          </g>)}
+          {stage === 3 && (<g transform="translate(100,150)">
+            <path d="M0 -9 L8 -5.5 L8 2.5 Q8 10 0 12.5 Q-8 10 -8 2.5 L-8 -5.5 Z" fill={THEME.gold} stroke="#fff" strokeWidth="1.8" />
+            <path d="M-3.5 0 l2.6 3.5 l5.4 -7" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </g>)}
         </g>
       </svg>
     </div>
