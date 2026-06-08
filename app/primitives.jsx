@@ -86,7 +86,7 @@ function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: 'linear-gradient(135deg, #5a9ea0 0%, #294343 100%)', color: '#fff', boxShadow: '0 8px 20px rgba(72,126,127,0.45)', border: 'none' },  // fresh tropic-teal battle CTA
+    play:      { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },          // brand ocean battle CTA
     gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(209,153,0,0.34)', border: 'none' },
   };
   const sizes = {
