@@ -300,7 +300,7 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
   // scarf-collar / crown placement varies per creature
   const neckY = species === 'bird' ? 122 : 118;
-  const crownY = species === 'cat' ? 50 : species === 'bird' ? 26 : species === 'fox' ? 30 : 27;
+  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -378,11 +378,11 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
           {/* ══ MOUSE (cat slot) ══ */}
           {species === 'cat' && (<React.Fragment>
-            {/* thin curly tail */}
-            <path d="M124 156 q40 12 42 -16 q-8 18 -28 12" fill="none" stroke={shade(base, -4)} strokeWidth="5.5" strokeLinecap="round" />
-            {/* big round mouse ears */}
-            <circle cx="66" cy="64" r="18" fill={`url(#${gB})`} /><circle cx="134" cy="64" r="18" fill={`url(#${gB})`} />
-            <circle cx="66" cy="66" r="10.5" fill="#F4A8C0" opacity="0.85" /><circle cx="134" cy="66" r="10.5" fill="#F4A8C0" opacity="0.85" />
+            {/* thin minimalist curly tail */}
+            <path d="M128 158 q30 6 34 -12 q-5 12 -22 9" fill="none" stroke={shade(base, -2)} strokeWidth="3.4" strokeLinecap="round" />
+            {/* big round mouse ears — sit down on the head */}
+            <circle cx="68" cy="72" r="17" fill={`url(#${gB})`} /><circle cx="132" cy="72" r="17" fill={`url(#${gB})`} />
+            <circle cx="68" cy="74" r="10" fill="#F4A8C0" opacity="0.85" /><circle cx="132" cy="74" r="10" fill="#F4A8C0" opacity="0.85" />
             {/* feet + body */}
             <ellipse cx="82" cy="174" rx="12" ry="8" fill={shade(base, -18)} /><ellipse cx="118" cy="174" rx="12" ry="8" fill={shade(base, -18)} />
             <ellipse cx="100" cy="128" rx="46" ry="50" fill={`url(#${gB})`} />
@@ -390,16 +390,16 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <ellipse cx="144" cy="136" rx="10" ry="15" fill={`url(#${gB})`} transform="rotate(-13 144 136)" />
             <ellipse cx="100" cy="143" rx="26" ry="29" fill={`url(#${gC})`} />
             {/* small light muzzle */}
-            <ellipse cx="100" cy="105" rx="15" ry="11" fill={`url(#${gC})`} />
-            {/* face */}
-            <ellipse cx="73" cy="100" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="127" cy="100" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" />
-            <Eye cx={84} cy={91} r={14} /><Eye cx={116} cy={91} r={14} />
-            {/* pink nose + buck teeth + whiskers */}
-            <ellipse cx="100" cy="103" rx="4" ry="3.2" fill="#e8769a" />
-            {mood !== 'sleepy' && <path d="M100 106 q-5 4 -9 2 M100 106 q5 4 9 2" stroke={ink} strokeWidth="2.1" fill="none" strokeLinecap="round" />}
-            <rect x="97.2" y="107.5" width="2.7" height="5" rx="1" fill="#fff" stroke={shade(base, -28)} strokeWidth="0.5" />
-            <rect x="100.1" y="107.5" width="2.7" height="5" rx="1" fill="#fff" stroke={shade(base, -28)} strokeWidth="0.5" />
-            <g stroke={shade(base, -20)} strokeWidth="1.6" strokeLinecap="round" opacity="0.45"><path d="M86 104 L66 101 M86 108 L66 110" /><path d="M114 104 L134 101 M114 108 L134 110" /></g>
+            <ellipse cx="100" cy="105" rx="14" ry="10" fill={`url(#${gC})`} />
+            {/* face — bigger, closer eyes for extra cute */}
+            <ellipse cx="75" cy="99" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.55" /><ellipse cx="125" cy="99" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.55" />
+            <Eye cx={86} cy={92} r={15} /><Eye cx={114} cy={92} r={15} />
+            {/* tiny pink nose + little buck teeth + whiskers */}
+            <ellipse cx="100" cy="104" rx="3.2" ry="2.6" fill="#e8769a" />
+            {mood !== 'sleepy' && <path d="M100 106 q-4 3.5 -8 1.5 M100 106 q4 3.5 8 1.5" stroke={ink} strokeWidth="2" fill="none" strokeLinecap="round" />}
+            <rect x="97.7" y="108" width="2.3" height="4.2" rx="1" fill="#fff" stroke={shade(base, -28)} strokeWidth="0.5" />
+            <rect x="100" y="108" width="2.3" height="4.2" rx="1" fill="#fff" stroke={shade(base, -28)} strokeWidth="0.5" />
+            <g stroke={shade(base, -20)} strokeWidth="1.5" strokeLinecap="round" opacity="0.4"><path d="M85 103 L67 100 M85 107 L67 109" /><path d="M115 103 L133 100 M115 107 L133 109" /></g>
           </React.Fragment>)}
 
           {/* ══ CHICK (bird) — evolves chick → crested rooster ══ */}
