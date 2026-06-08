@@ -11,7 +11,7 @@ function App() {
   const [mode, setMode] = React.useState('lite');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'toy' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'croc', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'toy' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -170,7 +170,7 @@ function App() {
 
               <div className="tw-label">Buddy species</div>
               <div className="tw-row">
-                {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird']].map(([v, l]) => (
+                {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird'], ['croc', 'Croc']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v }))}>{l}</button>
                 ))}
               </div>

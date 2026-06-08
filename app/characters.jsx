@@ -17,6 +17,7 @@ const SPECIES = {
   fox:  { name: 'Foxy',  base: '#e1874a', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
   cat:  { name: 'Mochi', base: '#a8c3eb', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
   bird: { name: 'Pip',   base: '#67c7ce', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
+  croc: { name: 'Croc',  base: '#59c08c', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
 };
 
 function Eyes({ mood, cx1, cx2, cy, r }) {
@@ -298,8 +299,8 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
       </g>);
 
   // scarf-collar / crown placement varies per creature
-  const neckY = species === 'cat' ? 118 : species === 'bird' ? 122 : 118;
-  const crownY = species === 'cat' ? 50 : species === 'bird' ? 26 : 27;
+  const neckY = species === 'bird' ? 122 : 118;
+  const crownY = species === 'cat' ? 50 : species === 'bird' ? 26 : species === 'fox' ? 30 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -323,8 +324,32 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
         <g transform={`translate(100,114) scale(${sc}) translate(-100,-114)`}>
 
-          {/* ══ CROC (fox) ══ */}
+          {/* ══ FOX (fox) ══ */}
           {species === 'fox' && (<React.Fragment>
+            {/* bushy tail with light tip, anchored under the body */}
+            <path d="M120 150 C150 162 180 150 194 116 C188 138 170 158 144 161 C133 165 124 160 120 150 Z" fill={`url(#${gB})`} />
+            <path d="M180 120 C190 115 196 124 193 134 C185 138 178 130 180 120 Z" fill={shade(base, 80)} />
+            {/* feet */}
+            <ellipse cx="82" cy="174" rx="12" ry="8" fill={dark} /><ellipse cx="118" cy="174" rx="12" ry="8" fill={dark} />
+            {/* pointy ears with cream inner */}
+            <path d="M64 78 L52 36 L98 70 Z" fill={`url(#${gB})`} /><path d="M136 78 L148 36 L102 70 Z" fill={`url(#${gB})`} />
+            <path d="M69 72 L61 46 L90 68 Z" fill={shade(base, 84)} /><path d="M131 72 L139 46 L110 68 Z" fill={shade(base, 84)} />
+            {/* body */}
+            <ellipse cx="100" cy="126" rx="48" ry="52" fill={`url(#${gB})`} />
+            <ellipse cx="55" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(13 55 134)" />
+            <ellipse cx="145" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(-13 145 134)" />
+            {/* cream belly + white muzzle */}
+            <ellipse cx="100" cy="142" rx="26" ry="30" fill={`url(#${gC})`} />
+            <ellipse cx="100" cy="106" rx="25" ry="17" fill={`url(#${gC})`} />
+            {/* face */}
+            <ellipse cx="70" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="130" cy="104" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
+            <Eye cx={82} cy={90} r={16} /><Eye cx={118} cy={90} r={16} />
+            <ellipse cx="100" cy="100" rx="3.6" ry="2.9" fill={ink} />
+            {mood !== 'sleepy' && <path d="M100 103 q-5 5 -10 3 M100 103 q5 5 10 3" stroke={ink} strokeWidth="2.3" fill="none" strokeLinecap="round" />}
+          </React.Fragment>)}
+
+          {/* ══ CROC (croc) ══ */}
+          {species === 'croc' && (<React.Fragment>
             <path d="M118 150 C156 160 184 146 198 104 C190 130 172 152 146 162 C134 167 124 162 118 150 Z" fill={`url(#${gB})`} />
             {[[156, 130], [172, 120], [184, 112]].map(([x, y], i) => <path key={i} d={`M${x - 7} ${y + 6} Q${x + 1} ${y - 8} ${x + 8} ${y + 4} Z`} fill={dark} opacity="0.45" />)}
             <ellipse cx="80" cy="176" rx="15" ry="9" fill={dark} /><ellipse cx="120" cy="176" rx="15" ry="9" fill={dark} />
