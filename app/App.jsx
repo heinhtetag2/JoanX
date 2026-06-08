@@ -170,7 +170,7 @@ function App() {
 
               <div className="tw-label">Buddy species</div>
               <div className="tw-row">
-                {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird'], ['croc', 'Croc']].map(([v, l]) => (
+                {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird'], ['croc', 'Croc'], ['owl', 'Owl']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v }))}>{l}</button>
                 ))}
               </div>

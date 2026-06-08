@@ -18,6 +18,7 @@ const SPECIES = {
   cat:  { name: 'Mochi', base: '#a8c3eb', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
   bird: { name: 'Pip',   base: '#67c7ce', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
   croc: { name: 'Croc',  base: '#59c08c', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
+  owl:  { name: 'Owl',   base: '#b9a3ef', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
 };
 
 function Eyes({ mood, cx1, cx2, cy, r }) {
@@ -299,8 +300,8 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
       </g>);
 
   // scarf-collar / crown placement varies per creature
-  const neckY = species === 'bird' ? 122 : 118;
-  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : 27;
+  const neckY = species === 'bird' ? 122 : species === 'owl' ? 120 : 118;
+  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : species === 'owl' ? 30 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -435,6 +436,31 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <ellipse cx="71" cy="106" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" /><ellipse cx="129" cy="106" rx="8" ry="5" fill="#FF8FA3" opacity="0.5" />
             <Eye cx={83} cy={96} r={15} /><Eye cx={117} cy={96} r={15} />
             <path d="M100 104 L110 110 L100 117 L90 110 Z" fill="#e8a23a" />
+          </React.Fragment>)}
+
+          {/* ══ OWL (owl) ══ */}
+          {species === 'owl' && (<React.Fragment>
+            {/* ear tufts */}
+            <path d="M74 78 L63 46 L90 72 Z" fill={`url(#${gB})`} /><path d="M126 78 L137 46 L110 72 Z" fill={`url(#${gB})`} />
+            {/* talon feet */}
+            <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
+              <path d="M88 176 L88 185 M88 185 L82 190 M88 185 L88 191 M88 185 L94 190" />
+              <path d="M112 176 L112 185 M112 185 L106 190 M112 185 L112 191 M112 185 L118 190" />
+            </g>
+            {/* body */}
+            <ellipse cx="100" cy="128" rx="47" ry="50" fill={`url(#${gB})`} />
+            {/* long wings down the sides */}
+            <ellipse cx="59" cy="134" rx="13" ry="26" fill={shade(base, -14)} transform="rotate(8 59 134)" />
+            <ellipse cx="141" cy="134" rx="13" ry="26" fill={shade(base, -14)} transform="rotate(-8 141 134)" />
+            {/* belly + facial disk */}
+            <ellipse cx="100" cy="150" rx="27" ry="26" fill={`url(#${gC})`} />
+            <ellipse cx="84" cy="98" rx="20" ry="22" fill={`url(#${gC})`} /><ellipse cx="116" cy="98" rx="20" ry="22" fill={`url(#${gC})`} />
+            {/* big close-set owl eyes */}
+            <Eye cx={84} cy={98} r={16} /><Eye cx={116} cy={98} r={16} />
+            {/* beak between the eyes */}
+            <path d="M100 106 L106 112 L100 119 L94 112 Z" fill="#e8a23a" />
+            {/* belly chevron markings */}
+            {[142, 152].map((y, i) => <path key={i} d={`M90 ${y} L100 ${y + 5} L110 ${y}`} stroke={shade(base, 20)} strokeWidth="1.6" fill="none" opacity="0.4" strokeLinecap="round" />)}
           </React.Fragment>)}
 
           {/* ══ shared stage gear ══ */}
