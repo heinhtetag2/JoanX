@@ -25,8 +25,9 @@ const THEME = {
   svcPurple: '#603fab', svcPurpleBg: '#f5f1fd',  // iris 60 / 10
   svcGreen: '#4b814f', svcGreenBg: '#ebf4eb',    // evergreen 50 / 10
   svcAmber: '#b16120', svcAmberBg: '#f9f1ed',    // ember 50 / 10
-  // warm shadow base (sand-80 #2b2926) replaces the old cool blue-gray
-  shadowCard: '0 4px 16px rgba(46,43,41,0.10)',
+  // Cards are defined by a crisp hairline border + a whisper of shadow
+  // (system uses --color-cards-border-* tokens) — not a big floaty blur.
+  shadowCard: '0 0 0 1px var(--color-cards-border-default), 0 1px 2px var(--color-base-alpha-shadow-2)',
   shadowButton: '0 4px 12px rgba(46,43,41,0.16)',
   shadowLg: '0 8px 20px rgba(46,43,41,0.12)',
   shadowXl: '0 12px 28px rgba(46,43,41,0.16)',
