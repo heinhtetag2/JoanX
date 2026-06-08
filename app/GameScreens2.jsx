@@ -242,7 +242,7 @@ function Shop({ ctx }) {
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your coins')}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {[['swords', L('Win battles')], ['flame', L('Keep streaks')], ['gift', L('Daily reward')]].map(([ic, t], i) => (
-              <div key={i} style={{ flex: 1, background: '#fff', boxShadow: '0 2px 6px rgba(46,43,41,0.06)', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <Icon name={ic} size={16} color={THEME.gold} stroke={2.3} />
                 <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{t}</span>
               </div>
