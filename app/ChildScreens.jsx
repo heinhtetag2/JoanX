@@ -114,7 +114,7 @@ function ChildHome({ ctx }) {
   const lite = ctx.mode === 'lite';
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: 'radial-gradient(125% 78% at 0% 0%, rgba(68,122,175,0.14), transparent 52%), radial-gradient(115% 68% at 100% 0%, rgba(218,103,207,0.11), transparent 50%), var(--surface-2)' }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
       {/* header */}
       <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
@@ -224,7 +224,7 @@ function ChildHome({ ctx }) {
 function SafetyStatus({ ctx }) {
   const lite = ctx.mode === 'lite';
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.screenBg }}>
       <div style={{ padding: '0 18px' }}>
         <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 4px' }}>{L('Safety')}</h1>
         <p style={{ fontSize: 13.5, color: THEME.fg2, margin: '0 0 18px' }}>{L('JoanX is watching out for you in the background.')}</p>
@@ -329,7 +329,7 @@ function Notifications({ ctx }) {
   ) : null;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
       <ScreenHeader title={L('Notifications')} onBack={() => ctx.nav('home')} right={unread ? <button onClick={allRead} style={{ border: 'none', background: 'none', color: THEME.primary, fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>{L('Mark read')}</button> : null} />
       <div style={{ padding: '0 16px' }}>
         {unread === 0 && (
@@ -366,7 +366,7 @@ function Profile({ ctx }) {
   const sectionLabel = { fontSize: 12, fontWeight: 800, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 };
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
       <ScreenHeader title={L('Profile')} onBack={() => ctx.nav('home')} />
       <div style={{ padding: '0 16px' }}>
         {/* hero */}

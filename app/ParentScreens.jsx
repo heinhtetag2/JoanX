@@ -36,7 +36,7 @@ function ParentReports({ ctx }) {
     trend: 'var(--color-data-blue-40)',    // risk-trend series
   };
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
       <ParentHead sub={L("This week's progress")} title={L('Mina is improving')} right={<ChildChip />} />
       <div style={{ padding: '8px 16px 0' }}>
         {/* hero metric */}
@@ -127,7 +127,7 @@ function ParentSettings({ ctx }) {
   const Row = ({ children, last }) => <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: last ? 'none' : 'none' }}>{children}</div>;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
       <ParentHead sub="Mina · iPhone 13" title={L('Rules & settings')} />
       <div style={{ padding: '8px 16px 0' }}>
         {/* mode */}
@@ -219,7 +219,7 @@ function ParentSettings({ ctx }) {
 // ── Children / devices ───────────────────────────────────────────────
 function ParentChildren({ ctx }) {
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.surface2 }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
       <ParentHead sub={L('2 connected')} title={L('Children')} right={<button style={{ width: 40, height: 40, borderRadius: 999, background: THEME.primary, border: 'none', boxShadow: THEME.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
       <div style={{ padding: '8px 16px 0' }}>
         {CHILDREN.map((k, ki) => {
