@@ -330,10 +330,11 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
           <ellipse cx="120" cy="176" rx="15" ry="9" fill={dark} />
           {[71, 80, 89, 111, 120, 129].map((x, i) => <line key={i} x1={x} y1="173" x2={x} y2="181" stroke={shade(base, -60)} strokeWidth="1.5" opacity="0.55" strokeLinecap="round" />)}
 
-          {/* dorsal scute crest over the head (instead of ears) */}
-          {[[80, 52], [100, 47], [120, 52]].map(([x, y], i) => (
-            <path key={i} d={`M${x - 11} ${y + 9} Q${x} ${y - 9} ${x + 11} ${y + 9} Z`} fill={shade(base, -8)} />
-          ))}
+          {/* dorsal scute crest over the head — grows taller & spikier as it evolves */}
+          {(stage === 3 ? [[74, 54], [88, 50], [100, 47], [112, 50], [126, 54]] : [[80, 52], [100, 48], [120, 52]]).map(([x, y], i) => {
+            const h = stage === 3 ? 20 : stage === 2 ? 11 : 8;   // crest height by stage
+            return <path key={i} d={`M${x - 10} ${y + 8} Q${x} ${y - h} ${x + 10} ${y + 8} Z`} fill={shade(base, -8)} />;
+          })}
 
           {/* body — one chunky shaded form */}
           <ellipse cx="100" cy="124" rx="50" ry="54" fill={`url(#${gB})`} />
@@ -365,14 +366,17 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
           <ellipse cx="132" cy="92" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
           <Eye cx={80} cy={62} /><Eye cx={120} cy={62} />
 
-          {/* stage gear — scarf collar + shield badge */}
+          {/* stage 2 — equipped a hero scarf (with a small badge knot) */}
           {stage >= 2 && (<g>
-            <path d="M76 118 q24 10 48 0 l0 8 q-24 9 -48 0 Z" fill={THEME.primary} />
-            <path d="M116 122 l 9 15 l -7 2 l -5 -12 Z" fill={THEME.primaryDark} />
+            <path d="M74 118 q26 11 52 0 l0 9 q-26 10 -52 0 Z" fill={THEME.primary} />
+            <path d="M118 122 l 10 16 l -8 2 l -6 -13 Z" fill={THEME.primaryDark} />
+            <circle cx="100" cy="122" r="5" fill={THEME.gold} stroke="#fff" strokeWidth="1.4" />
           </g>)}
-          {stage === 3 && (<g transform="translate(100,142)">
-            <path d="M0 -9 L8 -5.5 L8 2.5 Q8 10 0 12.5 Q-8 10 -8 2.5 L-8 -5.5 Z" fill={THEME.gold} stroke="#fff" strokeWidth="1.8" />
-            <path d="M-3.5 0 l2.6 3.5 l5.4 -7" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          {/* stage 3 — crowned hero: a golden crown perched above the head */}
+          {stage === 3 && (<g transform="translate(100,27)">
+            <path d="M-15 7 L-15 -3 L-7.5 3 L0 -9 L7.5 3 L15 -3 L15 7 Z" fill={THEME.gold} stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+            <rect x="-15" y="6" width="30" height="4.5" rx="2.2" fill={shade('#d19900', -6)} />
+            <circle cx="0" cy="-9" r="2.4" fill="#fff" /><circle cx="-15" cy="-3" r="1.8" fill="#fff" /><circle cx="15" cy="-3" r="1.8" fill="#fff" />
           </g>)}
         </g>
       </svg>
