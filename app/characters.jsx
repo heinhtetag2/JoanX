@@ -369,11 +369,11 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
           {/* ══ CHICK (bird) — evolves chick → crested rooster ══ */}
           {species === 'bird' && (<React.Fragment>
-            {/* stage-3 tail feathers fanning behind the body */}
+            {/* stage-3 tail feathers — base anchored deep under the body so they connect */}
             {stage === 3 && (<g>
-              {[-15, 1, 17].map((deg, i) => (
-                <g key={i} transform={`translate(141,152) rotate(${deg})`}>
-                  <path d="M0 7 C20 -2 33 -17 43 -37 C35 -14 26 3 6 13 Z" fill={shade(base, -10 - i * 4)} />
+              {[-18, -2, 14].map((deg, i) => (
+                <g key={i} transform={`translate(122,150) rotate(${deg})`}>
+                  <path d="M0 9 C26 3 46 -5 60 -20 C50 -2 36 10 9 16 Z" fill={shade(base, -10 - i * 4)} />
                 </g>
               ))}
             </g>)}
