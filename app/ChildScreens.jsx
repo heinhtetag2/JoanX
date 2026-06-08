@@ -186,7 +186,7 @@ function ChildHome({ ctx }) {
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
         </div>
 
-        {/* quick tiles */}
+        {/* quick tiles — hidden (kept for easy restore)
         <SectionHead title={L('Play')} />
         <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
           <QuickTile icon="layout-grid" color={THEME.primary} bg={THEME.primaryLight} label={L('Collection')} onClick={() => ctx.nav('collection')} />
@@ -194,6 +194,7 @@ function ChildHome({ ctx }) {
           <QuickTile icon="trophy" color={THEME.gold} bg={THEME.goldLight} label={L('Rewards')} onClick={() => ctx.nav('rewards')} />
           <QuickTile icon="wand-2" color={THEME.camping} bg={THEME.campingBg} label={L('Customize')} onClick={() => ctx.nav('character', { id: c.id })} />
         </div>
+        */}
 
         {/* recent wins */}
         <SectionHead title={L("Today's wins")} />
