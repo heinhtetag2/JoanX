@@ -299,7 +299,7 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
   // scarf-collar / crown placement varies per creature
   const neckY = species === 'cat' ? 118 : species === 'bird' ? 122 : 118;
-  const crownY = species === 'cat' ? 50 : species === 'bird' ? 46 : 27;
+  const crownY = species === 'cat' ? 50 : species === 'bird' ? 26 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -367,14 +367,22 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <g stroke={dark} strokeWidth="1.8" strokeLinecap="round" opacity="0.4"><path d="M70 106 L52 103 M70 111 L52 113" /><path d="M130 106 L148 103 M130 111 L148 113" /></g>
           </React.Fragment>)}
 
-          {/* ══ CHICK (bird) ══ */}
+          {/* ══ CHICK (bird) — evolves chick → crested rooster ══ */}
           {species === 'bird' && (<React.Fragment>
-            {/* head sprout — soft little fan of feathers (not antennae) */}
-            <g fill={shade(base, -8)}>
-              <path d="M100 84 C94 68 96 58 100 51 C104 58 106 68 100 84 Z" />
-              <path d="M100 84 C89 72 86 62 87 54 C95 58 101 69 100 84 Z" />
-              <path d="M100 84 C111 72 114 62 113 54 C105 58 99 69 100 84 Z" />
-            </g>
+            {/* stage-3 tail feathers fanning behind the body */}
+            {stage === 3 && (<g>
+              {[-15, 1, 17].map((deg, i) => (
+                <g key={i} transform={`translate(141,152) rotate(${deg})`}>
+                  <path d="M0 7 C20 -2 33 -17 43 -37 C35 -14 26 3 6 13 Z" fill={shade(base, -10 - i * 4)} />
+                </g>
+              ))}
+            </g>)}
+            {/* head crest — a feather fan that grows fuller each stage */}
+            {(stage === 3 ? [-36, -18, 0, 18, 36] : stage === 2 ? [-22, 0, 22] : [-18, 0, 18]).map((deg, i) => (
+              <g key={i} transform={`translate(100,80) rotate(${deg}) scale(${stage === 3 ? 1.3 : stage === 2 ? 1.05 : 0.85})`}>
+                <path d="M0 4 C-4 -6 -3 -17 0 -25 C3 -17 4 -6 0 4 Z" fill={shade(base, -8)} />
+              </g>
+            ))}
             {/* legs */}
             <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
               <path d="M89 176 L87 185 M87 185 L81 190 M87 185 L87 191 M87 185 L93 190" />
