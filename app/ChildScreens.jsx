@@ -179,7 +179,10 @@ function ChildHome({ ctx }) {
         {/* daily goal */}
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 800 }}>{L("Today's safe-walk goal")}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: THEME.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={THEME.primary} stroke={2.3} /></span>
+              {L("Today's safe-walk goal")}
+            </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: THEME.primary }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
           </div>
           <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={THEME.primary} height={12} />
