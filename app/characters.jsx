@@ -369,8 +369,12 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
           {/* ══ CHICK (bird) ══ */}
           {species === 'bird' && (<React.Fragment>
-            {/* tuft */}
-            <g stroke={shade(base, -10)} strokeWidth="6.5" strokeLinecap="round"><path d="M100 84 L100 52" /><path d="M100 66 L86 52" /><path d="M100 66 L114 52" /></g>
+            {/* head sprout — soft little fan of feathers (not antennae) */}
+            <g fill={shade(base, -8)}>
+              <path d="M100 84 C94 68 96 58 100 51 C104 58 106 68 100 84 Z" />
+              <path d="M100 84 C89 72 86 62 87 54 C95 58 101 69 100 84 Z" />
+              <path d="M100 84 C111 72 114 62 113 54 C105 58 99 69 100 84 Z" />
+            </g>
             {/* legs */}
             <g stroke="#e8a23a" strokeWidth="3.2" strokeLinecap="round" fill="none">
               <path d="M89 176 L87 185 M87 185 L81 190 M87 185 L87 191 M87 185 L93 190" />
