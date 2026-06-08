@@ -16,7 +16,7 @@ const PARENT_TABS = [
 
 function TabBar({ tabs, active, onTab }) {
   return (
-    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 86, background: 'rgba(255,255,255,.94)', backdropFilter: 'blur(12px)', borderTop: `1px solid ${THEME.border}`, display: 'flex', alignItems: 'flex-start', paddingTop: 9, zIndex: 40 }}>
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 86, background: 'rgba(255,255,255,.94)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: '24px 24px 0 0', border: `1px solid ${THEME.border}`, borderBottom: 'none', boxShadow: '0 -8px 24px rgba(46,43,41,0.07)', display: 'flex', alignItems: 'flex-start', paddingTop: 11, zIndex: 40 }}>
       {tabs.map(t => {
         const on = active === t.id || (t.alt && t.alt.includes(active));
         if (t.center) {
