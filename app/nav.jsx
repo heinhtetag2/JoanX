@@ -11,7 +11,7 @@ const CHILD_TABS = [
 const PARENT_TABS = [
   { id: 'p_reports', root: 'p_reports', icon: 'bar-chart-3', label: 'Reports' },
   { id: 'p_children', root: 'p_children', icon: 'users', label: 'Children' },
-  { id: 'p_settings', root: 'p_settings', icon: 'sliders-horizontal', label: 'Rules' },
+  { id: 'p_account', root: 'p_account', icon: 'settings', label: 'Settings' },
 ];
 
 function TabBar({ tabs, active, onTab }) {

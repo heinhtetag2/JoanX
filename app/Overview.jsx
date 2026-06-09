@@ -82,8 +82,10 @@ function Overview() {
 
       <DCSection id="parent" title="Parent app" subtitle="Trustworthy, data-rich — reports, rules, devices">
         <DCArtboard id="rep" label="Reports dashboard" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_reports"><ParentReports ctx={mk()} /></Phone></DCArtboard>
-        <DCArtboard id="set" label="Rules & settings" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_settings"><ParentSettings ctx={mk()} /></Phone></DCArtboard>
         <DCArtboard id="kids" label="Children & devices" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_children"><ParentChildren ctx={mk()} /></Phone></DCArtboard>
+        <DCArtboard id="set" label="Child rules (from card)" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_children"><ParentSettings ctx={mk()} /></Phone></DCArtboard>
+        <DCArtboard id="addkid" label="Add a child" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_children"><ParentAddChild ctx={mk()} /></Phone></DCArtboard>
+        <DCArtboard id="acct" label="Parent settings" width={390} height={844}><Phone tabs={PARENT_TABS} active="p_account"><ParentAccount ctx={mk()} /></Phone></DCArtboard>
       </DCSection>
 
       <DCSection id="mascots" title="Mascot system" subtitle="Cute animal buddies — species, evolution stages, recolors">

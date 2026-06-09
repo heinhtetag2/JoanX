@@ -332,20 +332,18 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <path d="M180 120 C190 115 196 124 193 134 C185 138 178 130 180 120 Z" fill={shade(base, 80)} />
             {/* feet */}
             <ellipse cx="82" cy="174" rx="12" ry="8" fill={dark} /><ellipse cx="118" cy="174" rx="12" ry="8" fill={dark} />
-            {/* pointy ears with cream inner */}
-            <path d="M62 80 L55 45 L97 72 Z" fill={`url(#${gB})`} /><path d="M138 80 L145 45 L103 72 Z" fill={`url(#${gB})`} />
-            <path d="M55 45 L61 58 L69 52 Z" fill={shade(base, -48)} /><path d="M145 45 L139 58 L131 52 Z" fill={shade(base, -48)} />
-            <path d="M68 71 L62 53 L87 69 Z" fill={shade(base, 86)} /><path d="M132 71 L138 53 L113 69 Z" fill={shade(base, 86)} />
+            {/* pointy ears — base sinks into head; warm brown tips + cream inner (Piku ref) */}
+            <path d="M66 92 L56 42 L96 80 Z" fill={`url(#${gB})`} /><path d="M134 92 L144 42 L104 80 Z" fill={`url(#${gB})`} />
+            <path d="M56 42 L60 60 L74 60 Z" fill={shade(base, -46)} /><path d="M144 42 L140 60 L126 60 Z" fill={shade(base, -46)} />
+            <path d="M70 80 L64 62 L87 74 Z" fill={shade(base, 86)} /><path d="M130 80 L136 62 L113 74 Z" fill={shade(base, 86)} />
             {/* body */}
             <ellipse cx="100" cy="126" rx="48" ry="52" fill={`url(#${gB})`} />
             <ellipse cx="55" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(13 55 134)" />
             <ellipse cx="145" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(-13 145 134)" />
             {/* cream belly */}
             <ellipse cx="100" cy="142" rx="26" ry="30" fill={`url(#${gC})`} />
-            {/* white cheek ruff (flaring tufts) + pointed fox snout */}
-            <path d="M72 100 L50 104 L64 109 L48 115 L64 118 L56 125 L76 117 Z" fill={shade(base, 84)} />
-            <path d="M128 100 L150 104 L136 109 L152 115 L136 118 L144 125 L124 117 Z" fill={shade(base, 84)} />
-            <path d="M80 100 Q100 105 120 100 Q115 116 100 124 Q85 116 80 100 Z" fill={`url(#${gC})`} />
+            {/* full cream muzzle / cheeks — flows toward the chest (Piku ref) */}
+            <path d="M72 96 Q68 121 100 127 Q132 121 128 96 Q114 103 100 103 Q86 103 72 96 Z" fill={`url(#${gC})`} />
             {/* face */}
             <ellipse cx="76" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" /><ellipse cx="124" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" />
             <Eye cx={85} cy={87} r={13.5} /><Eye cx={115} cy={87} r={13.5} />

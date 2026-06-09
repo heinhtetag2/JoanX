@@ -121,6 +121,9 @@ const KO = {
   // ── parent ──
   "This week's progress": '이번 주 진행 상황', 'Mina is improving': '미나가 나아지고 있어요',
   'Risky-walking moments': '위험한 보행 순간', 'fewer this week': '이번 주 감소',
+  'Risky moments': '위험 순간', 'Safe stops': '안전 멈춤', 'This week': '이번 주',
+  'Risky moments by day': '일별 위험 순간', 'Safest day': '가장 안전한 날',
+  'Weekly activity': '주간 활동', 'Acceptance': '수용률', 'Build safer habits with Mina': '미나와 안전 습관 키우기',
   'Warning acceptance': '경고 수용률', 'Safe walking': '안전 걷기', 'Avg. response': '평균 반응', 'Safe streak': '안전 연속',
   'How Mina responds to warnings': '미나가 경고에 반응하는 방식',
   'Most warnings end in an immediate stop — exactly what we want.': '대부분의 경고가 즉시 멈춤으로 이어져요 — 바라던 모습이에요.',
@@ -131,11 +134,77 @@ const KO = {
   'Warning sensitivity': '경고 민감도', 'Gentle': '부드럽게', 'Balanced': '균형', 'Strict': '엄격',
   'Warns only in clear risk — fewest interruptions.': '명백한 위험에서만 알려요 — 방해 최소화.', 'Recommended balance of safety and calm.': '안전과 편안함의 권장 균형.', 'Warns earlier and more often.': '더 일찍, 더 자주 알려요.',
   'Time rules': '시간 규칙', 'School commute': '등하굣길', 'After school': '방과 후', 'At home': '집에서',
-  'Relaxed': '완화', 'Add a schedule': '일정 추가',
+  'Relaxed': '완화', 'Add a schedule': '일정 추가', 'Playground': '놀이터',
+
+  // ── parent: schedule editor ──
+  'Edit schedule': '일정 편집', 'New schedule': '새 일정', 'Schedule name': '일정 이름',
+  'e.g. School commute': '예: 등하굣길', 'Protection level': '보호 강도', 'Active days': '활성 요일',
+  'Time': '시간', 'Start': '시작', 'End': '종료', 'Save schedule': '일정 저장', 'Delete schedule': '일정 삭제',
   'Notify me of activity': '활동 알림 받기', 'Character game & rewards': '캐릭터 게임 및 보상',
   '2 connected': '2명 연결됨', 'Protected now': '보호 중', 'Offline': '오프라인', 'Battery': '배터리',
   'Privacy first': '개인정보 우선', "JoanX never reads messages or listens. Location is used only in Smart mode while walking, and stored separately from your child's identity.": '조안X는 메시지를 읽거나 엿듣지 않아요. 위치는 스마트 모드에서 걸을 때만 사용되며, 자녀의 신원과 분리해 저장해요.',
   'Last seen': '마지막 접속',
+
+  // ── parent: account settings ──
+  'Settings': '설정', 'Subscription': '구독', 'JoanX Family': '조안X 패밀리',
+  'of 5 children connected': '/ 5명 연결됨', 'Active': '활성',
+  'Weekly summary email': '주간 요약 이메일',
+  'Privacy & data': '개인정보 및 데이터', 'Data & privacy': '데이터 및 개인정보',
+  'Location history': '위치 기록', 'Export my data': '내 데이터 내보내기', 'General': '일반',
+
+  // ── parent: add a child ──
+  'Add a child': '자녀 추가', 'Add child': '자녀 추가하기', 'Connect a new device': '새 기기 연결',
+  'How pairing works': '연결 방법',
+  'Install JoanX on your child’s phone, open it, and enter the pairing code below. Their device links to your account.':
+    '자녀의 휴대폰에 조안X를 설치하고 열어서 아래 연결 코드를 입력하세요. 자녀 기기가 부모님 계정과 연결돼요.',
+  "Child's name": '자녀 이름', 'e.g. Mina': '예: 미나', 'Device': '기기',
+  'Starting mode': '시작 모드', 'Pairing code': '연결 코드', 'Copy': '복사',
+
+  // ── parent: account detail ──
+  'Profile & security': '프로필 및 보안', 'Parent account': '부모 계정', 'Account details': '계정 정보',
+  'Name': '이름', 'Email': '이메일', 'Phone': '전화번호', 'Security': '보안',
+  'Change password': '비밀번호 변경', 'Two-factor authentication': '2단계 인증', 'Face ID unlock': 'Face ID 잠금 해제',
+  'Guardians': '보호자', 'Co-parent': '공동 양육자', 'Invite a guardian': '보호자 초대',
+
+  // ── parent: subscription detail ──
+  'JoanX Family plan': '조안X 패밀리 플랜', '/ month': '/ 월', 'Renews': '갱신일',
+  "What's included": '포함 사항', 'Up to 5 children': '자녀 최대 5명', 'Smart & Lite modes': '스마트 및 라이트 모드',
+  'Live safety warnings': '실시간 안전 경고', 'Weekly progress reports': '주간 진행 리포트', 'Priority support': '우선 지원',
+  'Children connected': '자녀 연결됨', 'Manage billing': '결제 관리', 'Change plan': '플랜 변경',
+
+  // ── parent: privacy detail ──
+  'Control your data': '데이터 관리', 'Your privacy is protected. JoanX never reads messages or sells your data.': '개인정보는 보호돼요. 조안X는 메시지를 읽거나 데이터를 판매하지 않아요.',
+  'Share anonymous analytics': '익명 분석 공유', 'Personalized safety tips': '맞춤 안전 팁',
+  'What we collect': '수집 항목', 'Third-party sharing': '제3자 공유', 'None': '없음', 'Delete all my data': '내 데이터 모두 삭제',
+
+  // ── parent: location detail ──
+  'Smart mode only': '스마트 모드 전용', 'Location is only used in Smart mode while your child is walking. Never tracked at rest.': '위치는 자녀가 걸을 때 스마트 모드에서만 사용돼요. 멈춰 있을 땐 추적하지 않아요.',
+  'Keep location history': '위치 기록 보관', 'Keep for': '보관 기간', 'Recent locations': '최근 위치',
+  'Oak St. crossing': '오크 거리 횡단보도', 'School gate': '학교 정문', 'Home': '집', 'Yesterday': '어제', 'Clear history': '기록 지우기',
+
+  // ── parent: export detail ──
+  'Download a copy': '사본 다운로드', 'Get a copy of everything JoanX stores about your family.': '조안X가 보관 중인 가족 데이터 전체 사본을 받으세요.',
+  'Included in export': '내보내기 포함 항목', 'Reports & activity': '리포트 및 활동', 'Safety events': '안전 이벤트', 'Settings & rules': '설정 및 규칙',
+  'Format': '형식', 'Send to': '받는 이메일', 'Request export': '내보내기 요청', "We'll email you a download link shortly.": '곧 다운로드 링크를 이메일로 보내드릴게요.',
+
+  // ── parent: language detail ──
+  'Choose your language': '언어를 선택하세요', 'Changes the language across the whole app.': '앱 전체의 언어가 바뀌어요.',
+
+  // ── parent: help detail ──
+  "We're here to help": '도움이 필요하신가요', 'Popular questions': '자주 묻는 질문',
+  'How does Smart mode work?': '스마트 모드는 어떻게 작동하나요?', 'Is my child’s location private?': '자녀의 위치는 비공개인가요?',
+  'How do I add another child?': '자녀를 추가하려면 어떻게 하나요?', 'How are points earned?': '포인트는 어떻게 얻나요?',
+  'Contact us': '문의하기', 'Chat with support': '채팅 상담', 'Email us': '이메일 보내기',
+  'User guide': '사용자 가이드', 'Video tutorials': '영상 튜토리얼',
+
+  // ── parent: about detail ──
+  'A calmer way to keep kids safe while they walk and grow.': '아이들이 걷고 자라는 동안 더 편안하게 지켜주는 방법.',
+  'Terms of Service': '서비스 약관', 'Privacy Policy': '개인정보 처리방침', 'Open-source licenses': '오픈소스 라이선스',
+  'Rate JoanX': '조안X 평가하기', 'Made with care for safer walks.': '더 안전한 걸음을 위해 정성껏 만들었어요.',
+
+  // ── parent: sign out ──
+  'Sign out?': '로그아웃할까요?', 'You can sign back in anytime. Your children stay protected.': '언제든 다시 로그인할 수 있어요. 자녀는 계속 보호돼요.',
+  'Cancel': '취소',
 
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',

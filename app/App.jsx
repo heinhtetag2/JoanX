@@ -49,7 +49,7 @@ function App() {
   };
 
   const nav = (s, p = {}) => {
-    if (role === 'parent') { setPScreen(s); return; }
+    if (role === 'parent') { setPScreen(s); setParams(p); return; }
     setStack(st => [...st, { screen, params }]);
     setScreen(s); setParams(p);
   };
@@ -84,7 +84,9 @@ function App() {
   } else {
     body = ({
       p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
-      p_settings: <ParentSettings ctx={ctx} />,
+      p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
+      p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
+      p_schedule: <ParentSchedule ctx={ctx} />,
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 

@@ -32,6 +32,7 @@ const THEME = {
   // Cards are defined by a crisp hairline border + a whisper of shadow
   // (system uses --color-cards-border-* tokens) — not a big floaty blur.
   shadowCard: '0 0 0 1px var(--color-cards-border-default), 0 1px 2px var(--color-base-alpha-shadow-2)',
+  shadowSoft: '0 6px 18px rgba(46,43,41,0.09)',   // borderless soft elevation (no hairline ring)
   shadowButton: '0 4px 12px rgba(46,43,41,0.16)',
   shadowLg: '0 8px 20px rgba(46,43,41,0.12)',
   shadowXl: '0 12px 28px rgba(46,43,41,0.16)',
@@ -154,7 +155,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', icon, error
         {icon && <Icon name={icon} size={18} color={iconColor} stroke={2} />}
         <input type={type} value={value} onChange={onChange} placeholder={placeholder}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: THEME.fg1, fontFamily: 'inherit', padding: 0 }} />
+          style={{ flex: 1, minWidth: 0, width: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: THEME.fg1, fontFamily: 'inherit', padding: 0 }} />
         {trailing}
       </div>
       {error && <div style={{ fontSize: 12, color: THEME.danger, marginTop: 4 }}>{error}</div>}
