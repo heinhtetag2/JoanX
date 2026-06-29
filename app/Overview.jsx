@@ -35,7 +35,7 @@ function MascotBoard() {
     <div style={{ padding: 24, width: 880 }}>
       <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg2, marginBottom: 12, textTransform: 'uppercase', letterSpacing: .4 }}>Species</div>
       <div style={{ display: 'flex', gap: 18, marginBottom: 24 }}>
-        {cell(<Mascot species="fox" stage={2} size={92} />, 'Foxy · fox')}
+        {cell(<Mascot species="fox" stage={2} size={92} />, 'Hammy · hamster')}
         {cell(<Mascot species="cat" stage={2} size={92} />, 'Mochi · cat')}
         {cell(<Mascot species="bird" stage={2} size={92} />, 'Pip · bird')}
       </div>

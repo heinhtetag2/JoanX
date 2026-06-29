@@ -40,13 +40,25 @@ const KO = {
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
   'to': '까지',
   'Safe points': '안전 포인트', 'Day streak': '연속 일수',
-  "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'min': '분',
+  "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'min': '분',
+  'Keep your head up and walk safe!': '고개를 들고 안전하게 걸어요!',
+  "Today's journey": '오늘의 여정', 'Start': '출발', 'left': '남음',
+  'My buddy': '내 친구', 'Claim reward': '보상 받기',
+  "Today's missions": '오늘의 미션', 'Done!': '완료!',
+  'Walk safely for 60 min': '안전하게 60분 걷기', 'Stop quickly ×3': '빠르게 멈추기 ×3', 'Avoid danger zones': '위험 구역 피하기',
   '13 more minutes phone-free while walking earns a +100 bonus.': '걸으면서 13분 더 폰을 안 보면 +100 보너스를 받아요.',
   'Play': '놀기', 'Collection': '컬렉션', 'Customize': '꾸미기',
   "Today's wins": '오늘의 성과',
   'Stopped in 2s near Oak St.': '오크 거리 근처에서 2초 만에 멈췄어요', '+30 bonus points': '+30 보너스 포인트',
   '20 min safe walking': '20분 안전 걷기', '+200 points': '+200 포인트',
-  'Foxy reached Level 7': 'Foxy가 레벨 7 달성', 'New trait unlocked': '새 특성 해금', 'Your buddy leveled up': '친구가 레벨 업했어요',
+  'Hammy reached Level 7': 'Hammy가 레벨 7 달성', 'New trait unlocked': '새 특성 해금', 'Your buddy leveled up': '친구가 레벨 업했어요',
+  // ── home · alternate layouts (timeline feed) ──
+  'Daily reward ready': '오늘의 보상 준비됨',
+  'Claim +100 points for walking safely.': '안전하게 걸어서 +100 포인트를 받으세요.',
+  'Quick reflex — +30 bonus points.': '빠른 반응 — +30 보너스 포인트.',
+  'Phone-free the whole way. +200 points.': '걷는 내내 폰 없이. +200 포인트.',
+  '5-day safe streak!': '5일 연속 안전!',
+  '2 more days unlocks a Special buddy.': '2일 더 하면 스페셜 친구를 얻어요.',
 
   // ── safety ──
   'Safety': '안전', "JoanX is watching out for you in the background.": '조안X가 백그라운드에서 지켜주고 있어요.',
@@ -78,8 +90,9 @@ const KO = {
   // ── character detail ──
   'Evolve to Stage': '진화하기 — 단계', 'to evolve': '에서 진화 가능', 'Reach': '필요:',
   'Fully evolved — max stage!': '완전 진화 — 최고 단계!',
-  'Battle traits': '배틀 특성', 'Guard': '방어', 'Speed': '스피드', 'Heart': '하트',
+  'Battle traits': '배틀 특성', 'Stats': '능력', 'Guard': '방어', 'Speed': '스피드', 'Heart': '하트',
   'Color': '색상', 'Items': '아이템', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
+  'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
 
   // ── battle ──
@@ -210,7 +223,7 @@ const KO = {
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',
   'One gentle buzz': '부드러운 진동 한 번', 'I looked up': '고개 들었어요',
   'Auto-dismisses in a moment · no nagging': '잠시 후 자동으로 사라져요 · 잔소리 없이',
-  "Foxy noticed you're walking. Let's put the phone away and stay safe.": '친구가 걷는 걸 알아챘어요. 폰을 넣고 안전하게 걸어요.',
+  "Hammy noticed you're walking. Let's put the phone away and stay safe.": '친구가 걷는 걸 알아챘어요. 폰을 넣고 안전하게 걸어요.',
   'Stop fast for bonus points': '빨리 멈추면 보너스 포인트', 'Eyes up while walking': '걸을 땐 고개 들어요', "Tap when you've looked up": '고개를 들면 눌러요',
   'Nice save!': '잘했어요!', "Stopped in": '멈춤:', "that's an immediate stop.": '즉시 멈춤이에요.', 'points': '포인트',
   "Let's walk first": '먼저 걷고 나서', "Your phone takes a quick break while you're walking. It comes back as soon as you stop.": '걷는 동안 폰이 잠깐 쉬어요. 멈추면 바로 돌아와요.',

@@ -81,7 +81,7 @@ function WarningOverlay({ ctx }) {
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center' }}>
               <div className="jx-pop jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} /></div>
               <div className="game-font" style={{ fontSize: 26, fontWeight: 500, marginTop: 10 }}>{L('Eyes up,')} {PLAYER.name}!</div>
-              <div style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45 }}>{L("Foxy noticed you're walking. Let's put the phone away and stay safe.")}</div>
+              <div style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45 }}>{L("Hammy noticed you're walking. Let's put the phone away and stay safe.")}</div>
               <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280 }}>{L('I looked up')}</Button>
               <div style={{ fontSize: 12, color: THEME.fg3, marginTop: 14 }}>{L('Stop fast for bonus points')}</div>
             </div>

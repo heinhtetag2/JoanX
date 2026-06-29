@@ -14,7 +14,7 @@ function shade(hex, amt) {
 }
 
 const SPECIES = {
-  fox:  { name: 'Foxy',  base: '#e1874a', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
+  fox:  { name: 'Hammy', base: '#d99c5a', ears: 'pointy', tail: 'bushy',  feature: 'snout' },   // hamster in the Toy style
   cat:  { name: 'Mochi', base: '#a8c3eb', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
   bird: { name: 'Pip',   base: '#67c7ce', ears: 'tuft',   tail: 'fan',    feature: 'beak' },
   croc: { name: 'Croc',  base: '#59c08c', ears: 'pointy', tail: 'bushy',  feature: 'snout' },
@@ -288,7 +288,7 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
   const ink = '#2b2826';
   const sc = stage === 1 ? 0.9 : stage === 3 ? 1.06 : 1;
   const uid = React.useId().replace(/[:]/g, '');
-  const gB = 'tb' + uid, gC = 'tc' + uid;
+  const gB = 'tb' + uid, gC = 'tc' + uid, gEL = 'tl' + uid, gER = 'tr' + uid, soft = 'ts' + uid;
   const er = mood === 'alert' ? 21 : 19;   // croc's huge domed eyes
   const Eye = ({ cx, cy, r = er }) => mood === 'sleepy'
     ? <path d={`M${cx - r * 0.7} ${cy} q${r * 0.7} ${r * 0.5} ${r * 1.4} 0`} stroke={ink} strokeWidth="4" fill="none" strokeLinecap="round" />
@@ -300,8 +300,8 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
       </g>);
 
   // scarf-collar / crown placement varies per creature
-  const neckY = species === 'bird' ? 122 : species === 'owl' ? 120 : 118;
-  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 30 : species === 'owl' ? 30 : 27;
+  const neckY = species === 'fox' ? 116 : species === 'bird' ? 122 : species === 'owl' ? 120 : 118;
+  const crownY = species === 'cat' ? 58 : species === 'bird' ? 26 : species === 'fox' ? 44 : species === 'owl' ? 30 : 27;
 
   return (
     <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
@@ -316,6 +316,19 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
             <stop offset="0%" stopColor={shade(base, 92)} />
             <stop offset="100%" stopColor={shade(base, 44)} />
           </radialGradient>
+          <linearGradient id={gEL} x1="2%" y1="6%" x2="80%" y2="86%">
+            <stop offset="0%" stopColor={shade(base, -58)} />
+            <stop offset="42%" stopColor={shade(base, -10)} />
+            <stop offset="100%" stopColor={base} />
+          </linearGradient>
+          <linearGradient id={gER} x1="98%" y1="6%" x2="20%" y2="86%">
+            <stop offset="0%" stopColor={shade(base, -58)} />
+            <stop offset="42%" stopColor={shade(base, -10)} />
+            <stop offset="100%" stopColor={base} />
+          </linearGradient>
+          <filter id={soft} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.4" />
+          </filter>
         </defs>
 
         <ellipse cx="100" cy="187" rx={46 * sc} ry="7.5" fill="#000" opacity="0.08" />
@@ -325,34 +338,75 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
 
         <g transform={`translate(100,114) scale(${sc}) translate(-100,-114)`}>
 
-          {/* ══ FOX (fox) ══ */}
-          {species === 'fox' && (<React.Fragment>
-            {/* bushy tail with light tip, anchored under the body */}
-            <path d="M120 150 C150 162 180 150 194 116 C188 138 170 158 144 161 C133 165 124 160 120 150 Z" fill={`url(#${gB})`} />
-            <path d="M180 120 C190 115 196 124 193 134 C185 138 178 130 180 120 Z" fill={shade(base, 80)} />
-            {/* feet */}
-            <ellipse cx="82" cy="174" rx="12" ry="8" fill={dark} /><ellipse cx="118" cy="174" rx="12" ry="8" fill={dark} />
-            {/* pointy ears — base sinks into head; warm brown tips + cream inner (Piku ref) */}
-            <path d="M66 92 L56 42 L96 80 Z" fill={`url(#${gB})`} /><path d="M134 92 L144 42 L104 80 Z" fill={`url(#${gB})`} />
-            <path d="M56 42 L60 60 L74 60 Z" fill={shade(base, -46)} /><path d="M144 42 L140 60 L126 60 Z" fill={shade(base, -46)} />
-            <path d="M70 80 L64 62 L87 74 Z" fill={shade(base, 86)} /><path d="M130 80 L136 62 L113 74 Z" fill={shade(base, 86)} />
-            {/* body */}
-            <ellipse cx="100" cy="126" rx="48" ry="52" fill={`url(#${gB})`} />
-            <ellipse cx="55" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(13 55 134)" />
-            <ellipse cx="145" cy="134" rx="11" ry="16" fill={`url(#${gB})`} transform="rotate(-13 145 134)" />
-            {/* cream belly */}
-            <ellipse cx="100" cy="142" rx="26" ry="30" fill={`url(#${gC})`} />
-            {/* full cream muzzle / cheeks — flows toward the chest (Piku ref) */}
-            <path d="M72 96 Q68 121 100 127 Q132 121 128 96 Q114 103 100 103 Q86 103 72 96 Z" fill={`url(#${gC})`} />
-            {/* face */}
-            <ellipse cx="76" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" /><ellipse cx="124" cy="95" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" />
-            <Eye cx={85} cy={87} r={13.5} /><Eye cx={115} cy={87} r={13.5} />
-            <ellipse cx="100" cy="103" rx="3.6" ry="2.9" fill={ink} />
-            {mood !== 'sleepy' && <g stroke={ink} strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M100 106 L100 109" />
-              <path d="M89 109 Q100 117 111 109" />
-            </g>}
-          </React.Fragment>)}
+          {/* ══ HAMSTER (fox slot) — chubby-cheeked plush hamster, croc-clean style ══ */}
+          {species === 'fox' && (() => {
+            const paw      = shade(base, -22);     // soft little paws / feet
+            const innerEar = shade(base, 36);      // inner ear
+            const cream    = `url(#${gC})`;
+            const er2 = mood === 'alert' ? 17 : 15.5;   // big shared domed eyes (croc-style)
+            return (<React.Fragment>
+              {/* little stub tail peeking out behind the body */}
+              <ellipse cx="150" cy="151" rx="8.5" ry="7.5" fill={cream} />
+
+              {/* feet */}
+              <ellipse cx="84" cy="177" rx="14" ry="8.5" fill={paw} />
+              <ellipse cx="116" cy="177" rx="14" ry="8.5" fill={paw} />
+
+              {/* body */}
+              <ellipse cx="100" cy="128" rx="49" ry="50" fill={`url(#${gB})`} />
+
+              {/* cream belly */}
+              <ellipse cx="100" cy="140" rx="31" ry="33" fill={cream} />
+
+              {/* little arms folded onto the tummy (paws meet at the centre) */}
+              <path d="M70 129 Q82 142 93 147" stroke={`url(#${gB})`} strokeWidth="15" fill="none" strokeLinecap="round" />
+              <path d="M130 129 Q118 142 107 147" stroke={`url(#${gB})`} strokeWidth="15" fill="none" strokeLinecap="round" />
+              <ellipse cx="94" cy="148" rx="8.5" ry="7.5" fill={paw} />
+              <ellipse cx="106" cy="148" rx="8.5" ry="7.5" fill={paw} />
+
+              {/* ── HEAD + chubby cheek pouches ── */}
+              <ellipse cx="100" cy="86" rx="45" ry="39" fill={`url(#${gB})`} />
+              <ellipse cx="64" cy="98" rx="14" ry="14" fill={`url(#${gB})`} />
+              <ellipse cx="136" cy="98" rx="14" ry="14" fill={`url(#${gB})`} />
+              <ellipse cx="84" cy="64" rx="20" ry="12" fill="#fff" opacity="0.12" filter={`url(#${soft})`} />
+              <ellipse cx="100" cy="118" rx="26" ry="9" fill="#000" opacity="0.08" filter={`url(#${soft})`} />
+
+              {/* ── round ears on top (bigger) ── */}
+              <circle cx="74" cy="50" r="15" fill={`url(#${gB})`} />
+              <circle cx="126" cy="50" r="15" fill={`url(#${gB})`} />
+              <circle cx="74" cy="51" r="9" fill={innerEar} />
+              <circle cx="126" cy="51" r="9" fill={innerEar} />
+
+              {/* ── cream muzzle ── */}
+              <ellipse cx="100" cy="101" rx="19" ry="13.5" fill={cream} />
+
+              {/* blush */}
+              <ellipse cx="70" cy="101" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
+              <ellipse cx="130" cy="101" rx="8" ry="5" fill="#FF8FA3" opacity="0.45" />
+
+              {/* ── big domed eyes (shared croc-style) ── */}
+              <Eye cx={80} cy={78} r={er2} /><Eye cx={120} cy={78} r={er2} />
+
+              {/* whiskers */}
+              <g stroke={shade(base, -24)} strokeWidth="1.5" strokeLinecap="round" opacity="0.4">
+                <path d="M74 99 L52 96 M74 104 L52 107" />
+                <path d="M126 99 L148 96 M126 104 L148 107" />
+              </g>
+
+              {/* ── nose + tiny mouth + front teeth ── */}
+              <ellipse cx="100" cy="96" rx="4.6" ry="3.6" fill={shade(base, -58)} />
+              <circle cx="98.4" cy="95" r="1.2" fill="#fff" opacity="0.6" />
+              {mood !== 'sleepy' && <g stroke={shade(base, -58)} strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M100 100 L100 103" />
+                <path d="M100 103 q-5 4.5 -10 2 M100 103 q5 4.5 10 2" />
+              </g>}
+              {mood !== 'sleepy' && <g fill="#fff" stroke={shade(base, -30)} strokeWidth="0.5">
+                <rect x="97.5" y="104" width="2.5" height="4.4" rx="1" />
+                <rect x="100" y="104" width="2.5" height="4.4" rx="1" />
+              </g>}
+              {mood === 'sleepy' && <path d="M93 102 q7 5 14 0" stroke={shade(base, -58)} strokeWidth="2.2" fill="none" strokeLinecap="round" />}
+            </React.Fragment>);
+          })()}
 
           {/* ══ CROC (croc) ══ */}
           {species === 'croc' && (<React.Fragment>

@@ -9,7 +9,7 @@ const PLAYER = {
 
 // owned + collectible characters
 const CHARACTERS = [
-  { id: 'c1', species: 'fox',  name: 'Foxy',   color: '#e1874a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c1', species: 'fox',  name: 'Hammy',  color: '#d99c5a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
   { id: 'c3', species: 'bird', name: 'Pip',    color: '#e278a8', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
   { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },

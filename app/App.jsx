@@ -4,14 +4,17 @@
 function App() {
   const [role, setRole] = React.useState('child');
   const [onboarded, setOnboarded] = React.useState(true);   // start on Home; "Replay onboarding" (Tweaks) shows it
-  const [screen, setScreen] = React.useState('home');
-  const [params, setParams] = React.useState({});
+  const __q = new URLSearchParams(window.location.search);
+  const initialDetail = __q.get('detail');   // ?detail=char-cover opens the buddy detail screen
+  const [screen, setScreen] = React.useState(initialDetail ? 'character' : 'home');
+  const [params, setParams] = React.useState(initialDetail ? { id: PLAYER.activeCharId } : {});
   const [stack, setStack] = React.useState([]);
   const [pScreen, setPScreen] = React.useState('p_reports');
   const [mode, setMode] = React.useState('lite');
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'croc', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'toy' });
+  const initialHome = __q.get('home') || 'simple-original';
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'croc', color: '#e0554a', stage: 3, play: 'playful', charStyle: 'toy', homeLayout: initialHome, detailLayout: initialDetail || 'original' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -75,8 +78,8 @@ function App() {
   if (role === 'child') {
     if (!onboarded) body = <Onboarding ctx={ctx} />;
     else body = ({
-      home: <ChildHome ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
-      collection: <Collection ctx={ctx} />, character: <CharacterDetail ctx={ctx} />,
+      home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
+      collection: <Collection ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       battle: <Battle ctx={ctx} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
@@ -119,7 +122,7 @@ function App() {
             {body}
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
-          {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} />}
+          {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
           {role === 'parent' && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay ctx={ctx} />)}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
@@ -158,6 +161,23 @@ function App() {
 
           {role === 'child' && (
             <React.Fragment>
+              <div className="tw-label">Simple layout</div>
+              <div className="tw-row">
+                {HOME_LAYOUTS_SIMPLE.map(({ id, label }) => {
+                  const off = id === 'simple-map';
+                  return (
+                    <button key={id} disabled={off} className={'tw-chip' + (tw.homeLayout === id ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => { setTw(s => ({ ...s, homeLayout: id })); setScreen('home'); setStack([]); }}>{label}{off ? ' (off)' : ''}</button>
+                  );
+                })}
+              </div>
+
+              <div className="tw-label">Detail style (buddy screen)</div>
+              <div className="tw-row">
+                {CHAR_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.detailLayout === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, detailLayout: id })); setStack([]); setScreen('character'); setParams({ id: PLAYER.activeCharId }); }}>{label}</button>
+                ))}
+              </div>
+
               <div className="tw-label">Preview the safety moment</div>
               <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => { setOnboarded(true); setOverlay(true); }}>
                 ▶ Trigger a {mode === 'lite' ? 'block' : 'warning'}
@@ -204,6 +224,13 @@ function App() {
             <React.Fragment>
               <div className="tw-label">Flow</div>
               <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
+
+              <div className="tw-label" style={{ opacity: .5 }}>Home layout (disabled)</div>
+              <div className="tw-row" style={{ opacity: .5, pointerEvents: 'none' }}>
+                {HOME_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} disabled className={'tw-chip' + (tw.homeLayout === id ? ' on' : '')} style={{ cursor: 'not-allowed' }}>{label}</button>
+                ))}
+              </div>
             </React.Fragment>
           )}
         </div>
