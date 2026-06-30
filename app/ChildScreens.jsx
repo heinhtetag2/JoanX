@@ -199,26 +199,6 @@ function ChildHome({ ctx }) {
         </div>
         */}
 
-        {/* recent wins */}
-        <SectionHead title={L("Today's wins")} />
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
-          {[
-            { icon: 'timer', color: THEME.success, bg: THEME.successLight, t: 'Stopped in 2s near Oak St.', s: '+30 bonus points', time: '12m' },
-            { icon: 'footprints', color: THEME.primary, bg: THEME.primaryLight, t: '20 min safe walking', s: '+200 points', time: '1h' },
-            { icon: 'medal', color: THEME.camping, bg: THEME.campingBg, t: 'Your buddy leveled up', s: 'New trait unlocked', time: '3h' },
-          ].map((r, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 11, background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon name={r.icon} size={18} color={r.color} stroke={2.3} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{L(r.t)}</div>
-                <div style={{ fontSize: 12, color: THEME.fg2 }}>{L(r.s)}</div>
-              </div>
-              <span style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600 }}>{r.time}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

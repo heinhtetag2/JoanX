@@ -157,9 +157,12 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['classic', 'Classic'], ['kr', 'Korean'], ['toon', 'K-Toon'], ['comic', 'Comic'], ['toy', '3D']].map(([v, l]) => (
-              <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
-            ))}
+            {[['classic', 'Classic'], ['kr', 'Korean'], ['toon', 'K-Toon'], ['comic', 'Comic'], ['toy', '3D']].map(([v, l]) => {
+              const off = v !== 'comic';
+              return (
+                <button key={v} disabled={off} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}{off ? ' (off)' : ''}</button>
+              );
+            })}
           </div>
 
           {role === 'child' && (
@@ -197,20 +200,6 @@ function App() {
               <div className="tw-row">
                 {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird'], ['croc', 'Croc'], ['owl', 'Owl']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v }))}>{l}</button>
-                ))}
-              </div>
-
-              <div className="tw-label">Buddy color</div>
-              <div className="tw-row">
-                {['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05'].map(c => (
-                  <span key={c} className={'tw-sw' + (tw.color === c ? ' on' : '')} style={{ background: c }} onClick={() => setTw(s => ({ ...s, color: c }))} />
-                ))}
-              </div>
-
-              <div className="tw-label">Evolution stage</div>
-              <div className="tw-row">
-                {[1, 2, 3].map(v => (
-                  <button key={v} className={'tw-chip' + (tw.stage === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, stage: v }))}>Stage {v}</button>
                 ))}
               </div>
             </React.Fragment>

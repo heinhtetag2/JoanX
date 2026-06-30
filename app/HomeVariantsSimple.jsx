@@ -432,8 +432,6 @@ function HomeSimpleCover({ ctx }) {
           ))}
         </div>
 
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, margin: '0 0 10px', letterSpacing: '-0.2px' }}>{L("Today's wins")}</h2>
-        <WinsListS ctx={ctx} />
       </div>
     </div>
   );
@@ -590,9 +588,6 @@ function HomeSimpleProfile({ ctx }) {
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
         </div>
 
-        {/* today's wins */}
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, margin: '18px 0 10px', letterSpacing: '-0.2px' }}>{L("Today's wins")}</h2>
-        <WinsListS ctx={ctx} />
       </div>
     </div>
   );

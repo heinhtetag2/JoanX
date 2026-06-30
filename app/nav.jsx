@@ -6,7 +6,7 @@ const CHILD_TABS = [
   { id: 'collection', root: 'collection', icon: 'layout-grid', label: 'Collect', alt: ['character'] },
   { id: 'battle', root: 'battle', icon: 'swords', label: '', center: true },
   { id: 'safety', root: 'safety', icon: 'shield-check', label: 'Safety' },
-  { id: 'rewards', root: 'rewards', icon: 'trophy', label: 'Rewards' },
+  { id: 'rewards', root: 'rewards', icon: 'trophy', label: 'Rewards', disabled: true },
 ];
 const PARENT_TABS = [
   { id: 'p_reports', root: 'p_reports', icon: 'bar-chart-3', label: 'Reports' },
@@ -30,7 +30,7 @@ function TabBar({ tabs, active, onTab, accent }) {
           );
         }
         return (
-          <button key={t.id} onClick={() => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button key={t.id} disabled={t.disabled} onClick={t.disabled ? undefined : () => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: t.disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: t.disabled ? .4 : 1, pointerEvents: t.disabled ? 'none' : undefined }}>
             <Icon name={t.icon} size={23} color={on ? ac : THEME.fg3} stroke={on ? 2.5 : 1.9} />
             <span style={{ fontSize: 10.5, fontWeight: 700, color: on ? ac : THEME.fg3 }}>{L(t.label)}</span>
           </button>

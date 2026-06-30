@@ -137,9 +137,6 @@ function HomeSpotlight({ ctx }) {
           <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={c.color} height={12} />
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
         </div>
-
-        <SectionHead title={L("Today's wins")} />
-        <WinsList ctx={ctx} />
       </div>
     </div>
   );
@@ -209,11 +206,6 @@ function HomeBento({ ctx }) {
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
         </div>
 
-        {/* wins — wide list */}
-        <div style={{ gridColumn: 'span 2', marginTop: 4 }}>
-          <SectionHead title={L("Today's wins")} />
-          <WinsList ctx={ctx} />
-        </div>
       </div>
     </div>
   );
@@ -275,8 +267,6 @@ function HomeFocus({ ctx }) {
 
       <div style={{ padding: '0 16px' }}>
         <div style={{ marginBottom: 14 }}><SafetyPill ctx={ctx} lite={lite} /></div>
-        <SectionHead title={L("Today's wins")} />
-        <WinsList ctx={ctx} />
       </div>
     </div>
   );
