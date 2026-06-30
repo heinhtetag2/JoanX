@@ -12,15 +12,15 @@ const HOME_WINS = [
   { icon: 'medal',      color: () => THEME.camping, bg: () => THEME.campingBg,    t: 'Your buddy leveled up',      s: 'New trait unlocked', time: '3h' },
 ];
 
-// header controls reused across most variants (coins + bell)
+// header controls reused across most variants (points + bell)
 function HomeActions({ ctx, dark }) {
   const ink = dark ? '#fff' : THEME.fg1;
   const chip = dark ? 'rgba(255,255,255,.18)' : '#fff';
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <Icon name="coins" size={16} color={dark ? '#ffe08a' : THEME.gold} stroke={2.2} />
-        <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.coins}</span>
+        <Icon name="star" size={16} color={dark ? '#ffe08a' : THEME.gold} fill={dark ? '#ffe08a' : THEME.gold} stroke={2} />
+        <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
       </button>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <Icon name="bell" size={19} color={ink} stroke={2} />
@@ -43,7 +43,7 @@ function SafetyPill({ ctx, lite, skin }) {
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
-        <div style={{ fontSize: 12, color: ink, opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
+        <div style={{ fontSize: 12, color: ink, opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Active while walking · 47 min safe today')}</div>
       </div>
       <Icon name="chevron-right" size={18} color={ink} stroke={2.5} />
     </div>
@@ -154,7 +154,7 @@ function HomeBento({ ctx }) {
   const tile = { borderRadius: 22, padding: 14, boxShadow: THEME.shadowCard, background: '#fff' };
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={42} /></div>
@@ -237,7 +237,7 @@ function HomeFocus({ ctx }) {
   );
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}</div>
@@ -297,7 +297,7 @@ function HomeTimeline({ ctx }) {
   ];
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       {/* compact buddy header card */}
       <div style={{ padding: '8px 16px 0' }}>
         <div style={{ background: `linear-gradient(110deg, ${shade(c.color, 78)}, ${THEME.surface} 88%)`, borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -365,7 +365,7 @@ function HomeArcade({ ctx }) {
   const stats = [
     { icon: 'award',      color: THEME.gold,    bg: THEME.goldLight,  value: PLAYER.points.toLocaleString(), label: L('Safe points') },
     { icon: 'flame',      color: THEME.joy,     bg: THEME.joyBg,      value: PLAYER.streak,                  label: L('Day streak') },
-    { icon: 'coins',      color: THEME.gold,    bg: THEME.goldLight,  value: PLAYER.coins,                   label: L('Coins') },
+    { icon: 'footprints', color: THEME.primary, bg: THEME.primaryLight, value: PLAYER.safeMinutesToday,        label: L('Min safe') },
     { icon: 'gem',        color: THEME.camping, bg: THEME.campingBg,  value: buddies.length,                 label: L('Buddies') },
   ];
   const actions = [
@@ -375,7 +375,7 @@ function HomeArcade({ ctx }) {
   ];
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={42} /></div>

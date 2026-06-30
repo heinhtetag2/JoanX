@@ -77,7 +77,7 @@ function Overview() {
         <DCArtboard id="char" label="Character detail" width={390} height={844}><Phone tabs={CHILD_TABS} active="collection"><CharacterDetail ctx={mk()} /></Phone></DCArtboard>
         <DCArtboard id="battle" label="Battle" width={390} height={844}><Phone><Battle ctx={mk()} /></Phone></DCArtboard>
         <DCArtboard id="rewards" label="Rewards" width={390} height={844}><Phone tabs={CHILD_TABS} active="rewards"><Rewards ctx={mk()} /></Phone></DCArtboard>
-        <DCArtboard id="shop" label="Coins & Shop" width={390} height={844}><Phone tabs={CHILD_TABS} active="home"><Shop ctx={mk()} /></Phone></DCArtboard>
+        <DCArtboard id="shop" label="Points & Shop" width={390} height={844}><Phone tabs={CHILD_TABS} active="home"><Shop ctx={mk()} /></Phone></DCArtboard>
       </DCSection>
 
       <DCSection id="parent" title="Parent app" subtitle="Trustworthy, data-rich — reports, rules, devices">

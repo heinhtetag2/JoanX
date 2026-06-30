@@ -19,7 +19,7 @@ function Collection({ ctx }) {
   const owned = CHARACTERS.filter(c => c.owned);
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
-      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/8</span></div>} />
+      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{CHARACTERS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {ROOMS.map(room => {
           const placed = owned.filter(c => c.room === room.id);
@@ -151,7 +151,7 @@ function CharacterDetail({ ctx }) {
               {canEvolve ? `${L('Evolve to Stage')} ${stage + 1}` : `${L('Reach')} ${orig.xpMax} XP ${L('to evolve')}`}
             </Button>
           ) : (
-            <div style={{ textAlign: 'center', background: THEME.successLight, color: '#274427', borderRadius: 16, padding: '12px', fontWeight: 800, fontSize: 14 }}>{L('Fully evolved — max stage!')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="sparkles" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
           )}
         </div>
 

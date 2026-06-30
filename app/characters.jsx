@@ -534,10 +534,219 @@ function MascotToy({ species = 'fox', stage = 2, color, size = 160, mood = 'happ
   );
 }
 
+// ── K-Toon line ("toon") — Korean kids'-animation register (think Pororo /
+// LINE Friends): one dominant big head, a small readable body with stubby
+// arms & legs, clean white-sclera eyes, restrained features, and a calm
+// medium outline. Each species gets its own silhouette — not a shared blob.
+function MascotToon({ species = 'fox', stage = 2, color, size = 160, mood = 'happy', float = false, style }) {
+  const sp = SPECIES[species] || SPECIES.fox;
+  const base = color || sp.base;
+  const ol = '#43392f';                 // calm warm outline (not harsh black)
+  const ear = shade(base, -14);
+  const dark = shade(base, -40);
+  const paw = shade(base, -24);
+  const belly = shade(base, 40);          // gentle tint, not blown-out white
+  const ink = '#33302e';
+  const beak = '#f0a83a';
+  const sc = stage === 1 ? 0.9 : stage === 3 ? 1.06 : 1;
+
+  const big = species === 'owl';
+  // clean animation eyes: white sclera + pupil + single highlight
+  const ew = (mood === 'alert' ? 9.5 : 8.5) * (big ? 1.18 : 1);
+  const Eye = ({ cx, cy }) => mood === 'sleepy'
+    ? <path d={`M${cx - ew} ${cy} q${ew} ${ew * 0.8} ${2 * ew} 0`} stroke={ol} strokeWidth="3" fill="none" strokeLinecap="round" />
+    : (<g>
+        <ellipse cx={cx} cy={cy} rx={ew} ry={ew * 1.12} fill="#fff" stroke={ol} strokeWidth="2.2" />
+        <circle cx={cx + (cx < 100 ? 0.5 : -0.5)} cy={cy + ew * (mood === 'alert' ? -0.05 : 0.2)} r={ew * 0.52} fill={ink} />
+        <circle cx={cx + (cx < 100 ? 1.6 : -1.6)} cy={cy - ew * 0.28} r={ew * 0.2} fill="#fff" />
+      </g>);
+
+  const wings = species === 'bird' || species === 'owl';
+
+  return (
+    <div style={{ width: size, height: size, ...style }} className={float ? 'jx-float' : ''}>
+      <svg viewBox="0 0 200 200" width={size} height={size} style={{ overflow: 'visible' }}>
+        <ellipse cx="100" cy="190" rx={40 * sc} ry="6.5" fill="#000" opacity="0.07" />
+        {stage !== 2 && [[34, 58, 3.2], [168, 72, 2.6], [164, 132, 2.8]].map(([x, y, r], i) => (
+          <circle key={i} cx={x} cy={y} r={r} fill={stage === 3 ? THEME.gold : base} opacity="0.5" />
+        ))}
+
+        <g transform={`translate(100,108) scale(${sc}) translate(-100,-108)`}
+           stroke={ol} strokeWidth="3.4" strokeLinejoin="round" strokeLinecap="round">
+
+          {/* ── tail (mammals, behind body) ── */}
+          {species === 'fox' && <ellipse cx="142" cy="150" rx="8" ry="7" fill={base} />}
+          {species === 'cat' && <path d="M138 152 q26 4 24 -20 q-4 15 -20 11" fill="none" strokeWidth="7" />}
+
+          {/* ── legs / feet ── */}
+          {wings
+            ? (<g stroke={beak} strokeWidth="3.4" fill="none">
+                <path d="M90 158 L90 170 M90 170 L84 175 M90 170 L96 175" />
+                <path d="M110 158 L110 170 M110 170 L104 175 M110 170 L116 175" />
+              </g>)
+            : (<g fill={paw}>
+                <ellipse cx="86" cy="166" rx="11" ry="7.5" />
+                <ellipse cx="114" cy="166" rx="11" ry="7.5" />
+              </g>)}
+
+          {/* ── arms / wings (behind body) ── */}
+          {wings
+            ? (<g fill={ear}>
+                <path d="M70 130 q-16 4 -16 24 q11 -2 22 -9 Z" />
+                <path d="M130 130 q16 4 16 24 q-11 -2 -22 -9 Z" />
+              </g>)
+            : (<g fill={base}>
+                <ellipse cx="69" cy="134" rx="8" ry="13" transform="rotate(24 69 134)" />
+                <ellipse cx="131" cy="134" rx="8" ry="13" transform="rotate(-24 131 134)" />
+                <ellipse cx="65" cy="143" rx="6.5" ry="6" fill={paw} />
+                <ellipse cx="135" cy="143" rx="6.5" ry="6" fill={paw} />
+              </g>)}
+
+          {/* ── body: tucked up under the head so they read as ONE figure ── */}
+          <path d="M72 132 Q72 102 100 102 Q128 102 128 132 Q128 162 100 162 Q72 162 72 132 Z" fill={base} />
+          <ellipse cx="100" cy="140" rx="18" ry="19" fill={belly} stroke="none" />
+          {(species === 'bird' || species === 'owl') && [138, 148].map((y, i) => (
+            <path key={i} d={`M92 ${y} L100 ${y + 4} L108 ${y}`} stroke={ear} strokeWidth="1.8" fill="none" opacity="0.55" />
+          ))}
+
+          {/* ════════ HEADS — distinct silhouette per species ════════ */}
+
+          {/* ── HAMSTER (fox slot): round head, chubby cheek-pouches, little ears ── */}
+          {species === 'fox' && (<g>
+            <circle cx="70" cy="44" r="11" fill={base} /><circle cx="130" cy="44" r="11" fill={base} />
+            <circle cx="70" cy="45" r="5.5" fill={ear} stroke="none" /><circle cx="130" cy="45" r="5.5" fill={ear} stroke="none" />
+            {/* cheek pouches widen the silhouette */}
+            <ellipse cx="58" cy="84" rx="15" ry="16" fill={base} />
+            <ellipse cx="142" cy="84" rx="15" ry="16" fill={base} />
+            <ellipse cx="100" cy="74" rx="44" ry="41" fill={base} />
+            <ellipse cx="100" cy="86" rx="15" ry="11" fill={belly} stroke="none" />
+            <ellipse cx="70" cy="88" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <ellipse cx="130" cy="88" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <Eye cx={84} cy={72} /><Eye cx={116} cy={72} />
+            <ellipse cx="100" cy="82" rx="3" ry="2.3" fill={ink} stroke="none" />
+            {mood !== 'sleepy' && <path d="M100 84 q-4 4 -7 1.5 M100 84 q4 4 7 1.5" strokeWidth="2.2" fill="none" />}
+            {mood !== 'sleepy' && <g fill="#fff" strokeWidth="0.7"><rect x="97.7" y="89" width="2.3" height="3.4" rx="0.8" /><rect x="100" y="89" width="2.3" height="3.4" rx="0.8" /></g>}
+          </g>)}
+
+          {/* ── MOUSE (cat slot): big round ears, tiny pink nose ── */}
+          {species === 'cat' && (<g>
+            <circle cx="64" cy="40" r="17" fill={base} /><circle cx="136" cy="40" r="17" fill={base} />
+            <circle cx="64" cy="42" r="9.5" fill="#F4A8C0" stroke="none" /><circle cx="136" cy="42" r="9.5" fill="#F4A8C0" stroke="none" />
+            <ellipse cx="100" cy="76" rx="42" ry="40" fill={base} />
+            <ellipse cx="100" cy="88" rx="13" ry="9" fill={belly} stroke="none" />
+            <ellipse cx="73" cy="90" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <ellipse cx="127" cy="90" rx="6.5" ry="4" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <Eye cx={86} cy={74} /><Eye cx={114} cy={74} />
+            <ellipse cx="100" cy="86" rx="3" ry="2.4" fill="#e8769a" stroke="none" />
+            {mood !== 'sleepy' && <path d="M100 88 q-4 3.5 -7 1.5 M100 88 q4 3.5 7 1.5" strokeWidth="2" fill="none" />}
+            <g stroke={dark} strokeWidth="1.4" opacity="0.4"><path d="M88 87 L70 84 M88 91 L70 93" /><path d="M112 87 L130 84 M112 91 L130 93" /></g>
+          </g>)}
+
+          {/* ── CHICK (bird): crest + beak, no ears ── */}
+          {species === 'bird' && (<g>
+            {(stage === 3 ? [-26, -9, 9, 26] : [-16, 0, 16]).map((deg, i) => (
+              <path key={i} d="M0 6 C-4 -5 -3 -16 0 -22 C3 -16 4 -5 0 6 Z" fill={ear}
+                transform={`translate(100,40) rotate(${deg}) scale(${stage === 3 ? 1.15 : 0.95})`} />
+            ))}
+            <ellipse cx="100" cy="78" rx="42" ry="40" fill={base} />
+            <ellipse cx="72" cy="92" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <ellipse cx="128" cy="92" rx="7" ry="4.5" fill="#FF8FA3" opacity="0.5" stroke="none" />
+            <Eye cx={86} cy={76} /><Eye cx={114} cy={76} />
+            <path d="M100 86 L109 93 L100 101 L91 93 Z" fill={beak} strokeWidth="2.4" />
+          </g>)}
+
+          {/* ── CROC: low rounded head, eyes raised on top, long snout, scutes ── */}
+          {species === 'croc' && (<g>
+            {(stage === 3 ? [-22, -7, 7, 22] : [-13, 0, 13]).map((dx, i) => (
+              <path key={i} d="M-7 6 Q0 -9 7 6 Z" transform={`translate(${100 + dx},38)`} fill={dark} strokeWidth="2.4" />
+            ))}
+            <ellipse cx="100" cy="66" rx="44" ry="34" fill={base} />
+            {/* eye domes raised on top */}
+            <circle cx="82" cy="50" r="13" fill={base} /><circle cx="118" cy="50" r="13" fill={base} />
+            {/* snout */}
+            <path d="M62 86 Q62 74 100 74 Q138 74 138 86 Q138 104 100 104 Q62 104 62 86 Z" fill={base} />
+            <ellipse cx="100" cy="92" rx="22" ry="10" fill={belly} stroke="none" />
+            <ellipse cx="90" cy="80" rx="2.2" ry="1.7" fill={ink} stroke="none" />
+            <ellipse cx="110" cy="80" rx="2.2" ry="1.7" fill={ink} stroke="none" />
+            {mood !== 'sleepy' && <path d="M86 90 q14 7 28 0" strokeWidth="2.4" fill="none" />}
+            <Eye cx={82} cy={48} /><Eye cx={118} cy={48} />
+          </g>)}
+
+          {/* ── OWL: wide head, ear tufts, facial disc, beak ── */}
+          {species === 'owl' && (<g>
+            <path d="M68 50 L60 24 L86 46 Z" fill={base} /><path d="M132 50 L140 24 L114 46 Z" fill={base} />
+            <ellipse cx="100" cy="74" rx="47" ry="42" fill={base} />
+            <ellipse cx="100" cy="78" rx="34" ry="32" fill={belly} strokeWidth="2.2" />
+            <Eye cx={84} cy={74} /><Eye cx={116} cy={74} />
+            <path d="M100 84 L107 91 L100 99 L93 91 Z" fill={beak} strokeWidth="2.4" />
+          </g>)}
+
+          {/* ════════ stage gear ════════ */}
+          {stage >= 2 && (<g>
+            <path d="M78 110 q22 9 44 0 l0 8 q-22 9 -44 0 Z" fill={THEME.primary} strokeWidth="2.8" />
+            <path d="M116 113 l 9 14 l -7 2 l -5 -11 Z" fill={THEME.primaryDark} strokeWidth="2.8" />
+            <circle cx="100" cy="114" r="4" fill={THEME.gold} strokeWidth="2.2" />
+          </g>)}
+          {stage === 3 && (<g transform="translate(100,28)">
+            <path d="M-14 7 L-14 -3 L-7 3 L0 -8 L7 3 L14 -3 L14 7 Z" fill={THEME.gold} strokeWidth="2.8" />
+            <rect x="-14" y="6" width="28" height="4" rx="2" fill={shade('#d19900', -6)} strokeWidth="2.8" />
+            <g stroke="none" fill="#fff"><circle cx="0" cy="-8" r="2" /><circle cx="-14" cy="-3" r="1.6" /><circle cx="14" cy="-3" r="1.6" /></g>
+          </g>)}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ── Comic line ("comic") — renders the user-supplied character art from
+// character-references/ per species: Hammy(fox)=somg, Mochi(cat)=ghost,
+// Ember(croc)=withcape (king). Fixed assets, so recolor/stage don't apply.
+const COMIC_SRC = {
+  fox:  'Carort.svg',    // Hammy
+  cat:  'explorecat.svg', // Mochi
+  croc: 'withcape.svg',  // Ember (king)
+  bird: 'daddydragon.svg', // Pip
+  owl:  'RedPanda.svg',  // Sunny
+};
+// per-character optical-size tweak — some assets sit/have whitespace and
+// render small under object-fit; nudge them up to match the others.
+const COMIC_SCALE = {
+  owl: 1.1,    // RedPanda sits, with thought bubbles → gentle bump
+  fox: 1.12,   // Carort (chameleon on a rug) reads small → gentle bump
+  // bird (daddydragon) is a full-frame composition → no bump needed
+};
+// per-character nudge (fraction of size; x: negative = left, y: positive = down)
+// for assets whose visual mass is off-centre or have internal whitespace.
+const COMIC_SHIFT = {
+  cat: { x: -0.05 },           // explorecat is right-heavy → nudge left
+  fox: { y: 0.07 },            // Carort has whitespace below the rug → push down to ground it
+  bird: { y: 0.04 },           // daddydragon → small downward nudge (avoid crowding the label)
+};
+function MascotComic({ species = 'fox', size = 160, style, float }) {
+  const file = COMIC_SRC[species] || 'somg.svg';
+  const k = COMIC_SCALE[species] || 1;
+  const { x: dx = 0, y: dy = 0 } = COMIC_SHIFT[species] || {};
+  const tf = [
+    dx ? `translateX(${dx * 100}%)` : '',
+    dy ? `translateY(${dy * 100}%)` : '',
+    k !== 1 ? `scale(${k})` : '',
+  ].filter(Boolean).join(' ');
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}
+         className={float ? 'jx-float' : ''}>
+      <img src={`character-references/${file}`} alt="" draggable="false"
+           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
+                    transform: tf || undefined, transformOrigin: 'center bottom' }} />
+    </div>
+  );
+}
+
 // Dispatcher: pick the line based on the global style flag (set from Tweaks).
 function Mascot(props) {
   const s = window.JX_CHAR_STYLE;
   if (s === 'kr') return <MascotKR {...props} />;
+  if (s === 'toon') return <MascotToon {...props} />;
+  if (s === 'comic') return <MascotComic {...props} />;
   if (s === 'toy') return <MascotToy {...props} />;
   return <MascotClassic {...props} />;
 }
@@ -551,4 +760,4 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-Object.assign(window, { Mascot, MascotClassic, MascotKR, MascotToy, MascotChip, SPECIES, shade });
+Object.assign(window, { Mascot, MascotClassic, MascotKR, MascotToon, MascotComic, MascotToy, MascotChip, SPECIES, shade });

@@ -114,7 +114,7 @@ function ChildHome({ ctx }) {
   const lite = ctx.mode === 'lite';
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       {/* header */}
       <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
@@ -126,8 +126,8 @@ function ChildHome({ ctx }) {
         </button>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '7px 12px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />
-            <span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>{PLAYER.coins}</span>
+            <Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />
+            <span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>{PLAYER.points.toLocaleString()}</span>
           </button>
           <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Icon name="bell" size={19} color={THEME.fg1} stroke={2} />
@@ -144,7 +144,7 @@ function ChildHome({ ctx }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: lite ? '#602f0c' : '#274427' }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
-            <div style={{ fontSize: 12, color: lite ? '#602f0c' : '#274427', opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
+            <div style={{ fontSize: 12, color: lite ? '#602f0c' : '#274427', opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Active while walking · 47 min safe today')}</div>
           </div>
           <Icon name="chevron-right" size={18} color={lite ? '#602f0c' : '#274427'} stroke={2.5} />
         </div>
@@ -298,7 +298,7 @@ function Notifications({ ctx }) {
     { id: 'n3', when: 'today', type: 'safety', icon: 'timer', color: THEME.success, bg: THEME.successLight, t: 'Nice save near Oak St.', s: 'You looked up in 2s — +30 bonus points.', time: '1h', unread: true },
     { id: 'n4', when: 'today', type: 'zone', icon: 'map-pin', color: THEME.danger, bg: THEME.dangerLight, t: 'New danger zone near school', s: 'A busy crossing was added to your route.', time: '3h', unread: false },
     { id: 'n5', when: 'earlier', type: 'streak', icon: 'flame', color: THEME.joy, bg: THEME.joyBg, t: '5-day safe streak!', s: '2 more days unlocks a Special buddy.', time: 'Yest.', unread: false },
-    { id: 'n6', when: 'earlier', type: 'battle', icon: 'swords', color: THEME.camping, bg: THEME.campingBg, t: 'You won a battle vs. Bolt', s: '+120 points and +2 coins earned.', time: 'Yest.', unread: false, go: 'battle' },
+    { id: 'n6', when: 'earlier', type: 'battle', icon: 'swords', color: THEME.camping, bg: THEME.campingBg, t: 'You won a battle vs. Bolt', s: '+120 points earned.', time: 'Yest.', unread: false, go: 'battle' },
     { id: 'n7', when: 'earlier', type: 'parent', icon: 'shield-check', color: THEME.primary, bg: THEME.primaryLight, t: 'A grown-up updated your settings', s: 'Warning style is now set to “gentle”.', time: '2d', unread: false },
   ];
   const [items, setItems] = React.useState(init);

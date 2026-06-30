@@ -1,22 +1,27 @@
 // JoanX — mock data for the prototype (stand-ins for API responses).
 
 const PLAYER = {
-  name: 'Mina', age: 11, points: 1240, coins: 38,
+  name: 'Mina', age: 11, points: 1240,
   streak: 5, level: 7, xp: 320, xpMax: 500,
   safeMinutesToday: 47, safeWalkGoal: 60,
-  activeCharId: 'c4',
+  activeCharId: 'c2',
 };
+
+// F-13: "10 pt per minute of non-use while walking."
+const SAFE_PT_PER_MIN = 10;
 
 // owned + collectible characters
 const CHARACTERS = [
-  { id: 'c1', species: 'fox',  name: 'Hammy',  color: '#d99c5a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
-  { id: 'c3', species: 'bird', name: 'Pip',    color: '#e278a8', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
-  { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#6697c9', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
-  { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#ffbc05', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
-  { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'special', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
-  { id: 'c8', species: 'fox',  name: '???',    color: '#67c7ce', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
+  { id: 'c1', species: 'fox',  name: 'Hammy',  color: '#4b814f', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#e1874a', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c3', species: 'bird', name: 'Pip',    color: '#447aaf', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
+  { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#e0554a', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
+  // ── hidden for now — keeping the app to 4 characters (Hammy / Mochi / Pip / Sunny).
+  //    Restore these to bring back Ember, Pixel and the two locked slots.
+  // { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
+  // { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#6697c9', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
+  // { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'special', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
+  // { id: 'c8', species: 'fox',  name: '???',    color: '#67c7ce', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
 ];
 
 const ROOMS = [
@@ -98,6 +103,6 @@ const PERMISSIONS = [
 ];
 
 Object.assign(window, {
-  PLAYER, CHARACTERS, ROOMS, ACHIEVEMENTS, REACTIONS_7D, RISK_TREND,
+  PLAYER, SAFE_PT_PER_MIN, CHARACTERS, ROOMS, ACHIEVEMENTS, REACTIONS_7D, RISK_TREND,
   PARENT_METRICS, CHILDREN, APP_CATEGORIES, PERMISSIONS,
 });

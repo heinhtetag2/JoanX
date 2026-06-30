@@ -33,13 +33,15 @@ const KO = {
 
   // ── home ──
   'Good afternoon': '안녕하세요', 'Good morning': '좋은 아침이에요',
-  "You're protected": '안전하게 보호 중', 'Safely tracking · 47 min safe today': '안전 추적 중 · 오늘 47분 안전',
+  "You're protected": '안전하게 보호 중', 'Active while walking · 47 min safe today': '걸을 때만 활성화 · 오늘 47분 안전',
   'Lite mode · Protected': '라이트 모드 · 보호 중', 'Phone pauses while you walk': '걸을 때 폰이 잠시 멈춰요',
   'Common': '일반', 'Rare': '레어', 'Special': '스페셜',
   'Evolving': '성장 중', 'Level': '레벨', 'Stage': '단계',
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
   'to': '까지',
-  'Safe points': '안전 포인트', 'Day streak': '연속 일수',
+  'Safe points': '안전 포인트', 'Points today': '오늘 포인트', 'Day streak': '연속 일수', 'Safe days': '안전 일수',
+  'Safe walking today': '오늘의 안전 걷기',
+  'min phone-free': '분 폰 안 보기', 'points per safe minute': '포인트 / 안전 1분',
   "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'min': '분',
   'Keep your head up and walk safe!': '고개를 들고 안전하게 걸어요!',
   "Today's journey": '오늘의 여정', 'Start': '출발', 'left': '남음',
@@ -79,7 +81,7 @@ const KO = {
   'New danger zone near school': '학교 근처 새 위험 구역', 'A busy crossing was added to your route.': '경로에 복잡한 횡단보도가 추가됐어요.',
   'Nice save near Oak St.': '오크 거리 근처에서 잘했어요', 'You looked up in 2s — +30 bonus points.': '2초 만에 고개를 들었어요 — +30 보너스 포인트.',
   '5-day safe streak!': '5일 연속 안전!', '2 more days unlocks a Special buddy.': '2일 더 하면 스페셜 친구를 해금해요.',
-  'You won a battle vs. Bolt': 'Bolt와의 배틀에서 이겼어요', '+120 points and +2 coins earned.': '+120 포인트와 +2 코인 획득.',
+  'You won a battle vs. Bolt': 'Bolt와의 배틀에서 이겼어요', '+120 points earned.': '+120 포인트 획득.',
   'A grown-up updated your settings': '보호자가 설정을 변경했어요', 'Warning style is now set to “gentle”.': '알림 스타일이 “부드럽게”로 설정됐어요.',
 
   // ── collection ──
@@ -122,12 +124,12 @@ const KO = {
   'Sign out': '로그아웃', 'This device is managed by a parent or guardian.': '이 기기는 부모님 또는 보호자가 관리합니다.',
   'English': 'English', '한국어': '한국어',
 
-  // ── coins / shop ──
-  'Coins': '코인', 'Your coins': '내 코인',
+  // ── points / shop ──
+  'Points': '포인트', 'Your points': '내 포인트', 'Min safe': '안전 분',
   'Win battles': '배틀 승리', 'Keep streaks': '연속 유지', 'Daily reward': '매일 보상',
   'Mystery Buddy Box': '미스터리 친구 상자', 'Get a random new buddy': '랜덤으로 새 친구를 받아요',
   'Opened': '열었어요', 'Outfits': '의상', 'Owned': '보유', 'Unlock rooms': '방 잠금 해제',
-  'Not enough coins yet': '아직 코인이 부족해요', 'unlocked!': '해금!', 'A new buddy': '새 친구',
+  'Not enough points yet': '아직 포인트가 부족해요', 'unlocked!': '해금!', 'A new buddy': '새 친구',
   'Ribbon Bow': '리본', 'Explorer Cap': '탐험가 모자',
   'Claimed': '받음', 'Claimed — see you tomorrow!': '받았어요 — 내일 또 만나요!', 'Daily reward claimed!': '오늘의 보상을 받았어요!',
 

@@ -52,7 +52,7 @@ function Battle({ ctx }) {
           {result && (
             <div className="jx-pop" style={{ marginTop: 30, textAlign: 'center' }}>
               <div className="game-font" style={{ fontSize: 36, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
-              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points · +2 coins</div>}
+              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points</div>}
               {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{L('Still earned +40 points for trying!')}</div>}
             </div>
           )}
@@ -114,7 +114,7 @@ function Rewards({ ctx }) {
   const streakDone = [true, true, true, true, true, false, false];
   const [claimed, setClaimed] = React.useState(false);
   const [pop, setPop] = React.useState(false);
-  const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += 100; PLAYER.coins += 5; setTimeout(() => setPop(false), 1900); };
+  const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += 100; setTimeout(() => setPop(false), 1900); };
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.screenBg }}>
       <div style={{ padding: '0 18px' }}>
@@ -159,8 +159,7 @@ function Rewards({ ctx }) {
               <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="gift" size={32} color={THEME.gold} stroke={2.3} /></div>
               <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Daily reward claimed!')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="coins" size={16} color={THEME.gold} stroke={2.2} />+5</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100 points</span>
               </div>
             </div>
           </div>
@@ -198,48 +197,48 @@ function Rewards({ ctx }) {
 
 Object.assign(window, { Battle, Rewards, Shop });
 
-// ── Coins & Shop ─────────────────────────────────────────────────────
+// ── Points & Shop ────────────────────────────────────────────────────
 function Shop({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
-  const [coins, setCoins] = React.useState(PLAYER.coins);
+  const [pts, setPts] = React.useState(PLAYER.points);
   const [owned, setOwned] = React.useState({ scarf: true, cape: true });
   const [toast, setToast] = React.useState(null);
 
   const outfits = [
     { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', price: 0 },
     { id: 'cape', icon: 'wind', name: 'Guardian Cape', price: 0 },
-    { id: 'crown', icon: 'crown', name: 'Star Crown', price: 20 },
-    { id: 'shades', icon: 'glasses', name: 'Cool Shades', price: 15 },
-    { id: 'bow', icon: 'gift', name: 'Ribbon Bow', price: 12 },
-    { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 18 },
+    { id: 'crown', icon: 'crown', name: 'Star Crown', price: 300 },
+    { id: 'shades', icon: 'glasses', name: 'Cool Shades', price: 250 },
+    { id: 'bow', icon: 'gift', name: 'Ribbon Bow', price: 200 },
+    { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 280 },
   ];
   const rooms = [
-    { id: 'studio', name: 'Star Studio', price: 30, icon: 'star' },
-    { id: 'garden', name: 'Garden', price: 50, icon: 'flower-2' },
+    { id: 'studio', name: 'Star Studio', price: 600, icon: 'star' },
+    { id: 'garden', name: 'Garden', price: 900, icon: 'flower-2' },
   ];
 
   const buy = (id, price, label) => {
     if (owned[id]) return;
-    if (coins < price) { setToast({ ok: false, msg: L('Not enough coins yet') }); setTimeout(() => setToast(null), 1500); return; }
-    setCoins(coins - price); setOwned(o => ({ ...o, [id]: true }));
+    if (pts < price) { setToast({ ok: false, msg: L('Not enough points yet') }); setTimeout(() => setToast(null), 1500); return; }
+    PLAYER.points -= price; setPts(PLAYER.points); setOwned(o => ({ ...o, [id]: true }));
     setToast({ ok: true, msg: `${label} ${L('unlocked!')}` }); setTimeout(() => setToast(null), 1600);
   };
 
   const PriceBtn = ({ id, price, label }) => owned[id]
     ? <span style={{ fontSize: 11, fontWeight: 800, color: THEME.success, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="check" size={12} color={THEME.success} stroke={3} />{L('Owned')}</span>
-    : <button onClick={() => buy(id, price, label)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: coins >= price ? THEME.gold : THEME.surface2, color: coins >= price ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="coins" size={12} color={coins >= price ? '#fff' : THEME.fg3} stroke={2.4} />{price}</button>;
+    : <button onClick={() => buy(id, price, label)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: pts >= price ? THEME.gold : THEME.surface2, color: pts >= price ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="star" size={12} color={pts >= price ? '#fff' : THEME.fg3} fill={pts >= price ? '#fff' : THEME.fg3} stroke={2} />{price}</button>;
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
-      <ScreenHeader title={L('Coins')} onBack={() => ctx.nav('home')} />
+      <ScreenHeader title={L('Points')} onBack={() => ctx.nav('home')} />
       <div style={{ padding: '0 16px' }}>
         {/* balance */}
         <div style={{ borderRadius: 22, padding: '20px 18px', background: 'linear-gradient(160deg,#fff2d1,#fff 78%)', boxShadow: THEME.shadowCard, marginBottom: 14, textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Icon name="coins" size={30} color={THEME.gold} stroke={2.2} />
-            <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{coins}</span>
+            <Icon name="star" size={30} color={THEME.gold} fill={THEME.gold} stroke={2} />
+            <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{pts.toLocaleString()}</span>
           </div>
-          <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your coins')}</div>
+          <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your points')}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {[['swords', L('Win battles')], ['flame', L('Keep streaks')], ['gift', L('Daily reward')]].map(([ic, t], i) => (
               <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -257,8 +256,8 @@ function Shop({ ctx }) {
             <div style={{ fontSize: 15, fontWeight: 800 }}>{L('Mystery Buddy Box')}</div>
             <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Get a random new buddy')}</div>
           </div>
-          <button onClick={() => buy('mystery', 25, L('A new buddy'))} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: coins >= 25 && !owned.mystery ? THEME.camping : THEME.surface2, color: coins >= 25 && !owned.mystery ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            {owned.mystery ? L('Opened') : <React.Fragment><Icon name="coins" size={13} color="#fff" stroke={2.4} />25</React.Fragment>}
+          <button onClick={() => buy('mystery', 500, L('A new buddy'))} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: pts >= 500 && !owned.mystery ? THEME.camping : THEME.surface2, color: pts >= 500 && !owned.mystery ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            {owned.mystery ? L('Opened') : <React.Fragment><Icon name="star" size={13} color="#fff" fill="#fff" stroke={2} />500</React.Fragment>}
           </button>
         </div>
 

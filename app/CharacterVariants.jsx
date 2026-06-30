@@ -23,6 +23,17 @@ function mixHue(hex, degShift, lShift, alpha) {
   return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha == null ? 1 : alpha})`;
 }
 
+// Build the soft top-of-screen wash, tinted by the active buddy colour, so the
+// background "mixes" with whatever brand/buddy colour is in play (green buddy →
+// green wash, orange buddy → warm wash, etc.). Falls back to the static token.
+function screenBgFor(color) {
+  if (!color) return THEME.screenBg;
+  return `linear-gradient(180deg, rgba(248,247,247,0) 0, ${THEME.surface2} 400px), `
+    + `linear-gradient(115deg, ${mixHue(color, -30, 0.13, 0.32)} 0%, ${mixHue(color, 2, 0.15, 0.24)} 52%, ${mixHue(color, 32, 0.17, 0.30)} 100%), `
+    + `${THEME.surface2}`;
+}
+Object.assign(window, { screenBgFor, mixHue });
+
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const [color, setColor] = React.useState(orig.color);
@@ -32,7 +43,7 @@ function CharVariant({ ctx, variant }) {
   const [tab, setTab] = React.useState('stat');
   const canEvolve = stage < 3;
 
-  const swatches = ['#e0554a', '#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
+  const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
   const items = [
     { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', on: stage >= 2 },
     { id: 'cape', icon: 'wind', name: 'Guardian Cape', on: stage >= 3 },
@@ -83,7 +94,7 @@ function CharVariant({ ctx, variant }) {
       {canEvolve ? (
         <Button variant="gold" size="lg" fullWidth icon="sprout" onClick={doEvolve}>{L('Evolve to Stage')} {stage + 1}</Button>
       ) : (
-        <div style={{ textAlign: 'center', background: THEME.successLight, color: '#274427', borderRadius: 16, padding: '12px', fontWeight: 800, fontSize: 14 }}>{L('Fully evolved — max stage!')}</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="sparkles" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
       )}
     </div>
   );

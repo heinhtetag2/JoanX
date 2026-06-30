@@ -17,8 +17,8 @@ function HomeActionsS({ ctx, dark }) {
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <Icon name="coins" size={16} color={dark ? '#ffe08a' : THEME.gold} stroke={2.2} />
-        <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.coins}</span>
+        <Icon name="star" size={16} color={dark ? '#ffe08a' : THEME.gold} fill={dark ? '#ffe08a' : THEME.gold} stroke={2} />
+        <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
       </button>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <Icon name="bell" size={19} color={ink} stroke={2} />
@@ -31,16 +31,17 @@ function HomeActionsS({ ctx, dark }) {
 function SafetyPillS({ ctx, lite, skin }) {
   const dark = skin === 'glass';
   const ok = !lite;
-  const bg = dark ? 'rgba(255,255,255,.16)' : (ok ? THEME.successLight : THEME.warningLight);
-  const ink = dark ? '#fff' : (ok ? '#274427' : '#602f0c');
+  // warm amber palette for the protected state (matches the old Lite look)
+  const bg = dark ? 'rgba(255,255,255,.16)' : THEME.warningLight;
+  const ink = dark ? '#fff' : '#602f0c';
   return (
     <div onClick={() => ctx.nav('safety')} style={{ display: 'flex', alignItems: 'center', gap: 11, background: bg, borderRadius: 16, padding: '12px 14px', cursor: 'pointer' }}>
-      <div style={{ width: 36, height: 36, borderRadius: 11, background: ok ? THEME.success : THEME.warning, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.warning, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon name={ok ? 'shield-check' : 'shield'} size={20} color="#fff" stroke={2.3} />
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
-        <div style={{ fontSize: 12, color: ink, opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
+        <div style={{ fontSize: 12, color: ink, opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Active while walking · 47 min safe today')}</div>
       </div>
       <Icon name="chevron-right" size={18} color={ink} stroke={2.5} />
     </div>
@@ -87,7 +88,7 @@ function HomeSimpleOriginal({ ctx }) {
   const lite = ctx.mode === 'lite';
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={42} /></div>
@@ -124,21 +125,20 @@ function HomeSimpleOriginal({ ctx }) {
 
         {/* stat row */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-          <StatCardS icon="award" color={THEME.gold} bg={THEME.goldLight} value={PLAYER.points.toLocaleString()} label={L('Safe points')} big />
-          <StatCardS icon="flame" color={THEME.joy} bg={THEME.joyBg} value={PLAYER.streak} label={L('Day streak')} big />
+          <StatCardS icon="award" color={THEME.gold} bg={THEME.goldLight} value={(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()} label={L('Points today')} big />
+          <StatCardS icon="flame" color={THEME.joy} bg={THEME.joyBg} value={PLAYER.streak} label={L('Safe days')} big />
         </div>
 
-        {/* daily goal */}
-        <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        {/* safe-walk points today — F-13 */}
+        <div onClick={() => ctx.tabTo('rewards')} style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard, cursor: 'pointer' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
               <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
-              {L("Today's safe-walk goal")}
+              {L('Safe walking today')}
             </span>
-            <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
+            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><Icon name="star" size={13} color={THEME.gold} fill={THEME.gold} stroke={2} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
           </div>
-          <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={c.color} height={12} />
-          <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>{L('13 more minutes phone-free while walking earns a +100 bonus.')}</div>
+          <div style={{ fontSize: 12, color: THEME.fg2 }}>{PLAYER.safeMinutesToday} {L('min phone-free')} · {SAFE_PT_PER_MIN} {L('points per safe minute')}</div>
         </div>
       </div>
     </div>
@@ -485,7 +485,7 @@ function HomeSimpleWave({ ctx }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>
-            <div style={{ fontSize: 12, color: THEME.fg2 }}>{lite ? L('Phone pauses while you walk') : L('Safely tracking · 47 min safe today')}</div>
+            <div style={{ fontSize: 12, color: THEME.fg2 }}>{lite ? L('Phone pauses while you walk') : L('Active while walking · 47 min safe today')}</div>
           </div>
           <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.4} />
         </div>
@@ -540,7 +540,7 @@ function HomeSimpleProfile({ ctx }) {
   );
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(c.color) }}>
       {/* header */}
       <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => ctx.nav('profile')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>

@@ -53,11 +53,16 @@
 
 ### The two modes
 
-- **Smart mode** — for older kids who can self-correct. A friendly animal buddy gives a *gentle*
-  warning ("Eyes up!"), the child taps to acknowledge, and stopping quickly earns points & XP that
-  grow and evolve their character. Positive-reinforcement, never nagging.
-- **Lite mode** — for younger kids. A calm full-screen pause covers the phone while walking and
-  lifts the moment they stop. Calls & texts always remain available.
+> **Scope note (2026.06.18 revision):** **Lite mode is excluded from the current delivery scope**
+> (functional spec F-01, with F-10 full-screen block and F-21 time-based policy). **Smart mode is the
+> in-scope mode** and is the app's default. Lite-mode surfaces remain in the prototype for reference
+> only and are not part of this revision.
+
+- **Smart mode** *(in scope)* — for older kids who can self-correct. A friendly animal buddy gives a
+  *gentle* warning ("Eyes up!"), the child taps to acknowledge, and stopping quickly earns points & XP
+  that grow and evolve their character. Positive-reinforcement, never nagging.
+- **Lite mode** *(excluded this revision)* — for younger kids. A calm full-screen pause covers the
+  phone while walking and lifts the moment they stop. Calls & texts always remain available.
 
 ### The reward loop (Smart mode)
 
@@ -163,7 +168,7 @@ the only source of colors, type, spacing, and shared UI:
 | Component | Home module | Role |
 |---|---|---|
 | `Mascot` / `MascotChip` | `characters.jsx` | The parametric character (see §7) |
-| `TabBar` | `nav.jsx` | Bottom tab bar with the raised center safety button |
+| `TabBar` | `nav.jsx` | Bottom tab bar with the raised center **Battle** button; Safety is a standard tab |
 | `ScreenHeader` | screen modules | Pushed-screen nav bar (back ‹ · centered title · right action) |
 | `Confetti` / `RewardToast` | `SafetyMoments.jsx` | Celebration effects |
 
@@ -239,11 +244,11 @@ src/
 
 ## 4.5 Navigation structure
 
-- **Child tab bar** (`CHILD_TABS`): `Home · Collect · [Safety ⛨ raised center] · Battle · Rewards`
+- **Child tab bar** (`CHILD_TABS`): `Home · Collect · [Battle ⚔ raised center] · Safety · Rewards`
 - **Parent tab bar** (`PARENT_TABS`): `Reports · Children · Rules`
 
 Notes:
-- The **raised center button** is the safety status (TripMe's signature motif, reused from its SOS button).
+- The **raised center button** is **Battle** (TripMe's signature raised-center motif); **Safety** is a standard labelled tab.
 - **Tab roots** (Home, Collection, Battle, Rewards, Safety) are top-level destinations.
 - **Pushed screens** (Character detail, Notifications, Shop, Profile…) get a `ScreenHeader` with a
   back chevron top-left; **back always lands somewhere sensible** (pops the stack, or falls back to

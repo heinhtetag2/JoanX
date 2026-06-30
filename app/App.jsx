@@ -10,11 +10,11 @@ function App() {
   const [params, setParams] = React.useState(initialDetail ? { id: PLAYER.activeCharId } : {});
   const [stack, setStack] = React.useState([]);
   const [pScreen, setPScreen] = React.useState('p_reports');
-  const [mode, setMode] = React.useState('lite');
+  const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-original';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'croc', color: '#e0554a', stage: 3, play: 'playful', charStyle: 'toy', homeLayout: initialHome, detailLayout: initialDetail || 'original' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'cat', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-vivid' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -147,14 +147,17 @@ function App() {
 
           <div className="tw-label">Mode</div>
           <div className="tw-row">
-            {[['smart', 'Smart'], ['lite', 'Lite']].map(([v, l]) => (
-              <button key={v} className={'tw-chip' + (mode === v ? ' on' : '')} onClick={() => setMode(v)}>{l}</button>
-            ))}
+            {[['smart', 'Smart'], ['lite', 'Lite']].map(([v, l]) => {
+              const off = v === 'lite';   // Lite (F-01) excluded this revision
+              return (
+                <button key={v} disabled={off} className={'tw-chip' + (mode === v ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => setMode(v)}>{l}{off ? ' (off)' : ''}</button>
+              );
+            })}
           </div>
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['classic', 'Classic'], ['kr', 'Korean'], ['toy', '3D']].map(([v, l]) => (
+            {[['classic', 'Classic'], ['kr', 'Korean'], ['toon', 'K-Toon'], ['comic', 'Comic'], ['toy', '3D']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>
