@@ -151,7 +151,7 @@ function CharacterDetail({ ctx }) {
               {canEvolve ? `${L('Evolve to Stage')} ${stage + 1}` : `${L('Reach')} ${orig.xpMax} XP ${L('to evolve')}`}
             </Button>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="sparkles" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="check-circle-2" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
           )}
         </div>
 
