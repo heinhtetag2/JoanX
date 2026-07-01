@@ -377,7 +377,7 @@ function CharVariant({ ctx, variant }) {
   // ── mascot (centered, evolve animation) ──
   const Buddy = ({ size }) => (
     <div className={evolving ? 'jx-pop' : 'jx-float'} style={{ display: 'flex', justifyContent: 'center', filter: evolving ? `drop-shadow(0 0 24px ${color})` : 'none', transition: 'filter .4s' }}>
-      <Mascot species={orig.species} stage={stage} color={color} size={size} />
+      <Mascot species={orig.species} stage={stage} color={color} size={size} context="detail" />
     </div>
   );
   const Badges = (

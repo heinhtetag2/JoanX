@@ -14,7 +14,7 @@ function App() {
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-original';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'cat', color: '#e1874a', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-vivid' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'cat', color: '#e1874a', name: 'Mochi', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-vivid' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -31,15 +31,31 @@ function App() {
     return () => window.removeEventListener('resize', fit);
   }, []);
 
-  // apply tweak overrides to whichever buddy is currently active (keeps its name)
+  // apply tweak overrides to whichever buddy is currently active, incl. its
+  // name so the label matches the character/style that's actually shown
   React.useEffect(() => {
     const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
     c.species = tw.species; c.color = tw.color; c.stage = tw.stage;
+    if (tw.name) c.name = tw.name;
     setBump(b => b + 1);
-  }, [tw.species, tw.color, tw.stage]);
+  }, [tw.species, tw.color, tw.stage, tw.name]);
 
   // switch the active character line (classic / korean) for every Mascot
   React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
+
+  // Each character style has its own buddy roster (name + brand colour per
+  // species). When the style or the selected buddy changes, adopt that buddy's
+  // name and colour so the label, art, and accent all stay in sync.
+  React.useEffect(() => {
+    const roster = STYLE_BUDDIES[tw.charStyle] || [];
+    // if the current species isn't offered in this style, snap to its first buddy
+    const row = roster.find(r => r[0] === tw.species) || roster[0];
+    if (!row) return;
+    const [species, name, col] = row;
+    if (species !== tw.species || col !== tw.color || name !== tw.name) {
+      setTw(s => ({ ...s, species, color: col, name }));
+    }
+  }, [tw.charStyle, tw.species]);
 
   // commit an evolved / recolored character and make it the active buddy
   const setBuddy = (id, patch) => {
@@ -47,7 +63,7 @@ function App() {
     if (c) Object.assign(c, patch);
     PLAYER.activeCharId = id;
     // keep the tweak panel in sync so it doesn't snap the buddy back
-    if (patch) setTw(s => ({ ...s, species: c.species, color: c.color, stage: c.stage }));
+    if (patch) setTw(s => ({ ...s, species: c.species, color: c.color, stage: c.stage, name: c.name }));
     setBump(b => b + 1);
   };
 
@@ -157,16 +173,20 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['classic', 'Classic'], ['kr', 'Korean'], ['toon', 'K-Toon'], ['comic', 'Comic'], ['toy', '3D']].map(([v, l]) => {
-              const off = v !== 'comic';
-              return (
-                <button key={v} disabled={off} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}{off ? ' (off)' : ''}</button>
-              );
-            })}
+            {[['comic', 'Comic'], ['toy', '3D'], ['cute', '3D Cute']].map(([v, l]) => (
+              <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
+            ))}
           </div>
 
           {role === 'child' && (
             <React.Fragment>
+              <div className="tw-label">Buddy</div>
+              <div className="tw-row">
+                {(STYLE_BUDDIES[tw.charStyle] || []).map(([v, l, c]) => (
+                  <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v, color: c }))}>{l}</button>
+                ))}
+              </div>
+
               <div className="tw-label">Simple layout</div>
               <div className="tw-row">
                 {HOME_LAYOUTS_SIMPLE.map(({ id, label }) => {
@@ -196,12 +216,6 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Buddy species</div>
-              <div className="tw-row">
-                {[['fox', 'Fox'], ['cat', 'Cat'], ['bird', 'Bird'], ['croc', 'Croc'], ['owl', 'Owl']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v }))}>{l}</button>
-                ))}
-              </div>
             </React.Fragment>
           )}
 
