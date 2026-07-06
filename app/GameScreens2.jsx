@@ -5,15 +5,18 @@ function Battle({ ctx }) {
   const [sel, setSel] = React.useState(owned[0]);
   const [phase, setPhase] = React.useState('select'); // select|matching|versus|result
   const [won, setWon] = React.useState(true);
-  const battlesUsed = 3, battlesMax = 5;
-  const opp = { species: 'cat', name: 'Bolt', color: '#9867e4', level: sel.level + 1, rarity: 'rare' };
+  const usedToday = false;                              // A-8: up to 1 challenge per day
+  // A-8: the villain ladder is climbed sequentially — face the next undefeated foe.
+  const idx = Math.max(0, VILLAINS.findIndex(v => !v.defeated));
+  const villain = VILLAINS[idx];
+  const opp = { species: villain.species, name: villain.name, color: villain.color, level: villain.lv, rarity: 'rare' };
 
   const power = c => (c.traits ? (c.traits.guard + c.traits.speed + c.traits.heart) : 180) + c.level * 4;
 
   const start = () => {
     setPhase('matching');
     setTimeout(() => setPhase('versus'), 1600);
-    setTimeout(() => { setWon(power(sel) + 10 >= power({ ...opp, traits: { guard: 70, speed: 75, heart: 65 } })); setPhase('result'); }, 3200);
+    setTimeout(() => { const w = power(sel) + 30 >= villain.power; if (w) villain.defeated = true; setWon(w); setPhase('result'); }, 3200);
   };
 
   if (phase === 'matching') {
@@ -23,8 +26,8 @@ function Battle({ ctx }) {
           <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff', opacity: .3 }} />
           <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="swords" size={40} color="#fff" stroke={2} /></div>
         </div>
-        <div className="game-font" style={{ color: '#fff', fontSize: 21, fontWeight: 500 }}>{L('Finding opponent…')}</div>
-        <div style={{ color: 'rgba(255,255,255,.75)', fontSize: 13, marginTop: 6 }}>{L('Matching within ±3 levels')}</div>
+        <div className="game-font" style={{ color: '#fff', fontSize: 21, fontWeight: 500 }}>{L('Approaching the villain…')}</div>
+        <div style={{ color: 'rgba(255,255,255,.75)', fontSize: 13, marginTop: 6 }}>{L('Lv')}{villain.lv} · {L(villain.name)}</div>
       </div>
     );
   }
@@ -43,9 +46,9 @@ function Battle({ ctx }) {
             </div>
             <div className="game-font" style={{ color: THEME.gold, fontSize: 26, fontWeight: 500 }}>VS</div>
             <div style={{ textAlign: 'center', opacity: result && won ? .4 : 1, transition: 'opacity .4s' }}>
-              <div style={{ transform: 'scaleX(-1)' }}><Mascot species={opp.species} stage={2} color={opp.color} size={120} /></div>
-              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{opp.name}</div>
-              <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {opp.level} · PWR 214</div>
+              <div style={{ transform: 'scaleX(-1)' }}><Mascot species={opp.species} stage={2} color={opp.color} mood="alert" size={120} /></div>
+              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{L(opp.name)}</div>
+              <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {opp.level} · PWR {villain.power}</div>
             </div>
           </div>
 
@@ -70,11 +73,21 @@ function Battle({ ctx }) {
   // select
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
-      <ScreenHeader title={L('Battle')} onBack={() => ctx.nav('home')} right={<Badge variant="primary">{battlesUsed}/{battlesMax}</Badge>} />
+      <ScreenHeader title={L('Battle')} onBack={() => ctx.nav('home')} right={<button onClick={() => ctx.nav('villaindex')} aria-label={L('Villain Dex')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', border: 'none', borderRadius: 999, padding: '7px 12px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{L('Dex')}</span></button>} />
       <div style={{ padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: THEME.primaryLight, borderRadius: 14, padding: '11px 14px', marginBottom: 16 }}>
           <Icon name="info" size={18} color={THEME.primary} stroke={2.3} />
-          <span style={{ fontSize: 12.5, color: THEME.primaryDark, fontWeight: 600 }}>{battlesMax - battlesUsed} {L("battles left today. Battles pause while you're walking.")}</span>
+          <span style={{ fontSize: 12.5, color: THEME.primaryDark, fontWeight: 600 }}>{usedToday ? L('Come back tomorrow for your next challenge.') : L("One villain challenge a day. Battles pause while you're walking.")}</span>
+        </div>
+
+        {/* next villain on the ladder (A-8) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 16, border: `1.5px solid ${THEME.dangerLight}` }}>
+          <div style={{ flexShrink: 0 }}><Mascot species={villain.species} stage={2} color={villain.color} mood="alert" size={56} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: THEME.danger, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Next villain')} · Lv{villain.lv}</div>
+            <div style={{ fontSize: 16, fontWeight: 800 }}>{L(villain.name)}</div>
+            <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Power')} {villain.power}</div>
+          </div>
         </div>
 
         {/* chosen */}

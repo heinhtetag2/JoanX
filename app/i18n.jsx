@@ -21,15 +21,71 @@ const KO = {
   'Gentle warnings + character game. For kids who can self-correct.': '부드러운 알림 + 캐릭터 게임. 스스로 조절할 수 있는 아이에게 좋아요.',
   'Simple full-screen block while walking. For younger kids.': '걸을 때 화면을 잠시 막아요. 어린 아이에게 좋아요.',
   'Continue': '다음', 'Finish setup': '설정 완료', 'Back': '뒤로',
-  'Allow access': '권한 허용',
-  "JoanX still works if you skip one — that feature just turns off. We never read your messages.":
-    '하나를 건너뛰어도 조안X는 작동해요 — 그 기능만 꺼질 뿐이에요. 메시지는 절대 읽지 않아요.',
-  'Optional': '선택',
-  'Motion & Fitness': '동작 및 피트니스', 'Location': '위치', 'Notifications': '알림', 'Screen Time': '스크린 타임',
-  'Detects when your child is walking so JoanX can step in at the right moment.': '아이가 걷는 순간을 감지해 조안X가 알맞은 때 도와줘요.',
-  'Smart mode only — warns near danger zones while walking. Never tracked at rest.': '스마트 모드 전용 — 걸을 때 위험 구역을 알려줘요. 멈춰 있을 땐 추적하지 않아요.',
-  'Sends gentle warnings to your child and updates to you.': '아이에게 부드러운 알림을, 부모님께 소식을 보내요.',
-  'Sees when an app is open while walking. Never reads your messages.': '걸을 때 앱이 열려 있는지만 봐요. 메시지는 읽지 않아요.',
+
+  // permissions overview + request sheets
+  'A few permissions': '몇 가지 권한',
+  'So I can keep you safe while you walk': '걸을 때 너를 지킬 수 있도록',
+  'JoanX asks for these one at a time — you decide on each.': '조안X가 하나씩 요청해요 — 각각 직접 정할 수 있어요.',
+  'Allow all at once, or tap each one. You can change these anytime in settings.':
+    '한 번에 모두 허용하거나, 하나씩 눌러도 돼요. 설정에서 언제든 바꿀 수 있어요.',
+  'Allow': '허용', 'Allowed': '허용됨', 'Allow all': '모두 허용', 'Skip for now': '나중에 하기',
+  'To keep you safe,\nwe need a little help': '너를 지키려면\n도움이 조금 필요해요',
+  'For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.':
+    '걸을 때 조안X가 위험을 알아채려면 아래 권한이 필요해요. 부모님과 함께 켜 주세요.',
+  'Pending': '대기 중', 'Turn on one by one': '하나씩 켜기',
+  "JoanX notices when you're walking on your phone — and turns staying safe into a game.":
+    '조안X는 걸으면서 폰을 볼 때를 알아채고, 안전을 게임으로 바꿔 줘요.',
+  'Every safe walk levels you up': '안전하게 걸을수록 레벨업',
+  'Earn points, evolve your buddy, and beat the distractions.': '포인트를 모으고 친구를 진화시키며 딴짓을 이겨내요.',
+  'Private by design — JoanX never reads your messages': '설계부터 안전하게 — 조안X는 메시지를 절대 읽지 않아요',
+  'Private & secure — only used to keep you safe': '비공개로 안전하게 — 너를 지키는 데만 써요',
+  'Connect with your parent': '부모님과 연결하기',
+  'Ask a parent to scan this in the JoanX Parent app to link your accounts.':
+    '부모님께 조안X 부모 앱으로 스캔해 달라고 하면 두 앱이 연결돼요.',
+  'Or enter this code': '또는 이 코드 입력', "We're connected": '연결했어요',
+  "Enter your parent's\nconnect code": '부모님의\n연결 코드를 입력하세요',
+  'Open the JoanX Parent app and type the 6-digit code shown there.':
+    '조안X 부모 앱을 열고, 화면에 표시된 6자리 코드를 입력하세요.',
+  'Connect': '연결하기',
+  'Show a QR to scan instead': '스캔용 QR 보여주기',
+  'Show this to\nyour parent': '부모님께\n보여주세요',
+  'Have a parent scan this QR in the JoanX Parent app to link your accounts.':
+    '부모님이 조안X 부모 앱으로 이 QR을 스캔하면 두 앱이 연결돼요.',
+  'Enter code instead': '코드로 입력하기',
+  'Valid for 5 minutes': '5분간 유효',
+  'Enter all 6 digits of the code.': '코드 6자리를 모두 입력해 주세요.',
+  'Connected!': '연결 완료!',
+  "You're linked with your parent. Let's finish setting up.": '이제 부모님과 연결됐어요. 마지막 설정만 끝내면 돼요.',
+  'If it expires, create a new code in the Parent app.': '시간이 지나면 부모님 앱에서 새 코드를 만들어 주세요.',
+  "The linking code is valid for 5 minutes. If time runs out, please create a new one in your parent's app.":
+    '연결 코드는 5분간 유효해요. 시간이 지나면 부모님 앱에서 새 코드를 만들어 주세요.',
+  'To keep you safe while you walk, JoanX asks for these one at a time. You can decide on each.':
+    '걸을 때 안전을 지키기 위해 조안X가 하나씩 권한을 요청해요. 각각 직접 정할 수 있어요.',
+  'Permission': '권한', 'Allow': '허용',
+  'Go to settings': '설정으로 이동', 'Do it later': '나중에 하기',
+  'Motion · Activity recognition': '동작 · 활동 인식',
+  'Needed to tell whether you are walking.': '걷고 있는지 알기 위해 필요해요.',
+  'JoanX uses activity recognition to notice when you start walking, so it only steps in at the right moment.':
+    '조안X는 활동 인식으로 걷기 시작하는 순간을 알아채, 딱 알맞은 때에만 도와줘요.',
+  'If denied, JoanX can’t tell when you start walking, so warnings won’t trigger.':
+    '거부하면 걷기 시작을 알 수 없어 경고가 작동하지 않아요.',
+  'Usage access': '사용 정보 접근',
+  'Needed to know when the screen is on and which apps are in use.': '화면이 켜져 있는지와 어떤 앱을 쓰는지 알기 위해 필요해요.',
+  'This lets JoanX see when the screen is on and which app is open while you walk. It never reads your messages.':
+    '걸을 때 화면이 켜져 있는지와 어떤 앱이 열려 있는지 확인해요. 메시지는 절대 읽지 않아요.',
+  'If denied, JoanX can’t tell the screen is in use while walking, so warnings are limited.':
+    '거부하면 걸을 때 화면 사용을 알 수 없어 경고가 제한돼요.',
+  'Display over other apps': '다른 앱 위에 표시',
+  'Needed to show a warning when it’s dangerous.': '위험할 때 경고를 보여주기 위해 필요해요.',
+  'This permission is needed to show a warning on screen when it’s dangerous while you walk. You will be taken to the settings screen.':
+    '걸을 때 위험한 순간 화면에 경고를 띄우기 위해 필요해요. 설정 화면으로 이동해요.',
+  'If denied, Smart mode warnings are limited. Vibration and notifications will still work.':
+    '거부하면 스마트 모드 경고가 제한돼요. 진동과 알림은 계속 작동해요.',
+  'Notifications': '알림',
+  'Needed to receive rewards and guidance.': '보상과 안내를 받기 위해 필요해요.',
+  'JoanX sends gentle warnings and reward updates to you, and progress notes to your parent.':
+    '조안X가 부드러운 경고와 보상 소식을 보내고, 부모님께 진행 상황을 전해요.',
+  'If denied, you won’t receive reward and guidance alerts.': '거부하면 보상과 안내 알림을 받을 수 없어요.',
 
   // ── home ──
   'Good afternoon': '안녕하세요', 'Good morning': '좋은 아침이에요',
@@ -230,6 +286,54 @@ const KO = {
   'Nice save!': '잘했어요!', "Stopped in": '멈춤:', "that's an immediate stop.": '즉시 멈춤이에요.', 'points': '포인트',
   "Let's walk first": '먼저 걷고 나서', "Your phone takes a quick break while you're walking. It comes back as soon as you stop.": '걷는 동안 폰이 잠깐 쉬어요. 멈추면 바로 돌아와요.',
   'Calls & texts still work': '전화와 문자는 계속 돼요', 'Unlocks when you stop walking': '걷기를 멈추면 잠금 해제',
+
+  // ── encyclopedias (A-4 / A-9) ──
+  'Encyclopedia': '도감', 'Villain Dex': '빌런 도감', 'Dex': '도감',
+  'Characters collected': '수집한 캐릭터', 'Villains defeated': '물리친 빌런',
+  'of': '/', 'discovered': '발견', 'Stage': '단계',
+  'Not yet discovered': '아직 발견하지 못함', 'Defeated': '물리침', 'Now': '지금',
+  'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
+
+  // ── battle / villains (A-8) ──
+  'Approaching the villain…': '빌런에게 접근 중…', 'Next villain': '다음 빌런', 'Power': '파워',
+  "One villain challenge a day. Battles pause while you're walking.": '하루 한 번 빌런에 도전해요. 걷는 동안에는 배틀이 멈춰요.',
+  'Come back tomorrow for your next challenge.': '내일 다시 도전할 수 있어요.',
+
+  // ── friends (F-32) ──
+  'Friends': '친구', 'Visit': '방문', 'Visit friends': '친구 방문',
+  'Visit a friend’s house, leave a like, sign the guestbook.': '친구 집을 방문해 좋아요를 남기고 방명록을 써요.',
+  'JoanX has no chat — just friendly visits, likes, and guestbook notes.': 'JoanX에는 채팅이 없어요 — 방문, 좋아요, 방명록만 있어요.',
+  '’s house': '님의 집', 'Featured buddy': '대표 친구',
+  'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
+  'Rooms': '방', 'Guestbook': '방명록', 'Write one line…': '한 줄 남기기…', 'Sign': '남기기',
+
+  // ── my profile / house + decoration (A-6 / A-7) ──
+  'My Profile': '내 프로필', 'Friends see this': '친구에게 보여요', 'My rooms': '내 방',
+  'Change buddy': '친구 바꾸기', 'Decorate rooms': '방 꾸미기', 'Decorate': '꾸미기',
+  'House background': '집 배경', 'Not enough points yet': '포인트가 부족해요',
+  'Notes your friends left when they visited.': '친구들이 방문하며 남긴 메모예요.', 'Like': '좋아요',
+  'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
+  'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
+  'Add some decorations below': '아래에서 장식을 추가해요', 'Placed': '배치됨', 'Owned': '보유',
+  'Plant': '화분', 'Lamp': '램프', 'Rug': '러그', 'Bookshelf': '책장', 'Poster': '포스터', 'Balloons': '풍선',
+  'Edit your buddy, background & rooms': '친구·배경·방을 꾸며요', 'Your friends': '내 친구',
+
+  // ── add friends (F-32) ──
+  'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copy': '복사', 'Copied!': '복사됐어요!',
+  'Add by code': '코드로 추가', 'Friend requests': '친구 요청', 'Suggested friends': '추천 친구',
+  'mutual friends': '함께 아는 친구', 'Added': '추가됨', 'Request sent!': '요청을 보냈어요!', 'Friend added!': '친구가 추가됐어요!',
+
+  // ── in-scope build (danger zones / GNSS gated off) ──
+  'Motion sensor': '모션 센서', 'You beat Distractor': '디스트랙터를 물리쳤어요',
+  "JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.": 'JoanX는 메시지를 읽거나 엿듣거나 위치를 추적하지 않아요. 걷기를 감지하는 기기 내 모션만 사용하며, 자녀의 신원과 분리해 저장해요.',
+
+  // ── AI parent report (F-31) ──
+  'AI Safety Report': 'AI 안전 리포트', 'This week · Mina': '이번 주 · 미나',
+  'In a nutshell': '요약', 'safer': '더 안전', "What's improving": '개선되는 점',
+  'Try this at home': '집에서 해보세요', 'Read the AI Safety Report': 'AI 안전 리포트 보기',
+  'A plain-language summary of Mina’s week': '미나의 한 주를 쉬운 말로 요약',
+  'Fewer risky walking-while-using moments than her first week on JoanX.': 'JoanX 사용 첫 주보다 걸으며 폰을 보는 위험한 순간이 줄었어요.',
+  'AI-generated from this week’s activity. It summarizes behavior trends — it never shares raw locations or messages.': '이번 주 활동을 바탕으로 AI가 생성했어요. 행동 추이를 요약할 뿐, 위치나 메시지 원문은 공유하지 않아요.',
 };
 
 function L(s) { return getLang() === 'ko' ? (KO[s] != null ? KO[s] : s) : s; }

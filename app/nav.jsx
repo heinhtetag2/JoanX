@@ -6,7 +6,7 @@ const CHILD_TABS = [
   { id: 'collection', root: 'collection', icon: 'layout-grid', label: 'Collect', alt: ['character'] },
   { id: 'battle', root: 'battle', icon: 'swords', label: '', center: true },
   { id: 'safety', root: 'safety', icon: 'shield-check', label: 'Safety' },
-  { id: 'rewards', root: 'rewards', icon: 'trophy', label: 'Rewards', disabled: true },
+  { id: 'profile', root: 'profile', icon: 'user', label: 'Profile' },
 ];
 const PARENT_TABS = [
   { id: 'p_reports', root: 'p_reports', icon: 'bar-chart-3', label: 'Reports' },

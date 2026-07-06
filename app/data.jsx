@@ -1,11 +1,59 @@
 // JoanX — mock data for the prototype (stand-ins for API responses).
 
+// ── Feature flags ─────────────────────────────────────────────────────
+// `dangerZones` gates the location / danger-zone family (F-05 danger-zone
+// algorithm, F-06 GNSS) — EXCLUDED in the 2026.06.18 revision. Off = the
+// in-scope build (Smart mode, motion only, no GPS). Flip to true to bring
+// the danger-zone + GNSS surfaces back for reference.
+const FEATURES = { dangerZones: false };
+
 const PLAYER = {
   name: 'Mina', age: 11, points: 1240,
   streak: 5, level: 7, xp: 320, xpMax: 500,
   safeMinutesToday: 47, safeWalkGoal: 60,
   activeCharId: 'c2',
+  // public profile / house (F-32 / A-6·A-7)
+  friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
 };
+
+// ── House backgrounds (A-6) — the backdrop of the child's profile ─────
+const HOUSE_BGS = [
+  { id: 'sky',    name: 'Sky',    grad: 'linear-gradient(180deg,#eaf3ff,#ffffff 82%)', owned: true },
+  { id: 'sunset', name: 'Sunset', grad: 'linear-gradient(180deg,#ffe7d4,#ffffff 82%)', owned: true },
+  { id: 'mint',   name: 'Mint',   grad: 'linear-gradient(180deg,#e2f6ec,#ffffff 82%)', owned: true },
+  { id: 'grape',  name: 'Grape',  grad: 'linear-gradient(180deg,#efe6fd,#ffffff 82%)', owned: false, cost: 200 },
+  { id: 'candy',  name: 'Candy',  grad: 'linear-gradient(180deg,#ffe4f0,#ffffff 82%)', owned: false, cost: 200 },
+  { id: 'night',  name: 'Night',  grad: 'linear-gradient(180deg,#d9e1f5,#ffffff 82%)', owned: false, cost: 300 },
+];
+
+// ── Room decoration items (A-7) — placed inside a room ────────────────
+const DECOR = [
+  { id: 'plant',   name: 'Plant',   icon: 'sprout',       owned: true,  cost: 0 },
+  { id: 'lamp',    name: 'Lamp',    icon: 'lamp',         owned: true,  cost: 0 },
+  { id: 'rug',     name: 'Rug',     icon: 'square',       owned: false, cost: 80 },
+  { id: 'shelf',   name: 'Bookshelf', icon: 'library',    owned: false, cost: 120 },
+  { id: 'poster',  name: 'Poster',  icon: 'image',        owned: false, cost: 90 },
+  { id: 'balloon', name: 'Balloons', icon: 'party-popper', owned: false, cost: 60 },
+];
+
+// messages friends have left on MY profile (F-32 guestbook, received side)
+const MY_GUESTBOOK = [
+  { by: 'Jisoo', avatar: 'cat',  color: '#e278a8', text: 'Love your Hammy!', liked: true },
+  { by: 'Aria',  avatar: 'owl',  color: '#b9a3ef', text: 'Your room is so cozy 💜', liked: false },
+  { by: 'Tom',   avatar: 'bird', color: '#67c7ce', text: 'Streak buddies! 🔥', liked: false },
+];
+
+// add-friends flow
+const FRIEND_REQUESTS = [
+  { id: 'rq1', name: 'Sora', avatar: 'owl', color: '#b9a3ef', mutual: 1 },
+];
+const FRIEND_SUGGESTIONS = [
+  { id: 's1', name: 'Emma', avatar: 'cat',  color: '#f0a6c0', mutual: 2 },
+  { id: 's2', name: 'Kai',  avatar: 'fox',  color: '#e1874a', mutual: 1 },
+  { id: 's3', name: 'Yuna', avatar: 'bird', color: '#67c7ce', mutual: 3 },
+];
+
+
 
 // F-13: "10 pt per minute of non-use while walking."
 const SAFE_PT_PER_MIN = 10;
@@ -16,6 +64,9 @@ const CHARACTERS = [
   { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#e1874a', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
   { id: 'c3', species: 'bird', name: 'Pip',    color: '#447aaf', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
   { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#e0554a', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
+  // legacy (06-29 / 0da9b64) versions of Hammy & Mochi, kept as new characters — old colours, new names
+  { id: 'c9',  species: 'fox', name: 'Toffee', color: '#d99c5a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r2', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c10', species: 'cat', name: 'Bloo',   color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },
   // ── hidden for now — keeping the app to 4 characters (Hammy / Mochi / Pip / Sunny).
   //    Restore these to bring back Ember, Pixel and the two locked slots.
   // { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
@@ -86,6 +137,48 @@ const CHILDREN = [
     } },
 ];
 
+// ── Character encyclopedia (A-4): species blurbs for the dex ──────────
+const SPECIES_INFO = {
+  fox:  { label: 'Fox',  blurb: 'Clever and brave — always the first to look up and check the road.' },
+  cat:  { label: 'Cat',  blurb: 'Quick on its feet. Loves a fast, safe dash across a quiet street.' },
+  bird: { label: 'Bird', blurb: 'Eyes in the sky — spots busy crossings from far away.' },
+  owl:  { label: 'Owl',  blurb: 'A calm, watchful night-walker who never rushes.' },
+  croc: { label: 'Croc', blurb: 'Tough and steady. Nothing rattles this careful walker.' },
+};
+
+// ── Villain ladder (A-8) — PvE only, defeated sequentially. The first
+//    undefeated villain is the current challenger; ones past it stay
+//    "undiscovered" (silhouette) in the encyclopedia (A-9). ──────────
+const VILLAINS = [
+  { lv: 1,  name: 'Smombie Rookie',    species: 'cat',  color: '#8a94a6', power: 60,  defeated: true,  desc: 'A freshly-hatched screen zombie. Shuffles along, eyes glued to the glow.' },
+  { lv: 2,  name: 'Smombie Walker',    species: 'fox',  color: '#7d8698', power: 95,  defeated: true,  desc: 'Walks and scrolls at once — bumps into lampposts, never looks up.' },
+  { lv: 3,  name: 'Distractor',        species: 'bird', color: '#6f7a90', power: 130, defeated: true,  desc: 'Pings and buzzes to steal your attention at the worst moment.' },
+  { lv: 4,  name: 'Dark Walker',       species: 'owl',  color: '#5f6b82', power: 165, defeated: false, desc: 'Crosses the road head-down in the dark. Your next challenge.' },
+  { lv: 5,  name: 'Crossroad Phantom', species: 'croc', color: '#586582', power: 205, defeated: false, desc: 'Haunts busy junctions, luring walkers into traffic.' },
+  { lv: 6,  name: 'Alley Stalker',     species: 'cat',  color: '#515d78', power: 245, defeated: false, desc: 'Lurks where sightlines are short and cars come fast.' },
+  { lv: 7,  name: 'Screen Master',     species: 'fox',  color: '#49566f', power: 285, defeated: false, desc: 'Bends every walker to the pull of the screen.' },
+  { lv: 8,  name: 'Attention Reaper',  species: 'bird', color: '#414d66', power: 330, defeated: false, desc: 'Harvests focus until nothing is left for the road.' },
+  { lv: 9,  name: 'Doom Walker',       species: 'owl',  color: '#39445c', power: 380, defeated: false, desc: 'Marches on, blind to every warning.' },
+  { lv: 10, name: 'King Smombie',      species: 'croc', color: '#2f3a52', power: 440, defeated: false, desc: 'Ruler of the screen zombies. Beat it to master the streets.' },
+];
+
+// ── Friends (F-32 / A-10) — visit-only: featured buddy, rooms, likes,
+//    one-line guestbook. No chat, no real-time interaction. ──────────
+const FRIENDS = [
+  { id: 'f1', name: 'Jisoo', avatar: 'cat',  color: '#e278a8', online: true,  streak: 9,  chars: 11, likes: 24, liked: false,
+    featured: { species: 'cat',  name: 'Cloud',  color: '#e278a8', stage: 3, rarity: 'special' },
+    rooms: [{ name: 'Candy Room', theme: '#fdeef5' }, { name: 'Cloud Loft', theme: '#eef4fd' }],
+    guest: [{ by: 'Tom', text: 'Your Cloud is so cool!' }, { by: 'Aria', text: 'Nice 9-day streak 🔥' }] },
+  { id: 'f2', name: 'Tom',   avatar: 'bird', color: '#67c7ce', online: false, streak: 4,  chars: 7,  likes: 12, liked: true,
+    featured: { species: 'bird', name: 'Sky',    color: '#67c7ce', stage: 2, rarity: 'rare' },
+    rooms: [{ name: 'Ocean Nook', theme: '#e9f4f5' }],
+    guest: [{ by: 'Mina', text: 'Sky looks awesome!' }] },
+  { id: 'f3', name: 'Aria',  avatar: 'owl',  color: '#b9a3ef', online: true,  streak: 15, chars: 14, likes: 31, liked: false,
+    featured: { species: 'owl',  name: 'Nova',   color: '#b9a3ef', stage: 3, rarity: 'rare' },
+    rooms: [{ name: 'Star Studio', theme: '#f5f1fd' }, { name: 'Moon Deck', theme: '#eef0fb' }],
+    guest: [{ by: 'Jisoo', text: 'Teach me your streak secrets!' }, { by: 'Tom', text: '15 days, wow' }] },
+];
+
 const APP_CATEGORIES = [
   { id: 'video',   name: 'Video',         icon: 'play', blocked: true },
   { id: 'games',   name: 'Games',         icon: 'gamepad-2', blocked: true },
@@ -95,14 +188,34 @@ const APP_CATEGORIES = [
   { id: 'phone',   name: 'Phone & Texts', icon: 'phone', blocked: false, locked: true },
 ];
 
+// Onboarding permission grants. Smart mode is the only mode, so every
+// permission is requested one screen at a time (Android-style special
+// permissions). `blurb` = the one-line "Needed to…" summary shown in the
+// overview list; `detail` = the request-sheet body; `warn` = the amber
+// note shown if the child declines.
 const PERMISSIONS = [
-  { id: 'motion', icon: 'activity',   name: 'Motion & Fitness', why: 'Detects when your child is walking so JoanX can step in at the right moment.', required: true },
-  { id: 'location', icon: 'map-pin',  name: 'Location',         why: 'Smart mode only — warns near danger zones while walking. Never tracked at rest.', required: false },
-  { id: 'notif',  icon: 'bell',       name: 'Notifications',    why: 'Sends gentle warnings to your child and updates to you.', required: true },
-  { id: 'screen', icon: 'smartphone', name: 'Screen Time',      why: 'Sees when an app is open while walking. Never reads your messages.', required: true },
+  { id: 'motion', icon: 'activity', name: 'Motion · Activity recognition',
+    blurb: 'Needed to tell whether you are walking.',
+    detail: 'JoanX uses activity recognition to notice when you start walking, so it only steps in at the right moment.',
+    warn: 'If denied, JoanX can’t tell when you start walking, so warnings won’t trigger.', required: true },
+  { id: 'usage', icon: 'app-window', name: 'Usage access',
+    blurb: 'Needed to know when the screen is on and which apps are in use.',
+    detail: 'This lets JoanX see when the screen is on and which app is open while you walk. It never reads your messages.',
+    warn: 'If denied, JoanX can’t tell the screen is in use while walking, so warnings are limited.', required: true },
+  { id: 'overlay', icon: 'layers', name: 'Display over other apps',
+    blurb: 'Needed to show a warning when it’s dangerous.',
+    detail: 'This permission is needed to show a warning on screen when it’s dangerous while you walk. You will be taken to the settings screen.',
+    warn: 'If denied, Smart mode warnings are limited. Vibration and notifications will still work.', required: true,
+    settings: true },  // "special" permission → opens the settings request sheet; others grant on tap
+  { id: 'notif', icon: 'bell', name: 'Notifications',
+    blurb: 'Needed to receive rewards and guidance.',
+    detail: 'JoanX sends gentle warnings and reward updates to you, and progress notes to your parent.',
+    warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
 Object.assign(window, {
   PLAYER, SAFE_PT_PER_MIN, CHARACTERS, ROOMS, ACHIEVEMENTS, REACTIONS_7D, RISK_TREND,
   PARENT_METRICS, CHILDREN, APP_CATEGORIES, PERMISSIONS,
+  SPECIES_INFO, VILLAINS, FRIENDS, FEATURES,
+  HOUSE_BGS, DECOR, MY_GUESTBOOK, FRIEND_REQUESTS, FRIEND_SUGGESTIONS,
 });

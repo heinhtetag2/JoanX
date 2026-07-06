@@ -91,6 +91,66 @@ const Legend = ({ items }) => (
   </div>
 );
 
+// ── FAQ — grouped Q&A used by the Help / FAQ parent pages ────────────
+// Answers mirror the functional spec (Smart mode, ~10pt/safe-min, motion-only
+// detection, privacy). Keep parent-facing: calm, plain language, no jargon.
+const FAQ_GROUPS = [
+  { label: 'Getting started', items: [
+    { q: 'What’s the difference between Smart and Lite mode?',
+      a: 'Smart mode gently warns your child with a friendly character and rewards safe walking with a collectible game. Lite mode simply pauses the screen while walking. Calls and texts always stay available in both.' },
+    { q: 'How do I add another child?',
+      a: 'Open Children, tap the + button, then install JoanX on your child’s phone and enter the pairing code shown. Their device links to your account — up to 5 children on the Family plan.' },
+    { q: 'Does JoanX need any extra device or wearable?',
+      a: 'No. JoanX works entirely from your child’s smartphone using its built-in motion sensors — nothing to buy, charge, or carry.' },
+  ] },
+  { label: 'Safety & warnings', items: [
+    { q: 'How does JoanX know my child is walking on their phone?',
+      a: 'It reads the phone’s built-in motion sensors to detect a walking rhythm, and only steps in when walking and screen use continue together for about 10 seconds.' },
+    { q: 'Will it warn my child on the bus or in a car?',
+      a: 'It’s tuned to the specific rhythm of walking, so riding in a vehicle shouldn’t trigger a warning. We keep fine-tuning detection accuracy with real-world use.' },
+    { q: 'What happens when a risky moment is detected?',
+      a: 'One gentle buzz, then a soft on-screen nudge and a friendly character message — never repeated buzzing. Your child looks up, and the warning clears.' },
+    { q: 'Can I make warnings more or less sensitive?',
+      a: 'Yes. Open a child’s Rules & settings and adjust Warning sensitivity between Gentle, Balanced, and Strict at any time.' },
+  ] },
+  { label: 'Points & rewards', items: [
+    { q: 'How are points earned?',
+      a: 'In Smart mode your child earns points for walking safely — roughly 10 points per phone-free minute of walking, plus a bonus for stopping quickly after a warning. Points grow and evolve their character.' },
+    { q: 'Won’t the game just distract my child while walking?',
+      a: 'No — the game only opens when your child is stopped. Nothing rewarding is tappable while they’re walking, so the fun always waits until it’s safe.' },
+  ] },
+  { label: 'Privacy & data', items: [
+    { q: 'Is my child’s location private?',
+      a: 'JoanX never reads messages or listens in. Location is used only in Smart mode while walking, and it’s stored separately from your child’s identity.' },
+    { q: 'What data does JoanX store, and can I delete it?',
+      a: 'Only the safety events and settings needed to protect your child. You can export or permanently delete everything anytime from Settings → Data & privacy.' },
+  ] },
+];
+
+// Self-contained accordion: tap a question to reveal its answer.
+function FaqAccordion({ items }) {
+  const [open, setOpen] = React.useState(null);
+  return (
+    <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+      {items.map((it, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={i} style={{ borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+            <button onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              <Icon name="help-circle" size={18} color={THEME.primary} stroke={2.2} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: THEME.fg1 }}>{L(it.q)}</span>
+              <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size={17} color={THEME.fg3} stroke={2.3} />
+            </button>
+            {isOpen && (
+              <div style={{ padding: '0 16px 16px 44px', fontSize: 13, color: THEME.fg2, lineHeight: 1.5 }}>{L(it.a)}</div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
 function ParentReports({ ctx }) {
   const m = PARENT_METRICS;
@@ -136,29 +196,15 @@ function ParentReports({ ctx }) {
           ))}
         </div>
 
-        {/* activity card — inline stats + bars-and-line chart + CTA */}
-        <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
-            <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
+        {/* AI report entry (F-31) */}
+        <button onClick={() => ctx.nav('p_aireport')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 20, padding: 16, marginTop: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', background: 'linear-gradient(135deg,#447aaf,#2b5782)', boxShadow: THEME.shadowPrimary }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="sparkles" size={20} color="#fff" stroke={2.3} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: '#fff' }}>{L('Read the AI Safety Report')}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.82)', marginTop: 2 }}>{L('A plain-language summary of Mina’s week')}</div>
           </div>
-          <div style={{ display: 'flex', gap: 22, marginBottom: 18 }}>
-            {inline.map(s => (
-              <div key={s.l}>
-                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{s.v}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c }} />
-                  <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{L(s.l)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={10} yStep={2} barW={14} />
-          <button onClick={() => ctx.nav('p_children')} style={{ width: '100%', marginTop: 18, display: 'flex', alignItems: 'center', gap: 10, background: THEME.surface2, border: 'none', borderRadius: 14, padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Icon name="sparkles" size={17} color={THEME.primary} stroke={2.3} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1 }}>{L('Build safer habits with Mina')}</span>
-          </button>
-        </div>
+          <Icon name="chevron-right" size={20} color="#fff" stroke={2.4} />
+        </button>
 
         {/* response mix card */}
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
@@ -189,6 +235,30 @@ function ParentReports({ ctx }) {
             ))}
           </div>
           <Legend items={[['Immediate', RESP.immediate], ['Delayed', RESP.delayed], ['Ignored', RESP.ignored]]} />
+        </div>
+
+        {/* activity card — inline stats + bars-and-line chart + CTA */}
+        <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
+            <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
+          </div>
+          <div style={{ display: 'flex', gap: 22, marginBottom: 18 }}>
+            {inline.map(s => (
+              <div key={s.l}>
+                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{s.v}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c }} />
+                  <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{L(s.l)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={10} yStep={2} barW={14} />
+          <button onClick={() => ctx.nav('p_children')} style={{ width: '100%', marginTop: 18, display: 'flex', alignItems: 'center', gap: 10, background: THEME.surface2, border: 'none', borderRadius: 14, padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Icon name="sparkles" size={17} color={THEME.primary} stroke={2.3} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1 }}>{L('Build safer habits with Mina')}</span>
+          </button>
         </div>
 
         {/* insight */}
@@ -358,7 +428,7 @@ function ParentChildren({ ctx }) {
           <Icon name="shield-check" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
             <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.primaryDark }}>{L('Privacy first')}</div>
-            <div style={{ fontSize: 12.5, color: THEME.primaryDark, lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{L("JoanX never reads messages or listens. Location is used only in Smart mode while walking, and stored separately from your child's identity.")}</div>
+            <div style={{ fontSize: 12.5, color: THEME.primaryDark, lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{FEATURES.dangerZones ? L("JoanX never reads messages or listens. Location is used only in Smart mode while walking, and stored separately from your child's identity.") : L("JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.")}</div>
           </div>
         </div>
       </div>
@@ -411,15 +481,16 @@ function ParentAccount({ ctx }) {
         {label(L('Privacy & data'))}
         {card(<React.Fragment>
           <div onClick={() => ctx.nav('p_detail', { page: 'privacy' })} style={rowStyle(0)}><Icon name="shield-check" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Data & privacy')}</div>{chev}</div>
-          <div onClick={() => ctx.nav('p_detail', { page: 'location' })} style={rowStyle(1)}><Icon name="map-pin" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Location history')}</div>{chev}</div>
-          <div onClick={() => ctx.nav('p_detail', { page: 'export' })} style={rowStyle(2)}><Icon name="download" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Export my data')}</div>{chev}</div>
+          {FEATURES.dangerZones && <div onClick={() => ctx.nav('p_detail', { page: 'location' })} style={rowStyle(1)}><Icon name="map-pin" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Location history')}</div>{chev}</div>}
+          <div onClick={() => ctx.nav('p_detail', { page: 'export' })} style={rowStyle(FEATURES.dangerZones ? 2 : 1)}><Icon name="download" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Export my data')}</div>{chev}</div>
         </React.Fragment>)}
 
         {label(L('General'))}
         {card(<React.Fragment>
           <div onClick={() => ctx.nav('p_detail', { page: 'language' })} style={rowStyle(0)}><Icon name="languages" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Language')}</div><span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginRight: 4 }}>{ctx.lang === 'ko' ? '한국어' : 'English'}</span>{chev}</div>
           <div onClick={() => ctx.nav('p_detail', { page: 'help' })} style={rowStyle(1)}><Icon name="help-circle" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Help & support')}</div>{chev}</div>
-          <div onClick={() => ctx.nav('p_detail', { page: 'about' })} style={rowStyle(2)}><Icon name="info" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('About JoanX')}</div>{chev}</div>
+          <div onClick={() => ctx.nav('p_detail', { page: 'faq' })} style={rowStyle(2)}><Icon name="messages-square" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('FAQ')}</div>{chev}</div>
+          <div onClick={() => ctx.nav('p_detail', { page: 'about' })} style={rowStyle(3)}><Icon name="info" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('About JoanX')}</div>{chev}</div>
         </React.Fragment>)}
 
         {card(
@@ -515,8 +586,8 @@ function ParentDetail({ ctx }) {
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
   const card = (children, mb = 18) => <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: mb, overflow: 'hidden' }}>{children}</div>;
   const rowStyle = (i, click) => ({ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: click ? 'pointer' : 'default' });
-  const navRow = (i, icon, title, trailing, sub) => (
-    <div style={rowStyle(i, true)}>
+  const navRow = (i, icon, title, trailing, sub, onClick) => (
+    <div style={rowStyle(i, true)} onClick={onClick}>
       {icon && <Icon name={icon} size={18} color={THEME.fg2} stroke={2.2} />}
       <div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{title}</div>{sub && <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{sub}</div>}</div>
       {trailing || chev}
@@ -670,10 +741,11 @@ function ParentDetail({ ctx }) {
       <React.Fragment>
         {label(L('Popular questions'))}
         {card(<React.Fragment>
-          {navRow(0, 'help-circle', L('How does Smart mode work?'))}
-          {navRow(1, 'help-circle', L('Is my child’s location private?'))}
-          {navRow(2, 'help-circle', L('How do I add another child?'))}
-          {navRow(3, 'help-circle', L('How are points earned?'))}
+          {navRow(0, 'help-circle', L('What’s the difference between Smart and Lite mode?'), undefined, undefined, () => ctx.nav('p_detail', { page: 'faq' }))}
+          {navRow(1, 'help-circle', L('Is my child’s location private?'), undefined, undefined, () => ctx.nav('p_detail', { page: 'faq' }))}
+          {navRow(2, 'help-circle', L('How do I add another child?'), undefined, undefined, () => ctx.nav('p_detail', { page: 'faq' }))}
+          {navRow(3, 'help-circle', L('How are points earned?'), undefined, undefined, () => ctx.nav('p_detail', { page: 'faq' }))}
+          {navRow(4, 'messages-square', L('Browse all FAQs'), chev, undefined, () => ctx.nav('p_detail', { page: 'faq' }))}
         </React.Fragment>)}
         {label(L('Contact us'))}
         {card(<React.Fragment>
@@ -684,6 +756,24 @@ function ParentDetail({ ctx }) {
           {navRow(0, 'book-open', L('User guide'))}
           {navRow(1, 'play-circle', L('Video tutorials'))}
         </React.Fragment>)}
+      </React.Fragment>
+    ) },
+
+    faq: { title: L('FAQ'), sub: L('Answers to common questions'), back: 'help', body: (
+      <React.Fragment>
+        {FAQ_GROUPS.map((g, gi) => (
+          <React.Fragment key={gi}>
+            {label(L(g.label))}
+            <FaqAccordion items={g.items} />
+          </React.Fragment>
+        ))}
+        <div style={{ display: 'flex', gap: 12, background: THEME.primaryLight, borderRadius: 18, padding: 16, marginTop: 2 }}>
+          <Icon name="message-circle" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.primaryDark }}>{L('Still need help?')}</div>
+            <div style={{ fontSize: 12.5, color: THEME.primaryDark, lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{L('Chat with our support team or email help@joanx.app — we usually reply within a day.')}</div>
+          </div>
+        </div>
       </React.Fragment>
     ) },
 
@@ -719,8 +809,81 @@ function ParentDetail({ ctx }) {
   const p = PAGES[page] || PAGES.account;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={p.sub} title={p.title} onBack={() => ctx.nav('p_account')} />
+      <ParentHead sub={p.sub} title={p.title} onBack={() => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')} />
       <div style={{ padding: '8px 16px 0' }}>{p.body}</div>
+    </div>
+  );
+}
+
+// ── AI parent report (F-31) — natural-language read of the week ──────
+function ParentAIReport({ ctx }) {
+  const m = PARENT_METRICS;
+  const first = RISK_TREND[0], last = RISK_TREND[RISK_TREND.length - 1];
+  const summary = L('This week Mina is clearly building a safer walking habit. Daily risky phone-use moments fell from {a} to {b} — about {c}% fewer than her first week. She now stops for {d}% of warnings, and her average reaction time is down to {e} seconds. Mornings are her strongest window; most remaining risks show up on the after-school walk.')
+    .replace('{a}', first).replace('{b}', last).replace('{c}', m.riskReduction).replace('{d}', m.acceptance).replace('{e}', m.avgResponse);
+
+  const improving = [
+    { icon: 'timer', t: 'Faster reactions', s: `${L('Now')} ${m.avgResponse}s ${L('on average — down 0.3s from last week.')}` },
+    { icon: 'trending-down', t: 'Fewer risky moments', s: `${first} → ${last} ${L('per day across the week.')}` },
+    { icon: 'footprints', t: 'More safe walking', s: `${m.safeWalkMin} ${L('safe minutes this week (+12%).')}` },
+  ];
+  const actions = [
+    { icon: 'sun', t: 'Keep the morning routine', s: L('Her morning commute is nearly risk-free — whatever you’re doing, it’s working.') },
+    { icon: 'map-pin', t: 'Talk about the after-school walk', s: L('Most warnings happen near Oak St. around 3pm. A gentle check-in can help.') },
+    { icon: 'flame', t: 'Celebrate the streak', s: L('Mina is on a 5-day safe streak. Naming it out loud reinforces the habit.') },
+  ];
+
+  return (
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+      <ParentHead sub={L('This week · Mina')} title={L('AI Safety Report')} onBack={() => ctx.nav('p_reports')} />
+      <div style={{ padding: '8px 16px 0' }}>
+
+        {/* AI summary */}
+        <div style={{ borderRadius: 22, padding: 18, background: 'linear-gradient(160deg,#eef3fe,#fff 82%)', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="sparkles" size={17} color="#fff" stroke={2.3} /></div>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>{L('In a nutshell')}</span>
+            <Badge variant="primary" style={{ marginLeft: 'auto' }}>{L('AI')}</Badge>
+          </div>
+          <div style={{ fontSize: 13.5, color: THEME.fg1, lineHeight: 1.55 }}>{summary}</div>
+        </div>
+
+        {/* headline metric */}
+        <div style={{ display: 'flex', gap: 12, background: THEME.successLight, borderRadius: 18, padding: 16, marginBottom: 16 }}>
+          <Icon name="trending-up" size={22} color={THEME.success} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#274427', lineHeight: 1 }}>{m.riskReduction}% {L('safer')}</div>
+            <div style={{ fontSize: 12.5, color: '#274427', opacity: .9, marginTop: 4, lineHeight: 1.4 }}>{L('Fewer risky walking-while-using moments than her first week on JoanX.')}</div>
+          </div>
+        </div>
+
+        {/* what's improving */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L("What's improving")}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+          {improving.map((it, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', alignItems: 'center' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={it.icon} size={17} color={THEME.success} stroke={2.3} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{L(it.t)}</div><div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{it.s}</div></div>
+            </div>
+          ))}
+        </div>
+
+        {/* recommended actions */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Try this at home')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 16, overflow: 'hidden' }}>
+          {actions.map((it, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', alignItems: 'center' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={it.icon} size={17} color={THEME.primary} stroke={2.3} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{L(it.t)}</div><div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1, lineHeight: 1.4 }}>{it.s}</div></div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', fontSize: 11, color: THEME.fg3, marginTop: 4, lineHeight: 1.5, textAlign: 'center', padding: '0 12px' }}>
+          <Icon name="sparkles" size={12} color={THEME.fg3} stroke={2.2} />
+          {L('AI-generated from this week’s activity. It summarizes behavior trends — it never shares raw locations or messages.')}
+        </div>
+      </div>
     </div>
   );
 }
@@ -803,4 +966,4 @@ function ParentSchedule({ ctx }) {
   );
 }
 
-Object.assign(window, { ParentReports, ParentSettings, ParentChildren, ParentAccount, ParentAddChild, ParentDetail, ParentSchedule });
+Object.assign(window, { ParentReports, ParentSettings, ParentChildren, ParentAccount, ParentAddChild, ParentDetail, ParentSchedule, ParentAIReport });

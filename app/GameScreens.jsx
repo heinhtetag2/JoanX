@@ -21,6 +21,15 @@ function Collection({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
       <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{CHARACTERS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
+        {/* encyclopedia + friends entry points */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+          {[['book-open', 'Encyclopedia', 'chardex', THEME.primary, THEME.primaryLight], ['users', 'Visit friends', 'friends', THEME.joy, THEME.joyBg]].map(([ic, lbl, dest, col, bg]) => (
+            <button key={dest} onClick={() => ctx.nav(dest)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: 'none', borderRadius: 16, padding: '13px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <span style={{ width: 34, height: 34, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={ic} size={17} color={col} stroke={2.3} /></span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, textAlign: 'left', lineHeight: 1.15 }}>{L(lbl)}</span>
+            </button>
+          ))}
+        </div>
         {ROOMS.map(room => {
           const placed = owned.filter(c => c.room === room.id);
           return (

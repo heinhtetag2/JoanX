@@ -99,17 +99,20 @@ function App() {
       battle: <Battle ctx={ctx} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
+      chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} />,
+      friends: <Friends ctx={ctx} />, friendhouse: <FriendHouse ctx={ctx} />,
+      myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     body = ({
       p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
-      p_schedule: <ParentSchedule ctx={ctx} />,
+      p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 
-  const activeChildTab = ['character'].includes(screen) ? 'collection' : screen;
+  const activeChildTab = ['character', 'chardex', 'villaindex', 'friends', 'friendhouse', 'myhouse', 'decorate', 'addfriend'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && onboarded && !['battle'].includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
 
@@ -173,7 +176,7 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['comic', 'Comic'], ['toy', '3D'], ['cute', '3D Cute']].map(([v, l]) => (
+            {[['comic', 'Comic'], ['toy', '3D'], ['cute', '3D Cute'], ['soft', 'Soft 3D']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>

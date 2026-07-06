@@ -33,6 +33,14 @@
   .play-max  { filter: saturate(1.18); }
   .jx-nofun .game-font { font-family: var(--font-sans) !important; letter-spacing: -0.3px; font-weight: 800; }
   .jx-still .jx-float { animation: none !important; }
+  @keyframes jxSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .jx-sheet-up { animation: jxSheetUp .28s cubic-bezier(.22,.61,.36,1); }
+  @keyframes jxPop { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: scale(1); } }
+  .jx-pop { animation: jxPop .5s ease both; }
+  @keyframes jxScan { from { top: 26px; } to { top: 208px; } }
+  .jx-scan { animation: jxScan 1.7s ease-in-out infinite alternate; }
+  @keyframes jxShake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)} }
+  .jx-shake { animation: jxShake .5s cubic-bezier(.36,.07,.19,.97) both; }
 
   /* control bar */
   .topbar { display: flex; align-items: center; gap: 10px; }
@@ -82,6 +90,7 @@
 <script type="text/babel" src="app/SafetyMoments.jsx?v=2"></script>
 <script type="text/babel" src="app/GameScreens.jsx?v=2"></script>
 <script type="text/babel" src="app/GameScreens2.jsx?v=2"></script>
+<script type="text/babel" src="app/GameExtras.jsx?v=2"></script>
 <script type="text/babel" src="app/CharacterVariants.jsx?v=2"></script>
 <script type="text/babel" src="app/ParentScreens.jsx?v=2"></script>
 <script type="text/babel" src="app/App.jsx?v=2"></script>
