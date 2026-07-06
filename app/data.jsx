@@ -113,7 +113,8 @@ const PARENT_METRICS = {
 };
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a',
+  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
+    pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
@@ -124,7 +125,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce',
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2,
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
@@ -132,6 +133,16 @@ const CHILDREN = [
       rules: [
         { t: 'School commute', s: 'Mon–Fri · 8:00–8:40 AM', tag: 'Strict' },
         { t: 'Playground',     s: 'Daily · 4:00–6:00 PM',   tag: 'Strict' },
+        { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
+      ],
+    } },
+  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8,
+    cfg: {
+      mode: 'smart',
+      cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
+      sens: 2, notif: true, gam: true,
+      rules: [
+        { t: 'School commute', s: 'Mon–Fri · 8:10–8:40 AM', tag: 'Strict' },
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },

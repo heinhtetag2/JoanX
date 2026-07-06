@@ -43,3 +43,32 @@ body { margin: 0; }
 .jx-skeleton { background: linear-gradient(90deg, #ebebea 25%, #f8f7f7 37%, #ebebea 63%); background-size: 200% 100%; animation: jxShimmer 1.3s infinite; }
 
 @keyframes jxConfetti { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(220px) rotate(420deg); opacity: 0; } }
+.jx-confetti { animation: jxConfetti 1.6s cubic-bezier(.4,0,.6,1) forwards; }
+
+/* Surprise-gift reveal: a clean scale-up from center, gentle overshoot, no rotation */
+@keyframes jxGiftPop {
+  0%   { transform: scale(.4); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.jx-gift-pop { animation: jxGiftPop .6s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Radial burst ring that flares out once from the true center behind the gift.
+   Centering translate is baked into every frame so the scale doesn't reset position. */
+@keyframes jxBurst {
+  0%   { transform: translate(-50%,-50%) scale(.3); opacity: .55; }
+  100% { transform: translate(-50%,-50%) scale(1.9); opacity: 0; }
+}
+.jx-burst { animation: jxBurst .9s cubic-bezier(.16,1,.3,1) both; }
+
+/* Twinkling sparkle — scale + fade loop; stagger with inline animation-delay */
+@keyframes jxTwinkle { 0%,100% { transform: scale(.55); opacity: .25; } 50% { transform: scale(1.1); opacity: 1; } }
+.jx-twinkle { animation: jxTwinkle 1.9s ease-in-out infinite; }
+
+/* QR scanner sweep line — travels top→bottom inside the viewfinder frame */
+@keyframes jxScan { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
+.jx-scan { animation: jxScan 2.4s cubic-bezier(.45,0,.55,1) infinite; }
+
+/* Eyebrow badge drops in just before the gift */
+@keyframes jxDropIn { 0% { transform: translateY(-10px) scale(.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+.jx-drop-in { animation: jxDropIn .5s cubic-bezier(.34,1.56,.64,1) both; }

@@ -4,6 +4,7 @@
 function App() {
   const [role, setRole] = React.useState('child');
   const [onboarded, setOnboarded] = React.useState(true);   // start on Home; "Replay onboarding" (Tweaks) shows it
+  const [parentOnboarded, setParentOnboarded] = React.useState(true);   // parent app: splash → intro → auth; replay from Tweaks
   const __q = new URLSearchParams(window.location.search);
   const initialDetail = __q.get('detail');   // ?detail=char-cover opens the buddy detail screen
   const [screen, setScreen] = React.useState(initialDetail ? 'character' : 'home');
@@ -87,6 +88,7 @@ function App() {
     closeOverlay: () => setOverlay(false),
     setBuddy, lang, setLang: changeLang,
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
+    finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child intro
   };
 
   // render active child/parent screen
@@ -104,7 +106,8 @@ function App() {
       myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
-    body = ({
+    if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
+    else body = ({
       p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
@@ -142,7 +145,7 @@ function App() {
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
-          {role === 'parent' && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} />}
+          {role === 'parent' && parentOnboarded && pScreen !== 'p_addchild' && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay ctx={ctx} />)}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>
@@ -162,16 +165,6 @@ function App() {
             {[['en', 'English'], ['ko', '한국어']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (lang === v ? ' on' : '')} onClick={() => changeLang(v)}>{l}</button>
             ))}
-          </div>
-
-          <div className="tw-label">Mode</div>
-          <div className="tw-row">
-            {[['smart', 'Smart'], ['lite', 'Lite']].map(([v, l]) => {
-              const off = v === 'lite';   // Lite (F-01) excluded this revision
-              return (
-                <button key={v} disabled={off} className={'tw-chip' + (mode === v ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => setMode(v)}>{l}{off ? ' (off)' : ''}</button>
-              );
-            })}
           </div>
 
           <div className="tw-label">Character style</div>
@@ -228,6 +221,17 @@ function App() {
               <button key={v} className={'tw-chip' + (tw.play === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, play: v }))}>{l}</button>
             ))}
           </div>
+
+          {role === 'parent' && (
+            <React.Fragment>
+              <div className="tw-label">Flow</div>
+              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(false); setStack([]); }}>Replay onboarding</button>
+              <div className="tw-row" style={{ marginTop: 8 }}>
+                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_addchild'); setStack([]); }}>Pairing / Add child</button>
+                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
+              </div>
+            </React.Fragment>
+          )}
 
           {role === 'child' && (
             <React.Fragment>

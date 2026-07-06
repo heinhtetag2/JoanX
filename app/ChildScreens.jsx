@@ -66,7 +66,8 @@ function Onboarding({ ctx }) {
   const [code, setCode] = React.useState('');    // parent's 6-digit code, typed on the connect screen
   const [codeErr, setCodeErr] = React.useState(false); // validation error on the connect screen
   const [showQR, setShowQR] = React.useState(false); // show the child's shareable QR on the connect screen
-  const [connected, setConnected] = React.useState(false); // success screen after linking
+  const [connected, setConnected] = React.useState(false); // "connected" success screen after linking
+  const [charReveal, setCharReveal] = React.useState(false); // default-character congrats screen
   const codeRef = React.useRef(null);
   const submitCode = () => (code.length < 6 ? setCodeErr(true) : setConnected(true)); // any complete code is accepted
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
@@ -170,30 +171,24 @@ function Onboarding({ ctx }) {
       )}
 
       {/* 4 · permission guide (last step) — full page with a toggle per permission */}
-      {step === 4 && (
+      {step === 4 && !charReveal && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '6px 22px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '4px 0 14px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('To keep you safe,\nwe need a little help')}</h1>
-            <div style={{ background: THEME.surface2, borderRadius: 15, padding: '13px 15px', marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.5, margin: 0 }}>{L('For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.')}</p>
-            </div>
+            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '4px 0 8px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('To keep you safe,\nwe need a little help')}</h1>
+            <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 18px' }}>{L('For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.')}</p>
 
+            {/* standard cards — one per permission, borderless soft elevation */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {perms.map(p => {
-                const a = accentOf(p);
                 const on = !!grants[p.id];
                 return (
-                  <div key={p.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '13px 14px', background: '#fff', borderRadius: 16, boxShadow: THEME.shadowCard }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 13, background: a.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon name={p.icon} size={20} color={a.fg} stroke={2.3} />
-                    </div>
+                  <div key={p.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '15px 16px', background: '#fff', borderRadius: 16, boxShadow: THEME.shadowSoft }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L(p.name)}</div>
                       <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 2 }}>{L(p.blurb)}</div>
                     </div>
                     {/* toggle — normal perms grant on tap; the "settings" one opens its sheet */}
-                    <button onClick={on ? undefined : () => (p.settings ? openOne(p.id) : grant(p.id))} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: 0, cursor: on ? 'default' : 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-                      {!on && <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.fg3 }}>{L('Pending')}</span>}
+                    <button onClick={on ? undefined : () => (p.settings ? openOne(p.id) : grant(p.id))} style={{ background: 'none', border: 'none', padding: 0, cursor: on ? 'default' : 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
                       <div style={{ width: 46, height: 27, borderRadius: 999, background: on ? THEME.success : '#d9d8d6', position: 'relative', transition: 'background .2s' }}>
                         <div style={{ position: 'absolute', top: 3, left: on ? 22 : 3, width: 21, height: 21, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.22)', transition: 'left .2s' }} />
                       </div>
@@ -210,10 +205,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth disabled={!allGranted} onClick={allGranted ? finish : undefined}>{L('Continue')}</Button>
-            {!allGranted && (
-              <button onClick={finish} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Skip for now')}</button>
-            )}
+            <Button variant="primary" size="lg" fullWidth disabled={!allGranted} onClick={allGranted ? () => setCharReveal(true) : undefined}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -292,30 +284,79 @@ function Onboarding({ ctx }) {
       )}
 
       {/* 3c · connected — success result screen */}
-      {step === 3 && connected && (
+      {step === 3 && connected && !charReveal && (
         <>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px' }}>
-            {/* child ↔ parent linked visual */}
-            <div className="jx-pop" style={{ display: 'flex', alignItems: 'center', marginBottom: 26 }}>
-              <div style={{ width: 84, height: 84, borderRadius: 26, background: shade(c.color, 82), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Buddy size={72} />
+          <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
+            {/* soft success glow */}
+            <div style={{ position: 'absolute', top: '39%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: 'radial-gradient(circle, rgba(75,129,79,.16) 0%, rgba(255,255,255,0) 68%)' }} />
+
+            {/* child + parent joined — overlapping avatar pair, verified check on the corner */}
+            <div className="jx-pop" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              {/* gentle "live connection" pulse rings behind the pair (margin-centered so scale keeps its origin) */}
+              {[0, 0.8].map((d, i) => (
+                <div key={`ring${i}`} className="jx-ring" style={{ position: 'absolute', top: '50%', left: '50%', width: 152, height: 152, marginTop: -76, marginLeft: -76, borderRadius: 999, border: `2px solid ${THEME.success}`, zIndex: 0, animationDelay: `${d}s` }} />
+              ))}
+              {/* buddy (child) — sits on top */}
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: shade(c.color, 82), border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
+                <Buddy size={86} />
               </div>
-              <div style={{ width: 52, height: 40, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ position: 'absolute', left: 2, right: 2, height: 3, background: THEME.success, borderRadius: 999 }} />
-                <div style={{ zIndex: 1, width: 34, height: 34, borderRadius: 999, background: THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #fff', boxShadow: '0 6px 14px rgba(75,129,79,.4)' }}>
-                  <Icon name="check" size={18} color="#fff" stroke={3.2} />
-                </div>
-              </div>
-              <div style={{ width: 84, height: 84, borderRadius: 26, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="users" size={38} color={THEME.primary} stroke={2.2} />
+              {/* parent — tucked behind, overlapping */}
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: THEME.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(68,122,175,.10)' }}>
+                <Icon name="users" size={44} color={THEME.primary} stroke={2.2} />
               </div>
             </div>
-            <h1 className="game-font" style={{ fontSize: 28, fontWeight: 500, margin: '0 0 10px' }}>{L('Connected!')}</h1>
-            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.5, margin: 0 }}>{L("You're linked with your parent. Let's finish setting up.")}</p>
+
+            {/* linked-with-parent pill reinforces the connection */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: THEME.successLight, color: shade(THEME.success, -22), borderRadius: 999, padding: '5px 14px 5px 6px', fontSize: 13, fontWeight: 700, position: 'relative', marginBottom: 18 }}>
+              <span style={{ width: 20, height: 20, borderRadius: 999, background: THEME.success, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name="check" size={12} color="#fff" stroke={3.4} />
+              </span>{L('Linked with parent')}
+            </div>
+
+            <h1 className="game-font" style={{ fontSize: 29, fontWeight: 500, margin: '0 0 12px', position: 'relative' }}>{L('Connected!')}</h1>
+            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.55, margin: 0, position: 'relative', maxWidth: 280 }}>{L("You're now linked with your parent and protected together.")}</p>
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             <Button variant="primary" size="lg" fullWidth onClick={() => setStep(4)}>{L('Continue')}</Button>
+          </div>
+        </>
+      )}
+
+      {/* 3d · default character received — congrats reveal */}
+      {step === 4 && charReveal && (
+        <>
+          <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
+            {/* confetti burst raining from the top on reveal */}
+            {[{ l: '18%', c: THEME.gold, d: 0, w: 7, h: 11 }, { l: '30%', c: THEME.primary, d: .12, w: 8, h: 8 }, { l: '44%', c: THEME.heart, d: .04, w: 6, h: 12 }, { l: '56%', c: THEME.camping, d: .18, w: 9, h: 9 }, { l: '68%', c: THEME.gold, d: .08, w: 7, h: 11 }, { l: '80%', c: THEME.success, d: .22, w: 6, h: 10 }, { l: '24%', c: THEME.primary, d: .3, w: 6, h: 6 }, { l: '74%', c: THEME.heart, d: .26, w: 7, h: 7 }].map((p, i) => (
+              <div key={`cf${i}`} className="jx-confetti" style={{ position: 'absolute', top: '8%', left: p.l, width: p.w, height: p.h, borderRadius: i % 2 ? 999 : 2, background: p.c, animationDelay: `${p.d}s` }} />
+            ))}
+
+            {/* twinkling sparkles, staggered */}
+            {[{ t: '20%', l: '20%', s: 20, d: 0 }, { t: '16%', l: '76%', s: 15, d: .5 }, { t: '44%', l: '84%', s: 12, d: 1 }, { t: '46%', l: '12%', s: 13, d: .3 }, { t: '12%', l: '48%', s: 12, d: .8 }].map((p, i) => (
+              <Icon key={i} name="sparkles" size={p.s} color={i % 2 ? THEME.gold : THEME.primary} fill={i % 2 ? THEME.gold : THEME.primary} stroke={0} className="jx-twinkle" style={{ position: 'absolute', top: p.t, left: p.l, animationDelay: `${p.d}s` }} />
+            ))}
+
+            {/* gift eyebrow pill */}
+            <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '5px 12px 5px 10px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 12 }}>
+              <Icon name="gift" size={14} color="#9e7300" stroke={2.4} />{L('A surprise gift!')}
+            </div>
+            <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* soft standing glow — centered on the character */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(c.color, 78)} 0%, rgba(255,255,255,0) 68%)`, zIndex: 0 }} />
+              {/* one-shot burst ring — flares out from the character's center */}
+              <div className="jx-burst" style={{ position: 'absolute', top: '50%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${THEME.gold}`, opacity: 0, zIndex: 0 }} />
+              <div className="jx-float" style={{ position: 'relative', zIndex: 1 }}><Buddy size={188} /></div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, position: 'relative', marginTop: 8 }}>
+              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0 }}>{c.name}</h1>
+              <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(c.rarity === 'special' ? 'Special' : c.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
+            </div>
+            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth onClick={finish}>{L("Let's go")}</Button>
           </div>
         </>
       )}
@@ -336,7 +377,7 @@ function Onboarding({ ctx }) {
               <span style={{ fontSize: 12.5, color: THEME.warning, fontWeight: 600, lineHeight: 1.45 }}>{L(modalPerm.warn)}</span>
             </div>
             <Button variant="primary" size="lg" fullWidth onClick={grantActive}>{L('Go to settings')}</Button>
-            <button onClick={dismiss} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Do it later')}</button>
+            <button onClick={dismiss} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Cancel')}</button>
           </div>
         </div>
       )}

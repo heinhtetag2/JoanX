@@ -297,11 +297,46 @@ function ParentSettings({ ctx }) {
   const mode = cfg.mode, cats = cfg.cats, sens = cfg.sens, notif = cfg.notif, gam = cfg.gam;
   const setModeBoth = m => { update({ mode: m }); ctx.setMode(m); };
 
+  // device-change approval (child signed in on a new phone)
+  const [reviewDevice, setReviewDevice] = React.useState(false);
+  const approveDevice = () => { child.device = child.pendingDevice.device; child.online = true; child.lastSeen = 'now'; child.battery = 100; delete child.pendingDevice; setReviewDevice(false); force(); };
+  const dismissDevice = () => { delete child.pendingDevice; setReviewDevice(false); force(); };
+
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
       <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')}
         right={<MascotChip species={child.avatar} color={child.color} size={40} bg={THEME.primaryLight} />} />
       <div style={{ padding: '8px 16px 0' }}>
+        {/* device connection — start pairing (code / QR) from here */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Device')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: child.online ? THEME.svcGreenBg : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="smartphone" size={20} color={child.online ? THEME.success : THEME.fg3} stroke={2.2} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>{child.device}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                <span style={{ width: 7, height: 7, borderRadius: 999, background: child.online ? THEME.success : THEME.fg3 }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: child.online ? THEME.success : THEME.fg2 }}>{child.online ? L('Connected') : L('Not connected')}</span>
+              </div>
+            </div>
+          </div>
+          {child.pendingDevice && (
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: THEME.warningLight, border: `1px solid ${shade(THEME.warning, 78)}`, borderRadius: 14, padding: '12px 14px', marginTop: 14 }}>
+              <Icon name="shield-alert" size={18} color={THEME.warning} stroke={2.3} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: THEME.warning }}>{L('New device sign-in detected')}</div>
+                <div style={{ fontSize: 12, color: THEME.warning, lineHeight: 1.45, marginTop: 2, opacity: .9 }}>{child.name} · {child.pendingDevice.device} · {child.pendingDevice.when}</div>
+                <button onClick={() => setReviewDevice(true)} style={{ marginTop: 10, padding: '8px 16px', background: THEME.warning, color: '#fff', border: 'none', borderRadius: 10, fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>{L('Review')}</button>
+              </div>
+            </div>
+          )}
+          <button onClick={() => ctx.nav('p_addchild', { pair: true, pairChildId: child.id })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 14, padding: '12px', background: child.online ? '#fff' : THEME.primaryLight, color: THEME.primaryDark, border: child.online ? `1.5px solid ${THEME.border}` : 'none', borderRadius: 12, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
+            <Icon name={child.online ? 'refresh-cw' : 'link-2'} size={16} color={THEME.primary} stroke={2.4} />{L(child.online ? 'Reconnect device' : 'Connect device')}
+          </button>
+        </div>
+
         {/* mode */}
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Protection mode')}</div>
         <div style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 16, padding: 6, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
@@ -383,6 +418,39 @@ function ParentSettings({ ctx }) {
           </div>}
         </div>
       </div>
+
+      {/* device-change approval sheet */}
+      {reviewDevice && child.pendingDevice && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <div onClick={dismissDevice} style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,17,0.44)', backdropFilter: 'blur(1.5px)', WebkitBackdropFilter: 'blur(1.5px)' }} />
+          <div className="jx-sheet-up" style={{ position: 'relative', background: '#fff', borderRadius: '30px 30px 0 0', padding: '10px 22px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -16px 44px rgba(20,18,16,0.28)' }}>
+            <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 16px' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 999, background: THEME.warningLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="shield-alert" size={28} color={THEME.warning} stroke={2.2} />
+              </div>
+            </div>
+            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, textAlign: 'center', margin: '0 0 6px' }}>{L('Approve new device?')}</h1>
+            <p style={{ fontSize: 13.5, color: THEME.fg2, textAlign: 'center', lineHeight: 1.5, margin: '0 auto 16px', maxWidth: 300 }}>{child.name}{L("'s account is being used on a new phone. Only one device can be protected at a time.")}</p>
+
+            <div style={{ background: THEME.surface2, borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+                <Icon name="smartphone" size={18} color={THEME.fg3} stroke={2.2} />
+                <div style={{ flex: 1 }}><div style={{ fontSize: 13.5, fontWeight: 700 }}>{child.device}</div><div style={{ fontSize: 11.5, color: THEME.fg3 }}>{L('Current device')}</div></div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderTop: `1px solid ${THEME.border}`, background: THEME.warningLight }}>
+                <Icon name="smartphone-nfc" size={18} color={THEME.warning} stroke={2.2} />
+                <div style={{ flex: 1 }}><div style={{ fontSize: 13.5, fontWeight: 800, color: '#7a4d18' }}>{child.pendingDevice.device}</div><div style={{ fontSize: 11.5, color: THEME.warning }}>{child.pendingDevice.when} · {child.pendingDevice.where}</div></div>
+                <Badge variant="warning">{L('New')}</Badge>
+              </div>
+            </div>
+
+            <Button variant="primary" size="lg" fullWidth onClick={approveDevice}>{L('Approve & move here')}</Button>
+            <button onClick={dismissDevice} style={{ width: '100%', marginTop: 10, padding: 10, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: THEME.fg2, cursor: 'pointer' }}>{L('Keep current device')}</button>
+            <button onClick={dismissDevice} style={{ width: '100%', marginTop: 2, padding: 8, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, color: THEME.danger, cursor: 'pointer' }}>{L('Block this device')}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -391,7 +459,7 @@ function ParentSettings({ ctx }) {
 function ParentChildren({ ctx }) {
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={getLang() === 'ko' ? `${CHILDREN.length}명 연결됨` : `${CHILDREN.length} connected`} title={L('Children')} right={<button onClick={() => ctx.nav('p_addchild')} style={{ width: 40, height: 40, borderRadius: 999, background: THEME.primary, border: 'none', boxShadow: THEME.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
+      <ParentHead sub={getLang() === 'ko' ? `자녀 ${CHILDREN.length}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => ctx.nav('p_addchild', { direct: true })} style={{ width: 40, height: 40, borderRadius: 999, background: THEME.primary, border: 'none', boxShadow: THEME.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
       <div style={{ padding: '8px 16px 0' }}>
         {CHILDREN.map((k, ki) => {
           const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
@@ -405,7 +473,9 @@ function ParentChildren({ ctx }) {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 17, fontWeight: 800 }}>{k.name}</span>
-                  <Badge variant={k.mode === 'smart' ? 'primary' : 'warning'}>{k.mode === 'smart' ? L('Smart') : L('Lite')}</Badge>
+                  {k.pendingDevice
+                    ? <Badge variant="warning"><Icon name="shield-alert" size={11} color="var(--color-interactives-badge-ember-label)" stroke={2.4} />{L('Action needed')}</Badge>
+                    : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 800 }}><Icon name="flame" size={12} color={THEME.gold} stroke={2.4} />{k.streak || 0}{getLang() === 'ko' ? '일 안전' : 'd safe'}</span>}
                 </div>
                 <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 2 }}>{L('Age')} {k.age} · {k.device}</div>
               </div>
@@ -413,11 +483,11 @@ function ParentChildren({ ctx }) {
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <div style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '9px 12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={k.online ? 'wifi' : 'wifi-off'} size={14} color={k.online ? THEME.success : THEME.fg3} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700, color: k.online ? THEME.success : THEME.fg2 }}>{k.online ? L('Protected now') : L('Offline')}</span></div>
-                <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{L('Last seen')} {k.lastSeen}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={k.online ? 'wifi' : 'wifi-off'} size={14} color={k.online ? THEME.success : THEME.fg3} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700, color: k.online ? THEME.success : THEME.fg2 }}>{k.online ? L('Protected now') : L('Not connected')}</span></div>
+                <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{k.online ? `${L('Last seen')} ${k.lastSeen}` : L('Open to connect')}</div>
               </div>
               <div style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '9px 12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="battery-medium" size={14} color={k.battery < 50 ? THEME.warning : THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700 }}>{k.battery}%</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="battery-medium" size={14} color={k.battery < 50 ? THEME.warning : THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700 }}>{k.online ? `${k.battery}%` : '—'}</span></div>
                 <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{L('Battery')}</div>
               </div>
             </div>
@@ -504,68 +574,354 @@ function ParentAccount({ ctx }) {
 }
 
 // ── Add a child / pair a device ──────────────────────────────────────
+// Multi-step add-child wizard, aligned with the child app's onboarding:
+// 1 Details → 2 Pair (code) → 3 Connected celebration → 4 Configure protection.
 function ParentAddChild({ ctx }) {
-  const [name, setName] = React.useState('');
-  const [age, setAge] = React.useState('');
-  const [device, setDevice] = React.useState('iPhone');
-  const [mode, setMode] = React.useState('smart');
-  const code = 'JNX-4821';
+  // Onboarding shows intro (0); "+" opens details (1); "Connect device" opens pairing (2).
+  const [wiz, setWiz] = React.useState(ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected
+  const ko = typeof getLang === 'function' && getLang() === 'ko';
+  const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a; };
+  // multiple children can be added; each is a collapsible card
+  const newKid = () => ({ name: '', dob: '', phone: '', relation: '', sibling: '' });
+  const [kids, setKids] = React.useState([newKid()]);
+  const [openKid, setOpenKid] = React.useState(0);   // which card is expanded (-1 = all collapsed)
+  const updateKid = (i, patch) => setKids(ks => ks.map((k, j) => (j === i ? { ...k, ...patch } : k)));
+  const addKid = () => { setOpenKid(kids.length); setKids(ks => [...ks, newKid()]); };
+  const removeKid = i => { setKids(ks => ks.filter((_, j) => j !== i)); setOpenKid(Math.max(0, i - 1)); };
+  const [cats, setCats] = React.useState(() => Object.fromEntries(APP_CATEGORIES.map(c => [c.id, c.blocked])));
+  const [sens, setSens] = React.useState(2);
+  const [notif, setNotif] = React.useState(true);
+  const [scan, setScan] = React.useState(false);   // Pair step: show code vs. scan child's QR
+  const [copied, setCopied] = React.useState(false);
+  const mode = 'smart';   // Smart is the only mode in scope
+  const code = '482193';   // 6-digit numeric — matches the child app's connect-code input
 
-  const pickBtn = (key, active, onClick, children) => (
-    <button key={key} onClick={onClick} style={{ flex: 1, border: `1.5px solid ${active ? THEME.primary : THEME.border}`, background: active ? THEME.primaryLight : '#fff', color: active ? THEME.primaryDark : THEME.fg2, borderRadius: 14, padding: '12px 8px', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>{children}</button>
+  React.useEffect(() => {
+    if (!copied) return undefined;
+    const t = setTimeout(() => setCopied(false), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const CAT_PAL = { video: 'sakura', games: 'iris', social: 'ocean', browser: 'tropic', camera: 'moss', phone: 'pebble' };
+
+  // styled native select matching the Input field
+  const selectField = (label, value, setter, opts, icon) => (
+    <div style={{ width: '100%' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 16, padding: '0 14px' }}>
+        <Icon name={icon} size={18} color={THEME.fg3} stroke={2} />
+        <select value={value} onChange={e => setter(e.target.value)} style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: value ? THEME.fg1 : THEME.fg3, fontFamily: 'inherit', padding: '13px 0', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}>
+          <option value="" disabled>{L('Select')}</option>
+          {opts.map(([v, lbl]) => <option key={v} value={v}>{L(lbl)}</option>)}
+        </select>
+        <Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.2} />
+      </div>
+    </div>
   );
 
+  const direct = !!ctx.params?.direct;   // opened via the "+" button (no intro)
+  const pairMode = !!ctx.params?.pair;   // opened via a child's "Connect device" action
+  const pairChild = ctx.params?.pairChildId ? CHILDREN.find(x => x.id === ctx.params.pairChildId) : null;
+  const back = () => {
+    if (wiz === 2) return pairMode ? ctx.nav('p_children') : setWiz(1);
+    if (wiz === 1) return direct ? ctx.nav('p_children') : setWiz(0);
+    return setWiz(wiz - 1);
+  };
+  const skip = () => ctx.nav('p_children');   // from the intro: add a child later from the Children tab
+  // pairing complete → mark that child online and return to the list
+  const finishPair = () => { if (pairChild) { pairChild.online = true; pairChild.lastSeen = 'just now'; pairChild.battery = 100; } ctx.nav('p_children'); };
+
   const addChild = () => {
-    const i = CHILDREN.length;
-    CHILDREN.push({
-      id: 'k' + (i + 1), name: name.trim() || 'New child', age: parseInt(age, 10) || 8, mode,
-      device: device === 'iPhone' ? 'iPhone 15' : 'Galaxy A15', battery: 100, online: false, lastSeen: 'pairing…',
-      avatar: ['cat', 'croc', 'owl', 'fox', 'bird'][i % 5], color: ['#a8c3eb', '#59c08c', '#b9a3ef', '#e1874a', '#67c7ce'][i % 5],
-      cfg: {
-        mode, cats: Object.fromEntries(APP_CATEGORIES.map(c => [c.id, c.blocked])), sens: 2, notif: true, gam: mode === 'smart',
-        rules: [{ t: 'School commute', s: 'Mon–Fri · 8:00–8:40 AM', tag: 'Strict' }, { t: 'At home', s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' }],
-      },
+    kids.forEach(kid => {
+      const i = CHILDREN.length;
+      CHILDREN.push({
+        id: 'k' + (i + 1), name: kid.name.trim() || 'New child', age: ageFromDob(kid.dob) || 8, dob: kid.dob, mode, phone: kid.phone.trim(), relation: kid.relation, sibling: kid.sibling,
+        device: 'iPhone 15', battery: 100, online: false, lastSeen: '—',
+        avatar: ['cat', 'croc', 'owl', 'fox', 'bird'][i % 5], color: ['#a8c3eb', '#59c08c', '#b9a3ef', '#e1874a', '#67c7ce'][i % 5],
+        cfg: {
+          mode, cats, sens, notif, gam: true,
+          rules: [{ t: 'School commute', s: 'Mon–Fri · 8:00–8:40 AM', tag: 'Strict' }, { t: 'At home', s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' }],
+        },
+      });
     });
     ctx.nav('p_children');
   };
 
+  const childInitial = (((pairChild ? pairChild.name : (kids[0] && kids[0].name)) || '').trim()[0] || 'C').toUpperCase();
+  const allNamed = kids.every(k => k.name.trim());
+
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={L('Connect a new device')} title={L('Add a child')} onBack={() => ctx.nav('p_children')} />
-      <div style={{ padding: '8px 16px 0' }}>
+    <div style={{ position: 'absolute', inset: 0, background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
 
-        {/* how pairing works */}
-        <div style={{ display: 'flex', gap: 12, background: THEME.primaryLight, borderRadius: 18, padding: 16, marginBottom: 18 }}>
-          <Icon name="smartphone" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.primaryDark }}>{L('How pairing works')}</div>
-            <div style={{ fontSize: 12.5, color: THEME.primaryDark, lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{L('Install JoanX on your child’s phone, open it, and enter the pairing code below. Their device links to your account.')}</div>
-          </div>
+      {/* back + 3-segment progress (hidden on the connected celebration) */}
+      {/* back shows on pair/configure, and on details only when opened via "+" (not from the intro) */}
+      {((wiz === 1 && direct) || wiz === 2 || wiz === 4) && (
+        <div style={{ padding: '6px 24px 0' }}>
+          <button onClick={back} aria-label={L('Back')} style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
+          </button>
         </div>
+      )}
 
-        {/* details form */}
-        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <Input label={L("Child's name")} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. Mina')} icon="user" />
-          <Input label={L('Age')} value={age} onChange={e => setAge(e.target.value.replace(/[^0-9]/g, ''))} placeholder="8" icon="cake" />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{L('Device')}</div>
-            <div style={{ display: 'flex', gap: 8 }}>{['iPhone', 'Android'].map(d => pickBtn(d, device === d, () => setDevice(d), d))}</div>
+      {/* 0 · intro — invite the parent to add/connect a child (or skip) */}
+      {wiz === 0 && (
+        <>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 32px' }}>
+            {/* layered "connect your child's device" scene */}
+            <div className="jx-pop" style={{ position: 'relative', width: 272, height: 236, marginBottom: 28 }}>
+              {/* soft background blob */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 238, height: 238, borderRadius: '46% 54% 52% 48% / 50% 46% 54% 50%', background: `radial-gradient(circle at 42% 38%, ${THEME.primaryLight} 0%, rgba(255,255,255,0) 72%)` }} />
+              {/* concentric "signal" rings radiating from the center */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 190, height: 190, borderRadius: 999, border: `1.5px solid ${THEME.primary}`, opacity: .14 }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 236, height: 236, borderRadius: 999, border: `1.5px solid ${THEME.primary}`, opacity: .07 }} />
+              {/* wave squiggle accent */}
+              <svg width="42" height="14" viewBox="0 0 42 14" fill="none" style={{ position: 'absolute', top: 108, left: 4 }}>
+                <path d="M2 8 Q 7 2, 12 8 T 22 8 T 32 8 T 42 8" stroke={THEME.gold} strokeWidth="3" strokeLinecap="round" opacity="0.55" />
+              </svg>
+              {/* decorative dots */}
+              <div style={{ position: 'absolute', top: 58, left: 18, width: 9, height: 9, borderRadius: 999, background: THEME.primary, opacity: .22 }} />
+              <div style={{ position: 'absolute', bottom: 20, left: 84, width: 6, height: 6, borderRadius: 999, background: THEME.success, opacity: .3 }} />
+              <div style={{ position: 'absolute', top: 30, right: 90, width: 5, height: 5, borderRadius: 999, background: THEME.heart, opacity: .35 }} />
+
+              {/* child's phone — the hero, showing it's protected */}
+              <div className="jx-float" style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-60%) rotate(-7deg)', width: 116, height: 164, borderRadius: 26, background: '#fff', border: `1.5px solid ${THEME.border}`, boxShadow: THEME.shadowLg, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px 11px' }}>
+                <div style={{ width: 34, height: 5, borderRadius: 999, background: THEME.border, marginBottom: 16 }} />
+                <div style={{ width: 66, height: 66, borderRadius: 999, background: THEME.svcGreenBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <Icon name="shield-check" size={34} color={THEME.success} stroke={2.2} />
+                </div>
+                <div style={{ width: '72%', height: 8, borderRadius: 999, background: THEME.surface2, marginBottom: 7 }} />
+                <div style={{ width: '52%', height: 8, borderRadius: 999, background: THEME.surface2 }} />
+              </div>
+
+              {/* parent avatar, linked to the device */}
+              <div className="jx-float" style={{ position: 'absolute', bottom: 22, right: 12, width: 74, height: 74, borderRadius: 999, background: THEME.primaryLight, border: '4px solid #fff', boxShadow: THEME.shadowLg, display: 'flex', alignItems: 'center', justifyContent: 'center', animationDelay: '.5s' }}>
+                <Icon name="users" size={32} color={THEME.primary} stroke={2.2} />
+              </div>
+              {/* link badge on the connection */}
+              <div style={{ position: 'absolute', bottom: 84, right: 72, width: 32, height: 32, borderRadius: 999, background: THEME.success, border: '3px solid #fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                <Icon name="link-2" size={15} color="#fff" stroke={2.8} />
+              </div>
+
+              {/* floating accent chips */}
+              <div className="jx-float" style={{ position: 'absolute', top: 4, right: 22, width: 46, height: 46, borderRadius: 15, background: THEME.goldLight, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', animationDelay: '.9s' }}>
+                <Icon name="sparkles" size={21} color={THEME.gold} fill={THEME.gold} stroke={0} />
+              </div>
+              <div className="jx-float" style={{ position: 'absolute', bottom: 44, left: 4, width: 48, height: 48, borderRadius: 16, background: THEME.foodBg, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', animationDelay: '.3s' }}>
+                <Icon name="heart" size={22} color={THEME.heart} fill={THEME.heart} stroke={0} />
+              </div>
+            </div>
+            <h1 className="game-font" style={{ fontSize: 27, fontWeight: 500, margin: '0 0 10px', lineHeight: 1.22 }}>{L('Add your child')}</h1>
+            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.55, margin: 0, maxWidth: 300 }}>{L('Connect your child’s phone to start keeping them safe — it only takes a minute.')}</p>
           </div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{L('Starting mode')}</div>
-            <div style={{ display: 'flex', gap: 8 }}>{[['smart', 'Smart'], ['lite', 'Lite']].map(([id, t]) => pickBtn(id, mode === id, () => setMode(id), L(t)))}</div>
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth onClick={() => setWiz(1)}>{L('Add a child')}</Button>
+            <button onClick={skip} style={{ width: '100%', marginTop: 12, padding: 8, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: THEME.fg2, cursor: 'pointer' }}>{L('Skip for now')}</button>
           </div>
-        </div>
+        </>
+      )}
 
-        {/* pairing code */}
-        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Pairing code')}</div>
-        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="game-font" style={{ fontSize: 26, fontWeight: 800, letterSpacing: 2, color: THEME.fg1 }}>{code}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: THEME.primary, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}><Icon name="copy" size={16} color={THEME.primary} stroke={2.3} />{L('Copy')}</div>
-        </div>
+      {/* 1 · child details */}
+      {wiz === 1 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '22px 24px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Add a child')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L('Tell us a little about your child to set up their device. You can add more than one.')}</p>
 
-        <Button variant="primary" fullWidth icon="user-plus" onClick={addChild}>{L('Add child')}</Button>
-      </div>
+            {/* collapsible card per child — keeps many kids compact */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {kids.map((kid, i) => {
+                const isOpen = openKid === i;
+                const kAge = ageFromDob(kid.dob);
+                const relLbl = { son: 'Son', daughter: 'Daughter', grandchild: 'Grandchild', other: 'Other child in my care' }[kid.relation];
+                const summary = [kid.name.trim() || `${L('Child')} ${i + 1}`, kAge != null ? (ko ? `만 ${kAge}세` : `${kAge}y`) : null, relLbl ? L(relLbl) : null].filter(Boolean).join(' · ');
+                return (
+                  <div key={i} style={{ background: '#fff', borderRadius: 18, border: `1.5px solid ${isOpen ? THEME.primary : THEME.border}`, boxShadow: isOpen ? THEME.shadowCard : 'none', overflow: 'hidden', transition: 'border-color .2s' }}>
+                    <button onClick={() => setOpenKid(isOpen ? -1 : i)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <div style={{ width: 30, height: 30, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 800, color: THEME.primaryDark }}>{i + 1}</div>
+                      <div style={{ flex: 1, textAlign: 'left', minWidth: 0, fontSize: 14, fontWeight: 700, color: kid.name.trim() ? THEME.fg1 : THEME.fg3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{summary}</div>
+                      {kids.length > 1 && <span role="button" onClick={e => { e.stopPropagation(); removeKid(i); }} style={{ display: 'flex', padding: 4, cursor: 'pointer' }}><Icon name="trash-2" size={16} color={THEME.fg3} stroke={2.2} /></span>}
+                      <Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.3} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+                    </button>
+                    {isOpen && (
+                      <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 14, borderTop: `1px solid ${THEME.border}` }}>
+                        <Input label={L("Child's name")} value={kid.name} onChange={e => updateKid(i, { name: e.target.value })} placeholder={L('e.g. Mina')} icon="user" />
+                        <div>
+                          <Input label={L("Child's date of birth")} value={kid.dob} onChange={e => updateKid(i, { dob: e.target.value })} icon="cake" type="date" />
+                          {kid.dob && kAge != null && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '4px 11px', borderRadius: 999, background: THEME.primaryLight, color: THEME.primaryDark, fontSize: 12.5, fontWeight: 800 }}>
+                              <Icon name="cake" size={13} color={THEME.primary} stroke={2.3} />{ko ? `만 ${kAge}세` : `${kAge} ${kAge === 1 ? 'year' : 'years'} old`}
+                            </div>
+                          )}
+                        </div>
+                        {selectField(L('Relationship to you'), kid.relation, v => updateKid(i, { relation: v }), [['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']], 'heart')}
+                        {selectField(L('Position among siblings'), kid.sibling, v => updateKid(i, { sibling: v }), [['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']], 'users')}
+                        <Input label={L("Child's phone number")} value={kid.phone} onChange={e => updateKid(i, { phone: e.target.value.replace(/[^0-9-]/g, '') })} placeholder="010-1234-5678" icon="phone" type="tel" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* add another child */}
+            <button onClick={addKid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 12, padding: 13, background: THEME.primaryLight, color: THEME.primaryDark, border: 'none', borderRadius: 14, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+              <Icon name="plus" size={17} color={THEME.primary} stroke={2.6} />{L('Add another child')}
+            </button>
+          </div>
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth disabled={!allNamed} onClick={allNamed ? addChild : undefined}>{L(kids.length > 1 ? 'Add children' : 'Add child')}</Button>
+          </div>
+        </>
+      )}
+
+      {/* 2 · pairing — show a code for the child to enter, or scan the child's QR */}
+      {wiz === 2 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '22px 26px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ alignSelf: 'stretch' }}>
+              <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Connect their device')}</h1>
+              <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L(scan ? "Point at the QR shown in your child's JoanX app." : "Install JoanX on your child's phone, open it, and enter this code.")}</p>
+            </div>
+
+            {scan ? (
+              /* camera viewfinder — restrained, real-app style; tap simulates a successful scan */
+              <div onClick={() => setWiz(3)} style={{ width: '100%', maxWidth: 300, aspectRatio: '0.92', borderRadius: 24, background: '#17191d', position: 'relative', overflow: 'hidden', cursor: 'pointer', boxShadow: 'inset 0 0 70px rgba(0,0,0,.55)' }}>
+                {/* faint center light — suggests a live camera without neon */}
+                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(78% 62% at 50% 44%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 70%)' }} />
+                {/* thin white framing guides + a single subtle scan line */}
+                <div style={{ position: 'absolute', top: '24%', left: '22%', right: '22%', bottom: '24%' }}>
+                  {[['top', 'left'], ['top', 'right'], ['bottom', 'left'], ['bottom', 'right']].map(([v, h], i) => (
+                    <div key={i} style={{ position: 'absolute', [v]: 0, [h]: 0, width: 24, height: 24, [`border${v[0].toUpperCase() + v.slice(1)}`]: '3px solid rgba(255,255,255,.9)', [`border${h[0].toUpperCase() + h.slice(1)}`]: '3px solid rgba(255,255,255,.9)', [`border${v[0].toUpperCase() + v.slice(1)}${h[0].toUpperCase() + h.slice(1)}Radius`]: 9 }} />
+                  ))}
+                  <div className="jx-scan" style={{ position: 'absolute', left: 0, right: 0, height: 2, borderRadius: 999, background: 'rgba(255,255,255,.55)', boxShadow: '0 0 10px rgba(255,255,255,.45)' }} />
+                </div>
+                <span style={{ position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,.7)' }}>{L('Point at your child’s QR code')}</span>
+              </div>
+            ) : (
+              /* pairing code — grouped code band (reads as one shareable code) + footer */
+              <div style={{ alignSelf: 'stretch', background: '#fff', borderRadius: 20, boxShadow: THEME.shadowCard, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, background: THEME.primaryLight, borderRadius: 16, padding: '20px 12px' }}>
+                  <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: THEME.primaryDark, paddingLeft: 5 }}>{code.slice(0, 3)}</span>
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: THEME.primary, opacity: .35, flexShrink: 0 }} />
+                  <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: THEME.primaryDark, paddingLeft: 5 }}>{code.slice(3)}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon name="clock" size={13} color={THEME.fg3} stroke={2.2} />
+                    <span style={{ fontSize: 12, color: THEME.fg3, fontWeight: 700 }}>{L('Valid for 5 minutes')}</span>
+                  </div>
+                  <button onClick={() => setCopied(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, background: copied ? THEME.successLight : '#fff', color: copied ? THEME.success : THEME.primaryDark, border: `1.5px solid ${copied ? 'transparent' : THEME.border}`, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer', transition: 'all .15s' }}>
+                    <Icon name={copied ? 'check' : 'copy'} size={15} color={copied ? THEME.success : THEME.primary} stroke={2.6} />{L(copied ? 'Copied!' : 'Copy')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* toggle between code and scanner */}
+            <button onClick={() => setScan(!scan)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, margin: '20px 0 0', padding: '9px 16px', background: THEME.surface2, borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: THEME.primaryDark, fontSize: 13, fontWeight: 800 }}>
+              <Icon name={scan ? 'keyboard' : 'scan-line'} size={16} color={THEME.primary} stroke={2.3} />{L(scan ? 'Show a code instead' : 'Scan their QR instead')}
+            </button>
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            {scan
+              ? <div style={{ textAlign: 'center', fontSize: 12.5, color: THEME.fg3, fontWeight: 700 }}>{L('Connects automatically once scanned.')}</div>
+              : <Button variant="primary" size="lg" fullWidth onClick={() => setWiz(3)}>{L('Continue')}</Button>}
+          </div>
+        </>
+      )}
+
+      {/* 3 · connected celebration — mirrors the child app's Connected screen */}
+      {wiz === 3 && (
+        <>
+          <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '39%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: 'radial-gradient(circle, rgba(75,129,79,.16) 0%, rgba(255,255,255,0) 68%)' }} />
+
+            {/* parent + child joined — overlapping avatars with a live pulse */}
+            <div className="jx-pop" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              {[0, 0.8].map((d, i) => (
+                <div key={`ring${i}`} className="jx-ring" style={{ position: 'absolute', top: '50%', left: '50%', width: 124, height: 124, marginTop: -62, marginLeft: -62, borderRadius: 999, border: `2px solid ${THEME.success}`, zIndex: 0, animationDelay: `${d}s` }} />
+              ))}
+              {/* child */}
+              <div style={{ width: 86, height: 86, borderRadius: 999, background: THEME.beachBg, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
+                <span className="game-font" style={{ fontSize: 34, fontWeight: 500, color: THEME.beach }}>{childInitial}</span>
+              </div>
+              {/* parent */}
+              <div style={{ width: 86, height: 86, borderRadius: 999, background: THEME.primaryLight, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -26, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(68,122,175,.10)' }}>
+                <Icon name="users" size={38} color={THEME.primary} stroke={2.2} />
+              </div>
+            </div>
+
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: THEME.successLight, color: shade(THEME.success, -22), borderRadius: 999, padding: '5px 14px 5px 6px', fontSize: 13, fontWeight: 700, marginBottom: 18 }}>
+              <span style={{ width: 20, height: 20, borderRadius: 999, background: THEME.success, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name="check" size={12} color="#fff" stroke={3.4} />
+              </span>{L('Linked with your child')}
+            </div>
+
+            <h1 className="game-font" style={{ fontSize: 29, fontWeight: 500, margin: '0 0 12px' }}>{L('Device connected!')}</h1>
+            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.55, margin: 0, maxWidth: 280 }}>{L('You can now set up protection for your child.')}</p>
+          </div>
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth onClick={finishPair}>{L('Done')}</Button>
+          </div>
+        </>
+      )}
+
+      {/* 4 · configure protection */}
+      {wiz === 4 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '22px 24px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Set up protection')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L('Choose what to block while walking. You can change this anytime.')}</p>
+
+            {/* block-while-walking categories */}
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '0 2px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Block while walking')}</div>
+            <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+              {APP_CATEGORIES.map((c, i) => {
+                const pal = CAT_PAL[c.id] || 'sand';
+                return (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: `var(--color-interactives-avatar-${pal}-default)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={18} color={`var(--color-interactives-avatar-${pal}-icon)`} stroke={2.2} /></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{L(c.name)}</div>
+                      {c.locked && <div style={{ fontSize: 11.5, color: THEME.success, fontWeight: 600 }}>{L('Always allowed')}</div>}
+                    </div>
+                    {c.locked ? <Icon name="lock" size={16} color={THEME.fg3} stroke={2.3} /> : <Toggle on={cats[c.id]} onChange={v => setCats({ ...cats, [c.id]: v })} />}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* warning sensitivity */}
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '0 2px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Warning sensitivity')}</div>
+            <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                {['Gentle', 'Balanced', 'Strict'].map((l, i) => (
+                  <button key={l} onClick={() => setSens(i + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: sens === i + 1 ? 800 : 600, color: sens === i + 1 ? THEME.primary : THEME.fg3 }}>{L(l)}</button>
+                ))}
+              </div>
+              <div style={{ position: 'relative', height: 8, background: THEME.border, borderRadius: 999 }}>
+                <div style={{ width: `${(sens - 1) * 50}%`, height: '100%', background: THEME.primary, borderRadius: 999 }} />
+                <div style={{ position: 'absolute', top: '50%', left: `${(sens - 1) * 50}%`, transform: 'translate(-50%,-50%)', width: 22, height: 22, borderRadius: 999, background: '#fff', border: `3px solid ${THEME.primary}`, boxShadow: THEME.shadowCard }} />
+              </div>
+              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 12 }}>{['', L('Warns only in clear risk — fewest interruptions.'), L('Recommended balance of safety and calm.'), L('Warns earlier and more often.')][sens]}</div>
+            </div>
+
+            {/* notifications */}
+            <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, padding: '14px' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="bell" size={18} color={THEME.primary} stroke={2.2} /></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{L('Safety alerts')}</div>
+                <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 2 }}>{L('Get notified about risky moments.')}</div>
+              </div>
+              <Toggle on={notif} onChange={setNotif} />
+            </div>
+          </div>
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth icon="user-plus" onClick={addChild}>{L('Add child')}</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -966,4 +1322,374 @@ function ParentSchedule({ ctx }) {
   );
 }
 
-Object.assign(window, { ParentReports, ParentSettings, ParentChildren, ParentAccount, ParentAddChild, ParentDetail, ParentSchedule, ParentAIReport });
+// ── Parent onboarding + authentication ───────────────────────────────
+// Mirrors the child app: logo splash → value-prop intro slides → auth.
+// System-styled date picker (used for the parent's birth date). Inline calendar
+// with month arrows + a fast year grid — far better than arrowing back decades.
+function DateField({ label, value, onChange, initYear }) {
+  const [open, setOpen] = React.useState(false);
+  const [yearGrid, setYearGrid] = React.useState(false);
+  const init = value ? value.split('-').map(Number) : [initYear || 1995, 1, 1];
+  const [vy, setVy] = React.useState(init[0]);
+  const [vm, setVm] = React.useState(init[1] - 1);
+  const ko = typeof getLang === 'function' && getLang() === 'ko';
+  const WD = ko ? ['일', '월', '화', '수', '목', '금', '토'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const firstDow = new Date(vy, vm, 1).getDay();
+  const dim = new Date(vy, vm + 1, 0).getDate();
+  const sel = value ? value.split('-').map(Number) : null;
+  const isSel = d => sel && sel[0] === vy && sel[1] === vm + 1 && sel[2] === d;
+  const monthLabel = ko ? `${vy}년 ${vm + 1}월` : `${MONTHS[vm]} ${vy}`;
+  const fmtValue = v => { const [y, m, d] = v.split('-'); return ko ? `${y}년 ${+m}월 ${+d}일` : `${MONTHS[+m - 1]} ${+d}, ${y}`; };
+  const pick = d => { onChange(`${vy}-${String(vm + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`); setOpen(false); setYearGrid(false); };
+  const shift = n => { let m = vm + n, y = vy; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } setVm(m); setVy(y); };
+  const years = []; for (let y = 2026; y >= 1940; y--) years.push(y);
+  const roundBtn = { width: 30, height: 30, borderRadius: 999, border: 'none', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
+
+  return (
+    <div style={{ width: '100%' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{label}</div>
+      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1.5px solid ${open ? THEME.primary : THEME.border}`, borderRadius: 16, padding: '13px 14px', fontFamily: 'inherit', cursor: 'pointer' }}>
+        <Icon name="cake" size={18} color={open ? THEME.primary : THEME.fg3} stroke={2} />
+        <span style={{ flex: 1, textAlign: 'left', fontSize: 15, color: value ? THEME.fg1 : THEME.fg3 }}>{value ? fmtValue(value) : L('Select your birth date')}</span>
+        <Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.2} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+      </button>
+
+      {open && (
+        <div className="jx-rise" style={{ marginTop: 8, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 18, boxShadow: THEME.shadowLg, padding: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <button onClick={() => setYearGrid(g => !g)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 15, fontWeight: 800, color: THEME.fg1, cursor: 'pointer', padding: 0 }}>
+              {monthLabel} <Icon name="chevron-down" size={16} color={THEME.fg2} stroke={2.4} style={{ transform: yearGrid ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+            </button>
+            {!yearGrid && (
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => shift(-1)} aria-label={L('Back')} style={roundBtn}><Icon name="chevron-left" size={18} color={THEME.fg1} stroke={2.3} /></button>
+                <button onClick={() => shift(1)} aria-label={L('Next')} style={roundBtn}><Icon name="chevron-right" size={18} color={THEME.fg1} stroke={2.3} /></button>
+              </div>
+            )}
+          </div>
+
+          {yearGrid ? (
+            <div className="no-sb" style={{ maxHeight: 224, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
+              {years.map(y => (
+                <button key={y} onClick={() => { setVy(y); setYearGrid(false); }} style={{ padding: '11px 0', borderRadius: 10, border: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, background: y === vy ? THEME.primary : THEME.surface2, color: y === vy ? '#fff' : THEME.fg1, cursor: 'pointer' }}>{y}</button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 4 }}>
+                {WD.map((w, i) => <div key={i} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: THEME.fg3, padding: '4px 0' }}>{w}</div>)}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2 }}>
+                {Array.from({ length: firstDow }).map((_, i) => <div key={'e' + i} />)}
+                {Array.from({ length: dim }).map((_, i) => {
+                  const d = i + 1, s = isSel(d);
+                  return <button key={d} onClick={() => pick(d)} style={{ aspectRatio: '1', border: 'none', borderRadius: 999, background: s ? THEME.primary : 'transparent', color: s ? '#fff' : THEME.fg1, fontFamily: 'inherit', fontSize: 13.5, fontWeight: s ? 800 : 600, cursor: 'pointer' }}>{d}</button>;
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ParentOnboarding({ ctx }) {
+  const [step, setStep] = React.useState(0);           // 0 splash · 1–2 slides · 3 auth
+  const [authMode, setAuthMode] = React.useState('signup');  // 'signup' | 'signin' | 'forgot'
+  const [authStep, setAuthStep] = React.useState(1);         // signup is split: 1 personal · 2 login
+  const [userId, setUserId] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [dob, setDob] = React.useState('');
+  const [gender, setGender] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [pass, setPass] = React.useState('');
+  const [confirm, setConfirm] = React.useState('');
+  const [showPass, setShowPass] = React.useState(false);
+  const [sent, setSent] = React.useState(false);   // forgot-password: reset link sent
+  const [approvals, setApprovals] = React.useState({ alerts: true });   // parent consent step
+
+  // logo splash auto-advances into the intro slides
+  React.useEffect(() => {
+    if (step !== 0) return undefined;
+    const t = setTimeout(() => setStep(1), 1500);
+    return () => clearTimeout(t);
+  }, [step]);
+
+  const SLIDES = [
+    { title: 'Stay close, gently', sub: 'See how your child is doing through calm weekly reports — guidance, never surveillance.',
+      icon: 'heart-handshake', color: THEME.primary, bg: THEME.primaryLight,
+      chips: [{ icon: 'bar-chart-3', color: THEME.mountain, bg: THEME.mountainBg, pos: { top: 6, right: -8 } },
+              { icon: 'footprints', color: THEME.success, bg: THEME.svcGreenBg, pos: { bottom: 18, left: -10 } }] },
+    { title: 'Safety, in plain words', sub: 'JoanX turns each week into a simple summary and nudges you only when it truly matters.',
+      icon: 'sparkles', color: THEME.svcPurple, bg: THEME.svcPurpleBg,
+      chips: [{ icon: 'shield-check', color: THEME.primary, bg: THEME.primaryLight, pos: { top: 14, left: -8 } },
+              { icon: 'bell', color: THEME.beach, bg: THEME.beachBg, pos: { bottom: 8, right: -6 } }] },
+  ];
+  const introIdx = step - 1;
+  const slide = step >= 1 && step <= 2 ? SLIDES[introIdx] : null;
+
+  const signup = authMode === 'signup';
+  const forgot = authMode === 'forgot';
+  const emailOk = !email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());   // optional on signup
+  const emailErr = email.trim() && !emailOk ? L('Enter a valid email address.') : undefined;
+  const passErr = signup && pass && pass.length < 6 ? L('Use at least 6 characters.') : undefined;
+  const confirmErr = signup && confirm && confirm !== pass ? L('Passwords do not match.') : undefined;
+  const step1Valid = name.trim() && phone.trim() && dob && gender;   // signup personal step
+  const canSubmit = signup
+    ? userId.trim() && name.trim() && phone.trim() && dob && gender && pass.length >= 6 && confirm === pass && emailOk
+    : userId.trim() && !!pass;
+  const finish = () => ctx.finishParentOnboarding();
+  const goAuth = m => { setAuthMode(m); setSent(false); setShowPass(false); setAuthStep(1); };
+  // parent-side approvals shown right after creating an account
+  const PARENT_APPROVALS = [
+    { id: 'alerts', name: 'Safety alerts', blurb: 'Get notified about risky moments and weekly reports.' },
+    { id: 'location', name: 'Location context', blurb: 'Used only in Smart mode while walking — never continuous tracking.' },
+    { id: 'consent', name: 'Data processing consent', blurb: "I agree JoanX may process my child's on-device motion to keep them safe.", required: true },
+    { id: 'guardian', name: "I'm the parent or legal guardian", blurb: 'I have the right to set up protection for this child.', required: true },
+  ];
+  const allApproved = PARENT_APPROVALS.filter(a => a.required).every(a => approvals[a.id]);
+  const toggleApproval = id => setApprovals(a => ({ ...a, [id]: !a[id] }));
+  const eyeBtn = (
+    <button onClick={() => setShowPass(s => !s)} aria-label={L(showPass ? 'Hide password' : 'Show password')} style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+      <Icon name={showPass ? 'eye-off' : 'eye'} size={18} color={THEME.fg3} stroke={2} />
+    </button>
+  );
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
+
+      {/* 0 · logo splash — shared with the child app */}
+      {step === 0 && (
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #123a86 0%, #0a1f57 46%, #05102c 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+          <div className="jx-pop" style={{ width: 104, height: 104, borderRadius: 30, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 22px 54px rgba(0,0,0,.42)' }}>
+            <Icon name="shield-check" size={56} color={THEME.primary} stroke={2.4} />
+          </div>
+          <div className="jx-pop" style={{ textAlign: 'center' }}>
+            <div className="game-font" style={{ fontSize: 34, fontWeight: 500, color: '#fff', letterSpacing: .5 }}>JoanX</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.6)', letterSpacing: 2, textTransform: 'uppercase', marginTop: 4 }}>{L('Parent')}</div>
+          </div>
+        </div>
+      )}
+
+      {/* 1–2 · value-prop intro slides with a segmented indicator */}
+      {slide && (
+        <div style={{ position: 'absolute', inset: 0, background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }}>
+          <div style={{ display: 'flex', gap: 7, padding: '0 28px' }}>
+            {SLIDES.map((_, i) => (
+              <div key={i} style={{ height: 5, flex: 1, borderRadius: 999, background: i <= introIdx ? THEME.primary : THEME.border, transition: 'background .3s' }} />
+            ))}
+          </div>
+
+          <div style={{ padding: '32px 30px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.18, margin: 0, color: THEME.fg1 }}>{L(slide.title)}</h1>
+            <p style={{ fontSize: 15, lineHeight: 1.45, margin: '12px 0 0', color: THEME.fg2 }}>{L(slide.sub)}</p>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: 272, height: 236, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* soft background blob (tinted per slide) */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 238, height: 238, borderRadius: '46% 54% 52% 48% / 50% 46% 54% 50%', background: `radial-gradient(circle at 42% 38%, ${slide.bg} 0%, rgba(255,255,255,0) 72%)` }} />
+              {/* concentric signal rings */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 192, height: 192, borderRadius: 999, border: `1.5px solid ${slide.color}`, opacity: .14 }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 236, height: 236, borderRadius: 999, border: `1.5px solid ${slide.color}`, opacity: .07 }} />
+              {/* wave squiggle */}
+              <svg width="42" height="14" viewBox="0 0 42 14" fill="none" style={{ position: 'absolute', top: 94, left: 8 }}>
+                <path d="M2 8 Q 7 2, 12 8 T 22 8 T 32 8 T 42 8" stroke={THEME.gold} strokeWidth="3" strokeLinecap="round" opacity="0.5" />
+              </svg>
+              {/* decorative dots */}
+              <div style={{ position: 'absolute', top: 40, left: 30, width: 8, height: 8, borderRadius: 999, background: slide.color, opacity: .25 }} />
+              <div style={{ position: 'absolute', bottom: 26, right: 34, width: 6, height: 6, borderRadius: 999, background: THEME.success, opacity: .3 }} />
+
+              {/* product-card hero */}
+              <div className="jx-float" style={{ position: 'relative', zIndex: 1, width: 150, height: 150, borderRadius: 34, background: '#fff', border: `1.5px solid ${THEME.border}`, boxShadow: THEME.shadowLg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 13, padding: 16 }}>
+                <div style={{ width: 74, height: 74, borderRadius: 999, background: slide.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name={slide.icon} size={38} color={slide.color} stroke={2} />
+                </div>
+                <div style={{ width: '62%', height: 8, borderRadius: 999, background: THEME.surface2 }} />
+                <div style={{ width: '42%', height: 8, borderRadius: 999, background: THEME.surface2 }} />
+              </div>
+
+              {/* floating accent chips */}
+              {slide.chips.map((ch, i) => (
+                <div key={i} className="jx-float" style={{ position: 'absolute', ...ch.pos, width: 52, height: 52, borderRadius: 16, background: ch.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: THEME.shadowCard, zIndex: 2, animationDelay: `${0.3 + i * 0.4}s` }}>
+                  <Icon name={ch.icon} size={24} color={ch.color} stroke={2.3} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth onClick={() => setStep(step + 1)}>{L(step === 2 ? 'Get started' : 'Continue')}</Button>
+          </div>
+        </div>
+      )}
+
+      {/* 3 · authentication — create account / sign in / forgot password */}
+      {step === 3 && !forgot && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '26px 28px 0' }}>
+            {/* consistent header row on both signup steps — back sits in a reserved slot so the title never shifts */}
+            {signup && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 34, marginBottom: 12 }}>
+                {authStep === 2 ? (
+                  <button onClick={() => setAuthStep(1)} aria-label={L('Back')} style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
+                  </button>
+                ) : <span />}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {[1, 2].map(n => (
+                    <span key={n} style={{ width: n === authStep ? 22 : 7, height: 7, borderRadius: 999, background: n <= authStep ? THEME.primary : THEME.border, transition: 'all .3s' }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L(signup ? 'Create account' : 'Welcome back')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{L(signup ? (authStep === 1 ? 'Tell us a bit about you.' : 'Now set up your login details.') : 'Sign in to pick up where you left off.')}</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {!signup && (
+                <>
+                  <Input label={L('Phone number or ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('ID or phone number')} icon="user" />
+                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} />
+                </>
+              )}
+
+              {signup && authStep === 1 && (
+                <>
+                  <Input label={L('Name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. Sora Kim')} icon="user" />
+                  <Input label={L('Phone number')} value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9-]/g, ''))} placeholder="010-1234-5678" icon="phone" type="tel" />
+                  <Input label={L('Date of birth')} value={dob} onChange={e => setDob(e.target.value)} icon="cake" type="date" />
+                  {/* gender — native select styled to match the Input field */}
+                  <div style={{ width: '100%' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{L('Gender')}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 16, padding: '0 14px' }}>
+                      <Icon name="user" size={18} color={THEME.fg3} stroke={2} />
+                      <select value={gender} onChange={e => setGender(e.target.value)} style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: gender ? THEME.fg1 : THEME.fg3, fontFamily: 'inherit', padding: '13px 0', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}>
+                        <option value="" disabled>{L('Select')}</option>
+                        <option value="male">{L('Male')}</option>
+                        <option value="female">{L('Female')}</option>
+                        <option value="other">{L('Prefer not to say')}</option>
+                      </select>
+                      <Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.2} />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {signup && authStep === 2 && (
+                <>
+                  <Input label={L('User ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('e.g. user01')} icon="at-sign" />
+                  <Input label={L('Email (optional)')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} />
+                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={passErr} />
+                  <Input label={L('Confirm password')} value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={confirmErr} />
+                </>
+              )}
+            </div>
+
+            {!signup && (
+              <div style={{ textAlign: 'right', marginTop: 10 }}>
+                <span onClick={() => goAuth('forgot')} style={{ fontSize: 13, fontWeight: 700, color: THEME.primary, cursor: 'pointer' }}>{L('Forgot password?')}</span>
+              </div>
+            )}
+
+            {signup && authStep === 2 && (
+              <p style={{ fontSize: 11.5, color: THEME.fg3, lineHeight: 1.5, margin: '16px 2px 0', fontWeight: 600 }}>{L('By continuing you agree to our Terms & Privacy Policy.')}</p>
+            )}
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            {signup && authStep === 1
+              ? <Button variant="primary" size="lg" fullWidth disabled={!step1Valid} onClick={step1Valid ? () => setAuthStep(2) : undefined}>{L('Continue')}</Button>
+              : <Button variant="primary" size="lg" fullWidth disabled={!canSubmit} onClick={canSubmit ? (signup ? () => setStep(4) : finish) : undefined}>{L(signup ? 'Create account' : 'Sign in')}</Button>}
+            <button onClick={() => goAuth(signup ? 'signin' : 'signup')} style={{ width: '100%', marginTop: 12, padding: 6, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, color: THEME.fg2, cursor: 'pointer' }}>
+              {L(signup ? 'Already have an account?' : 'New to JoanX?')} <span style={{ color: THEME.primary, fontWeight: 800 }}>{L(signup ? 'Sign in' : 'Create account')}</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* 3b · forgot password — request a reset link, then a sent confirmation */}
+      {step === 3 && forgot && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
+            <button onClick={() => goAuth('signin')} aria-label={L('Back')} style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+              <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
+            </button>
+
+            {!sent ? (
+              <>
+                <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Reset your password')}</h1>
+                <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{L("Enter your email and we'll send you a link to reset your password.")}</p>
+                <Input label={L('Email')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} />
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', paddingTop: 24 }}>
+                <div className="jx-pop" style={{ width: 84, height: 84, borderRadius: 999, background: THEME.successLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <Icon name="mail-check" size={38} color={THEME.success} stroke={2.2} />
+                </div>
+                <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 10px', lineHeight: 1.2 }}>{L('Check your email')}</h1>
+                <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.55, margin: '0 auto', maxWidth: 280 }}>{L('We sent a reset link to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{email || 'you@email.com'}</span>.</p>
+              </div>
+            )}
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            {!sent ? (
+              <Button variant="primary" size="lg" fullWidth disabled={!emailOk} onClick={emailOk ? () => setSent(true) : undefined}>{L('Send reset link')}</Button>
+            ) : (
+              <Button variant="primary" size="lg" fullWidth onClick={() => goAuth('signin')}>{L('Back to sign in')}</Button>
+            )}
+            {!sent && (
+              <button onClick={() => goAuth('signin')} style={{ width: '100%', marginTop: 12, padding: 6, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, color: THEME.primary, cursor: 'pointer' }}>{L('Back to sign in')}</button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* 4 · parent approvals / consent — shown right after creating an account */}
+      {step === 4 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '26px 24px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('A few quick approvals')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 18px' }}>{L('Confirm these so JoanX can protect your child and keep you informed.')}</p>
+
+            {/* standard cards — one per approval */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {PARENT_APPROVALS.map(a => {
+                const on = !!approvals[a.id];
+                return (
+                  <div key={a.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '15px 16px', background: '#fff', borderRadius: 16, boxShadow: THEME.shadowSoft }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L(a.name)}{a.required && <span style={{ color: THEME.danger, marginLeft: 3 }}>*</span>}</div>
+                      <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 2 }}>{L(a.blurb)}</div>
+                    </div>
+                    <button onClick={() => toggleApproval(a.id)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                      <div style={{ width: 46, height: 27, borderRadius: 999, background: on ? THEME.success : '#d9d8d6', position: 'relative', transition: 'background .2s' }}>
+                        <div style={{ position: 'absolute', top: 3, left: on ? 22 : 3, width: 21, height: 21, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.22)', transition: 'left .2s' }} />
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', margin: '16px 0 4px' }}>
+              <Icon name="lock" size={13} color={THEME.fg3} stroke={2.3} />
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3 }}>{L('Private & secure — only used to keep your child safe')}</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth disabled={!allApproved} onClick={allApproved ? finish : undefined}>{L('Continue')}</Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+Object.assign(window, { ParentReports, ParentSettings, ParentChildren, ParentAccount, ParentAddChild, ParentDetail, ParentSchedule, ParentAIReport, ParentOnboarding });
