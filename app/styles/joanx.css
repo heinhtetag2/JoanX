@@ -1,0 +1,79 @@
+/* JoanX — app styles layered on TripMe tokens.
+   System font for chrome + parent app; rounded display font for kid game headers. */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Jua&display=swap');
+/* Pretendard — the de-facto standard Korean UI font (Toss/Naver/most modern KR apps). */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; }
+
+/* Fredoka covers Latin; Jua is a popular rounded Korean face for the kid headers. */
+.game-font { font-family: 'Fredoka', 'Jua', var(--font-sans); font-weight: 500; letter-spacing: 0; line-height: 1.22; }
+
+/* hide scrollbars inside the phone */
+.no-sb::-webkit-scrollbar { width: 0; height: 0; }
+.no-sb { scrollbar-width: none; }
+
+/* ── animations ── */
+@keyframes jxFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.jx-float { animation: jxFloat 3.2s ease-in-out infinite; }
+
+@keyframes jxPop { 0% { transform: scale(.72); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.jx-pop { animation: jxPop .42s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* subtle tactile feedback for icon buttons / chips */
+.jx-press { transition: transform .12s ease, filter .12s ease; }
+.jx-press:hover { filter: brightness(.97); }
+.jx-press:active { transform: scale(.9); }
+
+@keyframes jxRise { from { transform: translateY(14px); } to { transform: translateY(0); } }
+.jx-rise { animation: jxRise .4s cubic-bezier(.4,0,.2,1) both; }
+
+@keyframes jxOverlayUp { from { transform: translateY(34px); } to { transform: translateY(0); } }
+.jx-overlay-up { animation: jxOverlayUp .42s cubic-bezier(.16,1,.3,1) both; }
+
+@keyframes jxFade { from { opacity: .35; } to { opacity: 1; } }
+.jx-fade { animation: jxFade .3s ease both; }
+
+@keyframes jxPulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(209,69,50,.5); }
+  50% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(209,69,50,0); }
+}
+.jx-pulse { animation: jxPulse 1.6s ease-in-out infinite; }
+
+@keyframes jxRing { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.5); opacity: 0; } }
+.jx-ring { animation: jxRing 1.4s ease-out infinite; }
+
+@keyframes jxShimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+.jx-skeleton { background: linear-gradient(90deg, #ebebea 25%, #f8f7f7 37%, #ebebea 63%); background-size: 200% 100%; animation: jxShimmer 1.3s infinite; }
+
+@keyframes jxConfetti { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(220px) rotate(420deg); opacity: 0; } }
+.jx-confetti { animation: jxConfetti 1.6s cubic-bezier(.4,0,.6,1) forwards; }
+
+/* Surprise-gift reveal: a clean scale-up from center, gentle overshoot, no rotation */
+@keyframes jxGiftPop {
+  0%   { transform: scale(.4); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.jx-gift-pop { animation: jxGiftPop .6s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Radial burst ring that flares out once from the true center behind the gift.
+   Centering translate is baked into every frame so the scale doesn't reset position. */
+@keyframes jxBurst {
+  0%   { transform: translate(-50%,-50%) scale(.3); opacity: .55; }
+  100% { transform: translate(-50%,-50%) scale(1.9); opacity: 0; }
+}
+.jx-burst { animation: jxBurst .9s cubic-bezier(.16,1,.3,1) both; }
+
+/* Twinkling sparkle — scale + fade loop; stagger with inline animation-delay */
+@keyframes jxTwinkle { 0%,100% { transform: scale(.55); opacity: .25; } 50% { transform: scale(1.1); opacity: 1; } }
+.jx-twinkle { animation: jxTwinkle 1.9s ease-in-out infinite; }
+
+/* QR scanner sweep line — travels top→bottom inside the viewfinder frame */
+@keyframes jxScan { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
+.jx-scan { animation: jxScan 2.4s cubic-bezier(.45,0,.55,1) infinite; }
+
+/* Eyebrow badge drops in just before the gift */
+@keyframes jxDropIn { 0% { transform: translateY(-10px) scale(.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+.jx-drop-in { animation: jxDropIn .5s cubic-bezier(.34,1.56,.64,1) both; }

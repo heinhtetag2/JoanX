@@ -4,7 +4,7 @@ Drop reference renders here (transparent PNGs) for the **3D Cute (`cute`) mascot
 style** — a second, cuter 3D set, selectable via the **3D Cute** chip in the
 Tweaks panel.
 
-These feed the `MascotToyCute` renderer in `app/characters.jsx`. To use them:
+These feed the `MascotToyCute` renderer in `app/core/characters.jsx`. To use them:
 
 1. Add the PNG to this folder.
 2. Map it per species in `CUTE_SRC`, e.g. `cat: 'mochi-cute.png'`.

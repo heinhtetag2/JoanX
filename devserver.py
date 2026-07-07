@@ -14,7 +14,7 @@ import glob
 
 PORT = 8000
 ROOT = os.path.dirname(os.path.abspath(__file__))
-WATCH_GLOBS = ['app/*.jsx', 'app/*.css', '*.html', '*.js', '*.json']
+WATCH_GLOBS = ['app/**/*.jsx', 'app/**/*.css', '*.html', '*.js', '*.json']
 
 LIVERELOAD = """
 <script>
@@ -52,7 +52,7 @@ LIVERELOAD = """
 def latest_mtime():
     m = 0.0
     for g in WATCH_GLOBS:
-        for f in glob.glob(os.path.join(ROOT, g)):
+        for f in glob.glob(os.path.join(ROOT, g), recursive=True):
             try:
                 m = max(m, os.path.getmtime(f))
             except OSError:

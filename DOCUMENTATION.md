@@ -145,7 +145,7 @@ python3 -m http.server 8731 # then open http://localhost:8731/index.html
 
 ## 4.2 Reusable components
 
-The **design-system layer** lives in **`app/primitives.jsx`** and is shared via `window`. These are
+The **design-system layer** lives in **`app/core/primitives.jsx`** and is shared via `window`. These are
 the only source of colors, type, spacing, and shared UI:
 
 **Exported from `primitives.jsx`:** `THEME`, `RARITY`, `Icon`, `Button`, `Badge`, `Card`, `Input`,
@@ -307,7 +307,7 @@ so the parent report can compute acceptance & response time.
 
 ## 4.8 Data models & TypeScript interfaces
 
-These mirror `app/data.jsx`. Use them as the contract between client and API.
+These mirror `app/core/data.jsx`. Use them as the contract between client and API.
 
 ```ts
 // ---- Player ----
@@ -430,7 +430,7 @@ JoanX is built **entirely on the TripMe design system** with a small, additive "
   (`common` / `rare` / `special`), a warm `joy` accent, and a rounded display font (**Fredoka**) used
   **only** for kid-facing game headings (`.game-font`). Parent screens stay in the system font for a
   trustworthy register.
-- **Token source:** `app/tripme-tokens.css` (≈ **64** `--*` custom properties) + the `THEME` object in
+- **Token source:** `app/styles/tripme-tokens.css` (≈ **64** `--*` custom properties) + the `THEME` object in
   `primitives.jsx`. No colors are invented outside this system.
 
 ---
@@ -589,7 +589,7 @@ loading · empty · error · edge cases**.
 
 ## 7. The character / mascot system
 
-Defined in **`app/characters.jsx`** — a single parametric `<Mascot>` component, drawn as inline SVG
+Defined in **`app/core/characters.jsx`** — a single parametric `<Mascot>` component, drawn as inline SVG
 so it scales crisply and recolors freely.
 
 - **Species:** `fox` (**Foxy**, base `#FF8C66`), `cat` (**Mochi**, base `#9AA7D6`), `bird` (**Pip**,
@@ -609,7 +609,7 @@ live-tweakable (see §9).
 
 ## 8. Internationalization (EN / 한국어)
 
-Defined in **`app/i18n.jsx`**:
+Defined in **`app/core/i18n.jsx`**:
 
 - `L('English string')` returns the Korean translation when the language is `ko`, else the original.
 - Language is toggled from the Tweaks panel and from the child **Profile** screen.
