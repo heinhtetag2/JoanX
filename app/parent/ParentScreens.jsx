@@ -693,7 +693,7 @@ function ParentAddChild({ ctx }) {
       {wiz === 0 && (
         <>
           {/* aligned background image — same as the onboarding intro */}
-          <img src="onboarding/onboarding-bg.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+          <img src="app/assets/onboarding/add-child.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 240, background: 'linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,0) 100%)', zIndex: 0 }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 260, background: 'linear-gradient(0deg, #fff 16%, rgba(255,255,255,0) 100%)', zIndex: 0 }} />
 
@@ -1406,16 +1406,14 @@ function ParentOnboarding({ ctx }) {
   }, [step]);
 
   const SLIDES = [
-    { title: 'Stay close, gently', sub: 'See how your child is doing through calm weekly reports — guidance, never surveillance.',
-      bg: 'onboarding/onboarding-hero.png' },
-    { title: 'Safety, in plain words', sub: 'JoanX turns each week into a simple summary and nudges you only when it truly matters.',
-      bg: 'onboarding/onboarding-hero-2.png' },
+    { title: 'Stay close, gently', sub: 'See how your child is doing through calm weekly reports — guidance, never surveillance.' },
+    { title: 'Safety, in plain words', sub: 'JoanX turns each week into a simple summary and nudges you only when it truly matters.' },
   ];
   const introIdx = step - 1;
   const slide = step >= 1 && step <= 2 ? SLIDES[introIdx] : null;
-  // Tweaks toggle: 'illustration' (3D hero graphics) vs 'image' (full-screen photo)
-  const onbStyle = (ctx.tweaks && ctx.tweaks.onbStyle) || 'illustration';
-  const slideBg = slide ? (onbStyle === 'image' ? 'onboarding/onboarding-photo.png' : slide.bg) : null;
+  // onboarding is image-only: a single full-screen photo behind both intro slides
+  const onbStyle = 'image';
+  const slideBg = slide ? 'app/assets/onboarding/intro.png' : null;
 
   const signup = authMode === 'signup';
   const forgot = authMode === 'forgot';
@@ -1441,7 +1439,7 @@ function ParentOnboarding({ ctx }) {
       {/* 0 · logo splash — shared with the child app */}
       {step === 0 && (
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(130% 100% at 50% 36%, #24242c 0%, #131318 52%, #08080b 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-          <img className="jx-pop" src="app/logo/logo-wordmark-light.svg" alt="JoanX" style={{ width: 176, display: 'block' }} />
+          <img className="jx-pop" src="app/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ width: 176, display: 'block' }} />
           <div className="jx-pop" style={{ fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: 2, textTransform: 'uppercase' }}>{L('Parent')}</div>
         </div>
       )}

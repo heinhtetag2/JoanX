@@ -73,8 +73,10 @@ app/
 │   ├── tripme-tokens.css   ~64 --* design tokens (source of THEME)
 │   └── joanx.css           Animations + app-specific styling
 │
-├── logo/                Brand SVGs (referenced in code as app/logo/…)
-└── onboarding image/    Onboarding art assets
+└── assets/      Images (only what the app actually uses)
+    ├── brand/           logo-wordmark.svg
+    ├── backgrounds/     page-bg.jpg  (the app's page background, via index.html)
+    └── onboarding/      intro.png (parent intro slides) · add-child.png (add-child intro)
 ```
 
 ### Two color palettes (by design)

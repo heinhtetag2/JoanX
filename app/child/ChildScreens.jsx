@@ -113,7 +113,7 @@ function Onboarding({ ctx }) {
       {/* 0 · logo splash */}
       {step === 0 && (
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(130% 100% at 50% 36%, #24242c 0%, #131318 52%, #08080b 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-          <img className="jx-pop" src="app/logo/logo-wordmark-light.svg" alt="JoanX" style={{ width: 176, display: 'block' }} />
+          <img className="jx-pop" src="app/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ width: 176, display: 'block' }} />
         </div>
       )}
 
