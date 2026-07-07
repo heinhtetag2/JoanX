@@ -112,11 +112,8 @@ function Onboarding({ ctx }) {
     <div style={{ position: 'absolute', inset: 0, background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
       {/* 0 · logo splash */}
       {step === 0 && (
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 90% at 50% 38%, #123a86 0%, #0a1f57 46%, #05102c 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-          <div className="jx-pop" style={{ width: 104, height: 104, borderRadius: 30, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 22px 54px rgba(0,0,0,.42)' }}>
-            <Icon name="shield-check" size={56} color={THEME.primary} stroke={2.4} />
-          </div>
-          <div className="jx-pop game-font" style={{ fontSize: 34, fontWeight: 500, color: '#fff', letterSpacing: .5 }}>JoanX</div>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(130% 100% at 50% 36%, #24242c 0%, #131318 52%, #08080b 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+          <img className="jx-pop" src="app/logo/logo-wordmark-light.svg" alt="JoanX" style={{ width: 176, display: 'block' }} />
         </div>
       )}
 
@@ -485,7 +482,7 @@ function ChildHome({ ctx }) {
 function SafetyStatus({ ctx }) {
   const lite = ctx.mode === 'lite';
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: screenBgActive() }}>
       <div style={{ padding: '0 18px' }}>
         <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 4px' }}>{L('Safety')}</h1>
         <p style={{ fontSize: 13.5, color: THEME.fg2, margin: '0 0 18px' }}>{L('JoanX is watching out for you in the background.')}</p>
@@ -591,7 +588,7 @@ function Notifications({ ctx }) {
   ) : null;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Notifications')} onBack={() => ctx.nav('home')} right={unread ? <button onClick={allRead} style={{ border: 'none', background: 'none', color: THEME.primary, fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>{L('Mark read')}</button> : null} />
       <div style={{ padding: '0 16px' }}>
         {unread === 0 && (
@@ -628,7 +625,7 @@ function Profile({ ctx }) {
   const sectionLabel = { fontSize: 12, fontWeight: 800, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 };
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Profile')} onBack={() => ctx.nav('home')} />
       <div style={{ padding: '0 16px' }}>
         {/* hero */}

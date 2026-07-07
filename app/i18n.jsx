@@ -104,6 +104,11 @@ const KO = {
   'Safe walking today': '오늘의 안전 걷기',
   'min phone-free': '분 폰 안 보기', 'points per safe minute': '포인트 / 안전 1분',
   "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'min': '분',
+  // today's tasks (home)
+  "Today's tasks": '오늘의 미션', 'done': '완료',
+  'Finish a phone-free walk': '폰 없이 걷기 끝내기', 'Reach your safe-walk goal': '안전 걷기 목표 달성',
+  'Say hi to your buddy': '버디에게 인사하기',
+  'All tasks done!': '미션 모두 완료!', 'bonus earned today': '오늘 보너스 획득', 'Tap to complete': '눌러서 완료',
   'Keep your head up and walk safe!': '고개를 들고 안전하게 걸어요!',
   "Today's journey": '오늘의 여정', 'Start': '출발', 'left': '남음',
   'My buddy': '내 친구', 'Claim reward': '보상 받기',
@@ -251,6 +256,7 @@ const KO = {
   'Forgot password?': '비밀번호를 잊으셨나요?',
   'By continuing you agree to our Terms & Privacy Policy.': '계속하면 이용약관 및 개인정보 처리방침에 동의하게 됩니다.',
   'Create account': '계정 만들기', 'Sign in': '로그인',
+  'Basic info': '기본 정보', 'Login details': '로그인 정보',
   'Already have an account?': '이미 계정이 있으신가요?', 'New to JoanX?': 'JoanX가 처음이신가요?',
   'Reset your password': '비밀번호 재설정',
   "Enter your email and we'll send you a link to reset your password.": '이메일을 입력하시면 비밀번호 재설정 링크를 보내드려요.',
@@ -299,6 +305,7 @@ const KO = {
   'Select your birth date': '생년월일 선택', 'Next': '다음',
   'Confirm password': '비밀번호 확인', 'Passwords do not match.': '비밀번호가 일치하지 않습니다.',
   'Tell us a bit about you.': '먼저 기본 정보를 알려주세요.', 'Now set up your login details.': '이제 로그인 정보를 설정하세요.',
+  'Step': '단계',
   // parent approvals / consent
   'A few quick approvals': '몇 가지만 확인할게요',
   'Confirm these so JoanX can protect your child and keep you informed.': 'JoanX가 아이를 보호하고 소식을 전할 수 있도록 아래 항목을 확인해 주세요.',

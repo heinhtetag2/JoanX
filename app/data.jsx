@@ -16,6 +16,14 @@ const PLAYER = {
   friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
 };
 
+// ── Today's tasks (child home) — small daily missions that pay a bonus.
+// `done` seeds which are already cleared; the rest can be tapped complete.
+const TODAY_TASKS = [
+  { id: 't1', icon: 'footprints',  title: 'Finish a phone-free walk',  reward: 100, done: true },
+  { id: 't2', icon: 'shield-check', title: 'Reach your safe-walk goal', reward: 50,  done: false },
+  { id: 't3', icon: 'heart-handshake', title: 'Say hi to your buddy',   reward: 20,  done: false },
+];
+
 // ── House backgrounds (A-6) — the backdrop of the child's profile ─────
 const HOUSE_BGS = [
   { id: 'sky',    name: 'Sky',    grad: 'linear-gradient(180deg,#eaf3ff,#ffffff 82%)', owned: true },

@@ -371,7 +371,7 @@ function MascotToyCute({ species = 'fox', size = 160, style, float }) {
 // and the accent/brand colour the app adopts when a buddy is picked.
 const STYLE_BUDDIES = {
   comic: [
-    ['fox',  'Hammy', '#4e9a51'],
+    ['fox',  'Hammy', '#4b814f'],
     ['cat',  'Mochi', '#e1874a'],
     ['bird', 'Pip',   '#4f93c4'],
     ['owl',  'Sunny', '#e0554a'],

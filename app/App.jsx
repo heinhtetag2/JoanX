@@ -14,8 +14,8 @@ function App() {
   const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
-  const initialHome = __q.get('home') || 'simple-original';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'cat', color: '#e1874a', name: 'Mochi', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-vivid' });
+  const initialHome = __q.get('home') || 'simple-focus';
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -83,7 +83,7 @@ function App() {
 
   const ctx = {
     nav, back, params, mode, setMode,
-    tweaks: { overlay: tw.overlay },
+    tweaks: { overlay: tw.overlay, onbStyle: tw.onbStyle },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => setOverlay(false),
     setBuddy, lang, setLang: changeLang,

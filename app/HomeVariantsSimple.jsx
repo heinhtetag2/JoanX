@@ -67,6 +67,50 @@ function WinsListS({ ctx }) {
   );
 }
 
+// Today's tasks — small daily missions that pay a bonus. Undone rows are
+// tappable (kid checks one off → earns its points); done rows read as earned.
+function TodayTasksS({ accent }) {
+  const [tasks, setTasks] = React.useState(TODAY_TASKS);
+  const done = tasks.filter(t => t.done).length;
+  const earned = tasks.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
+  const allDone = done === tasks.length;
+  const complete = id => setTasks(ts => ts.map(t => (t.id === id && !t.done ? { ...t, done: true } : t)));
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
+          <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(accent, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="list-checks" size={17} color={shade(accent, -28)} stroke={2.3} /></span>
+          {L("Today's tasks")}
+        </span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>{done}/{tasks.length} {L('done')}</span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {tasks.map(t => (
+          <button key={t.id} onClick={() => complete(t.id)} disabled={t.done} style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', textAlign: 'left', fontFamily: 'inherit', background: t.done ? THEME.surface2 : '#fff', border: `1.5px solid ${t.done ? 'transparent' : THEME.border}`, borderRadius: 14, padding: '10px 12px', cursor: t.done ? 'default' : 'pointer', transition: 'background .15s ease' }}>
+            <span style={{ width: 22, height: 22, borderRadius: 999, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: t.done ? THEME.success : '#fff', border: t.done ? 'none' : `2px solid ${THEME.border}` }}>
+              {t.done && <Icon name="check" size={14} color="#fff" stroke={3.2} />}
+            </span>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: t.done ? THEME.fg3 : THEME.fg1, textDecoration: t.done ? 'line-through' : 'none' }}>{L(t.title)}</span>
+            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, padding: '4px 9px', borderRadius: 999, fontWeight: 500, fontSize: 12, background: t.done ? THEME.successLight : THEME.goldLight, color: t.done ? THEME.success : '#9e7300' }}>
+              <Icon name={t.done ? 'check' : 'star'} size={11} color={t.done ? THEME.success : THEME.gold} fill={t.done ? 'none' : THEME.gold} stroke={2.4} />+{t.reward}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {allDone && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, background: THEME.successLight, borderRadius: 12, padding: '10px 12px' }}>
+          <Icon name="party-popper" size={17} color={THEME.success} stroke={2.3} />
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.success }}>{L('All tasks done!')}</span>
+          <span className="game-font" style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 500, color: THEME.success }}>+{earned} {L('bonus earned today')}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // duplicated stat tile (mirrors ChildScreens' StatCard) for the Original copy
 function StatCardS({ icon, color, bg, value, label, big }) {
   return (
@@ -140,6 +184,9 @@ function HomeSimpleOriginal({ ctx }) {
           </div>
           <div style={{ fontSize: 12, color: THEME.fg2 }}>{PLAYER.safeMinutesToday} {L('min phone-free')} · {SAFE_PT_PER_MIN} {L('points per safe minute')}</div>
         </div>
+
+        {/* today's tasks — daily missions that pay a bonus */}
+        <TodayTasksS accent={c.color} />
       </div>
     </div>
   );
@@ -357,7 +404,7 @@ function HomeSimpleFocus({ ctx }) {
       {/* safety + stats */}
       <div style={{ padding: '18px 18px 0' }}>
         <div style={{ marginBottom: 14 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points')], ['flame', THEME.joy, PLAYER.streak, L('Day streak')]].map((s, i) => (
             <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9 }}>
               <Icon name={s[0]} size={18} color={s[1]} stroke={2.4} />
@@ -368,6 +415,8 @@ function HomeSimpleFocus({ ctx }) {
             </div>
           ))}
         </div>
+        {/* today's tasks — daily missions that pay a bonus */}
+        <TodayTasksS accent={c.color} />
       </div>
     </div>
   );

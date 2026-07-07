@@ -18,7 +18,7 @@ function ScreenHeader({ title, onBack, right }) {
 function Collection({ ctx }) {
   const owned = CHARACTERS.filter(c => c.owned);
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{CHARACTERS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {/* encyclopedia + friends entry points */}
@@ -105,10 +105,10 @@ function Collection({ ctx }) {
 function CharacterDetail({ ctx }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const [color, setColor] = React.useState(orig.color);
-  const [stage, setStage] = React.useState(orig.stage);
-  const [level, setLevel] = React.useState(orig.level);
-  const [evolving, setEvolving] = React.useState(false);
-  const canEvolve = stage < 3;   // prototype: always evolvable so you can preview each stage
+  // Evolution is automatic — a buddy evolves on level-up when its XP fills.
+  // No manual evolve action, so stage/level are read-only here.
+  const stage = orig.stage;
+  const level = orig.level;
 
   const swatches = ['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb', '#e86f5f'];
   const items = [
@@ -118,12 +118,6 @@ function CharacterDetail({ ctx }) {
     { id: 'glasses', icon: 'glasses', name: 'Cool Shades', on: false, locked: true },
   ];
 
-  const doEvolve = () => {
-    setEvolving(true);
-    setTimeout(() => { setStage(s => Math.min(3, s + 1)); setLevel(l => l + 5); }, 900);
-    setTimeout(() => setEvolving(false), 2400);
-  };
-
   const traits = [
     { k: 'guard', label: 'Guard', icon: 'shield', color: THEME.primary },
     { k: 'speed', label: 'Speed', icon: 'gauge', color: THEME.gold },
@@ -131,7 +125,7 @@ function CharacterDetail({ ctx }) {
   ];
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={orig.name} onBack={() => ctx.back()} right={<button onClick={() => ctx.nav('battle')} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="swords" size={18} color={THEME.joy} stroke={2.2} /></button>} />
 
       <div style={{ padding: '0 16px' }}>
@@ -141,7 +135,7 @@ function CharacterDetail({ ctx }) {
             <Badge variant={orig.rarity === 'special' ? 'special' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
             <Badge variant="gold">{L('Stage')} {stage}</Badge>
           </div>
-          <div className={evolving ? 'jx-pop' : 'jx-float'} style={{ display: 'flex', justifyContent: 'center', filter: evolving ? `drop-shadow(0 0 24px ${color})` : 'none', transition: 'filter .4s' }}>
+          <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}>
             <Mascot species={orig.species} stage={stage} color={color} size={172} />
           </div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: 4 }}>{orig.name}</div>
@@ -151,17 +145,6 @@ function CharacterDetail({ ctx }) {
             <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow /></div>
             <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
           </div>
-        </div>
-
-        {/* evolve CTA */}
-        <div style={{ margin: '14px 0' }}>
-          {stage < 3 ? (
-            <Button variant={canEvolve ? 'gold' : 'outline'} size="lg" fullWidth icon={canEvolve ? 'sprout' : 'lock'} onClick={canEvolve ? doEvolve : undefined} disabled={!canEvolve}>
-              {canEvolve ? `${L('Evolve to Stage')} ${stage + 1}` : `${L('Reach')} ${orig.xpMax} XP ${L('to evolve')}`}
-            </Button>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="check-circle-2" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
-          )}
         </div>
 
         {/* traits */}
@@ -209,17 +192,6 @@ function CharacterDetail({ ctx }) {
 
         <Button variant="primary" size="lg" fullWidth onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
-
-      {/* evolve flash */}
-      {evolving && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.4)' }} className="jx-fade">
-          <Confetti n={20} />
-          <div style={{ textAlign: 'center' }}>
-            <div className="game-font" style={{ color: '#fff', fontSize: 30, fontWeight: 500, textShadow: '0 2px 12px rgba(0,0,0,.4)' }}>{L('Evolving!')}</div>
-            <div className="game-font" style={{ color: '#fff', fontSize: 15, fontWeight: 500, marginTop: 6, opacity: .92 }}>{L('Stage')} {stage} · {L('Level')} {level}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

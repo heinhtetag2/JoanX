@@ -21,6 +21,11 @@ body { margin: 0; }
 @keyframes jxPop { 0% { transform: scale(.72); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .jx-pop { animation: jxPop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
+/* subtle tactile feedback for icon buttons / chips */
+.jx-press { transition: transform .12s ease, filter .12s ease; }
+.jx-press:hover { filter: brightness(.97); }
+.jx-press:active { transform: scale(.9); }
+
 @keyframes jxRise { from { transform: translateY(14px); } to { transform: translateY(0); } }
 .jx-rise { animation: jxRise .4s cubic-bezier(.4,0,.2,1) both; }
 

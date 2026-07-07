@@ -144,10 +144,10 @@ function Card({ children, style, onClick }) {
   );
 }
 
-function Input({ label, value, onChange, placeholder, type = 'text', icon, error, trailing }) {
+function Input({ label, value, onChange, placeholder, type = 'text', icon, error, trailing, accent = THEME.primary }) {
   const [focused, setFocused] = React.useState(false);
-  const borderColor = error ? THEME.danger : focused ? THEME.primary : THEME.border;
-  const iconColor = error ? THEME.danger : focused ? THEME.primary : THEME.fg3;
+  const borderColor = error ? THEME.danger : focused ? accent : THEME.border;
+  const iconColor = error ? THEME.danger : focused ? accent : THEME.fg3;
   return (
     <div style={{ width: '100%' }}>
       {label && <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{label}</div>}

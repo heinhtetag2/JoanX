@@ -23,8 +23,8 @@ function TabBar({ tabs, active, onTab, accent }) {
         if (t.center) {
           return (
             <button key={t.id} onClick={() => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <div style={{ marginTop: -22, width: 56, height: 56, borderRadius: 999, background: ac, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 18px ${ac}66`, border: '4px solid #fff' }}>
-                <Icon name={t.icon} size={26} color="#fff" stroke={2.2} />
+              <div style={{ marginTop: -26, width: 62, height: 62, borderRadius: 999, background: ac, border: '6px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name={t.icon} size={30} color="#fff" stroke={2.2} />
               </div>
             </button>
           );

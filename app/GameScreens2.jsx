@@ -72,7 +72,7 @@ function Battle({ ctx }) {
 
   // select
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Battle')} onBack={() => ctx.nav('home')} right={<button onClick={() => ctx.nav('villaindex')} aria-label={L('Villain Dex')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', border: 'none', borderRadius: 999, padding: '7px 12px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{L('Dex')}</span></button>} />
       <div style={{ padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: THEME.primaryLight, borderRadius: 14, padding: '11px 14px', marginBottom: 16 }}>
@@ -129,7 +129,7 @@ function Rewards({ ctx }) {
   const [pop, setPop] = React.useState(false);
   const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += 100; setTimeout(() => setPop(false), 1900); };
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: screenBgActive() }}>
       <div style={{ padding: '0 18px' }}>
         <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '0 0 16px' }}>{L('Rewards')}</h1>
 
@@ -242,7 +242,7 @@ function Shop({ ctx }) {
     : <button onClick={() => buy(id, price, label)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: pts >= price ? THEME.gold : THEME.surface2, color: pts >= price ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="star" size={12} color={pts >= price ? '#fff' : THEME.fg3} fill={pts >= price ? '#fff' : THEME.fg3} stroke={2} />{price}</button>;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Points')} onBack={() => ctx.nav('home')} />
       <div style={{ padding: '0 16px' }}>
         {/* balance */}

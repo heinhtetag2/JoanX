@@ -32,16 +32,22 @@ function screenBgFor(color) {
     + `linear-gradient(115deg, ${mixHue(color, -30, 0.13, 0.32)} 0%, ${mixHue(color, 2, 0.15, 0.24)} 52%, ${mixHue(color, 32, 0.17, 0.30)} 100%), `
     + `${THEME.surface2}`;
 }
-Object.assign(window, { screenBgFor, mixHue });
+// Page background tinted by the *active* buddy's colour — keeps every screen's
+// top gradient aligned with the buddy (green for Hammy, etc.), like the home.
+function screenBgActive() {
+  const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
+  return screenBgFor(c && c.color);
+}
+Object.assign(window, { screenBgFor, screenBgActive, mixHue });
 
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const [color, setColor] = React.useState(orig.color);
-  const [stage, setStage] = React.useState(orig.stage);
-  const [level, setLevel] = React.useState(orig.level);
-  const [evolving, setEvolving] = React.useState(false);
   const [tab, setTab] = React.useState('stat');
-  const canEvolve = stage < 3;
+  // Evolution is automatic: a buddy evolves when it fills its XP and levels
+  // up — there's no manual "evolve" action, so stage/level are read-only here.
+  const stage = orig.stage;
+  const level = orig.level;
 
   const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
   const items = [
@@ -55,12 +61,6 @@ function CharVariant({ ctx, variant }) {
     { k: 'speed', label: 'Speed', icon: 'gauge', color: THEME.gold },
     { k: 'heart', label: 'Heart', icon: 'heart', color: THEME.joy },
   ];
-  const doEvolve = () => {
-    setEvolving(true);
-    setTimeout(() => { setStage(s => Math.min(3, s + 1)); setLevel(l => l + 5); }, 900);
-    setTimeout(() => setEvolving(false), 2400);
-  };
-
   const accent = color;
   // color-heavy backgrounds get frosted cards (the bg tints through); light ones stay crisp white
   const onColorBg = variant === 'vivid' || variant === 'focus' || variant === 'showcase';
@@ -89,15 +89,6 @@ function CharVariant({ ctx, variant }) {
   };
 
   // ── shared body sections ──
-  const Evolve = (
-    <div key="ev" style={{ marginBottom: 14 }}>
-      {canEvolve ? (
-        <Button variant="gold" size="lg" fullWidth icon="sprout" onClick={doEvolve}>{L('Evolve to Stage')} {stage + 1}</Button>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: THEME.successLight, color: '#274427', borderRadius: 20, padding: '16px', fontWeight: 800, fontSize: 15, lineHeight: 1 }}><Icon name="check-circle-2" size={18} color={THEME.success} stroke={2.4} />{L('Fully evolved — max stage!')}</div>
-      )}
-    </div>
-  );
   const traitsContent = (
     <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
       {traits.map(t => {
@@ -372,11 +363,11 @@ function CharVariant({ ctx, variant }) {
       </div>
     </div>
   );
-  const body = [Evolve, variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, SetBtn];
+  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, SetBtn];
 
-  // ── mascot (centered, evolve animation) ──
+  // ── mascot (centered) ──
   const Buddy = ({ size }) => (
-    <div className={evolving ? 'jx-pop' : 'jx-float'} style={{ display: 'flex', justifyContent: 'center', filter: evolving ? `drop-shadow(0 0 24px ${color})` : 'none', transition: 'filter .4s' }}>
+    <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}>
       <Mascot species={orig.species} stage={stage} color={color} size={size} context="detail" />
     </div>
   );
@@ -493,15 +484,6 @@ function CharVariant({ ctx, variant }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 110, background: bg }}>
       {hero}
       <div style={{ padding: pad }}>{body}</div>
-
-      {evolving && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.4)' }} className="jx-fade">
-          <div style={{ textAlign: 'center' }}>
-            <div className="game-font" style={{ color: '#fff', fontSize: 30, fontWeight: 500, textShadow: '0 2px 12px rgba(0,0,0,.4)' }}>{L('Evolving!')}</div>
-            <div className="game-font" style={{ color: '#fff', fontSize: 15, fontWeight: 500, marginTop: 6, opacity: .92 }}>{L('Stage')} {stage} · {L('Level')} {level}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
