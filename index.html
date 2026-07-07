@@ -4,13 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>JoanX — Prototype</title>
-<link rel="stylesheet" href="app/styles/color-system.css">
-<link rel="stylesheet" href="app/styles/tripme-tokens.css">
-<link rel="stylesheet" href="app/styles/joanx.css">
 <style>
   html, body { height: 100%; background: #0a1f6b; }
   body {
-    background-image: url("app/assets/backgrounds/page-bg.jpg");
+    background-image: url("/assets/backgrounds/page-bg.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -63,36 +60,7 @@
 </style>
 </head>
 <body>
-<template id="__bundler_thumbnail">
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100" height="100" rx="22" fill="#5B9EE1"/>
-  <g transform="translate(50,52)">
-    <path d="M0 -20 L18 -13 L18 4 Q18 18 0 26 Q-18 18 -18 4 L-18 -13 Z" fill="#fff"/>
-    <path d="M-8 0 l6 7 l11 -15" stroke="#5B9EE1" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
-</svg>
-</template>
 <div id="root"></div>
-
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-
-<script type="text/babel" src="app/core/primitives.jsx?v=2"></script>
-<script type="text/babel" src="app/core/characters.jsx?v=2"></script>
-<script type="text/babel" src="app/core/data.jsx?v=2"></script>
-<script type="text/babel" src="app/core/i18n.jsx?v=2"></script>
-<script type="text/babel" src="app/core/nav.jsx?v=2"></script>
-<script type="text/babel" src="app/child/ChildScreens.jsx?v=2"></script>
-<script type="text/babel" src="app/child/HomeVariants.jsx?v=2"></script>
-<script type="text/babel" src="app/child/HomeVariantsSimple.jsx?v=2"></script>
-<script type="text/babel" src="app/child/SafetyMoments.jsx?v=2"></script>
-<script type="text/babel" src="app/child/GameScreens.jsx?v=2"></script>
-<script type="text/babel" src="app/child/GameScreens2.jsx?v=2"></script>
-<script type="text/babel" src="app/child/GameExtras.jsx?v=2"></script>
-<script type="text/babel" src="app/child/CharacterVariants.jsx?v=2"></script>
-<script type="text/babel" src="app/parent/ParentScreens.jsx?v=2"></script>
-<script type="text/babel" src="app/shell/App.jsx?v=2"></script>
+<script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

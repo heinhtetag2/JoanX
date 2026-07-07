@@ -79,37 +79,36 @@ Walk safely → earn points + XP → character levels up & evolves (3 stages)
 |---|---|
 | **`index.html`** | The clickable prototype. Child app + Parent app, switchable, with a live Tweaks panel. |
 | **`design/overview.html`** | A flat pan/zoom canvas showing **every** screen side-by-side for review. |
-| **`JoanX Prototype (standalone).html`** | A single self-contained file (everything inlined) for easy sharing. |
-| **`app/`** | All source modules (see [folder structure](#44-folder-structure)). |
+| **`src/`** | All source modules (see [folder structure](#44-folder-structure)). |
+| **`design/`** | Design-reference pages (overview, colors, components galleries). |
 | **`screenshots/`** | Reference captures of key screens & states. |
 | **`uploads/`** | Misc. pasted/imported assets. |
-| **`vercel.json`** | Static-hosting config (clean URLs + caching). |
+| **`vercel.json`** | Hosting config (clean URLs + caching). |
 | **`README.md`** | Quick-start + deploy steps. |
 | **`DOCUMENTATION.md`** | This file. |
 
-> The prototype renders with **React 18 + in-browser Babel** loaded from CDN, so there is **no build
-> step** — it is a static site. This is ideal for a prototype/demo. A production build would compile
-> the JSX ahead of time (see [Phase 3](#phase-3--implementation-notes)).
+> The app is built with **Vite + React 18** (JSX compiled ahead of time; icons via `lucide-react`).
+> Run it with `npm install && npm run dev`; ship it with `npm run build`. See `ARCHITECTURE.md`.
 
 ---
 
 ## 3. How to run, host & deploy
 
 ### Run locally
-Static site, no build. A local server is required (not `file://`) so the browser can fetch `app/*.jsx`:
+Vite + React:
 
 ```bash
-npx serve .                 # then open the printed URL → index.html
-# or
-python3 -m http.server 8731 # then open http://localhost:8731/index.html
+npm install
+npm run dev       # → http://localhost:5173/
+npm run build     # production build → dist/
+npm run preview   # serve the build locally
 ```
 
 ### Deploy to Vercel
 1. Push the project to a GitHub repo (already at the URL above).
 2. In Vercel: **Add New → Project → import the repo**.
-3. Settings: **Framework Preset = Other**, leave **Build Command** + **Install Command** empty, set
-   **Output Directory = `.`** (repo root).
-4. **Deploy.** Entry point is `index.html`. Every `git push` auto-redeploys.
+3. Vercel auto-detects **Vite** (Build = `npm run build`, Output = `dist`). Defaults are correct.
+4. **Deploy.** Every `git push` auto-redeploys.
 
 ---
 
@@ -145,7 +144,7 @@ python3 -m http.server 8731 # then open http://localhost:8731/index.html
 
 ## 4.2 Reusable components
 
-The **design-system layer** lives in **`app/core/primitives.jsx`** and is shared via `window`. These are
+The **design-system layer** lives in **`src/core/primitives.jsx`** and imported by feature modules. These are
 the only source of colors, type, spacing, and shared UI:
 
 **Exported from `primitives.jsx`:** `THEME`, `RARITY`, `Icon`, `Button`, `Badge`, `Card`, `Input`,
@@ -163,7 +162,7 @@ the only source of colors, type, spacing, and shared UI:
 | `StatusBar` | iOS status bar (time, signal, wifi, battery) |
 | `SectionHead` | Section title + optional "see all" action |
 
-**Defined alongside their feature modules** (also shared via `window`):
+**Defined alongside their feature modules** (ES module exports):
 
 | Component | Home module | Role |
 |---|---|---|
@@ -199,7 +198,6 @@ the only source of colors, type, spacing, and shared UI:
 /
 ├── index.html                          # Prototype entry (loads all app/*.jsx)
 ├── design/overview.html                       # Flat screen-overview canvas
-├── JoanX Prototype (standalone).html   # Single-file shareable build
 ├── vercel.json                         # Static hosting config
 ├── README.md
 ├── DOCUMENTATION.md                    # This file
@@ -307,7 +305,7 @@ so the parent report can compute acceptance & response time.
 
 ## 4.8 Data models & TypeScript interfaces
 
-These mirror `app/core/data.jsx`. Use them as the contract between client and API.
+These mirror `src/core/data.jsx`. Use them as the contract between client and API.
 
 ```ts
 // ---- Player ----
@@ -430,7 +428,7 @@ JoanX is built **entirely on the TripMe design system** with a small, additive "
   (`common` / `rare` / `special`), a warm `joy` accent, and a rounded display font (**Fredoka**) used
   **only** for kid-facing game headings (`.game-font`). Parent screens stay in the system font for a
   trustworthy register.
-- **Token source:** `app/styles/tripme-tokens.css` (≈ **64** `--*` custom properties) + the `THEME` object in
+- **Token source:** `src/styles/tripme-tokens.css` (≈ **64** `--*` custom properties) + the `THEME` object in
   `primitives.jsx`. No colors are invented outside this system.
 
 ---
@@ -582,14 +580,14 @@ loading · empty · error · edge cases**.
   API layer (§4.7) without touching screens.
 - **Animations:** defined as keyframes in `joanx.css` (`float`, `pop`, `rise`, `overlay-up`, `fade`,
   `pulse`, `ring`, `confetti`) — subtle and functional, per TripMe's motion guidance.
-- **Production build note:** replace in-browser Babel with a real build (Vite / Expo). Pre-compile JSX,
+- **Production build note:** now built with Vite (a native mobile port would use Expo/React Native). JSX is pre-compiled,
   tree-shake, and bundle the mascot SVGs.
 
 ---
 
 ## 7. The character / mascot system
 
-Defined in **`app/core/characters.jsx`** — a single parametric `<Mascot>` component, drawn as inline SVG
+Defined in **`src/core/characters.jsx`** — a single parametric `<Mascot>` component, drawn as inline SVG
 so it scales crisply and recolors freely.
 
 - **Species:** `fox` (**Foxy**, base `#FF8C66`), `cat` (**Mochi**, base `#9AA7D6`), `bird` (**Pip**,
@@ -609,7 +607,7 @@ live-tweakable (see §9).
 
 ## 8. Internationalization (EN / 한국어)
 
-Defined in **`app/core/i18n.jsx`**:
+Defined in **`src/core/i18n.jsx`**:
 
 - `L('English string')` returns the Korean translation when the language is `ko`, else the original.
 - Language is toggled from the Tweaks panel and from the child **Profile** screen.
