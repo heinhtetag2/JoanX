@@ -103,7 +103,7 @@ const KO = {
   'Safe points': '안전 포인트', 'Points today': '오늘 포인트', 'Day streak': '연속 일수', 'Safe days': '안전 일수',
   'Safe walking today': '오늘의 안전 걷기',
   'min phone-free': '분 폰 안 보기', 'points per safe minute': '포인트 / 안전 1분',
-  "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'min': '분',
+  "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'Next level': '다음 레벨', 'min': '분',
   // today's tasks (home)
   "Today's tasks": '오늘의 미션', 'done': '완료',
   'Finish a phone-free walk': '폰 없이 걷기 끝내기', 'Reach your safe-walk goal': '안전 걷기 목표 달성',

@@ -356,7 +356,7 @@ function HomeSimpleMap({ ctx }) {
 function HomeSimpleFocus({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const lite = ctx.mode === 'lite';
-  const pct = Math.min(1, PLAYER.safeMinutesToday / PLAYER.safeWalkGoal);
+  const pct = Math.min(1, c.xp / c.xpMax);   // ring tracks the buddy's XP toward the next level
   const R = 94, SW = 9, ring = 2 * (R + SW), circ = 2 * Math.PI * R;
   // mixed "aurora" wash — analogous tones derived from the buddy hue, fading to sand
   const bg = `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(c.color, -24, 0.06, 0.78)} 0%, ${mixHue(c.color, 4, 0.10, 0.72)} 50%, ${mixHue(c.color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`;
@@ -372,7 +372,7 @@ function HomeSimpleFocus({ ctx }) {
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.5px', textTransform: 'uppercase', color: shade(c.color, -42) }}>{L('Daily goal')}</span>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.5px', textTransform: 'uppercase', color: shade(c.color, -42) }}>{L('Next level')}</span>
       </div>
 
       {/* goal ring + buddy */}
@@ -385,10 +385,10 @@ function HomeSimpleFocus({ ctx }) {
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>
         </div>
-        {/* minutes pill on the ring */}
+        {/* XP pill on the ring — progress toward the buddy's next level */}
         <div style={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', background: '#fff', borderRadius: 999, padding: '6px 14px', boxShadow: THEME.shadowSoft, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-          <Icon name="footprints" size={15} color={c.color} stroke={2.4} />
-          <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: shade(c.color, -30) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
+          <Icon name="zap" size={15} color={c.color} fill={c.color} stroke={2.4} />
+          <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: shade(c.color, -30) }}>{c.xp}/{c.xpMax} XP</span>
         </div>
       </div>
 

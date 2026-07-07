@@ -9,6 +9,7 @@ const BRAND = {
   onPrimary:   '#FFFFFF',            // text/icons on the magenta
   shadow:      'rgba(224,4,119,.32)',// CTA drop shadow
   shadowPrimary: '0 8px 18px rgba(224,4,119,.30)',  // brand glow under CTAs / accents
+  ink:         '#1A1A1A',            // logo black — used for active/focus states (inputs, radios)
 };
 const brandBtn = { background: BRAND.primary, boxShadow: `0 8px 20px ${BRAND.shadow}` };
 
@@ -589,7 +590,7 @@ function ParentAccount({ ctx }) {
 // <select>. `opts` are [value, label] pairs; labels run through L(). Chips wrap
 // and the picked one fills with the brand ocean, matching the form's Inputs.
 // Korean-style horizontal radio group: a labelled row of circle-radio + text options.
-function ChoiceGroup({ label, value, setter, opts, accent = BRAND.primary }) {
+function ChoiceGroup({ label, value, setter, opts, accent = BRAND.ink }) {
   return (
     <div style={{ width: '100%' }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 10 }}>{label}</div>
@@ -731,9 +732,9 @@ function ParentAddChild({ ctx }) {
                     </button>
                     {isOpen && (
                       <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 14, borderTop: `1px solid ${THEME.border}` }}>
-                        <Input label={L("Child's name")} value={kid.name} onChange={e => updateKid(i, { name: e.target.value })} placeholder={L('e.g. Mina')} icon="user" accent={BRAND.primary} />
+                        <Input label={L("Child's name")} value={kid.name} onChange={e => updateKid(i, { name: e.target.value })} placeholder={L('e.g. Mina')} icon="user" accent={BRAND.ink} />
                         <div>
-                          <Input label={L("Child's date of birth")} value={kid.dob} onChange={e => updateKid(i, { dob: e.target.value })} icon="cake" type="date" accent={BRAND.primary} />
+                          <Input label={L("Child's date of birth")} value={kid.dob} onChange={e => updateKid(i, { dob: e.target.value })} icon="cake" type="date" accent={BRAND.ink} />
                           {kid.dob && kAge != null && (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '4px 11px', borderRadius: 999, background: BRAND.primaryLight, color: BRAND.primaryDark, fontSize: 12.5, fontWeight: 800 }}>
                               <Icon name="cake" size={13} color={BRAND.primary} stroke={2.3} />{ko ? `만 ${kAge}세` : `${kAge} ${kAge === 1 ? 'year' : 'years'} old`}
@@ -742,7 +743,7 @@ function ParentAddChild({ ctx }) {
                         </div>
                         <ChoiceGroup label={L('Relationship to you')} value={kid.relation} setter={v => updateKid(i, { relation: v })} opts={[['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']]} />
                         <ChoiceGroup label={L('Position among siblings')} value={kid.sibling} setter={v => updateKid(i, { sibling: v })} opts={[['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']]} />
-                        <Input label={L("Child's phone number")} value={kid.phone} onChange={e => updateKid(i, { phone: e.target.value.replace(/[^0-9-]/g, '') })} placeholder="010-1234-5678" icon="phone" type="tel" accent={BRAND.primary} />
+                        <Input label={L("Child's phone number")} value={kid.phone} onChange={e => updateKid(i, { phone: e.target.value.replace(/[^0-9-]/g, '') })} placeholder="010-1234-5678" icon="phone" type="tel" accent={BRAND.ink} />
                       </div>
                     )}
                   </div>
@@ -1277,7 +1278,7 @@ function ParentSchedule({ ctx }) {
       <div style={{ padding: '8px 16px 0' }}>
 
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
-          <Input label={L('Schedule name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. School commute')} icon="clock" accent={BRAND.primary} />
+          <Input label={L('Schedule name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. School commute')} icon="clock" accent={BRAND.ink} />
         </div>
 
         {label(L('Protection level'))}
@@ -1298,8 +1299,8 @@ function ParentSchedule({ ctx }) {
 
         {label(L('Time'))}
         <div style={{ display: 'flex', gap: 10, marginBottom: 22 }}>
-          <div style={{ flex: 1, minWidth: 0 }}><Input label={L('Start')} value={start} onChange={e => setStart(e.target.value)} placeholder="8:00 AM" icon="sunrise" accent={BRAND.primary} /></div>
-          <div style={{ flex: 1, minWidth: 0 }}><Input label={L('End')} value={end} onChange={e => setEnd(e.target.value)} placeholder="8:40 AM" icon="sunset" accent={BRAND.primary} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}><Input label={L('Start')} value={start} onChange={e => setStart(e.target.value)} placeholder="8:00 AM" icon="sunrise" accent={BRAND.ink} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}><Input label={L('End')} value={end} onChange={e => setEnd(e.target.value)} placeholder="8:40 AM" icon="sunset" accent={BRAND.ink} /></div>
         </div>
 
         <Button variant="primary" fullWidth icon="check" onClick={save} style={{ marginBottom: 10 }}>{L('Save schedule')}</Button>
@@ -1506,16 +1507,16 @@ function ParentOnboarding({ ctx }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {!signup && (
                 <>
-                  <Input label={L('Phone number or ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('ID or phone number')} icon="user" accent={BRAND.primary} />
-                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} accent={BRAND.primary} />
+                  <Input label={L('Phone number or ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('ID or phone number')} icon="user" accent={BRAND.ink} />
+                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} accent={BRAND.ink} />
                 </>
               )}
 
               {signup && authStep === 1 && (
                 <>
-                  <Input label={L('Name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. Sora Kim')} icon="user" accent={BRAND.primary} />
-                  <Input label={L('Phone number')} value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9-]/g, ''))} placeholder="010-1234-5678" icon="phone" type="tel" accent={BRAND.primary} />
-                  <Input label={L('Date of birth')} value={dob} onChange={e => setDob(e.target.value)} icon="cake" type="date" accent={BRAND.primary} />
+                  <Input label={L('Name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. Sora Kim')} icon="user" accent={BRAND.ink} />
+                  <Input label={L('Phone number')} value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9-]/g, ''))} placeholder="010-1234-5678" icon="phone" type="tel" accent={BRAND.ink} />
+                  <Input label={L('Date of birth')} value={dob} onChange={e => setDob(e.target.value)} icon="cake" type="date" accent={BRAND.ink} />
                   {/* gender — mobile-native chip choice instead of a dropdown */}
                   <ChoiceGroup label={L('Gender')} value={gender} setter={setGender} opts={[['male', 'Male'], ['female', 'Female'], ['other', 'Prefer not to say']]} />
                 </>
@@ -1523,10 +1524,10 @@ function ParentOnboarding({ ctx }) {
 
               {signup && authStep === 2 && (
                 <>
-                  <Input label={L('User ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('e.g. user01')} icon="at-sign" accent={BRAND.primary} />
-                  <Input label={L('Email (optional)')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} accent={BRAND.primary} />
-                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={passErr} accent={BRAND.primary} />
-                  <Input label={L('Confirm password')} value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={confirmErr} accent={BRAND.primary} />
+                  <Input label={L('User ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('e.g. user01')} icon="at-sign" accent={BRAND.ink} />
+                  <Input label={L('Email (optional)')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} accent={BRAND.ink} />
+                  <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={passErr} accent={BRAND.ink} />
+                  <Input label={L('Confirm password')} value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={confirmErr} accent={BRAND.ink} />
                 </>
               )}
             </div>
@@ -1565,7 +1566,7 @@ function ParentOnboarding({ ctx }) {
               <>
                 <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Reset your password')}</h1>
                 <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{L("Enter your email and we'll send you a link to reset your password.")}</p>
-                <Input label={L('Email')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} accent={BRAND.primary} />
+                <Input label={L('Email')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} accent={BRAND.ink} />
               </>
             ) : (
               <div style={{ textAlign: 'center', paddingTop: 24 }}>
