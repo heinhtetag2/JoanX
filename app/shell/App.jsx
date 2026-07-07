@@ -15,7 +15,7 @@ function App() {
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'playful', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -183,23 +183,6 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Simple layout</div>
-              <div className="tw-row">
-                {HOME_LAYOUTS_SIMPLE.map(({ id, label }) => {
-                  const off = id === 'simple-map';
-                  return (
-                    <button key={id} disabled={off} className={'tw-chip' + (tw.homeLayout === id ? ' on' : '')} style={off ? { opacity: .45, cursor: 'not-allowed', pointerEvents: 'none' } : undefined} onClick={() => { setTw(s => ({ ...s, homeLayout: id })); setScreen('home'); setStack([]); }}>{label}{off ? ' (off)' : ''}</button>
-                  );
-                })}
-              </div>
-
-              <div className="tw-label">Detail style (buddy screen)</div>
-              <div className="tw-row">
-                {CHAR_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.detailLayout === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, detailLayout: id })); setStack([]); setScreen('character'); setParams({ id: PLAYER.activeCharId }); }}>{label}</button>
-                ))}
-              </div>
-
               <div className="tw-label">Preview the safety moment</div>
               <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => { setOnboarded(true); setOverlay(true); }}>
                 ▶ Trigger a {mode === 'lite' ? 'block' : 'warning'}
@@ -214,13 +197,6 @@ function App() {
 
             </React.Fragment>
           )}
-
-          <div className="tw-label">Playfulness</div>
-          <div className="tw-row">
-            {[['calm', 'Calm'], ['playful', 'Playful'], ['max', 'Max']].map(([v, l]) => (
-              <button key={v} className={'tw-chip' + (tw.play === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, play: v }))}>{l}</button>
-            ))}
-          </div>
 
           {role === 'parent' && (
             <React.Fragment>

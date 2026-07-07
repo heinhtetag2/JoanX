@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JoanX — Color System</title>
+<link rel="stylesheet" href="../app/styles/color-system.css">
+<link rel="stylesheet" href="../app/styles/tripme-tokens.css">
+<style>
+  body { margin: 0; background: var(--color-base-sand-10); color: var(--color-base-sand-80);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--color-base-sand-20);
+    padding: 18px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px; }
+  header .sub { color: var(--color-base-sand-50); font-size: 13px; }
+  #q { margin-left: auto; border: 1.5px solid var(--color-base-sand-30); border-radius: 999px;
+    padding: 9px 16px; font: inherit; font-size: 14px; outline: none; min-width: 220px; }
+  #q:focus { border-color: var(--color-base-ocean-50); }
+  main { padding: 8px 24px 60px; max-width: 1280px; margin: 0 auto; }
+  .count { color: var(--color-base-sand-50); font-size: 12px; padding: 14px 2px 4px; }
+  h2 { font-size: 16px; font-weight: 800; margin: 30px 0 2px; text-transform: capitalize; letter-spacing: -0.2px; }
+  h3 { font-size: 12px; font-weight: 800; color: var(--color-base-sand-50); text-transform: uppercase;
+    letter-spacing: .5px; margin: 18px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 12px; }
+  .sw { background: #fff; border: 1px solid var(--color-base-sand-20); border-radius: 14px; overflow: hidden;
+    box-shadow: var(--shadow-sm); }
+  .chip { height: 64px; border-bottom: 1px solid rgba(46,43,41,.06);
+    background-image: linear-gradient(45deg,#eee 25%,transparent 25%),linear-gradient(-45deg,#eee 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eee 75%),linear-gradient(-45deg,transparent 75%,#eee 75%);
+    background-size: 14px 14px; background-position: 0 0,0 7px,7px -7px,-7px 0; }
+  .chip > span { display: block; height: 100%; }
+  .meta { padding: 9px 11px 11px; }
+  .meta .name { font-size: 11px; font-weight: 700; line-height: 1.3; word-break: break-all; }
+  .meta .val { font-size: 11px; color: var(--color-base-sand-50); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JoanX — Color System</h1>
+    <div class="sub">Live reference · every token read straight from <code>app/color-system.css</code></div>
+  </div>
+  <input id="q" type="search" placeholder="Filter tokens… (e.g. ocean, badge, sunbeam)" />
+</header>
+<main>
+  <div class="count" id="count"></div>
+  <div id="out"></div>
+</main>
+
+<script>
+  // Collect every --color-* custom property declared on :root across the loaded sheets.
+  const props = new Set();
+  for (const sheet of document.styleSheets) {
+    let rules; try { rules = sheet.cssRules; } catch (e) { continue; }   // skip cross-origin
+    for (const rule of rules) {
+      if (rule.selectorText === ':root' && rule.style) {
+        for (const name of rule.style) if (name.startsWith('--color-')) props.add(name);
+      }
+    }
+  }
+  const cs = getComputedStyle(document.documentElement);
+  const resolve = n => cs.getPropertyValue(n).trim();
+
+  // group = first segment, subgroup = second segment (e.g. base/sand, interactives/button)
+  const GROUP_ORDER = ['base','ui','interactives','cards','modals','tables','data','skeleton','constants','brand'];
+  const groups = {};
+  for (const name of [...props].sort()) {
+    const parts = name.replace('--color-','').split('-');
+    const g = parts[0], sg = parts[1] || '—';
+    (groups[g] ??= {});
+    (groups[g][sg] ??= []).push(name);
+  }
+
+  const out = document.getElementById('out');
+  document.getElementById('count').textContent = props.size + ' tokens defined';
+  const gkeys = Object.keys(groups).sort((a,b) => {
+    const ia = GROUP_ORDER.indexOf(a), ib = GROUP_ORDER.indexOf(b);
+    return (ia<0?99:ia) - (ib<0?99:ib) || a.localeCompare(b);
+  });
+  for (const g of gkeys) {
+    const h2 = document.createElement('h2'); h2.textContent = g === 'data' ? 'data viz' : g; out.appendChild(h2);
+    for (const sg of Object.keys(groups[g]).sort()) {
+      const h3 = document.createElement('h3'); h3.textContent = sg; h3.dataset.sg = '1'; out.appendChild(h3);
+      const grid = document.createElement('div'); grid.className = 'grid';
+      for (const name of groups[g][sg]) {
+        const val = resolve(name);
+        const card = document.createElement('div'); card.className = 'sw'; card.dataset.token = name + ' ' + val;
+        const chip = document.createElement('div'); chip.className = 'chip';
+        const fill = document.createElement('span'); fill.style.background = `var(${name})`; chip.appendChild(fill);
+        const meta = document.createElement('div'); meta.className = 'meta';
+        meta.innerHTML = `<div class="name">${name}</div><div class="val">${val || '—'}</div>`;
+        card.appendChild(chip); card.appendChild(meta); grid.appendChild(card);
+      }
+      out.appendChild(grid);
+    }
+  }
+
+  // simple filter
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const term = q.value.toLowerCase();
+    document.querySelectorAll('.sw').forEach(c =>
+      c.classList.toggle('hidden', term && !c.dataset.token.toLowerCase().includes(term)));
+    // hide empty section headers
+    document.querySelectorAll('h2, h3').forEach(h => {
+      let n = h.nextElementSibling, has = false;
+      while (n && !['H2','H3'].includes(n.tagName)) {
+        if (n.classList?.contains('grid')) has = has || [...n.children].some(c => !c.classList.contains('hidden'));
+        n = n.nextElementSibling;
+      }
+      h.classList.toggle('hidden', !has);
+    });
+  });
+</script>
+</body>
+</html>

@@ -78,7 +78,7 @@ Walk safely → earn points + XP → character levels up & evolves (3 stages)
 | Path | What it is |
 |---|---|
 | **`index.html`** | The clickable prototype. Child app + Parent app, switchable, with a live Tweaks panel. |
-| **`Overview.html`** | A flat pan/zoom canvas showing **every** screen side-by-side for review. |
+| **`design/overview.html`** | A flat pan/zoom canvas showing **every** screen side-by-side for review. |
 | **`JoanX Prototype (standalone).html`** | A single self-contained file (everything inlined) for easy sharing. |
 | **`app/`** | All source modules (see [folder structure](#44-folder-structure)). |
 | **`screenshots/`** | Reference captures of key screens & states. |
@@ -198,7 +198,7 @@ the only source of colors, type, spacing, and shared UI:
 ```
 /
 ├── index.html                          # Prototype entry (loads all app/*.jsx)
-├── Overview.html                       # Flat screen-overview canvas
+├── design/overview.html                       # Flat screen-overview canvas
 ├── JoanX Prototype (standalone).html   # Single-file shareable build
 ├── vercel.json                         # Static hosting config
 ├── README.md
@@ -220,7 +220,7 @@ the only source of colors, type, spacing, and shared UI:
     ├── ParentScreens.jsx   # Reports + Settings + Children
     ├── App.jsx             # Shell: iOS frame, router, tweaks panel
     ├── Overview.jsx        # Builds the flat overview canvas
-    └── design-canvas.jsx   # Canvas component for Overview.html
+    └── design-canvas.jsx   # Canvas component for design/overview.html
 ```
 
 ### Suggested **production** structure (React Native / Expo, mirroring TripMe)

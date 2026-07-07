@@ -26,7 +26,7 @@ Two consequences a dev must know:
 ```bash
 python3 devserver.py        # serves on http://localhost:8000 with live-reload
 # open http://localhost:8000/index.html      → the app
-# open http://localhost:8000/Overview.html   → all screens on one design canvas
+# open http://localhost:8000/design/overview.html  → all screens on one design canvas
 ```
 
 ### Ship a single file
@@ -38,6 +38,21 @@ python3 build_standalone.py  # inlines all css/jsx into "JoanX Prototype (standa
 
 ## Folder map
 
+### Repository root
+```
+index.html            → THE APP (open this)
+design/               → design-reference pages (dev tooling, NOT the app)
+  ├── overview.html       every screen on one pan/zoom canvas
+  ├── colors.html         color-token gallery
+  └── components.html     component gallery
+app/                  → all source (see tree below)
+devserver.py          → local server + live-reload  (python3 devserver.py)
+build_standalone.py   → bundles the app into one portable HTML file
+ARCHITECTURE.md       → this file      DOCUMENTATION.md → full functional spec
+screenshots/ · uploads/ · character-references/  → working/reference material
+```
+
+### app/
 ```
 app/
 ├── core/        Shared foundation — used by BOTH apps
@@ -66,7 +81,7 @@ app/
 │
 ├── overview/    Design tooling (NOT part of the shipped apps)
 │   ├── Overview.jsx        Renders every screen on one scrollable canvas
-│   └── design-canvas.jsx   The pan/zoom canvas used by Overview.html
+│   └── design-canvas.jsx   The pan/zoom canvas used by design/overview.html
 │
 ├── styles/      Global CSS
 │   ├── color-system.css    Interactive-role color tokens
@@ -90,8 +105,8 @@ app/
 | File | What it references |
 |------|--------------------|
 | `index.html`     | The app's `<script>`/`<link>` load list (**order-sensitive**) |
-| `Overview.html`  | The design-canvas load list |
-| `components.html`, `colors.html` | Load `app/styles/*.css` (+ primitives) for the token galleries |
+| `design/overview.html`  | The design-canvas load list |
+| `design/components.html`, `design/colors.html` | Load `app/styles/*.css` (+ primitives) for the token galleries |
 | `devserver.py`   | `WATCH_GLOBS` (recursive: `app/**/*.jsx`) for live-reload |
 | `build_standalone.py` | Regex inliner — resolves any `src="app/…"` path automatically |
 

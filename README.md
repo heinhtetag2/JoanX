@@ -3,7 +3,7 @@
 Interactive hi-fi prototype for **JoanX**, a walk-safety app for kids built on the TripMe design system.
 
 - **`index.html`** — the clickable prototype (Child app + Parent app, with a live Tweaks panel).
-- **`Overview.html`** — a flat canvas showing every screen side-by-side.
+- **`design/overview.html`** — a flat canvas showing every screen side-by-side.
 - **`app/`** — the source (theme tokens, mascot system, screens, i18n).
 
 ## Run locally

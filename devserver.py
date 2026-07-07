@@ -14,7 +14,7 @@ import glob
 
 PORT = 8000
 ROOT = os.path.dirname(os.path.abspath(__file__))
-WATCH_GLOBS = ['app/**/*.jsx', 'app/**/*.css', '*.html', '*.js', '*.json']
+WATCH_GLOBS = ['app/**/*.jsx', 'app/**/*.css', '*.html', 'design/*.html', '*.js', '*.json']
 
 LIVERELOAD = """
 <script>
