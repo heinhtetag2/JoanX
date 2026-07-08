@@ -4,14 +4,15 @@ import React from 'react';
 import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
 import { Button, Icon, Input, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
-import { shade } from '../core/characters.jsx';
+import { MascotChip, shade } from '../core/characters.jsx';
 import { BRAND, brandBtn, ChoiceGroup } from './shared.jsx';
 
 // Multi-step add-child wizard, aligned with the child app's onboarding:
 // 1 Details → 2 Pair (code) → 3 Connected celebration → 4 Configure protection.
 function ParentAddChild({ ctx }) {
-  // Onboarding shows intro (0); "+" opens details (1); "Connect device" opens pairing (2).
-  const [wiz, setWiz] = React.useState(ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected
+  // Onboarding shows intro (0); "+" opens details (1); "Connect device" opens pairing (2);
+  // the Children tab's global "Connect a device" entry opens the scan/code chooser (6) → child picker (5).
+  const [wiz, setWiz] = React.useState(ctx.params?.connect ? 6 : ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected · 5 pick child · 6 connect method
   const ko = typeof getLang === 'function' && getLang() === 'ko';
   const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a >= 0 ? a : null; };
   // multiple children can be added; each is a collapsible card
@@ -39,10 +40,14 @@ function ParentAddChild({ ctx }) {
 
   const direct = !!ctx.params?.direct;   // opened via the "+" button (no intro)
   const pairMode = !!ctx.params?.pair;   // opened via a child's "Connect device" action
-  const pairChild = ctx.params?.pairChildId ? CHILDREN.find(x => x.id === ctx.params.pairChildId) : null;
+  const connectMode = !!ctx.params?.connect;   // opened via the Children tab's global connect entry
+  const [pickedId, setPickedId] = React.useState(null);   // child chosen on the picker step
+  const pairChild = (pickedId && CHILDREN.find(x => x.id === pickedId)) || (ctx.params?.pairChildId ? CHILDREN.find(x => x.id === ctx.params.pairChildId) : null);
   const back = () => {
-    if (wiz === 2) return pairMode ? ctx.nav('p_children') : setWiz(1);
-    if (wiz === 1) return direct ? ctx.nav('p_children') : setWiz(0);
+    if (wiz === 6) return ctx.nav('p_children');
+    if (wiz === 5) return setWiz(6);
+    if (wiz === 2) return connectMode ? setWiz(5) : pairMode ? ctx.nav('p_children') : setWiz(1);
+    if (wiz === 1) return connectMode ? setWiz(5) : direct ? ctx.nav('p_children') : setWiz(0);
     return setWiz(wiz - 1);
   };
   const skip = () => ctx.nav('p_children');   // from the intro: add a child later from the Children tab
@@ -81,7 +86,7 @@ function ParentAddChild({ ctx }) {
 
       {/* back + 3-segment progress (hidden on the connected celebration) */}
       {/* back shows on pair/configure, and on details only when opened via "+" (not from the intro) */}
-      {((wiz === 1 && direct) || wiz === 2 || wiz === 4) && (
+      {((wiz === 1 && (direct || connectMode)) || wiz === 2 || wiz === 4 || wiz === 5 || wiz === 6) && (
         <div style={{ padding: '6px 24px 0' }}>
           <button onClick={back} aria-label={L('Back')} style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
@@ -104,6 +109,74 @@ function ParentAddChild({ ctx }) {
           <div style={{ position: 'relative', zIndex: 1, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={() => setWiz(1)}>{L('Add a child')}</Button>
             <button onClick={skip} style={{ width: '100%', marginTop: 12, padding: 8, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: THEME.fg2, cursor: 'pointer' }}>{L('Skip for now')}</button>
+          </div>
+        </>
+      )}
+
+      {/* 6 · connect method — the global connect entry: scan their QR, or show a code */}
+      {wiz === 6 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('How do you want to connect?')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L("Either way works — pick what's easier right now.")}</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { icon: 'scan-line', t: 'Scan their QR', s: "Point your camera at the QR in your child's app.", scan: true },
+                { icon: 'keyboard', t: 'Connect with a code', s: 'Show a 6-digit code and type it on their phone.', scan: false },
+              ].map(o => (
+                <button key={o.t} onClick={() => { setScan(o.scan); setWiz(5); }} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '18px 16px', background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <span style={{ width: 44, height: 44, borderRadius: 14, background: BRAND.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon name={o.icon} size={22} color={BRAND.primary} stroke={2.2} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L(o.t)}</span>
+                    <span style={{ display: 'block', fontSize: 12.5, color: THEME.fg2, lineHeight: 1.45, marginTop: 3 }}>{L(o.s)}</span>
+                  </span>
+                  <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.4} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* 5 · pick child — the global connect entry: which kid is this phone for? */}
+      {wiz === 5 && (
+        <>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 0' }}>
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Who are we connecting?')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L('Choose the child whose phone is in your hand.')}</p>
+
+            {CHILDREN.some(k => !k.online) ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {CHILDREN.filter(k => !k.online).map(k => {
+                  const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(k) % 6];
+                  return (
+                    <button key={k.id} onClick={() => { setPickedId(k.id); setWiz(2); }} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 13, background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                      <MascotChip species={k.avatar} color={k.color} size={48} bg={`var(--color-interactives-avatar-${pal}-default)`} />
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{k.name}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: THEME.fg2, marginTop: 3 }}>
+                          <Icon name="wifi-off" size={13} color={THEME.fg3} stroke={2.3} />{L('Not connected')} · {k.device}
+                        </span>
+                      </span>
+                      <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.4} />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              /* every child is already linked — offer to add a new one instead */
+              <div style={{ background: '#fff', borderRadius: 18, padding: '28px 22px', textAlign: 'center' }}>
+                <div style={{ width: 52, height: 52, borderRadius: 999, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  <Icon name="check" size={24} color={THEME.success} stroke={2.6} />
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L('All children are connected!')}</div>
+                <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.5, marginTop: 5 }}>{L('Add a new child to connect another phone.')}</div>
+                <Button variant="primary" size="md" style={{ ...brandBtn, marginTop: 16 }} onClick={() => setWiz(1)}>{L('Add a child')}</Button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -167,7 +240,7 @@ function ParentAddChild({ ctx }) {
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '22px 26px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ alignSelf: 'stretch' }}>
-              <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Connect their device')}</h1>
+              <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{pairChild ? (ko ? `${pairChild.name} 기기 연결` : `Connect ${pairChild.name}'s device`) : L('Connect their device')}</h1>
               <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L(scan ? "Point at the QR shown in your child's JoanX app." : "Install JoanX on your child's phone, open it, and enter this code.")}</p>
             </div>
 

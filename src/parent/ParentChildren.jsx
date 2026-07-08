@@ -9,10 +9,25 @@ import { BRAND, ParentHead } from './shared.jsx';
 
 // ── Children / devices ───────────────────────────────────────────────
 function ParentChildren({ ctx }) {
+  const ko = getLang() === 'ko';
+  const waiting = CHILDREN.filter(c => !c.online).length;
   return (
+    <>
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={getLang() === 'ko' ? `자녀 ${CHILDREN.length}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => ctx.nav('p_addchild', { direct: true })} style={{ width: 40, height: 40, borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
+      <ParentHead sub={ko ? `자녀 ${CHILDREN.length}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => ctx.nav('p_addchild', { direct: true })} style={{ width: 40, height: 40, borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
       <div style={{ padding: '8px 16px 0' }}>
+        {/* global connect entry — opens the scan/code chooser, then the child picker */}
+        <button onClick={() => ctx.nav('p_addchild', { connect: true })} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: BRAND.primaryLight, border: 'none', borderRadius: 18, padding: 14, marginBottom: 12, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+          <span style={{ width: 42, height: 42, borderRadius: 14, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon name="scan-line" size={22} color={BRAND.primary} stroke={2.3} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: 14.5, fontWeight: 800, color: BRAND.primaryDark }}>{L('Connect a device')}</span>
+            <span style={{ display: 'block', fontSize: 12, color: BRAND.primaryDark, opacity: .85, marginTop: 2 }}>{waiting > 0 ? (ko ? `${waiting}명이 연결을 기다리고 있어요` : `${waiting} waiting to connect`) : L('Scan a QR or enter a code to link.')}</span>
+          </span>
+          <Icon name="chevron-right" size={18} color={BRAND.primaryDark} stroke={2.4} />
+        </button>
+
         {CHILDREN.map((k, ki) => {
           const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
           return (
@@ -53,6 +68,7 @@ function ParentChildren({ ctx }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

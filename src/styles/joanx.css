@@ -44,6 +44,11 @@ body { margin: 0; }
 @keyframes jxRing { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.5); opacity: 0; } }
 .jx-ring { animation: jxRing 1.4s ease-out infinite; }
 
+/* traveling link dots — pairing "connecting…" wait screens (flat, no glow) */
+@keyframes jxLinkDot { 0%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+.jx-link-dot { animation: jxLinkDot 1.2s ease-in-out infinite; }
+.jx-ring-slow { animation: jxRing 2.4s ease-out infinite; }
+
 @keyframes jxShimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
 .jx-skeleton { background: linear-gradient(90deg, #ebebea 25%, #f8f7f7 37%, #ebebea 63%); background-size: 200% 100%; animation: jxShimmer 1.3s infinite; }
 

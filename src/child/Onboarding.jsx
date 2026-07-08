@@ -55,10 +55,11 @@ function Onboarding({ ctx }) {
   const [code, setCode] = React.useState('');    // parent's 6-digit code, typed on the connect screen
   const [codeErr, setCodeErr] = React.useState(false); // validation error on the connect screen
   const [showQR, setShowQR] = React.useState(false); // show the child's shareable QR on the connect screen
+  const [pairing, setPairing] = React.useState(false); // "connecting…" wait screen after the QR is scanned / code submitted
   const [connected, setConnected] = React.useState(false); // "connected" success screen after linking
   const [charReveal, setCharReveal] = React.useState(false); // default-character congrats screen
   const codeRef = React.useRef(null);
-  const submitCode = () => (code.length < 6 ? setCodeErr(true) : setConnected(true)); // any complete code is accepted
+  const submitCode = () => (code.length < 6 ? setCodeErr(true) : setPairing(true)); // any complete code is accepted
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
 
   const [modal, setModal] = React.useState(null); // permission id of the active request sheet
@@ -77,10 +78,17 @@ function Onboarding({ ctx }) {
   const [codeLeft, setCodeLeft] = React.useState(300);
   const codeExpired = codeLeft <= 0;
   React.useEffect(() => {
-    if (step !== 3 || showQR || connected) return undefined;
+    if (step !== 3 || showQR || pairing || connected) return undefined;
     const t = setInterval(() => setCodeLeft(s => (s > 0 ? s - 1 : 0)), 1000);
     return () => clearInterval(t);
-  }, [step, showQR, connected]);
+  }, [step, showQR, pairing, connected]);
+
+  // pairing handshake — brief "connecting…" wait, then the success screen
+  React.useEffect(() => {
+    if (!pairing) return undefined;
+    const t = setTimeout(() => { setPairing(false); setConnected(true); }, 2800);
+    return () => clearTimeout(t);
+  }, [pairing]);
   const codeLeftLabel = `${Math.floor(codeLeft / 60)}:${String(codeLeft % 60).padStart(2, '0')}`;
 
   // logo splash auto-advances into the intro slides
@@ -187,7 +195,7 @@ function Onboarding({ ctx }) {
       )}
 
       {/* 3 · connect — child types the code shown in the parent app */}
-      {step === 3 && !showQR && !connected && (
+      {step === 3 && !showQR && !pairing && !connected && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '18px 28px 0', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L("Enter your parent's\nconnect code")}</h1>
@@ -256,14 +264,14 @@ function Onboarding({ ctx }) {
       )}
 
       {/* 3b · share the child's QR for a parent to scan */}
-      {step === 3 && showQR && !connected && (
+      {step === 3 && showQR && !pairing && !connected && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: '18px 28px 0', textAlign: 'left' }}>
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('Show this to\nyour parent')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('Have a parent scan this QR in the JoanX Parent app to link your accounts.')}</p>
 
-            {/* QR — plain, centered, no shadow (tap simulates a successful scan) */}
-            <div onClick={() => setConnected(true)} style={{ alignSelf: 'center', background: '#fff', borderRadius: 24, padding: 22, marginTop: 4, cursor: 'pointer' }}>
+            {/* QR — plain, centered, no shadow (tap simulates the parent scanning it) */}
+            <div onClick={() => setPairing(true)} style={{ alignSelf: 'center', background: '#fff', borderRadius: 24, padding: 22, marginTop: 4, cursor: 'pointer' }}>
               <PairQR size={206} />
             </div>
 
@@ -275,6 +283,39 @@ function Onboarding({ ctx }) {
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             <Button variant="outline" size="lg" fullWidth icon="keyboard" onClick={() => setShowQR(false)}>{L('Enter code instead')}</Button>
+          </div>
+        </>
+      )}
+
+      {/* 3b2 · pairing — the parent scanned the QR (or the code was sent);
+          the two apps are shaking hands. Radar pattern: the buddy floats at the
+          center while calm signal rings ripple outward, reaching for the parent
+          app. No QR or checkmark imagery — just the handshake in progress. */}
+      {step === 3 && pairing && !connected && (
+        <>
+          <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
+            {/* radar — staggered rings ripple out from the buddy */}
+            <div className="jx-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 240, height: 240, marginBottom: 14 }}>
+              {[0, 0.8, 1.6].map((d, i) => (
+                <div key={`ring${i}`} className="jx-ring-slow" style={{ position: 'absolute', top: '50%', left: '50%', width: 170, height: 170, marginTop: -85, marginLeft: -85, borderRadius: 999, border: '2px solid rgba(224,4,119,.45)', animationDelay: `${d}s` }} />
+              ))}
+              <div style={{ width: 124, height: 124, borderRadius: 999, background: shade(c.color, 82), border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
+                <div className="jx-float"><Buddy size={98} /></div>
+              </div>
+            </div>
+
+            {/* title with its own live ellipsis — the dots breathe in sequence */}
+            <h1 className="game-font" style={{ fontSize: 29, fontWeight: 500, margin: '0 0 12px', display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
+              {L('Connecting')}
+              {[0, 1, 2].map(i => (
+                <span key={i} className="jx-link-dot" style={{ width: 6, height: 6, borderRadius: 999, background: THEME.fg1, animationDelay: `${i * 0.18}s` }} />
+              ))}
+            </h1>
+            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.55, margin: 0, maxWidth: 280 }}>{L("Linking with your parent's app — this only takes a moment.")}</p>
+          </div>
+
+          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <div style={{ textAlign: 'center', fontSize: 12.5, color: THEME.fg3, fontWeight: 700 }}>{L('Keep both apps open.')}</div>
           </div>
         </>
       )}
