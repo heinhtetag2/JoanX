@@ -8,9 +8,9 @@
   --primary:        var(--color-base-ocean-50);   /* #447aaf */
   --primary-dark:   var(--color-base-ocean-60);   /* #2b5782 */
   --primary-light:  var(--color-base-ocean-10);   /* #ecf3fe */
-  --cta:            var(--color-base-sunbeam-50);  /* #ebf212 — primary button fill */
-  --cta-pressed:    var(--color-base-sunbeam-70);  /* #d8e003 */
-  --cta-ink:        var(--color-constants-dark);   /* #2b2826 — text on CTA */
+  --cta:            var(--color-base-ocean-50);    /* #447aaf — primary button fill */
+  --cta-pressed:    var(--color-base-ocean-70);    /* #1d3d58 */
+  --cta-ink:        var(--color-constants-light);  /* #ffffff — text on CTA */
 
   /* ── Status ─────────────────────────────────────────────────────────── */
   --danger:         var(--color-base-rust-50);

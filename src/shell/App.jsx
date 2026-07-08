@@ -1,24 +1,20 @@
 import React from 'react';
-import { AddFriends, CharacterDex, DecorateRoom, FriendHouse, Friends, MyHouse, VillainDex } from '../child/GameExtras.jsx';
-import { Battle, Rewards, Shop } from '../child/GameScreens2.jsx';
+import { AddFriends, Battle, CharDetailVariant, CharacterDex, ChildHome, Collection, DecorateRoom, FriendHouse, Friends, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
-import { CharDetailVariant } from '../child/CharacterVariants.jsx';
-import { ChildHome, Notifications, Onboarding, Profile, SafetyStatus } from '../child/ChildScreens.jsx';
-import { Collection } from '../child/GameScreens.jsx';
-import { HOME_LAYOUTS, HomeVariant } from '../child/HomeVariants.jsx';
-import { HomeVariantSimple } from '../child/HomeVariantsSimple.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { LiteBlock, WarningOverlay } from '../child/SafetyMoments.jsx';
-import { ParentAIReport, ParentAccount, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/ParentScreens.jsx';
+import { ParentAIReport, ParentAccount, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { STYLE_BUDDIES } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
+import DesignSystem from '../docs/DesignSystem.jsx';
+import SpecChecklist from '../docs/SpecChecklist.jsx';
 
 // JoanX — app shell: iOS frame, router, app switcher, Tweaks panel.
 // Tab definitions + TabBar come from nav.jsx (window globals).
 
 function App() {
-  const [role, setRole] = React.useState('child');
+  const initialView = new URLSearchParams(window.location.search).get('view');
+  const [role, setRole] = React.useState(['design', 'checklist'].includes(initialView) ? initialView : 'child');   // ?view=design / ?view=checklist deep-link the doc pages
   const [onboarded, setOnboarded] = React.useState(true);   // start on Home; "Replay onboarding" (Tweaks) shows it
   const [parentOnboarded, setParentOnboarded] = React.useState(true);   // parent app: splash → intro → auth; replay from Tweaks
   const __q = new URLSearchParams(window.location.search);
@@ -31,7 +27,7 @@ function App() {
   const [overlay, setOverlay] = React.useState(false);
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -115,7 +111,7 @@ function App() {
       battle: <Battle ctx={ctx} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
-      chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} />,
+      chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} />,
     })[screen] || <ChildHome ctx={ctx} />;
@@ -138,18 +134,25 @@ function App() {
       {/* top control: app switch */}
       <div className="topbar">
         <div className="seg">
-          {[['child', 'Child app', 'smartphone'], ['parent', 'Parent app', 'users']].map(([r, l, ic]) => (
+          {[['child', 'Child app', 'smartphone'], ['parent', 'Parent app', 'users'], ['design', 'Design system', 'palette'], ['checklist', 'Spec checklist', 'list-checks']].map(([r, l, ic]) => (
             <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>
               <Icon name={ic} size={15} color={role === r ? '#fff' : THEME.fg3} stroke={2.2} />{l}
             </button>
           ))}
         </div>
-        <button className="gear" onClick={() => setTweaksOpen(o => !o)} title="Tweaks">
-          <Icon name="sliders-horizontal" size={19} color={THEME.fg1} stroke={2.2} />
-        </button>
+        {!['design', 'checklist'].includes(role) && (
+          <button className="gear" onClick={() => setTweaksOpen(o => !o)} title="Tweaks">
+            <Icon name="sliders-horizontal" size={19} color={THEME.fg1} stroke={2.2} />
+          </button>
+        )}
       </div>
 
+      {/* doc pages (full page, replace the phone) */}
+      {role === 'design' && <DesignSystem />}
+      {role === 'checklist' && <SpecChecklist />}
+
       {/* phone */}
+      {!['design', 'checklist'].includes(role) && (
       <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', marginBottom: -(1 - scale) * 844 }}>
       <div className="bezel">
         <div className="island" />
@@ -165,9 +168,10 @@ function App() {
         </div>
       </div>
       </div>
+      )}
 
       {/* tweaks panel */}
-      {tweaksOpen && (
+      {tweaksOpen && !['design', 'checklist'].includes(role) && (
         <div className="tweaks">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h4>Tweaks</h4>
@@ -206,6 +210,14 @@ function App() {
               <div className="tw-row">
                 {[['sheet', 'Sheet'], ['spotlight', 'Spotlight'], ['banner', 'Banner']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.overlay === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, overlay: v }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Villain dex</div>
+              <div className="tw-row">
+                {[['road', 'Road map'], ['list', 'List']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.villainLayout === v ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, villainLayout: v })); setStack([{ screen: 'battle', params: {} }]); setScreen('villaindex'); }}>{l}</button>
                 ))}
               </div>
 

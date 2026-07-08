@@ -1,0 +1,146 @@
+// JoanX — parent app · ParentSettings
+
+import React from 'react';
+import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
+import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { L } from '../core/i18n.jsx';
+import { MascotChip } from '../core/characters.jsx';
+import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
+
+function ParentSettings({ ctx }) {
+  const child = ctx.params?.child || CHILDREN[0];
+  // each child carries its own persistent rules config; seed defaults if missing
+  if (!child.cfg) child.cfg = {
+    mode: child.mode || 'smart',
+    cats: Object.fromEntries(APP_CATEGORIES.map(c => [c.id, c.blocked])),
+    sens: 2, notif: true, gam: true, rules: [],
+  };
+  const cfg = child.cfg;
+  const [, force] = React.useReducer(x => x + 1, 0);
+  const update = patch => { Object.assign(cfg, patch); force(); };
+
+  const mode = cfg.mode, cats = cfg.cats, sens = cfg.sens, notif = cfg.notif, gam = cfg.gam;
+  const setModeBoth = m => { update({ mode: m }); ctx.setMode(m); };
+
+  // Device change is PARENT-INITIATED. Pairing only happens when the parent
+  // scans the child's new-phone QR (via "Reconnect device" below) — the app
+  // has no way to passively "detect" a new phone before it's scanned, so there
+  // is no auto-alert. finishPair applies the swap once the scan succeeds.
+
+  return (
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+      <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')}
+        right={<MascotChip species={child.avatar} color={child.color} size={40} bg={BRAND.primaryLight} />} />
+      <div style={{ padding: '8px 16px 0' }}>
+        {/* device connection — start pairing (code / QR) from here */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Device')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: child.online ? THEME.svcGreenBg : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="smartphone" size={20} color={child.online ? THEME.success : THEME.fg3} stroke={2.2} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>{child.device}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                <span style={{ width: 7, height: 7, borderRadius: 999, background: child.online ? THEME.success : THEME.fg3 }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: child.online ? THEME.success : THEME.fg2 }}>{child.online ? L('Connected') : L('Not connected')}</span>
+              </div>
+            </div>
+          </div>
+          <button onClick={() => ctx.nav('p_addchild', { pair: true, pairChildId: child.id, scan: true })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 14, padding: '12px', background: child.online ? '#fff' : BRAND.primaryLight, color: BRAND.primaryDark, border: child.online ? `1.5px solid ${THEME.border}` : 'none', borderRadius: 12, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
+            <Icon name={child.online ? 'refresh-cw' : 'link-2'} size={16} color={BRAND.primary} stroke={2.4} />{L(child.online ? 'Reconnect device' : 'Connect device')}
+          </button>
+          <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '10px 4px 0' }}>
+            <Icon name="info" size={13} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 11.5, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L('Switched to a new phone? Reconnect and scan the new QR shown in their JoanX app.')}</span>
+          </div>
+        </div>
+
+        {/* mode */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Protection mode')}</div>
+        <div style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 16, padding: 6, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+          {[{ id: 'smart', t: 'Smart', d: 'Warnings + game' }, { id: 'lite', t: 'Lite', d: 'Hard block' }].map(o => (
+            <button key={o.id} onClick={() => setModeBoth(o.id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '12px 8px', background: mode === o.id ? BRAND.primary : 'transparent', transition: 'background .2s' }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: mode === o.id ? '#fff' : THEME.fg1 }}>{L(o.t)}</div>
+              <div style={{ fontSize: 11, color: mode === o.id ? 'rgba(255,255,255,.85)' : THEME.fg2, marginTop: 1 }}>{L(o.d)}</div>
+            </button>
+          ))}
+        </div>
+
+        {mode === 'lite' ? (
+          <React.Fragment>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Block while walking')}</div>
+            <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+              {APP_CATEGORIES.map((c, i) => {
+                // each category gets a distinct system avatar palette
+                const pal = { video: 'sakura', games: 'iris', social: 'ocean', browser: 'tropic', camera: 'moss', phone: 'pebble' }[c.id] || 'sand';
+                return (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: `var(--color-interactives-avatar-${pal}-default)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={18} color={`var(--color-interactives-avatar-${pal}-icon)`} stroke={2.2} /></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>{L(c.name)}</div>
+                    {c.locked && <div style={{ fontSize: 11.5, color: THEME.success, fontWeight: 600 }}>{L('Always allowed')}</div>}
+                  </div>
+                  {c.locked ? <Icon name="lock" size={16} color={THEME.fg3} stroke={2.3} /> : <Toggle on={cats[c.id]} onChange={v => update({ cats: { ...cats, [c.id]: v } })} />}
+                </div>
+              );})}
+            </div>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Warning sensitivity')}</div>
+            <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                {['Gentle', 'Balanced', 'Strict'].map((l, i) => (
+                  <button key={l} onClick={() => update({ sens: i + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: sens === i + 1 ? 800 : 600, color: sens === i + 1 ? BRAND.primary : THEME.fg3 }}>{L(l)}</button>
+                ))}
+              </div>
+              <div style={{ position: 'relative', height: 8, background: THEME.border, borderRadius: 999 }}>
+                <div style={{ width: `${(sens - 1) * 50}%`, height: '100%', background: BRAND.primary, borderRadius: 999 }} />
+                <div style={{ position: 'absolute', top: '50%', left: `${(sens - 1) * 50}%`, transform: 'translate(-50%,-50%)', width: 22, height: 22, borderRadius: 999, background: '#fff', border: `3px solid ${BRAND.primary}`, boxShadow: THEME.shadowCard }} />
+              </div>
+              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 12 }}>{['', L('Warns only in clear risk — fewest interruptions.'), L('Recommended balance of safety and calm.'), L('Warns earlier and more often.')][sens]}</div>
+            </div>
+          </React.Fragment>
+        )}
+
+        {/* time rules */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Time rules')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+          {(cfg.rules || []).map((r, i) => {
+            // Badges consume the system badge tokens directly: {palette}-default (20) bg + {palette}-label (70) text
+            const tagCol = RULE_TAG_COLORS[r.tag] || RULE_TAG_COLORS.Relaxed;
+            return (
+            <div key={i} onClick={() => ctx.nav('p_schedule', { child, rule: r, index: i })} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{L(r.t)}</div>
+                <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{r.s}</div>
+              </div>
+              <Badge style={{ background: tagCol.bg, color: tagCol.c }}>{L(r.tag)}</Badge>
+              <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+            </div>
+            );
+          })}
+          <div onClick={() => ctx.nav('p_schedule', { child, rule: null, index: -1 })} style={{ borderTop: `1px solid ${THEME.border}`, padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 8, color: BRAND.primary, fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+            <Icon name="plus" size={17} color={BRAND.primary} stroke={2.4} /> {L('Add a schedule')}
+          </div>
+        </div>
+
+        {/* prefs */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Preferences')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+            <Icon name="bell" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Notify me of activity')}</div><Toggle on={notif} onChange={v => update({ notif: v })} />
+          </div>
+          {mode === 'smart' && <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: `1px solid ${THEME.border}` }}>
+            <Icon name="gamepad-2" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Character game & rewards')}</div><Toggle on={gam} onChange={v => update({ gam: v })} />
+          </div>}
+        </div>
+      </div>
+
+      {/* device-change approval sheet */}
+    </div>
+  );
+}
+
+export { ParentSettings };

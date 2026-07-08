@@ -1,12 +1,9 @@
 import React from 'react';
-import { Battle, Rewards, Shop } from '../child/GameScreens2.jsx';
+import { Battle, CharacterDetail, ChildHome, Collection, LiteBlock, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, WarningOverlay } from '../child/index.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
-import { CharacterDetail, Collection } from '../child/GameScreens.jsx';
-import { ChildHome, Notifications, Onboarding, Profile, SafetyStatus } from '../child/ChildScreens.jsx';
 import { DCArtboard, DCSection, DesignCanvas } from './design-canvas.jsx';
-import { LiteBlock, WarningOverlay } from '../child/SafetyMoments.jsx';
 import { Mascot } from '../core/characters.jsx';
-import { ParentAccount, ParentAddChild, ParentChildren, ParentReports, ParentSettings } from '../parent/ParentScreens.jsx';
+import { ParentAccount, ParentAddChild, ParentChildren, ParentReports, ParentSettings } from '../parent/index.jsx';
 import { StatusBar, THEME } from '../core/primitives.jsx';
 import { setLang } from '../core/i18n.jsx';
 

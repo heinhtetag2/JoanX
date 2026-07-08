@@ -42,7 +42,7 @@ const KO = {
   'Connect with your parent': '부모님과 연결하기',
   'Ask a parent to scan this in the JoanX Parent app to link your accounts.':
     '부모님께 조안X 부모 앱으로 스캔해 달라고 하면 두 앱이 연결돼요.',
-  'Or enter this code': '또는 이 코드 입력', "We're connected": '연결했어요',
+  'Or enter this code': '또는 이 코드 입력', 'or': '또는', "We're connected": '연결했어요',
   "Enter your parent's\nconnect code": '부모님의\n연결 코드를 입력하세요',
   'Open the JoanX Parent app and type the 6-digit code shown there.':
     '조안X 부모 앱을 열고, 화면에 표시된 6자리 코드를 입력하세요.',
@@ -62,6 +62,8 @@ const KO = {
   'Walk safely with your parent to grow your buddy together.': '부모님과 안전하게 걸으며 친구를 함께 키워요.',
   "You're linked with your parent. Let's finish setting up.": '이제 부모님과 연결됐어요. 마지막 설정만 끝내면 돼요.',
   'If it expires, create a new code in the Parent app.': '시간이 지나면 부모님 앱에서 새 코드를 만들어 주세요.',
+  'Time left': '남은 시간',
+  'The code expired — create a new one in the Parent app.': '코드 시간이 지났어요 — 부모님 앱에서 새 코드를 만들어 주세요.',
   "The linking code is valid for 5 minutes. If time runs out, please create a new one in your parent's app.":
     '연결 코드는 5분간 유효해요. 시간이 지나면 부모님 앱에서 새 코드를 만들어 주세요.',
   'To keep you safe while you walk, JoanX asks for these one at a time. You can decide on each.':
@@ -272,12 +274,13 @@ const KO = {
   'Add another child': '자녀 추가하기', 'Child': '자녀',
   'Add children': '자녀 추가', 'Done': '완료', 'Connect device': '기기 연결하기',
   'Connected': '연결됨', 'Not connected': '연결 안 됨', 'Reconnect device': '기기 재연결', 'Open to connect': '눌러서 연결',
-  // device-change approval
-  'New device sign-in detected': '새 기기 로그인 감지됨', 'Review': '검토하기',
-  'Approve new device?': '새 기기를 승인할까요?',
-  "'s account is being used on a new phone. Only one device can be protected at a time.": '님의 계정이 새 휴대폰에서 사용되고 있어요. 한 번에 한 기기만 보호할 수 있어요.',
+  'Switched to a new phone? Reconnect and scan the new QR shown in their JoanX app.': '새 휴대폰으로 바꿨나요? 다시 연결을 눌러, 아이 조안X 앱에 표시된 새 QR을 스캔하세요.',
+  // device-change — child requests to move to a new phone; parent confirms by scanning its QR
+  'New device connection request': '새 기기 연결 요청', 'Review': '검토하기',
+  'Move protection to the new phone?': '보호를 새 휴대폰으로 옮길까요?',
+  "'s new phone is ready to connect. Scan it with your phone to move protection here — only one device is protected at a time.": '님의 새 휴대폰이 연결을 기다리고 있어요. 부모님 휴대폰으로 스캔하면 보호가 이 기기로 옮겨져요 — 한 번에 한 기기만 보호돼요.',
   'Current device': '현재 기기', 'New': '새 기기',
-  'Approve & move here': '승인하고 이 기기로 이동', 'Keep current device': '현재 기기 유지', 'Block this device': '이 기기 차단',
+  'Scan new phone to confirm': '새 휴대폰 스캔해서 확인', 'Keep current device': '현재 기기 유지', 'Block this device': '이 기기 차단',
   'Action needed': '확인 필요', 'day safe streak': '일 연속 안전',
   "Child's phone number": '자녀 전화번호', "Child's date of birth": '자녀 생년월일',
   'Relationship to you': '아이와의 관계',
@@ -390,6 +393,23 @@ const KO = {
   'of': '/', 'discovered': '발견', 'Stage': '단계',
   'Not yet discovered': '아직 발견하지 못함', 'Defeated': '물리침', 'Now': '지금',
   'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
+  'Boss': '보스', 'Reward': '보상', 'Start battle': '배틀 시작',
+
+  // villain roster (names + blurbs, A-8/A-9)
+  'Smombie Rookie': '스몸비 새내기', 'Smombie Walker': '스몸비 워커', 'Distractor': '방해꾼',
+  'Dark Walker': '어둠의 워커', 'Crossroad Phantom': '교차로 유령', 'Alley Stalker': '골목 스토커',
+  'Screen Master': '스크린 마스터', 'Attention Reaper': '집중력 사신', 'Doom Walker': '파멸의 워커',
+  'King Smombie': '스몸비 대왕',
+  'A freshly-hatched screen zombie. Shuffles along, eyes glued to the glow.': '갓 태어난 스크린 좀비. 화면에 눈을 붙인 채 터덜터덜 걸어요.',
+  'Walks and scrolls at once — bumps into lampposts, never looks up.': '걸으면서 스크롤까지 — 가로등에 부딪혀도 고개를 들지 않아요.',
+  'Pings and buzzes to steal your attention at the worst moment.': '가장 위험한 순간에 알림과 진동으로 집중력을 훔쳐가요.',
+  'Crosses the road head-down in the dark. Your next challenge.': '어두운 밤, 고개를 숙인 채 길을 건너요. 너의 다음 도전 상대!',
+  'Haunts busy junctions, luring walkers into traffic.': '복잡한 교차로에 숨어 보행자를 차도로 꾀어내요.',
+  'Lurks where sightlines are short and cars come fast.': '시야가 좁고 차가 빨리 달리는 골목에 숨어 있어요.',
+  'Bends every walker to the pull of the screen.': '모든 보행자를 화면의 유혹에 빠뜨려요.',
+  'Harvests focus until nothing is left for the road.': '길을 볼 집중력이 남지 않을 때까지 몽땅 거둬가요.',
+  'Marches on, blind to every warning.': '어떤 경고도 못 본 척 앞만 보고 걸어가요.',
+  'Ruler of the screen zombies. Beat it to master the streets.': '스크린 좀비의 왕. 물리치면 거리의 진짜 주인이 돼요.',
 
   // ── battle / villains (A-8) ──
   'Approaching the villain…': '빌런에게 접근 중…', 'Next villain': '다음 빌런', 'Power': '파워',

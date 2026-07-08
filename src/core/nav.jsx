@@ -26,8 +26,11 @@ function TabBar({ tabs, active, onTab, accent }) {
         if (t.center) {
           return (
             <button key={t.id} onClick={() => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <div style={{ marginTop: -26, width: 62, height: 62, borderRadius: 999, background: ac, border: '6px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ marginTop: -26, width: 62, height: 62, borderRadius: 999, background: ac, border: '6px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <Icon name={t.icon} size={30} color="#fff" stroke={2.2} />
+                {/* hairline on the protruding arc only (button pokes 15px above the bar), so the
+                    bar's top border appears to continue around the notch instead of a full ring */}
+                <div style={{ position: 'absolute', inset: -7, borderRadius: 999, border: `1px solid ${THEME.border}`, clipPath: 'inset(-1px -1px 50px -1px)', pointerEvents: 'none' }} />
               </div>
             </button>
           );

@@ -6,11 +6,9 @@ import * as LucideIcons from 'lucide-react';
 
 // Repointed onto the new JoanX color system (see app/color-system.css).
 // Neutrals → sand · action/accent + primary CTA → ocean (brand blue) · status → rust/evergreen/ember.
-// (Sunbeam is kept defined in the token system but no longer used as a button fill.)
 const THEME = {
   // ── Core (authoritative) ─────────────────────────────────────────────
   primary: '#447aaf', primaryDark: '#2b5782', primaryLight: '#ecf3fe',   // ocean 50 / 60 / 10
-  cta: '#ebf212', ctaPressed: '#d8e003', ctaInk: '#2b2826',              // sunbeam 50 / 70 + dark ink
   danger: '#d14532', dangerLight: '#fff1ee',                            // rust 50 / 10
   success: '#4b814f', successLight: '#ebf4eb',                          // evergreen 50 / 10
   warning: '#b16120', warningLight: '#f9f1ed',                          // ember 50 / 10
@@ -57,6 +55,35 @@ const RARITY = {
   rare:    { label: 'Rare',    fg: THEME.rRare,    bg: THEME.rRareBg },
   special: { label: 'Special', fg: THEME.rSpecial, bg: THEME.rSpecialBg },
 };
+
+// ── Buddy/brand-tinted screen backgrounds — shared by BOTH apps ──────
+// derive harmonious analogous colors from a hex hue (hex → HSL → rotate → rgba)
+function _toHsl(hex) {
+  let c = hex.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const n = parseInt(c, 16); let r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h, s, l = (mx + mn) / 2;
+  if (mx === mn) { h = s = 0; } else { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
+  return [h, s, l];
+}
+function mixHue(hex, degShift, lShift, alpha) {
+  let [h, s, l] = _toHsl(hex); h = (h + degShift / 360 + 1) % 1; l = Math.max(0, Math.min(1, l + (lShift || 0))); s = Math.max(0, Math.min(1, s + 0.04));
+  let r, g, b;
+  if (s === 0) { r = g = b = l; } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const t = (x) => { if (x < 0) x += 1; if (x > 1) x -= 1; if (x < 1 / 6) return p + (q - p) * 6 * x; if (x < 1 / 2) return q; if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6; return p; };
+    r = t(h + 1 / 3); g = t(h); b = t(h - 1 / 3);
+  }
+  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha == null ? 1 : alpha})`;
+}
+// Build the soft top-of-screen wash, tinted by whatever brand/buddy colour is in
+// play (green buddy → green wash, magenta brand → pink wash…). Falls back to the
+// static token when no color is given.
+function screenBgFor(color) {
+  if (!color) return THEME.screenBg;
+  return `linear-gradient(180deg, rgba(248,247,247,0) 0, ${THEME.surface2} 400px), `
+    + `linear-gradient(115deg, ${mixHue(color, -30, 0.13, 0.32)} 0%, ${mixHue(color, 2, 0.15, 0.24)} 52%, ${mixHue(color, 32, 0.17, 0.30)} 100%), `
+    + `${THEME.surface2}`;
+}
 
 // Icon — keeps the kebab-case string API (name="chevron-left") but renders via
 // lucide-react. Names map to lucide's PascalCase icon components.
@@ -198,4 +225,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, Button, Icon, Input, RARITY, SectionHead, StatusBar, THEME, Toggle };
+export { Badge, Bar, Button, Icon, Input, RARITY, SectionHead, StatusBar, THEME, Toggle, mixHue, screenBgFor };

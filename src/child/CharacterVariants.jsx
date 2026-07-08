@@ -1,50 +1,12 @@
+// JoanX — child app · CharacterVariants
+
 import React from 'react';
+import { CHARACTERS } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
-import { CharacterDetail } from './GameScreens.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-
-// JoanX — Character Detail, alternate layouts.
-// Five style variants of the CharacterDetail screen (GameScreens.jsx), kept
-// switchable via the Tweaks "Detail style" row (ids "char-*"). One component
-// holds all the interactive state (color / stage / evolve / items) and swaps
-// only the hero + skin per variant, so every style stays fully functional.
-
-// derive harmonious analogous colors from the buddy hue (hex → HSL → rotate → rgba)
-function _toHsl(hex) {
-  let c = hex.replace('#', ''); if (c.length === 3) c = c.split('').map(x => x + x).join('');
-  const n = parseInt(c, 16); let r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h, s, l = (mx + mn) / 2;
-  if (mx === mn) { h = s = 0; } else { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
-  return [h, s, l];
-}
-function mixHue(hex, degShift, lShift, alpha) {
-  let [h, s, l] = _toHsl(hex); h = (h + degShift / 360 + 1) % 1; l = Math.max(0, Math.min(1, l + (lShift || 0))); s = Math.max(0, Math.min(1, s + 0.04));
-  let r, g, b;
-  if (s === 0) { r = g = b = l; } else {
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
-    const t = (x) => { if (x < 0) x += 1; if (x > 1) x -= 1; if (x < 1 / 6) return p + (q - p) * 6 * x; if (x < 1 / 2) return q; if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6; return p; };
-    r = t(h + 1 / 3); g = t(h); b = t(h - 1 / 3);
-  }
-  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha == null ? 1 : alpha})`;
-}
-
-// Build the soft top-of-screen wash, tinted by the active buddy colour, so the
-// background "mixes" with whatever brand/buddy colour is in play (green buddy →
-// green wash, orange buddy → warm wash, etc.). Falls back to the static token.
-function screenBgFor(color) {
-  if (!color) return THEME.screenBg;
-  return `linear-gradient(180deg, rgba(248,247,247,0) 0, ${THEME.surface2} 400px), `
-    + `linear-gradient(115deg, ${mixHue(color, -30, 0.13, 0.32)} 0%, ${mixHue(color, 2, 0.15, 0.24)} 52%, ${mixHue(color, 32, 0.17, 0.30)} 100%), `
-    + `${THEME.surface2}`;
-}
-// Page background tinted by the *active* buddy's colour — keeps every screen's
-// top gradient aligned with the buddy (green for Hammy, etc.), like the home.
-function screenBgActive() {
-  const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
-  return screenBgFor(c && c.color);
-}
+import { mixHue } from './shared.jsx';
+import { CharacterDetail } from './CharacterDetail.jsx';
 
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
@@ -232,8 +194,8 @@ function CharVariant({ ctx, variant }) {
           );
         })}
       </div>
-      {/* content — solid white card with an accent ring + soft glow */}
-      <div style={{ background: '#fff', borderRadius: 24, padding: '22px 18px', minHeight: 150, display: 'flex', alignItems: 'center', boxShadow: `0 16px 36px ${accent}26, 0 2px 8px rgba(46,43,41,0.06)`, border: `1.5px solid ${accent}24` }}>
+      {/* content — solid white card with an accent ring */}
+      <div style={{ background: '#fff', borderRadius: 24, padding: '22px 18px', minHeight: 150, display: 'flex', alignItems: 'center', border: `1.5px solid ${accent}24` }}>
         {tab === 'stat' ? traitsContentShowcase : tab === 'color' ? colorContentShowcase : itemContentShowcase}
       </div>
     </div>
@@ -298,7 +260,7 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
   const SetBtn = (
-    <Button key="set" variant="primary" size="lg" fullWidth style={{ marginTop: 2, background: accent, boxShadow: `0 8px 18px ${accent}55` }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
+    <Button key="set" variant="primary" size="lg" fullWidth style={{ marginTop: 2, background: accent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
   );
   // wave gets its own panel — rounded pill tabs (accent-filled active),
   // a vertical bar chart for stats, square swatches, and 2×2 item cards.
@@ -494,17 +456,9 @@ function CharVariant({ ctx, variant }) {
   );
 }
 
-const CHAR_LAYOUTS = [
-  { id: 'original', label: 'Original' },
-  { id: 'char-cover', label: 'Cover' },
-  { id: 'char-wave', label: 'Wave' },
-  { id: 'char-focus', label: 'Focus' },
-  { id: 'char-vivid', label: 'Vivid' },
-  { id: 'char-showcase', label: 'Showcase' },
-];
 function CharDetailVariant({ layout, ctx }) {
   if (!layout || layout === 'original') return <CharacterDetail ctx={ctx} />;
   return <CharVariant variant={layout.replace('char-', '')} ctx={ctx} />;
 }
 
-export { CharDetailVariant, mixHue, screenBgActive, screenBgFor };
+export { CharDetailVariant };

@@ -1,15 +1,15 @@
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
-import { ChildHome } from './ChildScreens.jsx';
+import { ChildHome } from './ChildHome.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgFor } from './CharacterVariants.jsx';
+import { screenBgFor } from './shared.jsx';
 
 // JoanX — Child Home, alternate layouts.
 // Five distinct layout directions for the home screen, all built on the same
 // design system (THEME tokens, Mascot, Bar/Badge/Icon, PLAYER/CHARACTERS data)
 // so the client can compare real, working alternatives — not flat mockups.
-// The original lives in ChildScreens.jsx (ChildHome); App.jsx routes between
+// The original lives in ChildHome.jsx; App.jsx routes between
 // them via the "Home layout" tweak.
 
 // shared activity used by several variants (mirrors ChildHome's "wins")

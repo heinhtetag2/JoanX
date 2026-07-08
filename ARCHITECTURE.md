@@ -21,10 +21,12 @@ npm run preview    # serve the production build locally
 Requires Node 18+ (developed on Node 22). React 18, Vite 6, `lucide-react` for icons.
 
 ### Pages (Vite multi-page)
-- `index.html`                 → **the app**
+- `index.html`                 → **the app** (topbar → **Design system** opens the interactive token/component doc, **Spec checklist** the feature-coverage audit; deep-link `/?view=design` / `/?view=checklist`)
 - `design/overview.html`       → every screen on one pan/zoom canvas (design review)
 - `design/colors.html`         → color-token gallery
 - `design/components.html`     → component gallery
+
+The written design-system spec for developer handoff is `DESIGN-SYSTEM.md` (repo root); its interactive twin is `src/docs/DesignSystem.jsx`.
 
 All four are entries in `vite.config.js`.
 
@@ -71,7 +73,7 @@ No `window` globals for app code (one deliberate exception: `window.JX_CHAR_STYL
 
 ### Two color palettes (by design)
 - **Child app** → `THEME` (ocean/green + per-buddy accent), from `src/core/primitives.jsx`.
-- **Parent app** → `BRAND` (JoanX logo **magenta** `#E00477`, with a softened `ink` for active/focus states), at the top of `src/parent/ParentScreens.jsx`.
+- **Parent app** → `BRAND` (JoanX logo **magenta** `#E00477`, with a softened `ink` for active/focus states), at the top of `src/parent/shared.jsx`.
 
 ---
 

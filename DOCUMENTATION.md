@@ -168,8 +168,9 @@ the only source of colors, type, spacing, and shared UI:
 |---|---|---|
 | `Mascot` / `MascotChip` | `characters.jsx` | The parametric character (see §7) |
 | `TabBar` | `nav.jsx` | Bottom tab bar with the raised center **Battle** button; Safety is a standard tab |
-| `ScreenHeader` | screen modules | Pushed-screen nav bar (back ‹ · centered title · right action) |
-| `Confetti` / `RewardToast` | `SafetyMoments.jsx` | Celebration effects |
+| `ScreenHeader` | `child/shared.jsx` | Pushed-screen nav bar (back ‹ · centered title · right action) |
+| `Confetti` | `child/shared.jsx` | Celebration effect (Battle win, etc.) |
+| `RewardToast` | `child/WarningOverlay.jsx` | Post-warning reward toast |
 
 ## 4.3 Application architecture
 
@@ -194,31 +195,50 @@ the only source of colors, type, spacing, and shared UI:
 
 ## 4.4 Folder structure
 
+Standard Vite + React. `child/` and `parent/` are **one screen per file** — a
+`shared.jsx` per app for cross-screen helpers, re-exported through an
+`index.jsx` barrel that's the only thing other modules import from.
+
 ```
 /
-├── index.html                          # Prototype entry (loads all app/*.jsx)
-├── design/overview.html                       # Flat screen-overview canvas
-├── vercel.json                         # Static hosting config
+├── index.html                  # App entry (loads /src/main.jsx)
+├── design/                     # Design-reference pages (their own Vite entries)
+│   ├── overview.html             # Flat screen-overview canvas
+│   ├── colors.html                # Color-token gallery
+│   └── components.html            # Component gallery
+├── vite.config.js              # Vite config + the 4 page entries
 ├── README.md
-├── DOCUMENTATION.md                    # This file
-├── screenshots/                        # Reference captures
-├── uploads/                            # Misc imported assets
-└── app/
-    ├── tripme-tokens.css   # TripMe design tokens (colors, type, spacing, radii, shadows)
-    ├── joanx.css           # App styles + keyframe animations + Fredoka import
-    ├── primitives.jsx      # THEME, RARITY + reusable UI components
-    ├── characters.jsx      # Mascot system (fox/cat/bird, stages, moods)
-    ├── data.jsx            # Mock data (PLAYER, CHARACTERS, ROOMS, metrics…)
-    ├── i18n.jsx            # L() helper + EN/KO strings
-    ├── nav.jsx             # Tab definitions + TabBar
-    ├── ChildScreens.jsx    # Onboarding, Home, Safety, Notifications, Profile
-    ├── SafetyMoments.jsx   # Warning overlay (3 variants) + Lite block + reward
-    ├── GameScreens.jsx     # Collection House + Character detail
-    ├── GameScreens2.jsx    # Battle + Rewards + Shop
-    ├── ParentScreens.jsx   # Reports + Settings + Children
-    ├── App.jsx             # Shell: iOS frame, router, tweaks panel
-    ├── Overview.jsx        # Builds the flat overview canvas
-    └── design-canvas.jsx   # Canvas component for design/overview.html
+├── DOCUMENTATION.md             # This file
+├── ARCHITECTURE.md             # Codebase map for contributors
+└── src/
+    ├── main.jsx                 # Mounts <App/>, imports global CSS
+    ├── styles/                  # color-system.css · tripme-tokens.css · joanx.css
+    ├── core/                    # Shared foundation — used by BOTH apps
+    │   ├── primitives.jsx         # THEME, RARITY + reusable UI components
+    │   ├── characters.jsx         # Mascot system (fox/cat/bird…, stages, moods)
+    │   ├── data.jsx                # Mock data (PLAYER, CHARACTERS, ROOMS, metrics…)
+    │   ├── i18n.jsx                # L() helper + EN/KO strings
+    │   └── nav.jsx                 # Tab definitions + TabBar
+    ├── child/                   # THE CHILD APP — one screen per file
+    │   ├── index.jsx               # Barrel — import child screens from here
+    │   ├── shared.jsx              # ScreenHeader, StatCard, screenBgFor/Active, Confetti…
+    │   ├── Onboarding.jsx · ChildHome.jsx · SafetyStatus.jsx · Notifications.jsx · Profile.jsx
+    │   ├── Collection.jsx · CharacterDetail.jsx
+    │   ├── Battle.jsx · Rewards.jsx · Shop.jsx
+    │   ├── CharacterDex.jsx · VillainDex.jsx
+    │   ├── Friends.jsx · FriendHouse.jsx · MyHouse.jsx · DecorateRoom.jsx · AddFriends.jsx
+    │   ├── WarningOverlay.jsx · LiteBlock.jsx
+    │   └── HomeVariants.jsx · HomeVariantsSimple.jsx · CharacterVariants.jsx   # variant galleries
+    ├── parent/                  # THE PARENT APP — one screen per file
+    │   ├── index.jsx               # Barrel — import parent screens from here
+    │   ├── shared.jsx              # BRAND, brandBtn, ParentHead, ChoiceGroup, RULE_TAG_COLORS
+    │   ├── ParentOnboarding.jsx · ParentAddChild.jsx
+    │   ├── ParentReports.jsx · ParentAIReport.jsx
+    │   ├── ParentChildren.jsx · ParentSettings.jsx · ParentSchedule.jsx
+    │   └── ParentDetail.jsx · ParentAccount.jsx
+    ├── shell/App.jsx             # iOS frame, role switcher, router, Tweaks panel
+    ├── overview/                 # Design-canvas components used by design/overview.html
+    └── docs/DesignSystem.jsx     # The interactive design-system doc (index.html → "Design system")
 ```
 
 ### Suggested **production** structure (React Native / Expo, mirroring TripMe)

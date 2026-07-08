@@ -56,8 +56,6 @@
   --color-base-alpha-evergreen-20: #27442733;
   --color-base-alpha-ocean-10:     #1d3d581a;
   --color-base-alpha-ocean-20:     #1d3d5833;
-  --color-base-alpha-sunbeam-10:   #d8e0031a;
-  --color-base-alpha-sunbeam-20:   #d8e00333;
 
   /* ════════════════════════════════════════════════════════════════════
      2. BASE — ELEVATION  (all white in light mode; layered via shadows)
@@ -174,11 +172,6 @@
   --color-base-ember-70: #602f0c;
   --color-base-ember-80: #402007;
 
-  /* 3.11 Sunbeam */
-  --color-base-sunbeam-10: #feffd9;
-  --color-base-sunbeam-30: #faff5c;
-  --color-base-sunbeam-50: #ebf212;
-  --color-base-sunbeam-70: #d8e003;
 
   /* ════════════════════════════════════════════════════════════════════
      4. BRAND
@@ -486,15 +479,15 @@
   --color-interactives-badge-sand-inverse-label:   var(--color-base-sand-0);
 
   /* Button — primary */
-  --color-interactives-button-primary-active:                 var(--color-base-sunbeam-50);
-  --color-interactives-button-primary-hover:                  var(--color-base-sunbeam-30);
-  --color-interactives-button-primary-pressed:                var(--color-base-sunbeam-70);
-  --color-interactives-button-primary-focus:                  var(--color-base-sunbeam-50);
+  --color-interactives-button-primary-active:                 var(--color-base-ocean-50);
+  --color-interactives-button-primary-hover:                  var(--color-base-ocean-30);
+  --color-interactives-button-primary-pressed:                var(--color-base-ocean-70);
+  --color-interactives-button-primary-focus:                  var(--color-base-ocean-50);
   --color-interactives-button-primary-disabled:               var(--color-base-sand-10);
   --color-interactives-button-primary-loading:                var(--color-base-sand-10);
-  --color-interactives-button-primary-icon:                   var(--color-constants-dark);
-  --color-interactives-button-primary-label:                  var(--color-constants-dark);
-  --color-interactives-button-primary-split-divider:          var(--color-base-sunbeam-70);
+  --color-interactives-button-primary-icon:                   var(--color-constants-light);
+  --color-interactives-button-primary-label:                  var(--color-constants-light);
+  --color-interactives-button-primary-split-divider:          var(--color-base-ocean-70);
   --color-interactives-button-primary-split-divider-disabled: var(--color-base-sand-0);
   /* Button — secondary */
   --color-interactives-button-secondary-active:                 var(--color-base-sand-0);
@@ -520,26 +513,26 @@
   --color-interactives-button-tertiary-split-divider:          var(--color-base-sand-20);
   --color-interactives-button-tertiary-split-divider-disabled: var(--color-base-sand-10);
   /* Button — brand */
-  --color-interactives-button-brand-active:                 var(--color-base-sunbeam-50);
-  --color-interactives-button-brand-hover:                  var(--color-base-sunbeam-30);
-  --color-interactives-button-brand-pressed:                var(--color-base-sunbeam-70);
-  --color-interactives-button-brand-focus:                  var(--color-base-sunbeam-50);
-  --color-interactives-button-brand-disabled:               var(--color-base-sunbeam-10);
-  --color-interactives-button-brand-loading:                var(--color-base-sunbeam-10);
-  --color-interactives-button-brand-icon:                   var(--color-base-sand-80);
-  --color-interactives-button-brand-label:                  var(--color-base-sand-80);
-  --color-interactives-button-brand-split-divider:          var(--color-base-sunbeam-70);
+  --color-interactives-button-brand-active:                 var(--color-base-ocean-50);
+  --color-interactives-button-brand-hover:                  var(--color-base-ocean-30);
+  --color-interactives-button-brand-pressed:                var(--color-base-ocean-70);
+  --color-interactives-button-brand-focus:                  var(--color-base-ocean-50);
+  --color-interactives-button-brand-disabled:               var(--color-base-ocean-10);
+  --color-interactives-button-brand-loading:                var(--color-base-ocean-10);
+  --color-interactives-button-brand-icon:                   var(--color-constants-light);
+  --color-interactives-button-brand-label:                  var(--color-constants-light);
+  --color-interactives-button-brand-split-divider:          var(--color-base-ocean-70);
   --color-interactives-button-brand-split-divider-disabled: var(--color-base-sand-0);
   /* Button — growth */
-  --color-interactives-button-growth-active:                 var(--color-base-sunbeam-50);
-  --color-interactives-button-growth-hover:                  var(--color-base-sunbeam-30);
-  --color-interactives-button-growth-pressed:                var(--color-base-sunbeam-70);
-  --color-interactives-button-growth-focus:                  var(--color-base-sunbeam-50);
+  --color-interactives-button-growth-active:                 var(--color-base-ocean-50);
+  --color-interactives-button-growth-hover:                  var(--color-base-ocean-30);
+  --color-interactives-button-growth-pressed:                var(--color-base-ocean-70);
+  --color-interactives-button-growth-focus:                  var(--color-base-ocean-50);
   --color-interactives-button-growth-disabled:               var(--color-base-sand-10);
   --color-interactives-button-growth-loading:                var(--color-base-sand-10);
-  --color-interactives-button-growth-icon:                   var(--color-constants-dark);
-  --color-interactives-button-growth-label:                  var(--color-constants-dark);
-  --color-interactives-button-growth-split-divider:          var(--color-base-sunbeam-70);
+  --color-interactives-button-growth-icon:                   var(--color-constants-light);
+  --color-interactives-button-growth-label:                  var(--color-constants-light);
+  --color-interactives-button-growth-split-divider:          var(--color-base-ocean-70);
   --color-interactives-button-growth-split-divider-disabled: var(--color-base-sand-0);
   /* Button — destroy-primary */
   --color-interactives-button-destroy-primary-active:                 var(--color-base-rust-50);

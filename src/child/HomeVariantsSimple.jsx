@@ -3,7 +3,7 @@ import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { mixHue, screenBgFor } from './CharacterVariants.jsx';
+import { mixHue, screenBgFor } from './shared.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
 // A standalone DUPLICATE of the 6 home layouts (Original + the 5 in
