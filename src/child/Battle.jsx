@@ -3,7 +3,7 @@
 import React from 'react';
 import { CHARACTERS, VILLAINS } from '../core/data.jsx';
 import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
-import { L } from '../core/i18n.jsx';
+import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti } from './shared.jsx';
 
@@ -41,6 +41,15 @@ function Battle({ ctx }) {
 
   if (phase === 'versus' || phase === 'result') {
     const result = phase === 'result';
+    const ko = getLang() === 'ko';
+    // battle math — the same formula that decides the win, shown to the child
+    const base = power(sel), bonus = 30, myTotal = base + bonus, diff = myTotal - villain.power;
+    const mathRow = (lbl, val, color, i) => (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.09)' : 'none' }}>
+        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.72)', fontWeight: 600 }}>{lbl}</span>
+        <span className="game-font" style={{ fontSize: 15.5, fontWeight: 500, color: color || '#fff' }}>{val}</span>
+      </div>
+    );
     return (
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#122536)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative' }}>
@@ -60,11 +69,27 @@ function Battle({ ctx }) {
           </div>
 
           {result && (
-            <div className="jx-pop" style={{ marginTop: 30, textAlign: 'center' }}>
-              <div className="game-font" style={{ fontSize: 36, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
-              {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points</div>}
-              {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{L('Still earned +40 points for trying!')}</div>}
-            </div>
+            <React.Fragment>
+              <div className="jx-pop" style={{ marginTop: 26, textAlign: 'center' }}>
+                <div className="game-font" style={{ fontSize: 36, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>{won ? L('Victory!') : L('So close!')}</div>
+                {won && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +120 points</div>}
+                {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{L('Still earned +40 points for trying!')}</div>}
+              </div>
+
+              {/* battle math — how the result was calculated */}
+              <div className="jx-pop" style={{ width: '100%', maxWidth: 300, marginTop: 20, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.13)', borderRadius: 18, padding: '12px 16px 14px' }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 2 }}>{L('Battle math')}</div>
+                {mathRow(`${sel.name} · ${L('Power')}`, base, '#fff', 0)}
+                {mathRow(L('Safe-walk bonus'), `+${bonus}`, THEME.gold, 1)}
+                {mathRow(L('Your total'), myTotal, won ? THEME.gold : '#fff', 1)}
+                {mathRow(`${L(opp.name)} · ${L('Power')}`, villain.power, 'rgba(255,255,255,.85)', 1)}
+                <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: won ? THEME.gold : 'rgba(255,255,255,.8)', marginTop: 10 }}>
+                  {won
+                    ? (ko ? `빌런보다 파워 ${diff} 앞서 이겼어요!` : `Out-powered the villain by ${diff}!`)
+                    : (ko ? `파워가 ${-diff} 부족했어요 — 레벨업해요!` : `Short by ${-diff} power — level up!`)}
+                </div>
+              </div>
+            </React.Fragment>
           )}
         </div>
         {result && (

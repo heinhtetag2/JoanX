@@ -181,6 +181,7 @@ const KO = {
   // ── battle ──
   'Finding opponent…': '상대를 찾는 중…', 'Matching within ±3 levels': '±3 레벨 내에서 매칭 중',
   'Victory!': '승리!', 'So close!': '아쉬워요!', 'Still earned +40 points for trying!': '도전만으로도 +40 포인트를 받았어요!',
+  'Battle math': '배틀 계산', 'Safe-walk bonus': '안전 걷기 보너스', 'Your total': '내 총 파워',
   'Battle again': '다시 배틀', 'Back home': '홈으로',
   'battles left today. Battles pause while you\'re walking.': '회의 배틀이 남았어요. 걷는 동안에는 배틀이 멈춰요.',
   'Your fighter': '내 파이터', 'Choose a buddy': '친구 선택', 'Find a match': '매칭 찾기',
