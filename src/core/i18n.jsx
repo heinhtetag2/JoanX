@@ -298,6 +298,11 @@ const KO = {
   // Create-account fields
   'Fill in your details to get started.': '정보를 입력하고 시작하세요.',
   'User ID': '아이디', 'e.g. user01': '예: user01',
+  // User ID duplicate check (Korean-style 중복확인)
+  'Check': '중복확인', 'Checking…': '확인 중…',
+  'This ID is already taken. Try another.': '이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요.',
+  'Use at least 4 characters.': '아이디는 4자 이상 입력해 주세요.',
+  'This ID is available!': '사용할 수 있는 아이디예요!',
   'Phone number': '전화번호', 'Date of birth': '생년월일',
   'Gender': '성별', 'Select': '선택', 'Male': '남성', 'Female': '여성', 'Prefer not to say': '선택 안 함',
   'Email (optional)': '이메일 (선택)',

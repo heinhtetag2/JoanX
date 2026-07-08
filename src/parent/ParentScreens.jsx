@@ -19,6 +19,10 @@ const BRAND = {
 };
 const brandBtn = { background: BRAND.primary, boxShadow: `0 8px 20px ${BRAND.shadow}` };
 
+// Mock roster of already-registered user IDs — the "중복확인" (duplicate check)
+// on sign-up tests a typed ID against this list. Swap for a real API later.
+const TAKEN_IDS = ['user01', 'admin', 'joanx', 'test', 'guest', 'sora', 'minji', 'mom', 'dad'];
+
 function ParentHead({ title, sub, right, onBack }) {
   return (
     <div style={{ padding: '8px 18px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -1403,6 +1407,15 @@ function ParentOnboarding({ ctx }) {
   const [confirm, setConfirm] = React.useState('');
   const [showPass, setShowPass] = React.useState(false);
   const [sent, setSent] = React.useState(false);   // forgot-password: reset link sent
+  const [idStatus, setIdStatus] = React.useState('idle'); // user-ID check: idle | checking | available | taken | short
+
+  // "중복확인" — check the typed user ID against the taken-IDs roster.
+  const checkUserId = () => {
+    const id = userId.trim().toLowerCase();
+    if (id.length < 4) { setIdStatus('short'); return; }
+    setIdStatus('checking');
+    setTimeout(() => setIdStatus(TAKEN_IDS.includes(id) ? 'taken' : 'available'), 550);
+  };
 
   // logo splash auto-advances into the intro slides
   React.useEffect(() => {
@@ -1429,7 +1442,7 @@ function ParentOnboarding({ ctx }) {
   const confirmErr = signup && confirm && confirm !== pass ? L('Passwords do not match.') : undefined;
   const step1Valid = name.trim() && phone.trim() && dob && gender;   // signup personal step
   const canSubmit = signup
-    ? userId.trim() && name.trim() && phone.trim() && dob && gender && pass.length >= 6 && confirm === pass && emailOk
+    ? userId.trim() && idStatus === 'available' && name.trim() && phone.trim() && dob && gender && pass.length >= 6 && confirm === pass && emailOk
     : userId.trim() && !!pass;
   const finish = () => ctx.finishParentOnboarding();
   const goAuth = m => { setAuthMode(m); setSent(false); setShowPass(false); setAuthStep(1); };
@@ -1528,7 +1541,28 @@ function ParentOnboarding({ ctx }) {
 
               {signup && authStep === 2 && (
                 <>
-                  <Input label={L('User ID')} value={userId} onChange={e => setUserId(e.target.value.replace(/\s/g, ''))} placeholder={L('e.g. user01')} icon="at-sign" accent={BRAND.ink} />
+                  <div>
+                    <Input label={L('User ID')} value={userId}
+                      onChange={e => { setUserId(e.target.value.replace(/\s/g, '')); setIdStatus('idle'); }}
+                      placeholder={L('e.g. user01')} icon="at-sign" accent={BRAND.ink}
+                      error={idStatus === 'taken' ? L('This ID is already taken. Try another.') : idStatus === 'short' ? L('Use at least 4 characters.') : undefined}
+                      trailing={
+                        <button onClick={checkUserId} disabled={!userId.trim() || idStatus === 'checking'}
+                          className="jx-press"
+                          style={{ flexShrink: 0, border: 'none', borderRadius: 10, padding: '7px 12px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800,
+                            background: idStatus === 'available' ? THEME.successLight : BRAND.primaryLight,
+                            color: idStatus === 'available' ? THEME.success : BRAND.primary,
+                            cursor: (!userId.trim() || idStatus === 'checking') ? 'default' : 'pointer',
+                            opacity: !userId.trim() ? 0.5 : 1 }}>
+                          {L(idStatus === 'checking' ? 'Checking…' : 'Check')}
+                        </button>
+                      } />
+                    {idStatus === 'available' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6, marginLeft: 2, fontSize: 12, fontWeight: 700, color: THEME.success }}>
+                        <Icon name="check-circle" size={14} color={THEME.success} stroke={2.4} />{L('This ID is available!')}
+                      </div>
+                    )}
+                  </div>
                   <Input label={L('Email (optional)')} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" icon="mail" type="email" error={emailErr} accent={BRAND.ink} />
                   <Input label={L('Password')} value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={passErr} accent={BRAND.ink} />
                   <Input label={L('Confirm password')} value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••" icon="lock" type={showPass ? 'text' : 'password'} trailing={eyeBtn} error={confirmErr} accent={BRAND.ink} />

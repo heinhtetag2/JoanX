@@ -8,6 +8,11 @@ import { screenBgActive, screenBgFor } from './CharacterVariants.jsx';
 
 // JoanX — child core screens: Onboarding/permissions, Home, Safety Status.
 
+// Parent-app brand magenta — reused across the child onboarding flow so its
+// CTAs, inputs, and accents match the parent onboarding (per design request).
+const P_BRAND = { primary: '#E00477', primaryDark: '#B00360', primaryLight: '#FCE4F0', shadow: 'rgba(224,4,119,.32)' };
+const pBrandBtn = { background: P_BRAND.primary, boxShadow: `0 8px 20px ${P_BRAND.shadow}` };
+
 // ── shared little parts ──────────────────────────────────────────────
 function StatCard({ icon, color, bg, value, label, big }) {
   return (
@@ -125,52 +130,33 @@ function Onboarding({ ctx }) {
         </div>
       )}
 
-      {/* 1–2 · value-prop intro slides with a segmented top indicator (white background) */}
+      {/* 1–2 · value-prop intro slides — full-bleed hero image with dark scrims,
+          white copy, and a bottom-aligned CTA (mirrors the parent onboarding). */}
       {slide && (
-        <div style={{ position: 'absolute', inset: 0, background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }}>
-          <div style={{ display: 'flex', gap: 7, padding: '0 28px' }}>
-            {SLIDES.map((_, i) => (
-              <div key={i} style={{ height: 5, flex: 1, borderRadius: 999, background: i <= introIdx ? THEME.primary : THEME.border, transition: 'background .3s' }} />
-            ))}
-          </div>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }}>
+          {/* background: full-screen hero photo (reusing the parent intro image for now) */}
+          <img src="/assets/onboarding/intro.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '58% 36%' }} />
+          {/* soft dark scrims top & bottom keep the copy and CTA legible */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330, background: 'linear-gradient(180deg, rgba(12,14,22,.74) 0%, rgba(12,14,22,0) 100%)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 280, background: 'linear-gradient(0deg, rgba(10,12,20,.92) 8%, rgba(10,12,20,0) 100%)' }} />
 
-          <div style={{ padding: '32px 30px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.18, margin: 0, color: THEME.fg1 }}>{L(slide.title)}</h1>
-            <p style={{ fontSize: 15, lineHeight: 1.45, margin: '12px 0 0', color: THEME.fg2 }}>{L(slide.sub)}</p>
-          </div>
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', gap: 7, padding: '0 28px' }}>
+              {SLIDES.map((_, i) => (
+                <div key={i} style={{ height: 5, flex: 1, borderRadius: 999, background: i <= introIdx ? '#fff' : 'rgba(255,255,255,.4)', transition: 'background .3s' }} />
+              ))}
+            </div>
 
-          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {introIdx === 0 ? (
-              <div style={{ position: 'relative', width: 232, height: 232 }}>
-                <div className="jx-float" style={{ position: 'absolute', inset: 0, borderRadius: 42, background: shade(c.color, 90), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Buddy size={172} />
-                </div>
-                <div style={{ position: 'absolute', top: -6, right: -12, background: '#fff', borderRadius: 999, padding: '8px 13px', boxShadow: THEME.shadowLg, display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /><span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>1,240</span>
-                </div>
-                <div style={{ position: 'absolute', bottom: 6, left: -14, background: '#fff', borderRadius: 999, padding: '8px 13px', boxShadow: THEME.shadowLg, display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <Icon name="flame" size={16} color={THEME.beach} stroke={2.3} /><span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1 }}>5</span>
-                </div>
-              </div>
-            ) : (
-              <div style={{ position: 'relative', width: 264, height: 264, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div className="jx-float"><Buddy size={190} /></div>
-                {[
-                  { icon: 'star', col: THEME.gold, bg: THEME.goldLight, fill: true, pos: { top: 4, left: 2 } },
-                  { icon: 'trophy', col: '#b07d10', bg: '#fef0cf', pos: { top: 22, right: 0 } },
-                  { icon: 'shield-check', col: THEME.primary, bg: THEME.primaryLight, pos: { bottom: 30, left: 4 } },
-                  { icon: 'sparkles', col: THEME.camping, bg: THEME.campingBg, pos: { bottom: 6, right: 10 } },
-                ].map((b, i) => (
-                  <div key={i} className="jx-float" style={{ position: 'absolute', ...b.pos, width: 52, height: 52, borderRadius: 16, background: b.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: THEME.shadowCard }}>
-                    <Icon name={b.icon} size={26} color={b.col} fill={b.fill ? b.col : 'none'} stroke={2.2} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <div style={{ padding: '32px 30px 0' }}>
+              <h1 className="game-font" style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.18, margin: 0, color: '#fff', textShadow: '0 2px 16px rgba(0,0,0,.5)' }}>{L(slide.title)}</h1>
+              <p style={{ fontSize: 15, lineHeight: 1.45, margin: '12px 0 0', color: 'rgba(255,255,255,.92)', textShadow: '0 1px 12px rgba(0,0,0,.5)' }}>{L(slide.sub)}</p>
+            </div>
 
-          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
-            <Button variant="primary" size="lg" fullWidth onClick={() => setStep(step + 1)}>{L('Continue')}</Button>
+            <div style={{ flex: 1 }} />
+
+            <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+              <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(step + 1)}>{L('Continue')}</Button>
+            </div>
           </div>
         </div>
       )}
@@ -210,7 +196,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth disabled={!allGranted} onClick={allGranted ? () => setCharReveal(true) : undefined}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} disabled={!allGranted} onClick={allGranted ? () => setCharReveal(true) : undefined}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -231,7 +217,7 @@ function Onboarding({ ctx }) {
                 {[0, 1, 2, 3, 4, 5].map(i => {
                   const ch = code[i];
                   const active = !codeErr && i === code.length && code.length < 6;
-                  const border = codeErr ? THEME.danger : (active ? THEME.primary : (ch ? THEME.border : 'transparent'));
+                  const border = codeErr ? THEME.danger : (active ? P_BRAND.primary : (ch ? THEME.border : 'transparent'));
                   return (
                     <div key={i} style={{ width: 44, height: 56, borderRadius: 14, background: codeErr ? THEME.dangerLight : (ch ? '#fff' : THEME.surface2), border: `2px solid ${border}`, boxShadow: ch && !codeErr ? THEME.shadowCard : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s, background .15s' }}>
                       <span className="game-font" style={{ fontSize: 27, fontWeight: 500, color: codeErr ? THEME.danger : THEME.fg1 }}>{ch || ''}</span>
@@ -248,8 +234,8 @@ function Onboarding({ ctx }) {
             )}
 
             {/* share-a-QR alternative — parent scans the child's QR */}
-            <button onClick={() => setShowQR(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, margin: '20px 0 0', padding: '9px 16px', background: THEME.surface2, borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: THEME.primaryDark, fontSize: 13, fontWeight: 800 }}>
-              <Icon name="qr-code" size={16} color={THEME.primary} stroke={2.3} />{L('Show a QR to scan instead')}
+            <button onClick={() => setShowQR(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, margin: '20px 0 0', padding: '9px 16px', background: P_BRAND.primaryLight, borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: P_BRAND.primaryDark, fontSize: 13, fontWeight: 800 }}>
+              <Icon name="qr-code" size={16} color={P_BRAND.primary} stroke={2.3} />{L('Show a QR to scan instead')}
             </button>
 
             <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '24px 4px 0', maxWidth: 320 }}>
@@ -259,7 +245,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth onClick={submitCode}>{L('Connect')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={submitCode}>{L('Connect')}</Button>
           </div>
         </>
       )}
@@ -283,7 +269,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="outline" size="lg" fullWidth icon="keyboard" onClick={() => setShowQR(false)}>{L('Enter code instead')}</Button>
+            <Button variant="outline" size="lg" fullWidth icon="keyboard" style={{ color: P_BRAND.primary, borderColor: P_BRAND.primary }} onClick={() => setShowQR(false)}>{L('Enter code instead')}</Button>
           </div>
         </>
       )}
@@ -306,8 +292,8 @@ function Onboarding({ ctx }) {
                 <Buddy size={86} />
               </div>
               {/* parent — tucked behind, overlapping */}
-              <div style={{ width: 104, height: 104, borderRadius: 999, background: THEME.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(68,122,175,.10)' }}>
-                <Icon name="users" size={44} color={THEME.primary} stroke={2.2} />
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: P_BRAND.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(224,4,119,.10)' }}>
+                <Icon name="users" size={44} color={P_BRAND.primary} stroke={2.2} />
               </div>
             </div>
 
@@ -323,7 +309,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth onClick={() => setStep(4)}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(4)}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -361,7 +347,7 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth onClick={finish}>{L("Let's go")}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={finish}>{L("Let's go")}</Button>
           </div>
         </>
       )}
@@ -381,7 +367,7 @@ function Onboarding({ ctx }) {
               <Icon name="alert-triangle" size={17} color={THEME.warning} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
               <span style={{ fontSize: 12.5, color: THEME.warning, fontWeight: 600, lineHeight: 1.45 }}>{L(modalPerm.warn)}</span>
             </div>
-            <Button variant="primary" size="lg" fullWidth onClick={grantActive}>{L('Go to settings')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={grantActive}>{L('Go to settings')}</Button>
             <button onClick={dismiss} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Cancel')}</button>
           </div>
         </div>

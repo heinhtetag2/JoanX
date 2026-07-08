@@ -602,7 +602,7 @@ function MascotComic({ species = 'fox', size = 160, style, float }) {
   return (
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}
          className={float ? 'jx-float' : ''}>
-      <img src={`character-references/${file}`} alt="" draggable="false"
+      <img src={`/assets/characters/comic/${encodeURIComponent(file)}`} alt="" draggable="false"
            style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
                     transform: tf || undefined, transformOrigin: 'center bottom' }} />
     </div>
