@@ -74,14 +74,15 @@ function Onboarding({ ctx }) {
   const modalPerm = modal && perms.find(p => p.id === modal);
   const Buddy = ({ size }) => <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />;
 
-  // live 5-minute validity countdown for the parent's connect code
+  // live 5-minute validity countdown — shared by the code and QR connect screens
   const [codeLeft, setCodeLeft] = React.useState(300);
   const codeExpired = codeLeft <= 0;
+  const regenCode = () => setCodeLeft(300);   // "get a new code/QR" — restarts the timer
   React.useEffect(() => {
-    if (step !== 3 || showQR || pairing || connected) return undefined;
+    if (step !== 3 || pairing || connected) return undefined;
     const t = setInterval(() => setCodeLeft(s => (s > 0 ? s - 1 : 0)), 1000);
     return () => clearInterval(t);
-  }, [step, showQR, pairing, connected]);
+  }, [step, pairing, connected]);
 
   // pairing handshake — brief "connecting…" wait, then the success screen
   React.useEffect(() => {
@@ -277,14 +278,39 @@ function Onboarding({ ctx }) {
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('Show this to\nyour parent')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('Have a parent scan this QR in the JoanX Parent app to link your accounts.')}</p>
 
-            {/* QR — plain, centered, no shadow (tap simulates the parent scanning it) */}
-            <div onClick={() => setPairing(true)} style={{ alignSelf: 'center', background: '#fff', borderRadius: 24, padding: 22, marginTop: 4, cursor: 'pointer' }}>
-              <PairQR size={206} />
+            {/* QR — plain, centered, no shadow (tap simulates the parent scanning it).
+                At 0:00 it blurs out and an expired overlay + refresh takes over. */}
+            <div style={{ alignSelf: 'center', position: 'relative', marginTop: 4 }}>
+              <div onClick={() => !codeExpired && setPairing(true)} style={{ background: '#fff', borderRadius: 24, padding: 22, cursor: codeExpired ? 'default' : 'pointer', filter: codeExpired ? 'blur(4px)' : 'none', opacity: codeExpired ? .45 : 1, transition: 'opacity .25s, filter .25s' }}>
+                <PairQR size={206} />
+              </div>
+              {codeExpired && (
+                <div className="jx-pop" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: 16 }}>
+                  <div style={{ width: 46, height: 46, borderRadius: 999, background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="clock" size={23} color={THEME.danger} stroke={2.3} /></div>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{L('This QR expired')}</div>
+                  <button onClick={regenCode} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: P_BRAND.primary, color: '#fff', border: 'none', borderRadius: 999, padding: '10px 18px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
+                    <Icon name="refresh-cw" size={15} color="#fff" stroke={2.5} />{L('Get a new QR')}
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '20px 2px 0' }}>
-              <Icon name="clock" size={13} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span style={{ fontSize: 12, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L("The linking code is valid for 5 minutes. If time runs out, please create a new one in your parent's app.")}</span>
+            {/* live countdown chip — hidden once expired (overlay takes over).
+                Prototype shortcut: tap it to jump straight to the expired state. */}
+            {!codeExpired && (
+              <button onClick={() => setCodeLeft(0)} title={L('Tap to preview the expired state')} style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 18, padding: '7px 15px', borderRadius: 999, background: P_BRAND.primaryLight, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <Icon name="clock" size={14} color={P_BRAND.primary} stroke={2.4} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: P_BRAND.primaryDark }}>{L('Expires in')} <b style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 800 }}>{codeLeftLabel}</b></span>
+              </button>
+            )}
+
+            <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '16px 2px 0' }}>
+              <Icon name={codeExpired ? 'alert-circle' : 'info'} size={13} color={codeExpired ? THEME.danger : THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+              {codeExpired ? (
+                <span style={{ fontSize: 12, color: THEME.danger, lineHeight: 1.45, fontWeight: 700 }}>{L('The QR expired — tap “Get a new QR” to refresh it.')}</span>
+              ) : (
+                <span style={{ fontSize: 12, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L("The linking code is valid for 5 minutes. If time runs out, please create a new one in your parent's app.")}</span>
+              )}
             </div>
           </div>
 
