@@ -3,7 +3,8 @@ import { AddFriends, Battle, CharDetailVariant, CharacterDex, ChildHome, Collect
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { ParentAIReport, ParentAccount, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
@@ -119,8 +120,13 @@ function App() {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
     else body = ({
       p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
+      p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
+      // Profile tab — the parent account/profile page (identity + security), shown as a tab root
+      p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} />,
+      // center tab-bar scan button — the global connect flow (scan/code, then child picker)
+      p_connect: <ParentAddChild ctx={{ ...ctx, params: { connect: true, scan: true } }} />,
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
@@ -162,7 +168,7 @@ function App() {
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
-          {role === 'parent' && parentOnboarded && pScreen !== 'p_addchild' && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} />}
+          {role === 'parent' && parentOnboarded && !['p_addchild', 'p_connect'].includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay ctx={ctx} />)}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>

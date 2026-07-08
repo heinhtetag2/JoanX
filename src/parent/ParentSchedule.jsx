@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { CHILDREN } from '../core/data.jsx';
-import { Button, Input, THEME } from '../core/primitives.jsx';
+import { Button, Input, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
+import { BRAND, brandBtn, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
 
 // ── Schedule editor (add / edit a child's time rule) ─────────────────
 function ParentSchedule({ ctx }) {
@@ -47,7 +47,7 @@ function ParentSchedule({ ctx }) {
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={child.name} title={editing ? L('Edit schedule') : L('New schedule')} onBack={() => ctx.nav('p_settings', { child })} />
       <div style={{ padding: '8px 16px 0' }}>
 
@@ -67,7 +67,7 @@ function ParentSchedule({ ctx }) {
         <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
           {DAYS.map((d, i) => {
             const on = days.includes(i);
-            return <button key={i} onClick={() => toggleDay(i)} style={{ flex: 1, height: 42, border: 'none', borderRadius: 12, background: on ? BRAND.primary : THEME.surface2, color: on ? '#fff' : THEME.fg2, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{d}</button>;
+            return <button key={i} onClick={() => toggleDay(i)} style={{ flex: 1, height: 42, border: 'none', borderRadius: 12, background: on ? THEME.fg1 : THEME.surface2, color: on ? '#fff' : THEME.fg2, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{d}</button>;
           })}
         </div>
 
@@ -77,8 +77,8 @@ function ParentSchedule({ ctx }) {
           <div style={{ flex: 1, minWidth: 0 }}><Input label={L('End')} value={end} onChange={e => setEnd(e.target.value)} placeholder="8:40 AM" icon="sunset" accent={BRAND.ink} /></div>
         </div>
 
-        <Button variant="primary" fullWidth icon="check" onClick={save} style={{ marginBottom: 10 }}>{L('Save schedule')}</Button>
-        {editing && <Button variant="outline" fullWidth icon="trash-2" onClick={remove} style={{ color: THEME.danger }}>{L('Delete schedule')}</Button>}
+        <Button variant="primary" fullWidth icon="check" onClick={save} style={{ ...brandBtn, marginBottom: 10 }}>{L('Save schedule')}</Button>
+        {editing && <Button variant="outline" fullWidth icon="trash-2" onClick={remove} style={{ color: THEME.danger, boxShadow: 'none' }}>{L('Delete schedule')}</Button>}
       </div>
     </div>
   );

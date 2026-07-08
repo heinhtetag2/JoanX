@@ -147,6 +147,16 @@ const KO = {
   // ── notifications ──
   'Notifications': '알림', 'Mark read': '모두 읽음', 'All caught up': '모두 확인했어요',
   'Today': '오늘', 'Earlier': '이전',
+  // ── parent activity feed (Alerts tab) ──
+  'Alerts': '알림', 'Recent safety activity': '최근 안전 활동',
+  'Distraction warning': '주의 경고', 'Near Oak Street crossing': '오크 거리 횡단보도 근처',
+  'Safe walk completed': '안전 걷기 완료', '22 min phone-free': '22분 폰 안 보기',
+  'Warning ignored': '경고 무시됨', 'Kept scrolling while walking': '걸으면서 계속 스크롤했어요',
+  'Device disconnected': '기기 연결 끊김', 'Galaxy A14 went offline': 'Galaxy A14가 오프라인 됐어요',
+  '8-day safe streak!': '8일 연속 안전!', 'New personal best': '새로운 최고 기록',
+  'Safe morning commute': '안전한 아침 등굣길', 'School route, no warnings': '학교 가는 길, 경고 없음',
+  'Device reconnected': '기기 다시 연결됨', 'iPhone 13 back online': 'iPhone 13이 다시 온라인 됐어요',
+  'Nothing yet — safety activity will show up here.': '아직 없어요 — 안전 활동이 여기에 표시돼요.',
   'JoanX only pings you for safety, rewards, and your buddy.': '조안X는 안전, 보상, 친구 소식만 알려드려요.',
   'Daily reward is ready': '오늘의 보상이 준비됐어요', 'Claim +100 points for walking safely.': '안전하게 걸어서 +100 포인트를 받으세요.', 'Claim': '받기',
   'New danger zone near school': '학교 근처 새 위험 구역', 'A busy crossing was added to your route.': '경로에 복잡한 횡단보도가 추가됐어요.',
@@ -206,6 +216,7 @@ const KO = {
 
   // ── parent ──
   "This week's progress": '이번 주 진행 상황', 'Mina is improving': '미나가 나아지고 있어요',
+  'Getting better': '좋아지고 있어요', 'Switch child': '자녀 전환', 'Needs attention': '살펴봐 주세요',
   'Risky-walking moments': '위험한 보행 순간', 'fewer this week': '이번 주 감소',
   'Risky moments': '위험 순간', 'Safe stops': '안전 멈춤', 'This week': '이번 주',
   'Risky moments by day': '일별 위험 순간', 'Safest day': '가장 안전한 날',
@@ -277,6 +288,7 @@ const KO = {
   'Add another child': '자녀 추가하기', 'Child': '자녀',
   'Add children': '자녀 추가', 'Done': '완료', 'Connect device': '기기 연결하기',
   'Connected': '연결됨', 'Not connected': '연결 안 됨', 'Reconnect device': '기기 재연결', 'Open to connect': '눌러서 연결',
+  'Waiting to connect': '연결 대기 중', 'Scan or share a code': 'QR 스캔 또는 코드 공유',
   'Switched to a new phone? Reconnect and scan the new QR shown in their JoanX app.': '새 휴대폰으로 바꿨나요? 다시 연결을 눌러, 아이 조안X 앱에 표시된 새 QR을 스캔하세요.',
   // device-change — child requests to move to a new phone; parent confirms by scanning its QR
   'New device connection request': '새 기기 연결 요청', 'Review': '검토하기',
@@ -300,16 +312,11 @@ const KO = {
   // global connect entry (Children tab) + child picker
   'Connect a device': '자녀 기기 연결',
   'Scan a QR or enter a code to link.': 'QR 스캔 또는 코드로 연결해요.',
-  'How do you want to connect?': '어떻게 연결할까요?',
-  "Either way works — pick what's easier right now.": '어느 쪽이든 좋아요 — 지금 더 편한 방법을 골라 주세요.',
-  'Scan their QR': 'QR 스캔으로 연결',
-  "Point your camera at the QR in your child's app.": '자녀 앱에 표시된 QR을 카메라로 스캔해요.',
-  'Connect with a code': '코드로 연결',
-  'Show a 6-digit code and type it on their phone.': '6자리 코드를 자녀 폰에 입력해 연결해요.',
   'Who are we connecting?': '어떤 자녀를 연결할까요?',
   'Choose the child whose phone is in your hand.': '지금 연결할 자녀를 선택해 주세요.',
   'All children are connected!': '모든 자녀가 이미 연결되어 있어요!',
-  'Add a new child to connect another phone.': '다른 기기를 연결하려면 자녀를 추가해 주세요.',
+  'Connect a new device?': '새 기기로 연결할까요?',
+  'Connect new device': '새 기기로 연결',
   'Skip': '건너뛰기',
   'Enter a valid email address.': '올바른 이메일 주소를 입력하세요.',
   'Use at least 6 characters.': '6자 이상 입력해 주세요.',
@@ -392,6 +399,11 @@ const KO = {
   // ── parent: sign out ──
   'Sign out?': '로그아웃할까요?', 'You can sign back in anytime. Your children stay protected.': '언제든 다시 로그인할 수 있어요. 자녀는 계속 보호돼요.',
   'Cancel': '취소',
+
+  // ── parent: remove child ──
+  'Remove child': '자녀 삭제',
+  'Remove': '삭제',
+  'This unlinks their device and permanently deletes their reports, rules, and safety history. This can’t be undone.': '이 자녀의 기기 연결이 해제되고 리포트·규칙·안전 기록이 영구히 삭제돼요. 되돌릴 수 없어요.',
 
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',

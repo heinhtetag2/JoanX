@@ -118,6 +118,59 @@ const PARENT_METRICS = {
   avgResponse: 2.4,         // avg seconds to stop
 };
 
+// Per-child weekly report data — drives the whole Reports dashboard when the
+// parent switches child in the header. Keyed by child id (see CHILDREN below).
+// `delta` strings carry their own sign; the dashboard colors them by whether
+// the direction is good for that metric (for avgResponse, lower is better).
+const CHILD_REPORTS = {
+  k1: { // Mina — steady improvement (smart mode)
+    acceptance: 88, safeWalkMin: 312, avgResponse: 2.4, streak: 5,
+    deltas: { acceptance: '+6%', walk: '+12%', resp: '-0.3s', streak: '+2' },
+    reactions: [
+      { day: 'Mon', immediate: 4, delayed: 2, ignored: 1 }, { day: 'Tue', immediate: 5, delayed: 1, ignored: 1 },
+      { day: 'Wed', immediate: 3, delayed: 2, ignored: 0 }, { day: 'Thu', immediate: 6, delayed: 1, ignored: 0 },
+      { day: 'Fri', immediate: 5, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 7, delayed: 0, ignored: 0 },
+      { day: 'Sun', immediate: 6, delayed: 1, ignored: 0 },
+    ],
+    risk: [9, 8, 7, 5, 6, 4, 3],
+  },
+  k2: { // Leo — needs attention (lite mode, often offline)
+    acceptance: 61, safeWalkMin: 174, avgResponse: 4.3, streak: 2,
+    deltas: { acceptance: '-4%', walk: '+3%', resp: '+0.5s', streak: '-1' },
+    reactions: [
+      { day: 'Mon', immediate: 2, delayed: 3, ignored: 3 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 2 },
+      { day: 'Wed', immediate: 2, delayed: 3, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 2, ignored: 1 },
+      { day: 'Fri', immediate: 3, delayed: 2, ignored: 3 }, { day: 'Sat', immediate: 4, delayed: 1, ignored: 2 },
+      { day: 'Sun', immediate: 3, delayed: 2, ignored: 2 },
+    ],
+    risk: [11, 12, 10, 13, 11, 12, 10],
+  },
+  k3: { // Yuna — doing great (smart mode, long streak)
+    acceptance: 94, safeWalkMin: 268, avgResponse: 1.8, streak: 8,
+    deltas: { acceptance: '+9%', walk: '+15%', resp: '-0.6s', streak: '+3' },
+    reactions: [
+      { day: 'Mon', immediate: 5, delayed: 1, ignored: 0 }, { day: 'Tue', immediate: 6, delayed: 0, ignored: 0 },
+      { day: 'Wed', immediate: 4, delayed: 1, ignored: 0 }, { day: 'Thu', immediate: 7, delayed: 0, ignored: 0 },
+      { day: 'Fri', immediate: 6, delayed: 1, ignored: 0 }, { day: 'Sat', immediate: 5, delayed: 0, ignored: 0 },
+      { day: 'Sun', immediate: 7, delayed: 0, ignored: 0 },
+    ],
+    risk: [6, 5, 5, 4, 3, 3, 2],
+  },
+};
+
+// Parent activity feed — recent safety moments across all children. `kind`
+// drives the icon + tone in ParentActivity; `child` is a CHILDREN id. Split by
+// `today` into the Today / Earlier sections. Newest first within each section.
+const PARENT_ALERTS = [
+  { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true },
+  { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true },
+  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true },
+  { id: 'n4', kind: 'device_off', child: 'k2', title: 'Device disconnected',  sub: 'Galaxy A14 went offline',    time: '2h',  today: true },
+  { id: 'n5', kind: 'streak',     child: 'k3', title: '8-day safe streak!',   sub: 'New personal best',          time: 'Yesterday', today: false },
+  { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false },
+  { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false },
+];
+
 const CHILDREN = [
   { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
     pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
@@ -230,4 +283,4 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-export { ACHIEVEMENTS, APP_CATEGORIES, CHARACTERS, CHILDREN, DECOR, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, MY_GUESTBOOK, PARENT_METRICS, PERMISSIONS, PLAYER, REACTIONS_7D, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS };
+export { ACHIEVEMENTS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, PERMISSIONS, PLAYER, REACTIONS_7D, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS };

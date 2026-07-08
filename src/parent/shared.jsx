@@ -19,19 +19,19 @@ const brandBtn = { background: BRAND.primary, boxShadow: 'none' };
 
 function ParentHead({ title, sub, right, onBack }) {
   return (
-    <div style={{ padding: '8px 18px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+    <div style={{ padding: '8px 18px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, minWidth: 0 }}>
         {onBack && (
           <button onClick={onBack} aria-label={L('Back')} style={{ width: 34, height: 34, marginTop: 2, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
           </button>
         )}
-        <div>
+        <div style={{ minWidth: 0 }}>
           {sub && <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{sub}</div>}
           <h1 style={{ fontSize: 24, fontWeight: 800, color: THEME.fg1, margin: 0, letterSpacing: '-0.3px' }}>{title}</h1>
         </div>
       </div>
-      {right}
+      {right && <div style={{ flexShrink: 0 }}>{right}</div>}
     </div>
   );
 }

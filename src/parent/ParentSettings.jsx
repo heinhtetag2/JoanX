@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
-import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { Badge, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
@@ -22,13 +22,24 @@ function ParentSettings({ ctx }) {
   const mode = cfg.mode, cats = cfg.cats, sens = cfg.sens, notif = cfg.notif, gam = cfg.gam;
   const setModeBoth = m => { update({ mode: m }); ctx.setMode(m); };
 
+  // Remove-child flow: confirm sheet → unlink device + delete this child, then
+  // return to the Children list (which re-reads CHILDREN, now one shorter).
+  const [confirmDel, setConfirmDel] = React.useState(false);
+  const removeChild = () => {
+    const i = CHILDREN.findIndex(c => c.id === child.id);
+    if (i >= 0) CHILDREN.splice(i, 1);
+    setConfirmDel(false);
+    ctx.nav('p_children');
+  };
+  const delTitle = ctx.lang === 'ko' ? `${child.name} 삭제할까요?` : `Remove ${child.name}?`;
+
   // Device change is PARENT-INITIATED. Pairing only happens when the parent
   // scans the child's new-phone QR (via "Reconnect device" below) — the app
   // has no way to passively "detect" a new phone before it's scanned, so there
   // is no auto-alert. finishPair applies the swap once the scan succeeds.
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')}
         right={<MascotChip species={child.avatar} color={child.color} size={40} bg={BRAND.primaryLight} />} />
       <div style={{ padding: '8px 16px 0' }}>
@@ -60,7 +71,7 @@ function ParentSettings({ ctx }) {
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Protection mode')}</div>
         <div style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 16, padding: 6, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
           {[{ id: 'smart', t: 'Smart', d: 'Warnings + game' }, { id: 'lite', t: 'Lite', d: 'Hard block' }].map(o => (
-            <button key={o.id} onClick={() => setModeBoth(o.id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '12px 8px', background: mode === o.id ? BRAND.primary : 'transparent', transition: 'background .2s' }}>
+            <button key={o.id} onClick={() => setModeBoth(o.id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '12px 8px', background: mode === o.id ? THEME.fg1 : 'transparent', transition: 'background .2s' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: mode === o.id ? '#fff' : THEME.fg1 }}>{L(o.t)}</div>
               <div style={{ fontSize: 11, color: mode === o.id ? 'rgba(255,255,255,.85)' : THEME.fg2, marginTop: 1 }}>{L(o.d)}</div>
             </button>
@@ -92,12 +103,12 @@ function ParentSettings({ ctx }) {
             <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 {['Gentle', 'Balanced', 'Strict'].map((l, i) => (
-                  <button key={l} onClick={() => update({ sens: i + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: sens === i + 1 ? 800 : 600, color: sens === i + 1 ? BRAND.primary : THEME.fg3 }}>{L(l)}</button>
+                  <button key={l} onClick={() => update({ sens: i + 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: sens === i + 1 ? 800 : 600, color: sens === i + 1 ? THEME.fg1 : THEME.fg3 }}>{L(l)}</button>
                 ))}
               </div>
               <div style={{ position: 'relative', height: 8, background: THEME.border, borderRadius: 999 }}>
-                <div style={{ width: `${(sens - 1) * 50}%`, height: '100%', background: BRAND.primary, borderRadius: 999 }} />
-                <div style={{ position: 'absolute', top: '50%', left: `${(sens - 1) * 50}%`, transform: 'translate(-50%,-50%)', width: 22, height: 22, borderRadius: 999, background: '#fff', border: `3px solid ${BRAND.primary}`, boxShadow: THEME.shadowCard }} />
+                <div style={{ width: `${(sens - 1) * 50}%`, height: '100%', background: THEME.fg1, borderRadius: 999 }} />
+                <div style={{ position: 'absolute', top: '50%', left: `${(sens - 1) * 50}%`, transform: 'translate(-50%,-50%)', width: 22, height: 22, borderRadius: 999, background: '#fff', border: `3px solid ${THEME.fg1}`, boxShadow: THEME.shadowCard }} />
               </div>
               <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 12 }}>{['', L('Warns only in clear risk — fewest interruptions.'), L('Recommended balance of safety and calm.'), L('Warns earlier and more often.')][sens]}</div>
             </div>
@@ -121,8 +132,8 @@ function ParentSettings({ ctx }) {
             </div>
             );
           })}
-          <div onClick={() => ctx.nav('p_schedule', { child, rule: null, index: -1 })} style={{ borderTop: `1px solid ${THEME.border}`, padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 8, color: BRAND.primary, fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
-            <Icon name="plus" size={17} color={BRAND.primary} stroke={2.4} /> {L('Add a schedule')}
+          <div onClick={() => ctx.nav('p_schedule', { child, rule: null, index: -1 })} style={{ borderTop: `1px solid ${THEME.border}`, padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 8, color: THEME.fg1, fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+            <Icon name="plus" size={17} color={THEME.fg1} stroke={2.4} /> {L('Add a schedule')}
           </div>
         </div>
 
@@ -136,9 +147,34 @@ function ParentSettings({ ctx }) {
             <Icon name="gamepad-2" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Character game & rewards')}</div><Toggle on={gam} onChange={v => update({ gam: v })} />
           </div>}
         </div>
+
+        {/* danger zone — remove this child from the account */}
+        <button onClick={() => setConfirmDel(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', marginTop: 22, padding: '14px', background: '#fff', color: THEME.danger, border: `1.5px solid ${THEME.dangerLight || 'rgba(214,69,69,.25)'}`, borderRadius: 14, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: THEME.shadowCard }}>
+          <Icon name="trash-2" size={17} color={THEME.danger} stroke={2.3} />{L('Remove child')}
+        </button>
       </div>
 
-      {/* device-change approval sheet */}
+      {/* remove-child confirmation sheet */}
+      {confirmDel && (
+        <div onClick={() => setConfirmDel(false)} style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(20,18,17,.42)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', display: 'flex', alignItems: 'flex-end' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', background: '#fff', borderRadius: '24px 24px 0 0', padding: '10px 20px 26px' }}>
+            <div style={{ width: 38, height: 4, borderRadius: 999, background: THEME.border, margin: '0 auto 18px' }} />
+            <div style={{ width: 56, height: 56, borderRadius: 999, background: THEME.dangerLight || 'rgba(214,69,69,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <Icon name="trash-2" size={26} color={THEME.danger} stroke={2.2} />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: THEME.fg1, textAlign: 'center', margin: '0 0 8px' }}>{delTitle}</h2>
+            <p style={{ fontSize: 13.5, color: THEME.fg2, textAlign: 'center', lineHeight: 1.5, margin: '0 0 22px' }}>
+              {L('This unlinks their device and permanently deletes their reports, rules, and safety history. This can’t be undone.')}
+            </p>
+            <button onClick={removeChild} style={{ width: '100%', padding: '15px', background: THEME.danger, color: '#fff', border: 'none', borderRadius: 14, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
+              {L('Remove')} {child.name}
+            </button>
+            <button onClick={() => setConfirmDel(false)} style={{ width: '100%', marginTop: 10, padding: '15px', background: 'transparent', color: THEME.fg2, border: 'none', borderRadius: 14, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
+              {L('Cancel')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

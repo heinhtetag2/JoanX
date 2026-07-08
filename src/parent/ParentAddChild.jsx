@@ -11,8 +11,9 @@ import { BRAND, brandBtn, ChoiceGroup } from './shared.jsx';
 // 1 Details → 2 Pair (code) → 3 Connected celebration → 4 Configure protection.
 function ParentAddChild({ ctx }) {
   // Onboarding shows intro (0); "+" opens details (1); "Connect device" opens pairing (2);
-  // the Children tab's global "Connect a device" entry opens the scan/code chooser (6) → child picker (5).
-  const [wiz, setWiz] = React.useState(ctx.params?.connect ? 6 : ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected · 5 pick child · 6 connect method
+  // the Children tab's global "Connect a device" entry reuses the pair screen (2),
+  // then asks whose device it was on the child picker (5) before celebrating.
+  const [wiz, setWiz] = React.useState(ctx.params?.connect ? 2 : ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected · 5 pick child
   const ko = typeof getLang === 'function' && getLang() === 'ko';
   const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a >= 0 ? a : null; };
   // multiple children can be added; each is a collapsible card
@@ -42,11 +43,14 @@ function ParentAddChild({ ctx }) {
   const pairMode = !!ctx.params?.pair;   // opened via a child's "Connect device" action
   const connectMode = !!ctx.params?.connect;   // opened via the Children tab's global connect entry
   const [pickedId, setPickedId] = React.useState(null);   // child chosen on the picker step
+  const [swapId, setSwapId] = React.useState(null);   // connected child tapped on the picker → confirm device change
+  const swapChild = swapId ? CHILDREN.find(x => x.id === swapId) : null;
   const pairChild = (pickedId && CHILDREN.find(x => x.id === pickedId)) || (ctx.params?.pairChildId ? CHILDREN.find(x => x.id === ctx.params.pairChildId) : null);
+  // in connect mode the pair step happens first, then the picker
+  const afterPair = () => setWiz(connectMode ? 5 : 3);
   const back = () => {
-    if (wiz === 6) return ctx.nav('p_children');
-    if (wiz === 5) return setWiz(6);
-    if (wiz === 2) return connectMode ? setWiz(5) : pairMode ? ctx.nav('p_children') : setWiz(1);
+    if (wiz === 5) return setWiz(2);
+    if (wiz === 2) return (connectMode || pairMode) ? ctx.nav('p_children') : setWiz(1);
     if (wiz === 1) return connectMode ? setWiz(5) : direct ? ctx.nav('p_children') : setWiz(0);
     return setWiz(wiz - 1);
   };
@@ -75,6 +79,9 @@ function ParentAddChild({ ctx }) {
         },
       });
     });
+    // when adding from the connect picker, return there so the parent can
+    // connect the child they just added — not back out to the Children home
+    if (connectMode) { setKids([newKid()]); setOpenKid(0); setWiz(5); return; }
     ctx.nav('p_children');
   };
 
@@ -86,7 +93,7 @@ function ParentAddChild({ ctx }) {
 
       {/* back + 3-segment progress (hidden on the connected celebration) */}
       {/* back shows on pair/configure, and on details only when opened via "+" (not from the intro) */}
-      {((wiz === 1 && (direct || connectMode)) || wiz === 2 || wiz === 4 || wiz === 5 || wiz === 6) && (
+      {((wiz === 1 && (direct || connectMode)) || wiz === 2 || wiz === 4 || wiz === 5) && (
         <div style={{ padding: '6px 24px 0' }}>
           <button onClick={back} aria-label={L('Back')} style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
@@ -113,71 +120,71 @@ function ParentAddChild({ ctx }) {
         </>
       )}
 
-      {/* 6 · connect method — the global connect entry: scan their QR, or show a code */}
-      {wiz === 6 && (
-        <>
-          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('How do you want to connect?')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L("Either way works — pick what's easier right now.")}</p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                { icon: 'scan-line', t: 'Scan their QR', s: "Point your camera at the QR in your child's app.", scan: true },
-                { icon: 'keyboard', t: 'Connect with a code', s: 'Show a 6-digit code and type it on their phone.', scan: false },
-              ].map(o => (
-                <button key={o.t} onClick={() => { setScan(o.scan); setWiz(5); }} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '18px 16px', background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                  <span style={{ width: 44, height: 44, borderRadius: 14, background: BRAND.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon name={o.icon} size={22} color={BRAND.primary} stroke={2.2} />
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L(o.t)}</span>
-                    <span style={{ display: 'block', fontSize: 12.5, color: THEME.fg2, lineHeight: 1.45, marginTop: 3 }}>{L(o.s)}</span>
-                  </span>
-                  <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.4} />
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* 5 · pick child — the global connect entry: which kid is this phone for? */}
+      {/* 5 · pick child — connect mode, after the scan/code: whose device was that? */}
       {wiz === 5 && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 0' }}>
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Who are we connecting?')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L('Choose the child whose phone is in your hand.')}</p>
 
-            {CHILDREN.some(k => !k.online) ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {CHILDREN.filter(k => !k.online).map(k => {
-                  const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(k) % 6];
-                  return (
-                    <button key={k.id} onClick={() => { setPickedId(k.id); setWiz(2); }} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 13, background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                      <MascotChip species={k.avatar} color={k.color} size={48} bg={`var(--color-interactives-avatar-${pal}-default)`} />
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{k.name}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: THEME.fg2, marginTop: 3 }}>
-                          <Icon name="wifi-off" size={13} color={THEME.fg3} stroke={2.3} />{L('Not connected')} · {k.device}
-                        </span>
+            {/* every child, waiting ones first — connected kids stay tappable for a
+                device change (new phone), gated behind a confirm sheet */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[...CHILDREN.filter(k => !k.online), ...CHILDREN.filter(k => k.online)].map(k => {
+                const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(k) % 6];
+                const linked = k.online;
+                return (
+                  <button key={k.id} onClick={() => (linked ? setSwapId(k.id) : (setPickedId(k.id), setWiz(3)))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 13, background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                    <MascotChip species={k.avatar} color={k.color} size={48} bg={`var(--color-interactives-avatar-${pal}-default)`} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{k.name}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: THEME.fg2, marginTop: 3 }}>
+                        <Icon name={linked ? 'wifi' : 'wifi-off'} size={13} color={linked ? THEME.success : THEME.fg3} stroke={2.3} />{L(linked ? 'Connected' : 'Not connected')} · {k.device}
                       </span>
-                      <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.4} />
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              /* every child is already linked — offer to add a new one instead */
-              <div style={{ background: '#fff', borderRadius: 18, padding: '28px 22px', textAlign: 'center' }}>
-                <div style={{ width: 52, height: 52, borderRadius: 999, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <Icon name="check" size={24} color={THEME.success} stroke={2.6} />
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L('All children are connected!')}</div>
-                <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.5, marginTop: 5 }}>{L('Add a new child to connect another phone.')}</div>
-                <Button variant="primary" size="md" style={{ ...brandBtn, marginTop: 16 }} onClick={() => setWiz(1)}>{L('Add a child')}</Button>
-              </div>
+                    </span>
+                    {linked && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, color: shade(THEME.success, -22), borderRadius: 999, padding: '4px 10px', fontSize: 11.5, fontWeight: 800, flexShrink: 0 }}>
+                        <Icon name="check" size={12} color={shade(THEME.success, -22)} stroke={3} />{L('Connected')}
+                      </span>
+                    )}
+                    <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.4} style={{ flexShrink: 0 }} />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* add another child — same dashed pattern as the details form */}
+            <button onClick={() => setWiz(1)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 12, padding: 13, background: 'transparent', color: THEME.fg2, border: '1.5px dashed rgba(43,41,38,.28)', borderRadius: 16, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+              <Icon name="plus" size={17} color={THEME.fg2} stroke={2.6} />{L('Add another child')}
+            </button>
+
+            {/* nobody waiting — one quiet caption, no boxed empty state */}
+            {!CHILDREN.some(k => !k.online) && (
+              <div style={{ textAlign: 'center', fontSize: 12.5, color: THEME.fg3, fontWeight: 700, marginTop: 14 }}>{L('All children are connected!')}</div>
             )}
           </div>
+
+          {/* device change confirm — the picked child is already linked; moving to
+              the just-scanned phone unlinks their old device */}
+          {swapChild && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+              <div onClick={() => setSwapId(null)} style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,17,0.44)', backdropFilter: 'blur(1.5px)', WebkitBackdropFilter: 'blur(1.5px)' }} />
+              <div className="jx-sheet-up" style={{ position: 'relative', background: '#fff', borderRadius: '30px 30px 0 0', padding: '10px 24px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -16px 44px rgba(20,18,16,0.28)' }}>
+                <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 16px' }} />
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+                  <MascotChip species={swapChild.avatar} color={swapChild.color} size={64} bg={`var(--color-interactives-avatar-${['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(swapChild) % 6]}-default)`} />
+                </div>
+                <h1 className="game-font" style={{ fontSize: 21, fontWeight: 500, margin: '0 8px 8px', lineHeight: 1.25, textAlign: 'center' }}>{L('Connect a new device?')}</h1>
+                <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 2px 16px', textAlign: 'center' }}>
+                  {ko
+                    ? `${swapChild.name}은(는) 이미 ${swapChild.device}에 연결되어 있어요. 이 기기로 연결하면 기존 기기의 보호는 자동으로 해제돼요.`
+                    : `${swapChild.name} is already connected on ${swapChild.device}. Linking this phone will move protection over and unlink the old device.`}
+                </p>
+                <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={() => { swapChild.pendingDevice = { device: 'iPhone 16' }; setPickedId(swapChild.id); setSwapId(null); setWiz(3); }}>{L('Connect new device')}</Button>
+                <button onClick={() => setSwapId(null)} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Cancel')}</button>
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -246,7 +253,7 @@ function ParentAddChild({ ctx }) {
 
             {scan ? (
               /* camera viewfinder — restrained, real-app style; tap simulates a successful scan */
-              <div onClick={() => setWiz(3)} style={{ width: '100%', maxWidth: 300, aspectRatio: '0.92', borderRadius: 24, background: '#17191d', position: 'relative', overflow: 'hidden', cursor: 'pointer', boxShadow: 'inset 0 0 70px rgba(0,0,0,.55)' }}>
+              <div onClick={afterPair} style={{ width: '100%', maxWidth: 300, aspectRatio: '0.92', borderRadius: 24, background: '#17191d', position: 'relative', overflow: 'hidden', cursor: 'pointer', boxShadow: 'inset 0 0 70px rgba(0,0,0,.55)' }}>
                 {/* faint center light — suggests a live camera without neon */}
                 <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(78% 62% at 50% 44%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 70%)' }} />
                 {/* thin white framing guides + a single subtle scan line */}
@@ -287,7 +294,7 @@ function ParentAddChild({ ctx }) {
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             {scan
               ? <div style={{ textAlign: 'center', fontSize: 12.5, color: THEME.fg3, fontWeight: 700 }}>{L('Connects automatically once scanned.')}</div>
-              : <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={() => setWiz(3)}>{L('Continue')}</Button>}
+              : <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={afterPair}>{L('Continue')}</Button>}
           </div>
         </>
       )}

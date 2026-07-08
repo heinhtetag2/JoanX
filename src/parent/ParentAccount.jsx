@@ -1,8 +1,8 @@
 // JoanX — parent app · ParentAccount
 
 import React from 'react';
-import { CHILDREN, FEATURES } from '../core/data.jsx';
-import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { FEATURES } from '../core/data.jsx';
+import { Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -16,8 +16,8 @@ function ParentAccount({ ctx }) {
   const card = children => <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>{children}</div>;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={L('Parent app')} title={L('Settings')} />
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
+      <ParentHead sub={L('Parent app')} title={L('Profile')} />
       <div style={{ padding: '8px 16px 0' }}>
 
         {/* account identity */}
@@ -29,18 +29,6 @@ function ParentAccount({ ctx }) {
           </div>
           {chev}
         </div>
-
-        {label(L('Subscription'))}
-        {card(
-          <div onClick={() => ctx.nav('p_detail', { page: 'plan' })} style={{ ...rowStyle(0) }}>
-            <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="sparkles" size={18} color={THEME.gold} stroke={2.2} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{L('JoanX Family')}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{CHILDREN.length} {L('of 5 children connected')}</div>
-            </div>
-            <Badge variant="success">{L('Active')}</Badge>
-          </div>
-        )}
 
         {label(L('Notifications'))}
         {card(<React.Fragment>

@@ -305,7 +305,7 @@ function ParentDetail({ ctx }) {
   const p = PAGES[page] || PAGES.account;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
-      <ParentHead sub={p.sub} title={p.title} onBack={() => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')} />
+      <ParentHead sub={p.sub} title={p.title} onBack={ctx.params?.asTab ? undefined : () => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')} />
       <div style={{ padding: '8px 16px 0' }}>{p.body}</div>
     </div>
   );
