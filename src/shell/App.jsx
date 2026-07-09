@@ -1,5 +1,5 @@
 import React from 'react';
-import { AddFriends, Battle, CharDetailVariant, CharacterDex, ChildHome, Collection, DecorateRoom, FriendHouse, Friends, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AddFriends, Battle, CharDetailVariant, CharacterDex, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -34,7 +34,7 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'owl', color: '#f0936b', name: 'Pig', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -115,7 +115,7 @@ function App() {
     if (!onboarded) body = <Onboarding ctx={ctx} />;
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
-      collection: <Collection ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
+      collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       battle: <Battle ctx={ctx} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
@@ -240,6 +240,14 @@ function App() {
                 {[['road', 'Road map'], ['list', 'List']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.villainLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, villainLayout: v })); setStack([{ screen: 'battle', params: {} }]); setScreen('villaindex'); }}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Collection layout</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {COLLECTION_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.collectionLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, collectionLayout: id })); setStack([]); setScreen('collection'); }}>{label}</button>
                 ))}
               </div>
 

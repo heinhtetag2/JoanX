@@ -126,7 +126,7 @@ const KO = {
   "That's your battle for today": '오늘의 배틀은 끝났어요', 'Come back tomorrow': '내일 다시 오세요',
   // character evolution moment (F-16)
   'Ready to evolve!': '진화 준비 완료!', 'XP is full — evolve to the next stage.': 'XP가 가득 찼어요 — 다음 단계로 진화해요.',
-  'Evolve': '진화', 'Evolving…': '진화 중…', 'grew stronger': '더 강해졌어요',
+  'Evolve': '진화', 'Evolve now': '지금 진화하기', 'Evolving…': '진화 중…', 'grew stronger': '더 강해졌어요',
   // FAQ / help (parent)
   'What’s the difference between Smart and Lite mode?': '스마트 모드와 라이트 모드의 차이는 뭔가요?',
   'Browse all FAQs': '전체 FAQ 보기', 'Answers to common questions': '자주 묻는 질문',
@@ -198,7 +198,7 @@ const KO = {
 
   // ── collection ──
   'Collection House': '컬렉션 하우스', 'Cozy Den': '아늑한 둥지', 'Sky Loft': '하늘 다락', 'Star Studio': '별 스튜디오', 'Garden': '정원',
-  'Locked': '잠김', 'Empty': '비어 있음', 'All buddies': '모든 친구',
+  'Locked': '잠김', 'Empty': '비어 있음', 'All buddies': '모든 친구', 'collected': '수집', 'Featured': '대표',
   // first-run empty states (collection / friends)
   'No buddies yet': '아직 친구가 없어요',
   'Hatch your first egg to start your collection. Every safe walk earns points toward one!':

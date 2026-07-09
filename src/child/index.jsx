@@ -6,6 +6,7 @@ export { SafetyStatus } from './SafetyStatus.jsx';
 export { Notifications } from './Notifications.jsx';
 export { Profile } from './Profile.jsx';
 export { Collection } from './Collection.jsx';
+export { CollectionVariant, COLLECTION_LAYOUTS } from './CollectionVariants.jsx';
 export { CharacterDetail } from './CharacterDetail.jsx';
 export { Battle } from './Battle.jsx';
 export { Rewards } from './Rewards.jsx';

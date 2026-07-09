@@ -343,14 +343,17 @@ function CharVariant({ ctx, variant }) {
   );
   // Evolve CTA — shown in-flow when the buddy has maxed XP and isn't stage 3 yet
   const EvolveCTA = canEvolve ? (
-    <div key="evolve" style={{ display: 'flex', alignItems: 'center', gap: 12, background: shade(accent, 82), border: `1.5px solid ${shade(accent, 40)}`, borderRadius: 20, padding: '14px 16px', marginBottom: 14 }}>
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="sparkles" size={20} color="#fff" stroke={2.3} /></div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: shade(accent, -34) }}>{L('Ready to evolve!')}</div>
-        <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('XP is full — evolve to the next stage.')}</div>
-      </div>
-      <Button variant="primary" size="sm" onClick={evolve} style={{ background: accent, boxShadow: 'none', flexShrink: 0 }}><Icon name="chevron-up" size={15} color="#fff" stroke={2.6} />{L('Evolve')}</Button>
-    </div>
+    <button key="evolve" onClick={evolve} className="jx-press" style={{ width: '100%', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: accent, color: '#fff', borderRadius: 16, padding: '15px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, boxShadow: 'none' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ position: 'relative', display: 'inline-flex', width: 9, height: 9 }}>
+          <span className="jx-pulse-soft" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff' }} />
+        </span>
+        <span style={{ fontSize: 15.5, fontWeight: 800 }}>{L('Evolve now')}</span>
+      </span>
+      <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,.9)' }}>
+        {L('Stage')} {stage} <Icon name="arrow-right" size={13} color="rgba(255,255,255,.9)" stroke={2.8} /> {stage + 1}
+      </span>
+    </button>
   ) : null;
   const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, EvolveCTA, SetBtn].filter(Boolean);
 
