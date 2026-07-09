@@ -4,7 +4,7 @@ import React from 'react';
 import { FRIEND_REQUESTS, FRIEND_SUGGESTIONS, PLAYER } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { MascotChip, shade } from '../core/characters.jsx';
+import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { ScreenHeader, screenBgActive } from './shared.jsx';
 
 // Friends-area brand purple (design-system iris ramp) — 50 / 60 / 10.
@@ -366,6 +366,193 @@ function AddFriends({ ctx, layout = 'list' }) {
         <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>{FRIEND_SUGGESTIONS.map((f, i) => person(f, softAdd(f), { top: !!i }))}</div>
       </React.Fragment>
     ),
+
+    // 16 · Bubbles — suggestions as circular avatar bubbles
+    bubbles: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+        {label(L('Suggested friends'))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 12px', justifyContent: 'center', padding: '8px 0' }}>
+          {FRIEND_SUGGESTIONS.map(f => (
+            <div key={f.id} style={{ width: 92, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 70, height: 70, borderRadius: 999, background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={58} /></div>
+              <div style={{ fontSize: 13, fontWeight: 800 }}>{f.name}</div>
+              {added[f.id] ? <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.success, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="check" size={13} color={THEME.success} stroke={3} />{L('Added')}</span> : <button onClick={() => addSug(f)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: PURPLE.light, color: PURPLE.main, border: 'none', borderRadius: 999, padding: '4px 12px', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 800 }}><Icon name="plus" size={13} color={PURPLE.main} stroke={2.6} />{L('Add')}</button>}
+            </div>
+          ))}
+        </div>
+      </React.Fragment>
+    ),
+
+    // 17 · Carousel — suggestions in a horizontal snap-scroll
+    carousel: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+        {label(L('Suggested friends'))}
+        <div className="no-sb" style={{ display: 'flex', gap: 12, overflowX: 'auto', margin: '0 -16px', padding: '2px 16px 8px', scrollSnapType: 'x mandatory' }}>
+          {FRIEND_SUGGESTIONS.map(f => (
+            <div key={f.id} style={{ flex: '0 0 auto', width: 148, scrollSnapAlign: 'start', background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '16px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 18, background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={54} /></div>
+              <div style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>{f.name}</div>
+              <div style={{ fontSize: 11.5, color: THEME.fg2 }}>{f.mutual} {L('mutual friends')}</div>
+              <div style={{ marginTop: 8 }}>{softAdd(f)}</div>
+            </div>
+          ))}
+        </div>
+      </React.Fragment>
+    ),
+
+    // 18 · Ticket — the code as a QR-stub ticket card
+    ticket: () => (
+      <React.Fragment>
+        <div style={{ display: 'flex', borderRadius: 20, overflow: 'hidden', border: `1px solid ${THEME.border}`, marginBottom: 16, background: '#fff' }}>
+          <div style={{ width: 96, flexShrink: 0, position: 'relative', background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="qr-code" size={64} color={PURPLE.dark} stroke={1.7} />
+            <span style={{ position: 'absolute', right: -1, top: 0, bottom: 0, borderRight: `2px dashed ${THEME.border}` }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, padding: '14px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2, textTransform: 'uppercase', letterSpacing: .4 }}>{L('My friend code')}</div>
+            <div className="game-font" style={{ fontSize: 22, fontWeight: 500, letterSpacing: 1, margin: '4px 0 10px' }}>{PLAYER.friendCode}</div>
+            <button onClick={() => say(L('Copied!'))} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 5, background: PURPLE.light, border: 'none', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: 'inherit', color: PURPLE.main, fontSize: 12.5, fontWeight: 800 }}><Icon name="copy" size={14} color={PURPLE.main} stroke={2.3} />{L('Copy')}</button>
+          </div>
+        </div>
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {label(L('Suggested friends'))}
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>{FRIEND_SUGGESTIONS.map((f, i) => person(f, softAdd(f), { top: !!i }))}</div>
+      </React.Fragment>
+    ),
+
+    // 19 · Dark — a contrasting dark friend-code card
+    dark: () => (
+      <React.Fragment>
+        <div style={{ borderRadius: 22, padding: 18, marginBottom: 16, background: 'linear-gradient(160deg,#2b2540,#17131f)' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: .5 }}>{L('My friend code')}</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+            <div className="game-font" style={{ fontSize: 26, fontWeight: 500, letterSpacing: 1.5, color: '#fff' }}>{PLAYER.friendCode}</div>
+            <button onClick={() => say(L('Copied!'))} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.14)', border: 'none', borderRadius: 999, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit', color: '#fff', fontSize: 13, fontWeight: 700 }}><Icon name="copy" size={15} color="#fff" stroke={2.3} />{L('Copy')}</button>
+          </div>
+        </div>
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+        {label(L('Suggested friends'))}
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>{FRIEND_SUGGESTIONS.map((f, i) => person(f, softAdd(f), { top: !!i }))}</div>
+      </React.Fragment>
+    ),
+
+    // 20 · Chips — suggestions as wrapping add-pills
+    chips: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+        {label(L('Suggested friends'))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {FRIEND_SUGGESTIONS.map(f => (
+            <button key={f.id} onClick={() => !added[f.id] && addSug(f)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '6px 12px 6px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <MascotChip species={f.avatar} color={f.color} size={30} bg={PURPLE.light} />
+              <span style={{ fontSize: 13.5, fontWeight: 800 }}>{f.name}</span>
+              <Icon name={added[f.id] ? 'check' : 'plus'} size={15} color={added[f.id] ? THEME.success : PURPLE.main} stroke={2.6} />
+            </button>
+          ))}
+        </div>
+      </React.Fragment>
+    ),
+
+    // 21 · Numbered — a numbered suggestions directory
+    numbered: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+        {label(L('Suggested friends'))}
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+          {FRIEND_SUGGESTIONS.map((f, i) => (
+            <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+              <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 800, color: THEME.fg3, flexShrink: 0 }}>{i + 1}</span>
+              <MascotChip species={f.avatar} color={f.color} size={40} bg={PURPLE.light} />
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14.5, fontWeight: 800 }}>{f.name}</div><div style={{ fontSize: 12, color: THEME.fg2 }}>{f.mutual} {L('mutual friends')}</div></div>
+              {softAdd(f)}
+            </div>
+          ))}
+        </div>
+      </React.Fragment>
+    ),
+
+    // 22 · Grid-mini — a dense 3-across suggestions gallery
+    gridMini: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {label(L('Suggested friends'))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          {FRIEND_SUGGESTIONS.map(f => (
+            <button key={f.id} onClick={() => !added[f.id] && addSug(f)} style={{ background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '12px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <MascotChip species={f.avatar} color={f.color} size={50} bg={PURPLE.light} />
+              <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: added[f.id] ? THEME.successLight : PURPLE.light, color: added[f.id] ? THEME.success : PURPLE.main, borderRadius: 999, padding: '3px 10px', fontSize: 11.5, fontWeight: 800 }}><Icon name={added[f.id] ? 'check' : 'plus'} size={12} color={added[f.id] ? THEME.success : PURPLE.main} stroke={2.6} />{L(added[f.id] ? 'Added' : 'Add')}</span>
+            </button>
+          ))}
+        </div>
+      </React.Fragment>
+    ),
+
+    // 23 · Card stack — each suggestion its own standalone card
+    cardStack: () => (
+      <React.Fragment>
+        {softCodeCard}
+        {label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {requests.length > 0 && <React.Fragment>{label(L('Friend requests'))}{requests.map(f => (
+          <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10 }}>
+            <MascotChip species={f.avatar} color={f.color} size={46} bg={PURPLE.light} />
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14.5, fontWeight: 800 }}>{f.name}</div><div style={{ fontSize: 12, color: THEME.fg2 }}>{f.mutual} {L('mutual friends')}</div></div>
+            {acceptBtns(f)}
+          </div>
+        ))}</React.Fragment>}
+        {label(L('Suggested friends'))}
+        {FRIEND_SUGGESTIONS.map(f => (
+          <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10 }}>
+            <MascotChip species={f.avatar} color={f.color} size={46} bg={PURPLE.light} />
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14.5, fontWeight: 800 }}>{f.name}</div><div style={{ fontSize: 12, color: THEME.fg2 }}>{f.mutual} {L('mutual friends')}</div></div>
+            {softAdd(f)}
+          </div>
+        ))}
+      </React.Fragment>
+    ),
+
+    // 24 · Centered — a centered code header + focused add-by-code
+    centered: () => (
+      <React.Fragment>
+        <div style={{ textAlign: 'center', padding: '8px 0 18px' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 800, color: PURPLE.main, textTransform: 'uppercase', letterSpacing: .6 }}>{L('My friend code')}</div>
+          <div className="game-font" style={{ fontSize: 34, fontWeight: 500, letterSpacing: 2, margin: '8px 0 14px' }}>{PLAYER.friendCode}</div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <Button variant="primary" size="sm" onClick={() => say(L('Copied!'))} style={{ background: PURPLE.main, boxShadow: 'none' }}><Icon name="copy" size={15} color="#fff" stroke={2.4} />{L('Copy')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => say(L('Shared!'))} style={{ background: PURPLE.light, color: PURPLE.main }}><Icon name="share-2" size={15} color={PURPLE.main} stroke={2.4} />{L('Share')}</Button>
+          </div>
+        </div>
+        <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 16 }}>{label(L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div></div>
+        {label(L('Suggested friends'))}
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>{FRIEND_SUGGESTIONS.map((f, i) => person(f, softAdd(f), { top: !!i }))}</div>
+      </React.Fragment>
+    ),
+
+    // 25 · Icon heads — inline colored icon section headers
+    iconHeads: () => {
+      const head = (icon, t) => <div style={{ display: 'flex', alignItems: 'center', gap: 9, margin: '4px 2px 10px' }}><div style={{ width: 32, height: 32, borderRadius: 10, background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={16} color={PURPLE.main} stroke={2.3} /></div><span style={{ fontSize: 14, fontWeight: 800 }}>{t}</span></div>;
+      return (
+        <React.Fragment>
+          {softCodeCard}
+          {head('keyboard', L('Add by code'))}<div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+          {requests.length > 0 && <React.Fragment>{head('user-plus', L('Friend requests'))}<div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>{requests.map((f, i) => person(f, acceptBtns(f), { top: !!i }))}</div></React.Fragment>}
+          {head('sparkles', L('Suggested friends'))}
+          <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>{FRIEND_SUGGESTIONS.map((f, i) => person(f, softAdd(f), { top: !!i }))}</div>
+        </React.Fragment>
+      );
+    },
   };
 
   const renderBody = bodies[layout] || bodies.list;

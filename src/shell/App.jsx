@@ -253,7 +253,7 @@ function App() {
 
               <div className="tw-label">Add-friends style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold'], ['grid', 'Grid'], ['gradient', 'Gradient'], ['minimal', 'Minimal'], ['rounded', 'Rounded'], ['qr', 'QR'], ['tabs', 'Tabs'], ['spotlight', 'Spotlight'], ['outline', 'Outline'], ['split', 'Split'], ['panel', 'Panel']].map(([v, l]) => (
+                {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold'], ['grid', 'Grid'], ['gradient', 'Gradient'], ['minimal', 'Minimal'], ['rounded', 'Rounded'], ['qr', 'QR'], ['tabs', 'Tabs'], ['spotlight', 'Spotlight'], ['outline', 'Outline'], ['split', 'Split'], ['panel', 'Panel'], ['bubbles', 'Bubbles'], ['carousel', 'Carousel'], ['ticket', 'Ticket'], ['dark', 'Dark'], ['chips', 'Chips'], ['numbered', 'Numbered'], ['gridMini', 'Grid mini'], ['cardStack', 'Card stack'], ['centered', 'Centered'], ['iconHeads', 'Icon heads']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.addFriendsLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, addFriendsLayout: v })); setStack([{ screen: 'friends', params: {} }]); setScreen('addfriend'); }}>{l}</button>
                 ))}
