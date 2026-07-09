@@ -5,7 +5,7 @@ import { VILLAINS } from '../core/data.jsx';
 import { Badge, Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
-import { ScreenHeader, DexProgress } from './shared.jsx';
+import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
 
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Two layouts, switchable from the Tweaks panel: 'road' (level-map trail,
@@ -19,7 +19,7 @@ function VillainList({ ctx }) {
   const firstOpen = VILLAINS.findIndex(v => !v.defeated);      // current challenger index
   const defeated = VILLAINS.filter(v => v.defeated).length;
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.nav('battle')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
@@ -116,7 +116,7 @@ function VillainRoad({ ctx }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 242, background: THEME.screenBg }}>
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 242, background: screenBgActive() }}>
         <div style={{ padding: '0 16px' }}>
           <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} />
         </div>

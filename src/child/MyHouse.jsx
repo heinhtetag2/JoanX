@@ -5,7 +5,8 @@ import { CHARACTERS, HOUSE_BGS, MY_GUESTBOOK, PLAYER, ROOMS } from '../core/data
 import { Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
-import { ScreenHeader, PointsChip } from './shared.jsx';
+import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
+import { ROOM_STYLES } from './DecorateRoom.jsx';
 
 // ── My Profile / House (F-32) — the public page friends visit ────────
 function MyHouse({ ctx }) {
@@ -28,8 +29,8 @@ function MyHouse({ ctx }) {
   const toggleLike = (i) => setLikes(s => s.map((v, j) => j === i ? !v : v));
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
-      <ScreenHeader title={L('My Profile')} onBack={() => ctx.nav('friends')}
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
+      <ScreenHeader title={L('My Profile')} onBack={() => ctx.back()}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="heart" size={15} color={THEME.joy} fill={THEME.joy} stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{PLAYER.likes}</span></div>} />
       <div style={{ padding: '0 16px' }}>
 
@@ -81,8 +82,10 @@ function MyHouse({ ctx }) {
         <SectionHead title={L('My rooms')} />
         {rooms.map(room => {
           const placed = owned.filter(x => x.room === room.id);
+          const rs = ROOM_STYLES.find(s => s.id === (room.style || 'cozy')) || ROOM_STYLES[0];
           return (
-            <div key={room.id} style={{ borderRadius: 20, padding: '16px 14px 12px', background: `linear-gradient(180deg, ${room.theme} 0%, #fff 100%)`, boxShadow: THEME.shadowCard, marginBottom: 12 }}>
+            <div key={room.id} style={{ borderRadius: 20, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 12 }}>
+             <div style={{ padding: '16px 14px 12px', background: rs.wall(room.theme) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 800 }}>{L(room.name)}</span>
                 <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: 'none', borderRadius: 999, padding: '6px 12px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: THEME.primary }}>
@@ -96,7 +99,9 @@ function MyHouse({ ctx }) {
                   <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 78 }}><div style={{ width: 42, height: 42, borderRadius: 14, border: `2px dashed ${THEME.border}` }} /></div>
                 ))}
               </div>
-              <div style={{ height: 6, borderRadius: 999, background: 'rgba(0,0,0,.05)', marginTop: 6 }} />
+             </div>
+             {/* floor band — reflects the saved room style */}
+             <div style={{ height: 16, background: rs.floor, borderTop: `2px solid ${rs.accent}` }} />
             </div>
           );
         })}

@@ -5,7 +5,7 @@ import { FRIEND_REQUESTS, FRIEND_SUGGESTIONS, PLAYER } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
-import { ScreenHeader } from './shared.jsx';
+import { ScreenHeader, screenBgActive } from './shared.jsx';
 
 // Friends-area brand purple (design-system iris ramp) — 50 / 60 / 10.
 const PURPLE = { main: '#7f63c5', dark: '#603fab', light: '#f5f1fd' };
@@ -34,7 +34,7 @@ function AddFriends({ ctx }) {
   );
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Add friends')} onBack={ctx.back} />
       <div style={{ padding: '0 16px' }}>
 

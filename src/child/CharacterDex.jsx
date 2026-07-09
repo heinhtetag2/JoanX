@@ -5,13 +5,13 @@ import { CHARACTERS, SPECIES_INFO } from '../core/data.jsx';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
-import { ScreenHeader, RarityPill, DexProgress } from './shared.jsx';
+import { ScreenHeader, RarityPill, DexProgress, screenBgActive } from './shared.jsx';
 
 // ── Character Encyclopedia (A-4) ─────────────────────────────────────
 function CharacterDex({ ctx }) {
   const owned = CHARACTERS.filter(c => c.owned).length;
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Encyclopedia')} onBack={() => ctx.nav('collection')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="book-open" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned}/{CHARACTERS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>

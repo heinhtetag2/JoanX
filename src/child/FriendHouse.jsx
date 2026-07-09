@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FRIENDS, PLAYER } from '../core/data.jsx';
-import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Button, Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { ScreenHeader, RarityPill } from './shared.jsx';
@@ -28,7 +28,7 @@ function FriendHouse({ ctx }) {
   const fc = f.featured;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgFor(f.color) }}>
       <ScreenHeader title={`${f.name}${L("’s house")}`} onBack={() => ctx.nav('friends')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="heart" size={15} color={THEME.joy} fill={THEME.joy} stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{likes}</span></div>} />
       <div style={{ padding: '0 16px' }}>

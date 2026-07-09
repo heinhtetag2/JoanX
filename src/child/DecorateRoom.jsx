@@ -4,10 +4,25 @@ import React from 'react';
 import { CHARACTERS, DECOR, PLAYER, ROOMS } from '../core/data.jsx';
 import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot } from '../core/characters.jsx';
-import { ScreenHeader, PointsChip } from './shared.jsx';
+import { Mascot, shade } from '../core/characters.jsx';
+import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
 
-// ── Room decoration (A-7) — theme + placeable ornaments ──────────────
+// Room styles (A-12) — three full looks for a room, each with its own wall
+// treatment + floor, tinted by the chosen wallpaper colour. More than a flat
+// background: the whole room re-skins when you switch.
+const ROOM_STYLES = [
+  { id: 'cozy', name: 'Cozy', icon: 'flame',
+    wall: t => `linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
+    floor: 'linear-gradient(180deg,#e8d7bf,#dcc7a8)', accent: '#c9a26a' },
+  { id: 'modern', name: 'Modern', icon: 'square-dashed',
+    wall: t => `linear-gradient(180deg, ${shade(t, -5)} 0%, #fbfbfc 100%)`,
+    floor: 'linear-gradient(180deg,#e6e9ee,#d3d8e0)', accent: '#aeb6c2' },
+  { id: 'playful', name: 'Playful', icon: 'sparkles',
+    wall: t => `radial-gradient(circle at 16% 20%, rgba(255,255,255,.7) 0 7px, transparent 8px) 0 0/32px 32px, linear-gradient(180deg, ${t} 0%, ${shade(t, 8)} 100%)`,
+    floor: 'linear-gradient(180deg,#ffd9ea,#ffc4dd)', accent: '#ff9ec4' },
+];
+
+// ── Room decoration (A-7) — style + theme + placeable ornaments ──────
 function DecorateRoom({ ctx }) {
   const rooms = ROOMS.filter(r => r.unlocked);
   const [roomId, setRoomId] = React.useState(ctx.params?.roomId || rooms[0].id);
@@ -15,13 +30,15 @@ function DecorateRoom({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const THEMES = ['#ecf3fe', '#ebf4f4', '#f5f1fd', '#f9f1ed', '#fdeef5', '#e9f4f5'];
   const [theme, setTheme] = React.useState(room.theme);
+  const [styleId, setStyleId] = React.useState(room.style || 'cozy');
+  const roomStyle = ROOM_STYLES.find(s => s.id === styleId) || ROOM_STYLES[0];
   const [pts, setPts] = React.useState(PLAYER.points);
   const [ownedDecor, setOwnedDecor] = React.useState(Object.fromEntries(DECOR.map(d => [d.id, d.owned])));
   const [placed, setPlaced] = React.useState({});
   const [toast, setToast] = React.useState(null);
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1500); };
 
-  const pickRoom = (r) => { setRoomId(r.id); setTheme(r.theme); setPlaced({}); };
+  const pickRoom = (r) => { setRoomId(r.id); setTheme(r.theme); setStyleId(r.style || 'cozy'); setPlaced({}); };
   const tapDecor = (d) => {
     if (!ownedDecor[d.id]) {
       if (pts < d.cost) { say(L('Not enough points yet')); return; }
@@ -30,11 +47,11 @@ function DecorateRoom({ ctx }) {
     }
     setPlaced(p => ({ ...p, [d.id]: !p[d.id] }));
   };
-  const save = () => { room.theme = theme; ctx.nav('myhouse'); };
+  const save = () => { room.theme = theme; room.style = styleId; ctx.nav('myhouse'); };
   const placedList = DECOR.filter(d => placed[d.id]);
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Decorate')} onBack={() => ctx.nav('myhouse')} right={<PointsChip pts={pts} />} />
       <div style={{ padding: '0 16px' }}>
 
@@ -45,15 +62,37 @@ function DecorateRoom({ ctx }) {
           ))}
         </div>
 
-        {/* live preview */}
-        <div style={{ borderRadius: 22, padding: '22px 16px 14px', background: `linear-gradient(180deg, ${theme} 0%, #fff 100%)`, boxShadow: THEME.shadowCard, marginBottom: 16, textAlign: 'center' }}>
-          <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={120} /></div>
-          <div style={{ height: 8, borderRadius: 999, background: 'rgba(0,0,0,.06)', margin: '10px 0' }} />
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 14, minHeight: 30 }}>
-            {placedList.length ? placedList.map(d => (
-              <div key={d.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}><Icon name={d.icon} size={22} color={THEME.fg2} stroke={2.1} /></div>
-            )) : <span style={{ fontSize: 12, color: THEME.fg3 }}>{L('Add some decorations below')}</span>}
+        {/* live preview — wall (styled) + floor band, re-skins with the room style */}
+        <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
+          <div style={{ position: 'relative', padding: '22px 16px 0', background: roomStyle.wall(theme), textAlign: 'center' }}>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={120} /></div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, minHeight: 30, marginTop: 4, marginBottom: 12 }}>
+              {placedList.length ? placedList.map(d => (
+                <div key={d.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}><Icon name={d.icon} size={22} color={THEME.fg2} stroke={2.1} /></div>
+              )) : <span style={{ fontSize: 12, color: THEME.fg3 }}>{L('Add some decorations below')}</span>}
+            </div>
           </div>
+          {/* floor */}
+          <div style={{ height: 30, background: roomStyle.floor, borderTop: `2px solid ${roomStyle.accent}` }} />
+        </div>
+
+        {/* room style (A-12) — three full looks, tinted by the wallpaper */}
+        <SectionHead title={L('Room style')} />
+        <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+          {ROOM_STYLES.map(s => {
+            const on = styleId === s.id;
+            return (
+              <button key={s.id} onClick={() => setStyleId(s.id)} style={{ flex: 1, border: on ? `2px solid ${THEME.primary}` : '2px solid transparent', borderRadius: 16, padding: '8px 6px 9px', background: '#fff', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                {/* mini room swatch: wall + floor */}
+                <div style={{ width: '100%', height: 38, borderRadius: 9, overflow: 'hidden', background: s.wall(theme), display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                  <div style={{ height: 10, background: s.floor, borderTop: `1.5px solid ${s.accent}` }} />
+                </div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 800, color: on ? THEME.primary : THEME.fg1 }}>
+                  <Icon name={s.icon} size={12} color={on ? THEME.primary : THEME.fg2} stroke={2.3} />{L(s.name)}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* wallpaper / theme */}
@@ -91,4 +130,4 @@ function DecorateRoom({ ctx }) {
   );
 }
 
-export { DecorateRoom };
+export { DecorateRoom, ROOM_STYLES };

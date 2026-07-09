@@ -34,7 +34,7 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -99,7 +99,7 @@ function App() {
   const tabTo = (root) => { setStack([]); if (role === 'parent') setPScreen(root); else setScreen(root); };
 
   const ctx = {
-    nav, back, params, mode, setMode,
+    nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
     tweaks: { overlay: tw.overlay, onbStyle: tw.onbStyle },
     openOverlay: () => setOverlay(true),
@@ -120,7 +120,7 @@ function App() {
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
       chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
-      friends: <Friends ctx={ctx} />, friendhouse: <FriendHouse ctx={ctx} />,
+      friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
@@ -138,7 +138,8 @@ function App() {
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 
-  const activeChildTab = ['friends', 'friendhouse', 'myhouse', 'decorate', 'addfriend'].includes(screen) ? 'friends'
+  const activeChildTab = ['friends', 'friendhouse', 'addfriend'].includes(screen) ? 'friends'
+    : ['myhouse', 'decorate'].includes(screen) ? 'profile'   // the house/rooms are now a Profile detail
     : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && onboarded && !['battle'].includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
@@ -239,6 +240,14 @@ function App() {
                 {[['road', 'Road map'], ['list', 'List']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.villainLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, villainLayout: v })); setStack([{ screen: 'battle', params: {} }]); setScreen('villaindex'); }}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Friends style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['list', 'List'], ['grid', 'Grid'], ['showcase', 'Showcase'], ['compact', 'Compact'], ['leaderboard', 'Leaderboard'], ['carousel', 'Carousel'], ['tiles', 'Tiles'], ['cover', 'Cover'], ['bubbles', 'Bubbles'], ['timeline', 'Timeline']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.friendsLayout === v ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, friendsLayout: v })); setStack([]); setScreen('friends'); }}>{l}</button>
                 ))}
               </div>
 

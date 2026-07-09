@@ -69,7 +69,7 @@ const CHARACTERS = [
   { id: 'c1', species: 'fox',  name: 'Hammy',  color: '#4b814f', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#e1874a', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
   { id: 'c3', species: 'bird', name: 'Pip',    color: '#447aaf', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#e0554a', stage: 2, rarity: 'rare',    level: 5, xp: 110, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },
+  { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#e0554a', stage: 2, rarity: 'rare',    level: 5, xp: 350, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },   // XP-full → ready to evolve to Stage 3 (F-16)
   // legacy (06-29 / 0da9b64) versions of Hammy & Mochi, kept as new characters — old colours, new names
   { id: 'c9',  species: 'fox', name: 'Toffee', color: '#d99c5a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r2', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c10', species: 'cat', name: 'Bloo',   color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },

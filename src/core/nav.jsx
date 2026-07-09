@@ -10,8 +10,9 @@ const CHILD_TABS = [
   { id: 'battle', root: 'battle', icon: 'swords', label: '', center: true },
   // Friends promoted to a primary tab (per product decision). Safety is no longer
   // a tab but stays reachable from every Home variant's "protected" status card.
-  { id: 'friends', root: 'friends', icon: 'users-round', label: 'Friends', alt: ['friendhouse', 'myhouse', 'addfriend', 'decorate'] },
-  { id: 'profile', root: 'profile', icon: 'user', label: 'Profile' },
+  { id: 'friends', root: 'friends', icon: 'heart-handshake', label: 'Friends', alt: ['friendhouse', 'addfriend'] },
+  // myhouse/decorate now live under the Profile tab (see App.jsx activeChildTab)
+  { id: 'profile', root: 'profile', icon: 'circle-user', label: 'Profile', alt: ['myhouse', 'decorate'] },
 ];
 const PARENT_TABS = [
   { id: 'p_reports', root: 'p_reports', icon: 'line-chart', label: 'Reports' },

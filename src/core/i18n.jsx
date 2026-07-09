@@ -7,7 +7,7 @@ function getLang() { return __lang; }
 
 const KO = {
   // ── app chrome / tabs ──
-  'Home': '홈', 'Collect': '컬렉션', 'Battle': '배틀', 'Rewards': '보상',
+  'Collect': '컬렉션', 'Battle': '배틀', 'Rewards': '보상',
   'Reports': '리포트', 'Children': '자녀', 'Rules': '설정',
   'Child app': '자녀 앱', 'Parent app': '부모 앱',
 
@@ -122,6 +122,17 @@ const KO = {
   'Risk right now': '지금 위험도', 'Low': '낮음', 'Safe': '안전', 'Risky': '위험',
   'This rises if you look at your phone while walking, and drops as you walk safely.':
     '걸으면서 폰을 보면 올라가고, 안전하게 걸으면 내려가요.',
+  // battle daily limit (F-19/A-8)
+  "That's your battle for today": '오늘의 배틀은 끝났어요', 'Come back tomorrow': '내일 다시 오세요',
+  // character evolution moment (F-16)
+  'Ready to evolve!': '진화 준비 완료!', 'XP is full — evolve to the next stage.': 'XP가 가득 찼어요 — 다음 단계로 진화해요.',
+  'Evolve': '진화', 'Evolving…': '진화 중…', 'grew stronger': '더 강해졌어요',
+  // FAQ / help (parent)
+  'What’s the difference between Smart and Lite mode?': '스마트 모드와 라이트 모드의 차이는 뭔가요?',
+  'Browse all FAQs': '전체 FAQ 보기', 'Answers to common questions': '자주 묻는 질문',
+  'Still need help?': '더 도움이 필요하세요?',
+  'Chat with our support team or email help@joanx.app — we usually reply within a day.':
+    '고객지원팀과 채팅하거나 help@joanx.app로 메일 주세요 — 보통 하루 안에 답변드려요.',
   'Common': '일반', 'Rare': '레어', 'Special': '스페셜',
   'Evolving': '성장 중', 'Level': '레벨', 'Stage': '단계',
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
@@ -136,7 +147,7 @@ const KO = {
   'Say hi to your buddy': '버디에게 인사하기',
   'All tasks done!': '미션 모두 완료!', 'bonus earned today': '오늘 보너스 획득', 'Tap to complete': '눌러서 완료',
   'Keep your head up and walk safe!': '고개를 들고 안전하게 걸어요!',
-  "Today's journey": '오늘의 여정', 'Start': '출발', 'left': '남음',
+  "Today's journey": '오늘의 여정', 'left': '남음',
   'My buddy': '내 친구', 'Claim reward': '보상 받기',
   "Today's missions": '오늘의 미션', 'Done!': '완료!',
   'Walk safely for 60 min': '안전하게 60분 걷기', 'Stop quickly ×3': '빠르게 멈추기 ×3', 'Avoid danger zones': '위험 구역 피하기',
@@ -151,8 +162,6 @@ const KO = {
   'Claim +100 points for walking safely.': '안전하게 걸어서 +100 포인트를 받으세요.',
   'Quick reflex — +30 bonus points.': '빠른 반응 — +30 보너스 포인트.',
   'Phone-free the whole way. +200 points.': '걷는 내내 폰 없이. +200 포인트.',
-  '5-day safe streak!': '5일 연속 안전!',
-  '2 more days unlocks a Special buddy.': '2일 더 하면 스페셜 친구를 얻어요.',
 
   // ── safety ──
   'Safety': '안전', "JoanX is watching out for you in the background.": '조안X가 백그라운드에서 지켜주고 있어요.',
@@ -243,12 +252,13 @@ const KO = {
   'Opened': '열었어요', 'Outfits': '의상', 'Owned': '보유', 'Unlock rooms': '방 잠금 해제',
   // egg & hatch flow (A-2 / F-15)
   'Buddy Egg': '버디 알', 'Hatch a random new buddy': '랜덤으로 새 버디를 부화시켜요',
-  'Tap to hatch': '눌러서 부화하기', 'Hatching…': '부화 중…',
+  'Tap to hatch': '눌러서 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
+  'Shake to hatch too': '흔들어도 부화해요', 'Give your phone a little shake': '폰을 살짝 흔들어 보세요',
   'New buddy!': '새로운 버디!', 'Added to your collection': '컬렉션에 추가됐어요',
   'You already have': '이미 가지고 있어요', 'turned into XP': 'XP로 전환됐어요',
   'Add to collection': '컬렉션에 담기', 'Awesome!': '좋아요!', 'Keep it': '데려가기',
   'Chance': '확률',
-  'Not enough points yet': '아직 포인트가 부족해요', 'unlocked!': '해금!', 'A new buddy': '새 친구',
+  'unlocked!': '해금!', 'A new buddy': '새 친구',
   'Ribbon Bow': '리본', 'Explorer Cap': '탐험가 모자',
   'Claimed': '받음', 'Claimed — see you tomorrow!': '받았어요 — 내일 또 만나요!', 'Daily reward claimed!': '오늘의 보상을 받았어요!',
 
@@ -526,12 +536,16 @@ const KO = {
   'Notes your friends left when they visited.': '친구들이 방문하며 남긴 메모예요.', 'Like': '좋아요',
   'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
   'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
+  // room styles (A-12)
+  'Room style': '방 스타일', 'Cozy': '아늑한', 'Modern': '모던', 'Playful': '발랄한',
   'Add some decorations below': '아래에서 장식을 추가해요', 'Placed': '배치됨', 'Owned': '보유',
   'Plant': '화분', 'Lamp': '램프', 'Rug': '러그', 'Bookshelf': '책장', 'Poster': '포스터', 'Balloons': '풍선',
   'Edit your buddy, background & rooms': '친구·배경·방을 꾸며요', 'Your friends': '내 친구',
+  'Friend ranking': '친구 랭킹', 'd streak': '일 연속',
+  'Top streak': '최고 연속', 'Online now': '지금 접속 중', 'Last seen recently': '최근에 접속했어요',
 
   // ── add friends (F-32) ──
-  'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copy': '복사', 'Copied!': '복사됐어요!',
+  'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copied!': '복사됐어요!',
   'Add by code': '코드로 추가', 'Friend requests': '친구 요청', 'Suggested friends': '추천 친구',
   'mutual friends': '함께 아는 친구', 'Added': '추가됨', 'Request sent!': '요청을 보냈어요!', 'Friend added!': '친구가 추가됐어요!',
 

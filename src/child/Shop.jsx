@@ -3,7 +3,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
-import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
+import { Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
@@ -67,13 +67,34 @@ function Shop({ ctx }) {
   const buyEgg = () => {
     if (pts < EGG_PRICE) { setToast({ ok: false, msg: L('Not enough points yet') }); setTimeout(() => setToast(null), 1500); return; }
     PLAYER.points -= EGG_PRICE; setPts(PLAYER.points);
+    // iOS 13+ needs motion permission, requested from this user gesture (best-effort)
+    try {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') DeviceMotionEvent.requestPermission().catch(() => {});
+    } catch { /* older/unsupported browsers — tap still works */ }
     setHatch({ phase: 'egg', buddy: rollBuddy() });
   };
   // tap the egg → it wobbles (crack), then the buddy pops out
   const crackEgg = () => {
-    setHatch(h => ({ ...h, phase: 'cracking' }));
+    setHatch(h => (h && h.phase === 'egg' ? { ...h, phase: 'cracking' } : h));
     setTimeout(revealEgg, 820);   // matches the jx-shake duration
   };
+
+  // shake-to-hatch: while the egg is waiting, a firm phone shake also cracks it
+  React.useEffect(() => {
+    if (hatch?.phase !== 'egg') return;
+    let last = null, lastFire = 0;
+    const onMotion = (e) => {
+      const a = e.accelerationIncludingGravity; if (!a) return;
+      const now = Date.now();
+      if (last && now - lastFire > 600) {
+        const jolt = Math.abs((a.x || 0) - last.x) + Math.abs((a.y || 0) - last.y) + Math.abs((a.z || 0) - last.z);
+        if (jolt > 26) { lastFire = now; crackEgg(); }
+      }
+      last = { x: a.x || 0, y: a.y || 0, z: a.z || 0 };
+    };
+    window.addEventListener('devicemotion', onMotion);
+    return () => window.removeEventListener('devicemotion', onMotion);
+  }, [hatch?.phase]);
   // reveal the buddy; new ones join the collection, dupes pay XP
   const revealEgg = () => {
     setHatch(h => {
@@ -100,10 +121,6 @@ function Shop({ ctx }) {
     { id: 'shades', icon: 'glasses', name: 'Cool Shades', price: 250 },
     { id: 'bow', icon: 'gift', name: 'Ribbon Bow', price: 200 },
     { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 280 },
-  ];
-  const rooms = [
-    { id: 'studio', name: 'Star Studio', price: 600, icon: 'star' },
-    { id: 'garden', name: 'Garden', price: 900, icon: 'flower-2' },
   ];
 
   const buy = (id, price, label) => {
@@ -167,17 +184,8 @@ function Shop({ ctx }) {
           ))}
         </div>
 
-        {/* rooms — same card style as Outfits (3-col, soft blue chip) */}
-        <SectionHead title={L('Unlock rooms')} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-          {rooms.map(r => (
-            <div key={r.id} style={{ background: '#fff', borderRadius: 18, padding: '14px 8px 12px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={r.icon} size={22} color={THEME.primary} stroke={2.2} /></div>
-              <span style={{ fontSize: 11.5, fontWeight: 700, textAlign: 'center', lineHeight: 1.15 }}>{L(r.name)}</span>
-              <PriceBtn id={r.id} price={r.price} label={L(r.name)} />
-            </div>
-          ))}
-        </div>
+        {/* rooms are earned by milestones (see Collection), not bought — so the
+            Shop stays outfits + eggs, avoiding a conflicting acquisition story. */}
       </div>
 
       {/* egg hatch overlay (A-2 / F-15) — portaled to the phone screen so it
@@ -206,6 +214,16 @@ function Shop({ ctx }) {
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1 }}>
                   <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={b.color} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap to hatch')}
                 </div>
+                {/* shake affordance — parked at the far bottom, bigger + its own copy */}
+                {!cracking && (
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 46px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(b.color, 64), alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon name="vibrate" size={28} color={shade(b.color, -28)} stroke={2.3} />
+                    </span>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Shake to hatch too')}</div>
+                    <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('Give your phone a little shake')}</div>
+                  </div>
+                )}
               </React.Fragment>
             ) : (
               <React.Fragment>

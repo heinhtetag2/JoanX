@@ -1,7 +1,7 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { CHARACTERS, VILLAINS } from '../core/data.jsx';
+import { CHARACTERS, PLAYER, VILLAINS } from '../core/data.jsx';
 import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -12,7 +12,7 @@ function Battle({ ctx }) {
   const [sel, setSel] = React.useState(owned[0]);
   const [phase, setPhase] = React.useState('select'); // select|matching|versus|result
   const [won, setWon] = React.useState(true);
-  const usedToday = false;                              // A-8: up to 1 challenge per day
+  const [usedToday, setUsedToday] = React.useState(!!PLAYER.battledToday);   // A-8: up to 1 challenge per day (persists this session)
   // A-8: the villain ladder is climbed sequentially — face the next undefeated foe.
   const idx = Math.max(0, VILLAINS.findIndex(v => !v.defeated));
   const villain = VILLAINS[idx];
@@ -23,7 +23,7 @@ function Battle({ ctx }) {
   const start = () => {
     setPhase('matching');
     setTimeout(() => setPhase('versus'), 1600);
-    setTimeout(() => { const w = power(sel) + 30 >= villain.power; if (w) villain.defeated = true; setWon(w); setPhase('result'); }, 3200);
+    setTimeout(() => { const w = power(sel) + 30 >= villain.power; if (w) villain.defeated = true; PLAYER.battledToday = true; setUsedToday(true); setWon(w); setPhase('result'); }, 3200);
   };
 
   if (phase === 'matching') {
@@ -94,7 +94,8 @@ function Battle({ ctx }) {
         </div>
         {result && (
           <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
-            <Button variant="play" size="lg" fullWidth onClick={() => setPhase('select')}>{L('Battle again')}</Button>
+            {/* one battle per day — after a result there's no "battle again"; the ladder waits for tomorrow */}
+            <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L("That's your battle for today")}</Button>
             <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,.8)', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
         )}
@@ -148,7 +149,9 @@ function Battle({ ctx }) {
           ))}
         </div>
 
-        <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Find a match')}</Button>
+        {usedToday
+          ? <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L('Come back tomorrow')}</Button>
+          : <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Find a match')}</Button>}
       </div>
     </div>
   );

@@ -102,6 +102,10 @@ html, body {
 @keyframes jxPulseSoft { 0%,100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.12); opacity: 1; } }
 .jx-pulse-soft { animation: jxPulseSoft 1.1s ease-in-out infinite; }
 
+/* Quick side-to-side wiggle — hints a "shake the phone" gesture */
+@keyframes jxWiggle { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-13deg); } 40% { transform: rotate(11deg); } 60% { transform: rotate(-9deg); } 80% { transform: rotate(7deg); } }
+.jx-wiggle { animation: jxWiggle .55s ease-in-out infinite; }
+
 /* Egg wobble before it hatches — tilts harder as it goes, then a quick pop */
 @keyframes jxShake {
   0% { transform: rotate(0) scale(1); }

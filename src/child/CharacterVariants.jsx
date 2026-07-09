@@ -3,7 +3,7 @@
 import React from 'react';
 import { CHARACTERS } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
-import { L } from '../core/i18n.jsx';
+import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { mixHue } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
@@ -12,10 +12,20 @@ function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const [color, setColor] = React.useState(orig.color);
   const [tab, setTab] = React.useState('stat');
-  // Evolution is automatic: a buddy evolves when it fills its XP and levels
-  // up — there's no manual "evolve" action, so stage/level are read-only here.
-  const stage = orig.stage;
+  // Evolution (F-16): a buddy that's filled its XP can evolve to the next stage.
+  // `stage` is state so the evolve moment re-skins the buddy + unlocks stage items live.
+  const [stage, setStage] = React.useState(orig.stage);
   const level = orig.level;
+  const [evolving, setEvolving] = React.useState(false);
+  const [evolvedStage, setEvolvedStage] = React.useState(null);
+  const ready = orig.xp >= orig.xpMax;             // XP full → ready to evolve
+  const canEvolve = stage < 3 && ready;
+  const evolve = () => {
+    if (evolving || stage >= 3) return;
+    setEvolving(true); setEvolvedStage(null);
+    setTimeout(() => { const ns = Math.min(3, stage + 1); setStage(ns); setEvolvedStage(ns); if (ctx.setBuddy) ctx.setBuddy(orig.id, { stage: ns }); }, 1500);
+    setTimeout(() => setEvolving(false), 3200);
+  };
 
   const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
   const items = [
@@ -331,7 +341,18 @@ function CharVariant({ ctx, variant }) {
       </div>
     </div>
   );
-  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, SetBtn];
+  // Evolve CTA — shown in-flow when the buddy has maxed XP and isn't stage 3 yet
+  const EvolveCTA = canEvolve ? (
+    <div key="evolve" style={{ display: 'flex', alignItems: 'center', gap: 12, background: shade(accent, 82), border: `1.5px solid ${shade(accent, 40)}`, borderRadius: 20, padding: '14px 16px', marginBottom: 14 }}>
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="sparkles" size={20} color="#fff" stroke={2.3} /></div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: shade(accent, -34) }}>{L('Ready to evolve!')}</div>
+        <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('XP is full — evolve to the next stage.')}</div>
+      </div>
+      <Button variant="primary" size="sm" onClick={evolve} style={{ background: accent, boxShadow: 'none', flexShrink: 0 }}><Icon name="chevron-up" size={15} color="#fff" stroke={2.6} />{L('Evolve')}</Button>
+    </div>
+  ) : null;
+  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, EvolveCTA, SetBtn].filter(Boolean);
 
   // ── mascot (centered) ──
   const Buddy = ({ size }) => (
@@ -452,6 +473,24 @@ function CharVariant({ ctx, variant }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 110, background: bg }}>
       {hero}
       <div style={{ padding: pad }}>{body}</div>
+
+      {/* evolve moment (F-16) — burst + the buddy re-skinning to its next stage */}
+      {evolving && (
+        <div className="jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: `radial-gradient(circle at 50% 42%, ${shade(color, 16)} 0%, #17130f 74%)` }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 230, height: 230, marginBottom: 20 }}>
+            <div className="jx-burst" style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, background: `radial-gradient(circle, ${shade(color, 52)} 0%, transparent 66%)` }} />
+            <div className="jx-ring" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(color, 44)}99` }} />
+            <div className="jx-ring-slow" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(color, 44)}99` }} />
+            <div key={stage} className="jx-pop" style={{ position: 'relative' }}><Mascot species={orig.species} stage={stage} color={color} size={170} context="detail" /></div>
+          </div>
+          <div className="game-font" style={{ color: '#fff', fontSize: 26, fontWeight: 500 }}>
+            {evolvedStage
+              ? (getLang() === 'ko' ? `스테이지 ${evolvedStage} 도달!` : `Reached Stage ${evolvedStage}!`)
+              : L('Evolving…')}
+          </div>
+          {evolvedStage && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 13.5, marginTop: 6 }}>{orig.name} · {L('grew stronger')}</div>}
+        </div>
+      )}
     </div>
   );
 }

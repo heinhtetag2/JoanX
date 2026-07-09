@@ -29,17 +29,21 @@ function Profile({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Profile')} onBack={() => ctx.nav('home')} />
+      <ScreenHeader title={L('Profile')} />
       <div style={{ padding: '0 16px' }}>
-        {/* hero */}
-        <div style={{ background: `linear-gradient(165deg, ${shade(c.color, 76)}, #fff 78%)`, borderRadius: 22, padding: '20px 18px', boxShadow: THEME.shadowCard, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
+        {/* hero — tapping the avatar opens the public house/rooms profile (F-32) */}
+        <button onClick={() => ctx.nav('myhouse')} style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: `linear-gradient(165deg, ${shade(c.color, 76)}, #fff 78%)`, borderRadius: 22, padding: '20px 18px', boxShadow: THEME.shadowCard, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 80, height: 80, borderRadius: 24, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: THEME.shadowCard, flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={72} /></div>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500 }}>{PLAYER.name}</div>
             <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{L('Age')} {PLAYER.age} · {L('Level')} {PLAYER.level}</div>
-            <div style={{ marginTop: 8 }}><Badge variant={lite ? 'warning' : 'primary'}>{lite ? L('Lite') : L('Smart')} {L('mode')}</Badge></div>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Badge variant={lite ? 'warning' : 'primary'}>{lite ? L('Lite') : L('Smart')} {L('mode')}</Badge>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}><Icon name="home" size={12} color={THEME.fg2} stroke={2.3} />{L('My rooms')}</span>
+            </div>
           </div>
-        </div>
+          <Icon name="chevron-right" size={20} color={THEME.fg3} stroke={2.4} style={{ flexShrink: 0 }} />
+        </button>
 
         {/* stat row */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
