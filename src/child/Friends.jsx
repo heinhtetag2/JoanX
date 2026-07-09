@@ -549,6 +549,154 @@ function Friends({ ctx, layout = 'list' }) {
         </div>
       );
     }),
+
+    // 26 · Spotlight — a lead hero over a 2-col mini grid of the rest
+    spotlight: () => {
+      const top = friends[0], rest = friends.slice(1);
+      return (
+        <React.Fragment>
+          <div style={{ borderRadius: 22, border: `1px solid ${THEME.border}`, background: `linear-gradient(160deg, ${shade(top.color, 72)}, #fff 82%)`, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: 96, height: 96, borderRadius: 26, background: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={top.avatar} stage={2} color={top.color} size={84} /></div>
+              <Dot online={top.online} />
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 800, marginTop: 10 }}>{top.name}</div>
+            <div style={{ display: 'flex', gap: 12, margin: '6px 0 14px' }}>
+              <Stat icon="flame" color={THEME.gold} value={top.streak} />
+              <Stat icon="gem" color={PURPLE.main} value={top.chars} />
+            </div>
+            <Button variant="primary" size="sm" onClick={() => visit(top)} style={{ background: PURPLE.main, boxShadow: 'none' }}>{L('Visit')}<Icon name="chevron-right" size={16} color="#fff" stroke={2.5} /></Button>
+          </div>
+          {rest.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {rest.map(f => (
+                <button key={f.id} onClick={() => visit(f)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '14px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <div style={{ position: 'relative' }}><MascotChip species={f.avatar} color={f.color} size={48} bg={PURPLE.light} /><Dot online={f.online} /></div>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, marginTop: 4 }}>{f.name}</div>
+                  <Stat icon="flame" color={THEME.gold} value={f.streak} />
+                </button>
+              ))}
+            </div>
+          )}
+        </React.Fragment>
+      );
+    },
+
+    // 27 · Pill — fully-rounded full-width rows
+    pill: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 999, border: `1px solid ${THEME.border}`, padding: '8px 16px 8px 8px', marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={44} bg={PURPLE.light} /><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+        </div>
+        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
+      </div>
+    )),
+
+    // 28 · Frame — cards outlined by a buddy-colored border
+    frame: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, border: `2px solid ${f.color}`, padding: '13px 14px', marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={46} bg={PURPLE.light} /><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+        </div>
+        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
+      </div>
+    )),
+
+    // 29 · Avatar-left — big square mascot with stacked info
+    avatarLeft: () => friends.map(f => (
+      <div key={f.id} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 20, border: `1px solid ${THEME.border}`, padding: 16, marginBottom: 12 }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}><div style={{ width: 72, height: 72, borderRadius: 18, background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={62} /></div><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 16.5, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 14, marginTop: 6 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+          <div style={{ marginTop: 10 }}><Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}<Icon name="chevron-right" size={16} color={PURPLE.main} stroke={2.5} /></Button></div>
+        </div>
+      </div>
+    )),
+
+    // 30 · Capsule — two-tone rounded rows with a colored avatar bump
+    capsule: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 999, border: `1px solid ${THEME.border}`, marginBottom: 10, cursor: 'pointer', overflow: 'hidden' }}>
+        <div style={{ width: 56, height: 56, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(160deg, ${shade(f.color, 66)}, ${shade(f.color, 84)})` }}><Mascot species={f.avatar} stage={2} color={f.color} size={46} /><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0, padding: '0 14px' }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+        </div>
+        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} style={{ marginRight: 16, flexShrink: 0 }} />
+      </div>
+    )),
+
+    // 31 · Inline — info left, avatar on the right (mirrored rows)
+    inline: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+        </div>
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={48} bg={PURPLE.light} /><Dot online={f.online} /></div>
+      </div>
+    )),
+
+    // 32 · Gradient list — each row softly tinted with the buddy colour
+    gradientList: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10, cursor: 'pointer', background: `linear-gradient(100deg, ${shade(f.color, 88)}, #fff 68%)` }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={46} bg="rgba(255,255,255,.65)" /><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+        </div>
+        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
+      </div>
+    )),
+
+    // 33 · Numbered — a plain numbered directory
+    numbered: () => (
+      <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+        {friends.map((f, i) => (
+          <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+            <span style={{ width: 22, textAlign: 'center', fontSize: 14, fontWeight: 800, color: THEME.fg3, flexShrink: 0 }}>{i + 1}</span>
+            <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={40} bg={PURPLE.light} /><Dot online={f.online} /></div>
+            <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+            <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
+          </div>
+        ))}
+      </div>
+    ),
+
+    // 34 · Card grid — 2-col info cards, avatar + chevron header
+    cardGrid: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {friends.map(f => (
+          <div key={f.id} onClick={() => visit(f)} style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ position: 'relative' }}><MascotChip species={f.avatar} color={f.color} size={44} bg={PURPLE.light} /><Dot online={f.online} /></div>
+              <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, marginTop: 10 }}>{f.name}</div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 4 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={PURPLE.main} value={f.chars} /></div>
+          </div>
+        ))}
+      </div>
+    ),
+
+    // 35 · Gallery — a compact 3-across avatar gallery with a gem pill
+    gallery: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        {friends.map(f => (
+          <button key={f.id} onClick={() => visit(f)} style={{ background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '12px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <div style={{ position: 'relative' }}><MascotChip species={f.avatar} color={f.color} size={52} bg={PURPLE.light} /><Dot online={f.online} /></div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 4, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: PURPLE.light, color: PURPLE.dark, borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 800 }}><Icon name="gem" size={11} color={PURPLE.main} stroke={2.3} />{f.chars}</span>
+          </button>
+        ))}
+      </div>
+    ),
   };
 
   const renderBody = bodies[layout] || bodies.list;
