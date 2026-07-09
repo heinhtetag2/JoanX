@@ -397,7 +397,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
             <div style={{ fontSize: 12, color: f.online ? THEME.success : THEME.fg2, fontWeight: 600, marginTop: 1 }}>{f.online ? L('Online now') : L('Last seen recently')}</div>
           </div>
-          <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}</Button>
+          <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}<Icon name="chevron-right" size={16} color={PURPLE.main} stroke={2.5} /></Button>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           {[['flame', THEME.gold, f.streak, L('Streak')], ['gem', PURPLE.main, f.chars, L('Gems')]].map(([ic, col, val, lbl]) => (

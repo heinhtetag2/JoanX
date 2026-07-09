@@ -544,6 +544,7 @@ const KO = {
   'Friend ranking': '친구 랭킹', 'd streak': '일 연속',
   'Top streak': '최고 연속', 'Online now': '지금 접속 중', 'Last seen recently': '최근에 접속했어요', 'Visit house': '집 방문',
   'Your squad': '내 친구들', 'friends': '명', 'Streak': '연속', 'Gems': '보석', 'Online': '온라인', 'Offline': '오프라인',
+  'Share': '공유', 'Shared!': '공유했어요!',
 
   // ── add friends (F-32) ──
   'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copied!': '복사됐어요!',

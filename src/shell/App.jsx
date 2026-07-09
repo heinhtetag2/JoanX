@@ -34,7 +34,7 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -121,7 +121,7 @@ function App() {
       shop: <Shop ctx={ctx} />,
       chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} />,
+      myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -248,6 +248,14 @@ function App() {
                 {[['list', 'List'], ['grid', 'Grid'], ['showcase', 'Showcase'], ['compact', 'Compact'], ['leaderboard', 'Leaderboard'], ['carousel', 'Carousel'], ['tiles', 'Tiles'], ['cover', 'Cover'], ['bubbles', 'Bubbles'], ['timeline', 'Timeline'], ['split', 'Split'], ['village', 'Village'], ['rail', 'Rail'], ['poster', 'Poster'], ['chips', 'Chips'], ['banner', 'Banner'], ['roster', 'Roster'], ['stats', 'Stats'], ['groups', 'Groups'], ['ticket', 'Ticket'], ['feed', 'Feed'], ['bento', 'Bento'], ['minimal', 'Minimal'], ['badge', 'Badge'], ['magazine', 'Magazine']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.friendsLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, friendsLayout: v })); setStack([]); setScreen('friends'); }}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Add-friends style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.addFriendsLayout === v ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, addFriendsLayout: v })); setStack([{ screen: 'friends', params: {} }]); setScreen('addfriend'); }}>{l}</button>
                 ))}
               </div>
 
