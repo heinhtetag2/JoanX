@@ -37,6 +37,35 @@ function HomeActionsS({ ctx, dark }) {
 
 function SafetyPillS({ ctx, lite, skin }) {
   const dark = skin === 'glass';
+  const demo = ctx.demo || {};
+
+  // Offline / limited-protection states take over the protection card — the app
+  // keeps running, but this is where the child sees (and can fix) reduced cover.
+  if (demo.offline || demo.limited) {
+    const offline = demo.offline;   // offline wins if both are set
+    const accent = offline ? THEME.danger : THEME.warning;
+    const bg = offline ? THEME.dangerLight : THEME.warningLight;
+    const ink = offline ? '#7a2418' : '#602f0c';
+    const title = offline ? L("You're offline") : L('Limited protection');
+    const sub = offline ? L('Protection paused — reconnect to stay safe.') : L('Some warnings are off right now.');
+    const cta = offline ? L('Retry') : L('Turn on');
+    const fix = e => { e.stopPropagation(); ctx.setDemo && ctx.setDemo(d => ({ ...d, offline: false, limited: false })); };
+    return (
+      <div onClick={() => ctx.nav('safety')} style={{ display: 'flex', alignItems: 'center', gap: 11, background: bg, borderRadius: 16, padding: '12px 14px', cursor: 'pointer' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 11, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon name={offline ? 'wifi-off' : 'shield-alert'} size={20} color="#fff" stroke={2.3} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>{title}</div>
+          <div style={{ fontSize: 12, color: ink, opacity: .85, lineHeight: 1.35 }}>{sub}</div>
+        </div>
+        <button onClick={fix} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: accent, color: '#fff', fontWeight: 800, fontSize: 12.5, padding: '8px 13px', borderRadius: 999 }}>
+          <Icon name={offline ? 'rotate-cw' : 'shield-check'} size={13} color="#fff" stroke={2.6} />{cta}
+        </button>
+      </div>
+    );
+  }
+
   const ok = !lite;
   // warm amber palette for the protected state (matches the old Lite look)
   const bg = dark ? 'rgba(255,255,255,.16)' : THEME.warningLight;

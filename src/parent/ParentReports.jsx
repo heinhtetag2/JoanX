@@ -139,11 +139,41 @@ const Legend = ({ items }) => (
   </div>
 );
 
+// Shimmer placeholder used by the Reports loading skeleton.
+const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
+
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
 function ParentReports({ ctx }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
   const [respActive, setRespActive] = React.useState(6);   // selected day in the response-mix chart (default: latest)
+
+  // loading — KPI + chart shimmer while the week's report is fetched
+  if (ctx.demo?.loading) {
+    return (
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
+        <ParentHead sub={L("This week's progress")} title={L('Loading…')} right={<RSk w={110} h={40} r={999} />} />
+        <div style={{ padding: '8px 20px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '4px 0 6px' }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} style={{ background: '#fff', borderRadius: 18, padding: 14 }}>
+                <RSk w={26} h={16} style={{ marginLeft: 'auto' }} /><RSk w={70} h={22} style={{ marginTop: 10 }} /><RSk w={90} h={11} style={{ marginTop: 8 }} />
+              </div>
+            ))}
+          </div>
+          {[0, 1].map(i => (
+            <div key={i} style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
+              <RSk w={160} h={15} /><RSk w={220} h={11} style={{ marginTop: 8 }} />
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 94, marginTop: 20 }}>
+                {[62, 40, 78, 52, 88, 46, 70].map((h, j) => <RSk key={j} h={h} r={6} style={{ flex: 1 }} />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const child = CHILDREN[Math.min(sel, CHILDREN.length - 1)] || CHILDREN[0];
   // per-child report data, falling back to the global demo metrics
   const rep = CHILD_REPORTS[child.id] || {
@@ -159,7 +189,11 @@ function ParentReports({ ctx }) {
   // calmer palette for the response-mix chart — teal hero, muted accents
   const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#e2a395' };
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const riskTotal = risk.reduce((a, b) => a + b, 0);
+  // F-20 — behavior-change framing: risky events are reported as a reduction
+  // rate (start-of-week baseline vs the latest days), not a raw weekly count.
+  const base3 = risk.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+  const recent3 = risk.slice(-3).reduce((a, b) => a + b, 0) / 3;
+  const riskReduction = base3 > 0 ? Math.round(((base3 - recent3) / base3) * 100) : 0;
   const stopsTotal = reactions.reduce((a, d) => a + d.immediate, 0);
   const totalReacts = reactions.reduce((a, d) => a + d.immediate + d.delayed + d.ignored, 0) || 1;
   const immediateShare = stopsTotal / totalReacts;
@@ -200,9 +234,10 @@ function ParentReports({ ctx }) {
     const good = k.l === 'Avg. response' ? !positive : positive;
     return { ...k, good };
   });
-  // inline stat-dots inside the activity card
+  // inline stat-dots inside the activity card. Lead metric is the risky-behavior
+  // reduction rate (a down-arrow % is the win), not the raw event count (F-20).
   const inline = [
-    { v: riskTotal, l: 'Risky moments', c: '#bdd2ee' },
+    { v: (riskReduction >= 0 ? '↓' : '↑') + Math.abs(riskReduction) + '%', l: 'Risky moments', sub: 'vs. week start', c: '#bdd2ee', vc: riskReduction >= 0 ? THEME.success : THEME.danger },
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
     { v: rep.acceptance + '%', l: 'Acceptance', c: SERIES.rate },
   ];
@@ -273,14 +308,15 @@ function ParentReports({ ctx }) {
             <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
             <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
           </div>
-          <div style={{ display: 'flex', gap: 22, marginBottom: 18 }}>
+          <div style={{ display: 'flex', gap: 22, marginBottom: 18, alignItems: 'flex-start' }}>
             {inline.map(s => (
               <div key={s.l}>
-                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{s.v}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: s.vc || THEME.fg1 }}>{s.v}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c }} />
                   <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{L(s.l)}</span>
                 </div>
+                {s.sub && <div style={{ fontSize: 10, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{L(s.sub)}</div>}
               </div>
             ))}
           </div>

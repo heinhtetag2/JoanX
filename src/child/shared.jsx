@@ -18,9 +18,11 @@ function ScreenHeader({ title, onBack, right }) {
   return (
     <div style={{ position: 'absolute', top: 50, left: 0, right: 0, zIndex: 4, height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'transparent', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-        <button onClick={onBack} aria-label="Back" style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-          <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
-        </button>
+        {onBack && (
+          <button onClick={onBack} aria-label="Back" style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
+          </button>
+        )}
       </div>
       <div style={{ flexShrink: 0, fontSize: 16, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', textAlign: 'center' }}>{title}</div>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>{right}</div>

@@ -7,6 +7,13 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { margin: 0; }
 
+/* Page backdrop behind the phone mock — the blue gradient wash. Declared here
+   (last stylesheet) so it wins over tripme-tokens' `html,body { background: var(--bg) }`,
+   whose `background` shorthand would otherwise reset this image to a flat white. */
+html, body {
+  background: #0a1f6b url("/assets/backgrounds/page-bg.jpg") center center / cover no-repeat fixed;
+}
+
 /* Fredoka covers Latin; Jua is a popular rounded Korean face for the kid headers. */
 .game-font { font-family: 'Fredoka', 'Jua', var(--font-sans); font-weight: 500; letter-spacing: 0; line-height: 1.22; }
 
@@ -31,6 +38,10 @@ body { margin: 0; }
 
 @keyframes jxOverlayUp { from { transform: translateY(34px); } to { transform: translateY(0); } }
 .jx-overlay-up { animation: jxOverlayUp .42s cubic-bezier(.16,1,.3,1) both; }
+
+/* Bottom sheets slide up from the edge (permission sheets, reconnect, pairing) */
+@keyframes jxSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.jx-sheet-up { animation: jxSheetUp .4s cubic-bezier(.16,1,.3,1) both; }
 
 @keyframes jxFade { from { opacity: .35; } to { opacity: 1; } }
 .jx-fade { animation: jxFade .3s ease both; }
@@ -82,3 +93,51 @@ body { margin: 0; }
 /* Eyebrow badge drops in just before the gift */
 @keyframes jxDropIn { 0% { transform: translateY(-10px) scale(.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 .jx-drop-in { animation: jxDropIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Spinner — for the "hatching…" loader chip */
+@keyframes jxSpin { to { transform: rotate(360deg); } }
+.jx-spin { animation: jxSpin .8s linear infinite; }
+
+/* Gentle icon pulse (scale + fade) — subtle life without a colored glow */
+@keyframes jxPulseSoft { 0%,100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.12); opacity: 1; } }
+.jx-pulse-soft { animation: jxPulseSoft 1.1s ease-in-out infinite; }
+
+/* Egg wobble before it hatches — tilts harder as it goes, then a quick pop */
+@keyframes jxShake {
+  0% { transform: rotate(0) scale(1); }
+  12% { transform: rotate(-8deg) scale(1.02); }
+  24% { transform: rotate(7deg); }
+  36% { transform: rotate(-9deg); }
+  48% { transform: rotate(8deg) scale(1.03); }
+  60% { transform: rotate(-10deg); }
+  72% { transform: rotate(9deg); }
+  84% { transform: rotate(-6deg) scale(1.05); }
+  92% { transform: rotate(4deg) scale(1.12); }
+  100% { transform: rotate(0) scale(.6); opacity: 0; }
+}
+.jx-shake { animation: jxShake .9s cubic-bezier(.36,.07,.55,.9) both; }
+
+/* Living gradient behind the egg before it hatches — two soft blobs slowly
+   drift around a base tint, so the backdrop feels alive while you wait / tap.
+   Colours come from inline vars (--egg-a / --egg-b / --egg-base), set per buddy. */
+@keyframes jxEggDrift {
+  0%   { background-position: 20% 24%, 80% 72%, 0 0; }
+  33%  { background-position: 62% 40%, 40% 82%, 0 0; }
+  66%  { background-position: 34% 72%, 70% 30%, 0 0; }
+  100% { background-position: 20% 24%, 80% 72%, 0 0; }
+}
+.jx-egg-bg {
+  background:
+    radial-gradient(circle at 50% 50%, var(--egg-a) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, var(--egg-b) 0%, transparent 52%),
+    var(--egg-base);
+  background-repeat: no-repeat;
+  background-size: 150% 150%, 140% 140%, 100% 100%;
+  animation: jxEggDrift 14s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .jx-egg-bg { animation: none; } }
+
+/* Warning-sheet escalation countdown — the bar drains over the ~5s window
+   before the warning escalates into the repeating character message (F-08). */
+@keyframes jxCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.jx-countdown { transform-origin: left center; animation: jxCountdown 5s linear both; }

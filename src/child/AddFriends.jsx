@@ -7,6 +7,9 @@ import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { ScreenHeader } from './shared.jsx';
 
+// Friends-area brand purple (design-system iris ramp) — 50 / 60 / 10.
+const PURPLE = { main: '#7f63c5', dark: '#603fab', light: '#f5f1fd' };
+
 // ── Add friends (F-32) — code, requests, suggestions ─────────────────
 function AddFriends({ ctx }) {
   const [code, setCode] = React.useState('');
@@ -21,7 +24,7 @@ function AddFriends({ ctx }) {
 
   const Row = ({ f, right }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: `1px solid ${THEME.border}` }}>
-      <MascotChip species={f.avatar} color={f.color} size={44} bg={THEME.primaryLight} />
+      <MascotChip species={f.avatar} color={f.color} size={44} bg={PURPLE.light} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
         <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{f.mutual} {L('mutual friends')}</div>
@@ -32,15 +35,15 @@ function AddFriends({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: THEME.screenBg }}>
-      <ScreenHeader title={L('Add friends')} onBack={() => ctx.nav('friends')} />
+      <ScreenHeader title={L('Add friends')} onBack={ctx.back} />
       <div style={{ padding: '0 16px' }}>
 
         {/* my friend code */}
-        <div style={{ borderRadius: 20, padding: 16, background: 'linear-gradient(150deg,#eef3fe,#fff 80%)', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
+        <div style={{ borderRadius: 20, padding: 16, background: 'linear-gradient(150deg,#f3eefb,#fff 80%)', border: `1px solid ${THEME.border}`, marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, textTransform: 'uppercase', letterSpacing: .4, marginBottom: 6 }}>{L('My friend code')}</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500, letterSpacing: 1.5, color: THEME.fg1 }}>{PLAYER.friendCode}</div>
-            <button onClick={() => say(L('Copied!'))} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: 'none', borderRadius: 999, padding: '8px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', color: THEME.primary, fontSize: 13, fontWeight: 700 }}><Icon name="copy" size={15} color={THEME.primary} stroke={2.3} />{L('Copy')}</button>
+            <button onClick={() => say(L('Copied!'))} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit', color: PURPLE.main, fontSize: 13, fontWeight: 700 }}><Icon name="copy" size={15} color={PURPLE.main} stroke={2.3} />{L('Copy')}</button>
           </div>
         </div>
 
@@ -48,19 +51,19 @@ function AddFriends({ ctx }) {
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Add by code')}</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
           <input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="JNX-••••-••" style={{ flex: 1, minWidth: 0, border: `1.5px solid ${THEME.border}`, borderRadius: 14, padding: '12px 14px', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, letterSpacing: 1, color: THEME.fg1, background: '#fff', outline: 'none' }} />
-          <Button variant="primary" size="md" icon="user-plus" onClick={addByCode} disabled={!code.trim()}>{L('Add')}</Button>
+          <Button variant="primary" size="md" icon="user-plus" onClick={addByCode} disabled={!code.trim()} style={{ background: PURPLE.main, boxShadow: 'none' }}>{L('Add')}</Button>
         </div>
 
         {/* requests */}
         {requests.length > 0 && (
           <React.Fragment>
             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Friend requests')}</div>
-            <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+            <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>
               {requests.map((f, i) => (
                 <div key={f.id} style={{ borderTop: i ? '' : 'none' }}>
                   <Row f={f} right={
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => accept(f.id)} style={{ background: THEME.primary, border: 'none', borderRadius: 999, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="check" size={17} color="#fff" stroke={2.6} /></button>
+                      <button onClick={() => accept(f.id)} style={{ background: PURPLE.main, border: 'none', borderRadius: 999, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="check" size={17} color="#fff" stroke={2.6} /></button>
                       <button onClick={() => decline(f.id)} style={{ background: THEME.surface2, border: 'none', borderRadius: 999, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="x" size={16} color={THEME.fg2} stroke={2.4} /></button>
                     </div>
                   } />
@@ -72,11 +75,11 @@ function AddFriends({ ctx }) {
 
         {/* suggestions */}
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Suggested friends')}</div>
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
           {FRIEND_SUGGESTIONS.map(f => (
             <Row key={f.id} f={f} right={added[f.id]
               ? <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.success, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="check" size={14} color={THEME.success} stroke={3} />{L('Added')}</span>
-              : <Button variant="secondary" size="sm" icon="user-plus" onClick={() => { setAdded(a => ({ ...a, [f.id]: true })); say(L('Request sent!')); }}>{L('Add')}</Button>} />
+              : <Button variant="secondary" size="sm" onClick={() => { setAdded(a => ({ ...a, [f.id]: true })); say(L('Request sent!')); }} style={{ background: PURPLE.light, color: PURPLE.main }}><Icon name="user-plus" size={16} color={PURPLE.main} stroke={2.4} />{L('Add')}</Button>} />
           ))}
         </div>
       </div>

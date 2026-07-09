@@ -8,7 +8,9 @@ const CHILD_TABS = [
   { id: 'home', root: 'home', icon: 'house', label: 'Home' },
   { id: 'collection', root: 'collection', icon: 'layout-grid', label: 'Collect', alt: ['character'] },
   { id: 'battle', root: 'battle', icon: 'swords', label: '', center: true },
-  { id: 'safety', root: 'safety', icon: 'shield-check', label: 'Safety' },
+  // Friends promoted to a primary tab (per product decision). Safety is no longer
+  // a tab but stays reachable from every Home variant's "protected" status card.
+  { id: 'friends', root: 'friends', icon: 'users-round', label: 'Friends', alt: ['friendhouse', 'myhouse', 'addfriend', 'decorate'] },
   { id: 'profile', root: 'profile', icon: 'user', label: 'Profile' },
 ];
 const PARENT_TABS = [

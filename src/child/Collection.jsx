@@ -7,9 +7,66 @@ import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 
+// A shimmering placeholder tile — reused across the loading skeleton.
+const Sk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
+
 // ── Collection House ─────────────────────────────────────────────────
 function Collection({ ctx }) {
-  const owned = CHARACTERS.filter(c => c.owned);
+  const loading = ctx.demo?.loading;
+  const empty = ctx.demo?.empty;   // first-run: no buddies hatched yet
+  const owned = empty ? [] : CHARACTERS.filter(c => c.owned);
+
+  // loading — shelf + grid shimmer while the collection loads
+  if (loading) {
+    return (
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
+        <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<Sk w={44} h={16} r={999} />} />
+        <div style={{ padding: '0 16px' }}>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}><Sk h={58} r={16} /><Sk h={58} r={16} /></div>
+          {[0, 1].map(i => (
+            <div key={i} style={{ marginBottom: 16 }}>
+              <Sk w={120} h={16} style={{ marginBottom: 8 }} />
+              <div style={{ borderRadius: 22, padding: '20px 14px', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', gap: 10 }}>
+                {[0, 1, 2].map(j => (
+                  <div key={j} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <Sk w={64} h={64} r={999} /><Sk w={44} h={10} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginTop: 20 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+                <Sk w={56} h={56} r={999} /><Sk w={40} h={10} /><Sk w={30} h={9} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // first-run — nothing hatched yet: invite the child to the egg flow (A-2)
+  if (empty) {
+    return (
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
+        <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>0/{CHARACTERS.length}</span></div>} />
+        <div style={{ padding: '40px 28px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div className="jx-float" style={{ width: 96, height: 96, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}><Icon name="egg" size={46} color={THEME.primary} stroke={1.8} /></div>
+          <h2 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '10px 0 0' }}>{L('No buddies yet')}</h2>
+          <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, margin: '8px 0 22px', maxWidth: 240 }}>{L('Hatch your first egg to start your collection. Every safe walk earns points toward one!')}</p>
+          <button onClick={() => ctx.nav('shop')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: THEME.primary, color: '#fff', border: 'none', borderRadius: 999, padding: '13px 26px', fontFamily: 'inherit', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
+            <Icon name="egg" size={17} color="#fff" stroke={2.3} />{L('Get your first egg')}
+          </button>
+          <button onClick={() => ctx.nav('chardex')} style={{ marginTop: 14, background: 'none', border: 'none', color: THEME.fg2, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Icon name="book-open" size={14} color={THEME.fg2} stroke={2.3} />{L('See what you can collect')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{CHARACTERS.length}</span></div>} />

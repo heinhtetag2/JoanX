@@ -77,6 +77,7 @@ function ParentDetail({ ctx }) {
   const [retention, setRetention] = React.useState(30);
   const [format, setFormat] = React.useState('PDF');
   const [exported, setExported] = React.useState(false);
+  const [logCleared, setLogCleared] = React.useState(false);   // Data & privacy → diagnostic log (F-29)
 
   const chev = <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />;
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
@@ -170,6 +171,55 @@ function ParentDetail({ ctx }) {
     privacy: { title: L('Data & privacy'), sub: L('Control your data'), body: (
       <React.Fragment>
         {banner('shield-check', L('Privacy first'), L('Your privacy is protected. JoanX never reads messages or sells your data.'))}
+
+        {/* on-device event storage — capped at 100, oldest auto-purged (F-23) */}
+        {label(L('On this device'))}
+        {card(
+          <div style={{ padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <Icon name="database" size={18} color={THEME.fg2} stroke={2.2} />
+              <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Safety events stored')}</div>
+              <span style={{ fontSize: 13, fontWeight: 800 }}>42 / 100</span>
+            </div>
+            <Bar value={42} max={100} color={BRAND.primary} height={8} />
+            <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.45, marginTop: 10 }}>{L('Only the latest 100 events are kept on the phone — older ones are removed automatically.')}</div>
+          </div>
+        )}
+
+        {/* sync / transmission — safety events only, never content (F-24) */}
+        {card(<React.Fragment>
+          {navRow(0, 'refresh-cw', L('Auto-sync'), <span style={{ fontSize: 12.5, color: THEME.success, fontWeight: 700 }}>{L('On')}</span>, L('Last synced 2 min ago'))}
+          {navRow(1, 'upload-cloud', L('What gets sent'), <span style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 700 }}>{L('Events only')}</span>, L('Safety events — never messages, photos or content'))}
+        </React.Fragment>)}
+
+        {/* always-on foreground service + restart-on-reboot (F-27 / F-28) */}
+        {label(L('Always-on protection'))}
+        {card(<React.Fragment>
+          {navRow(0, 'smartphone', L('Secure background service'), <Badge variant="success">{L('Running')}</Badge>, L('Runs quietly on Android while your child walks'))}
+          {navRow(1, 'power', L('Restarts after reboot'), <Icon name="check" size={17} color={THEME.success} stroke={2.6} />, L('Protection resumes automatically if the phone restarts'))}
+        </React.Fragment>)}
+
+        {/* 7-day local diagnostic log (F-29) */}
+        {label(L('Diagnostic log'))}
+        {card(
+          <div style={{ padding: 14 }}>
+            {logCleared ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}><Icon name="check-circle-2" size={18} color={THEME.success} stroke={2.3} /><span style={{ fontSize: 13, fontWeight: 700, color: '#274427' }}>{L('Log cleared')}</span></div>
+            ) : (
+              <React.Fragment>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11.5, color: THEME.fg2 }}>
+                  {[['08:12', 'Walk detected'], ['08:12', 'Warning shown · looked up in 2s'], ['08:31', 'Safe walk complete · +200'], ['09:01', 'Synced to cloud']].map(([t, e], i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8 }}><span style={{ color: THEME.fg3 }}>{t}</span><span>{L(e)}</span></div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 10 }}>{L('Kept 7 days on this device for troubleshooting, then deleted.')}</div>
+                <button onClick={() => setLogCleared(true)} style={{ marginTop: 10, background: THEME.surface2, border: 'none', borderRadius: 10, padding: '9px 14px', fontSize: 12.5, fontWeight: 700, color: THEME.fg1, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="trash-2" size={14} color={THEME.fg2} stroke={2.3} />{L('Clear log')}</button>
+              </React.Fragment>
+            )}
+          </div>
+        )}
+
+        {label(L('Preferences'))}
         {card(<React.Fragment>
           {toggleRow(0, 'bar-chart-3', L('Share anonymous analytics'), analytics, setAnalytics)}
           {toggleRow(1, 'lightbulb', L('Personalized safety tips'), tips, setTips)}

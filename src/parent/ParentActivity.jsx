@@ -17,6 +17,7 @@ const KIND = {
   streak:     { icon: 'flame',          bg: THEME.goldLight,     fg: THEME.gold },
   device_off: { icon: 'wifi-off',       bg: THEME.surface2,      fg: THEME.fg2 },
   device_on:  { icon: 'wifi',           bg: THEME.surface2,      fg: THEME.fg2 },
+  limited:    { icon: 'shield-alert',   bg: THEME.warningLight,  fg: THEME.warning },
 };
 
 function ParentActivity({ ctx }) {

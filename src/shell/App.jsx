@@ -26,6 +26,12 @@ function App() {
   const [pScreen, setPScreen] = React.useState('p_reports');
   const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
+  // prototype "state" toggles (Tweaks): drive the edge states screens usually skip
+  //   limited  · a permission is off → running-app limited-protection state (F-26)
+  //   offline  · device disconnected → protection paused
+  //   empty    · brand-new user → first-run empty states
+  //   loading  · data still loading → skeleton shimmer
+  const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
   const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list' });
@@ -94,6 +100,7 @@ function App() {
 
   const ctx = {
     nav, back, params, mode, setMode,
+    demo, setDemo,
     tweaks: { overlay: tw.overlay, onbStyle: tw.onbStyle },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => setOverlay(false),
@@ -131,7 +138,8 @@ function App() {
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 
-  const activeChildTab = ['character', 'chardex', 'villaindex', 'friends', 'friendhouse', 'myhouse', 'decorate', 'addfriend'].includes(screen) ? 'collection' : screen;
+  const activeChildTab = ['friends', 'friendhouse', 'myhouse', 'decorate', 'addfriend'].includes(screen) ? 'friends'
+    : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && onboarded && !['battle'].includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
 
@@ -219,6 +227,13 @@ function App() {
                 ))}
               </div>
 
+              <div className="tw-label">App states</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['limited', 'Limited'], ['offline', 'Offline'], ['empty', 'First-run'], ['loading', 'Loading']].map(([k, l]) => (
+                  <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); setStack([]); }}>{l}</button>
+                ))}
+              </div>
+
               <div className="tw-label">Villain dex</div>
               <div className="tw-row">
                 {[['road', 'Road map'], ['list', 'List']].map(([v, l]) => (
@@ -237,6 +252,14 @@ function App() {
               <div className="tw-row" style={{ marginTop: 8 }}>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_addchild'); setStack([]); }}>Pairing / Add child</button>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
+              </div>
+
+              <div className="tw-label">App states</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['loading', 'Loading']].map(([k, l]) => (
+                  <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); }}>{l}</button>
+                ))}
+                <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Device offline →</button>
               </div>
             </React.Fragment>
           )}

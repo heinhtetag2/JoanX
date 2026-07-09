@@ -44,6 +44,41 @@ function SafetyStatus({ ctx }) {
           </div>
         </div>
 
+        {/* walk detection (F-03) — the motion read that decides when to step in */}
+        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Icon name="footprints" size={18} color={THEME.primary} stroke={2.3} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>{L('Walking detection')}</span>
+            <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.successLight, color: THEME.success, borderRadius: 999, padding: '4px 10px', fontSize: 11.5, fontWeight: 800 }}>
+              <span style={{ width: 7, height: 7, borderRadius: 999, background: THEME.success }} />{L('Still right now')}
+            </span>
+          </div>
+          {/* cadence waveform — the walking-rhythm band JoanX listens for */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30, margin: '10px 0 6px' }}>
+            {[6, 11, 18, 9, 22, 14, 26, 12, 20, 8, 16, 24, 10, 19, 7].map((h, i) => (
+              <div key={i} style={{ flex: 1, height: h, borderRadius: 3, background: i % 2 ? THEME.primaryLight : THEME.border }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.45 }}>{L('JoanX only steps in after ~10 seconds of walking + phone use — not on the bus or in a car.')}</div>
+        </div>
+
+        {/* risk score (F-25) — the live value that drives warnings + the parent charts */}
+        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Icon name="gauge" size={18} color={THEME.success} stroke={2.3} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>{L('Risk right now')}</span>
+            <span style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 800, color: THEME.success }}>{L('Low')}</span>
+          </div>
+          {/* low → high meter with a marker near the safe end */}
+          <div style={{ position: 'relative', height: 10, borderRadius: 999, background: 'linear-gradient(90deg, #4b814f 0%, #d19900 60%, #d14532 100%)' }}>
+            <div style={{ position: 'absolute', left: '14%', top: '50%', transform: 'translate(-50%,-50%)', width: 18, height: 18, borderRadius: 999, background: '#fff', border: `3px solid ${THEME.success}`, boxShadow: '0 2px 6px rgba(0,0,0,.18)' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 7, fontSize: 11, color: THEME.fg3, fontWeight: 700 }}>
+            <span>{L('Safe')}</span><span>{L('Risky')}</span>
+          </div>
+          <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.45, marginTop: 8 }}>{L('This rises if you look at your phone while walking, and drops as you walk safely.')}</div>
+        </div>
+
         {/* danger zones (smart) — F-05/F-06, excluded this revision */}
         {!lite && FEATURES.dangerZones && (
           <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>

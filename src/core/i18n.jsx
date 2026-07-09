@@ -29,6 +29,12 @@ const KO = {
   'Allow all at once, or tap each one. You can change these anytime in settings.':
     '한 번에 모두 허용하거나, 하나씩 눌러도 돼요. 설정에서 언제든 바꿀 수 있어요.',
   'Allow': '허용', 'Allowed': '허용됨', 'Allow all': '모두 허용', 'Skip for now': '나중에 하기',
+  // permission-denied fallback (F-26)
+  'Limited': '제한됨', 'Turn on': '켜기', 'Not now': '지금 안 함',
+  'Protection will be limited': '보호가 제한돼요',
+  'Without these, JoanX keeps running — but some warnings won’t work. You can turn them on anytime in Settings.':
+    '이 권한이 없어도 조안X는 계속 작동해요 — 하지만 일부 경고가 작동하지 않아요. 설정에서 언제든 켤 수 있어요.',
+  'Go back & allow': '돌아가서 허용하기', 'Continue with limited protection': '제한된 보호로 계속하기',
   'To keep you safe,\nwe need a little help': '너를 지키려면\n도움이 조금 필요해요',
   'For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.':
     '걸을 때 조안X가 위험을 알아채려면 아래 권한이 필요해요. 부모님과 함께 켜 주세요.',
@@ -55,6 +61,7 @@ const KO = {
   'Valid for 5 minutes': '5분간 유효',
   'Expires in': '만료까지', 'This QR expired': 'QR이 만료됐어요', 'Get a new QR': '새 QR 받기',
   'Tap to preview the expired state': '눌러서 만료 화면 미리보기',
+  'The 5-minute code ran out. Get a new one to try again.': '5분이 지났어요. 새 QR을 받아 다시 시도하세요.',
   'The QR expired — tap “Get a new QR” to refresh it.': 'QR이 만료됐어요 — "새 QR 받기"를 눌러 새로고침하세요.',
   'Enter all 6 digits of the code.': '코드 6자리를 모두 입력해 주세요.',
   'Connecting': '연결 중',
@@ -104,6 +111,17 @@ const KO = {
   'Good afternoon': '안녕하세요', 'Good morning': '좋은 아침이에요',
   "You're protected": '안전하게 보호 중', 'Active while walking · 47 min safe today': '걸을 때만 활성화 · 오늘 47분 안전',
   'Lite mode · Protected': '라이트 모드 · 보호 중', 'Phone pauses while you walk': '걸을 때 폰이 잠시 멈춰요',
+  // home protection edge states (limited / offline)
+  'Limited protection': '보호가 제한됨', 'Some warnings are off right now.': '지금 일부 경고가 꺼져 있어요.',
+  "You're offline": '오프라인 상태예요', 'Protection paused — reconnect to stay safe.': '보호가 멈췄어요 — 다시 연결해 안전을 지켜요.',
+  'Retry': '다시 시도',
+  // safety status — walk detection (F-03) + risk score (F-25)
+  'Walking detection': '걷기 감지', 'Still right now': '지금은 멈춤',
+  'JoanX only steps in after ~10 seconds of walking + phone use — not on the bus or in a car.':
+    '걷기 + 폰 사용이 약 10초 이어질 때만 조안X가 나서요 — 버스나 차 안에서는 아니에요.',
+  'Risk right now': '지금 위험도', 'Low': '낮음', 'Safe': '안전', 'Risky': '위험',
+  'This rises if you look at your phone while walking, and drops as you walk safely.':
+    '걸으면서 폰을 보면 올라가고, 안전하게 걸으면 내려가요.',
   'Common': '일반', 'Rare': '레어', 'Special': '스페셜',
   'Evolving': '성장 중', 'Level': '레벨', 'Stage': '단계',
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
@@ -156,6 +174,7 @@ const KO = {
   'Safe walk completed': '안전 걷기 완료', '22 min phone-free': '22분 폰 안 보기',
   'Warning ignored': '경고 무시됨', 'Kept scrolling while walking': '걸으면서 계속 스크롤했어요',
   'Device disconnected': '기기 연결 끊김', 'Galaxy A14 went offline': 'Galaxy A14가 오프라인 됐어요',
+  'Protection limited': '보호 제한됨', 'Display-over-apps was turned off': '다른 앱 위에 표시 권한이 꺼졌어요',
   '8-day safe streak!': '8일 연속 안전!', 'New personal best': '새로운 최고 기록',
   'Safe morning commute': '안전한 아침 등굣길', 'School route, no warnings': '학교 가는 길, 경고 없음',
   'Device reconnected': '기기 다시 연결됨', 'iPhone 13 back online': 'iPhone 13이 다시 온라인 됐어요',
@@ -171,6 +190,14 @@ const KO = {
   // ── collection ──
   'Collection House': '컬렉션 하우스', 'Cozy Den': '아늑한 둥지', 'Sky Loft': '하늘 다락', 'Star Studio': '별 스튜디오', 'Garden': '정원',
   'Locked': '잠김', 'Empty': '비어 있음', 'All buddies': '모든 친구',
+  // first-run empty states (collection / friends)
+  'No buddies yet': '아직 친구가 없어요',
+  'Hatch your first egg to start your collection. Every safe walk earns points toward one!':
+    '첫 번째 알을 부화시켜 컬렉션을 시작해요. 안전하게 걸을 때마다 알을 얻을 포인트가 쌓여요!',
+  'Get your first egg': '첫 번째 알 받기', 'See what you can collect': '모을 수 있는 친구 보기',
+  'No friends yet': '아직 친구가 없어요',
+  'Add a friend to visit their room, leave likes, and cheer each other on.':
+    '친구를 추가해 방을 구경하고, 좋아요를 남기고, 서로 응원해요.',
   'Collect 8 characters': '캐릭터 8마리 모으기', 'Reach a 30-day streak': '30일 연속 달성',
 
   // ── character detail ──
@@ -214,15 +241,25 @@ const KO = {
   'Win battles': '배틀 승리', 'Keep streaks': '연속 유지', 'Daily reward': '매일 보상',
   'Mystery Buddy Box': '미스터리 친구 상자', 'Get a random new buddy': '랜덤으로 새 친구를 받아요',
   'Opened': '열었어요', 'Outfits': '의상', 'Owned': '보유', 'Unlock rooms': '방 잠금 해제',
+  // egg & hatch flow (A-2 / F-15)
+  'Buddy Egg': '버디 알', 'Hatch a random new buddy': '랜덤으로 새 버디를 부화시켜요',
+  'Tap to hatch': '눌러서 부화하기', 'Hatching…': '부화 중…',
+  'New buddy!': '새로운 버디!', 'Added to your collection': '컬렉션에 추가됐어요',
+  'You already have': '이미 가지고 있어요', 'turned into XP': 'XP로 전환됐어요',
+  'Add to collection': '컬렉션에 담기', 'Awesome!': '좋아요!', 'Keep it': '데려가기',
+  'Chance': '확률',
   'Not enough points yet': '아직 포인트가 부족해요', 'unlocked!': '해금!', 'A new buddy': '새 친구',
   'Ribbon Bow': '리본', 'Explorer Cap': '탐험가 모자',
   'Claimed': '받음', 'Claimed — see you tomorrow!': '받았어요 — 내일 또 만나요!', 'Daily reward claimed!': '오늘의 보상을 받았어요!',
 
   // ── parent ──
   "This week's progress": '이번 주 진행 상황', 'Mina is improving': '미나가 나아지고 있어요',
+  'Loading…': '불러오는 중…',
   'Getting better': '좋아지고 있어요', 'Switch child': '자녀 전환', 'Needs attention': '살펴봐 주세요',
+  'On track': '순조로워요', 'Needs a look': '살펴봐 주세요', 'See all details': '자세히 보기', 'All details': '자세히',
   'Risky-walking moments': '위험한 보행 순간', 'fewer this week': '이번 주 감소',
   'Risky moments': '위험 순간', 'Safe stops': '안전 멈춤', 'This week': '이번 주',
+  'vs. week start': '주 초 대비',
   'Risky moments by day': '일별 위험 순간', 'Safest day': '가장 안전한 날',
   'Weekly activity': '주간 활동', 'Acceptance': '수용률', 'Build safer habits with Mina': '미나와 안전 습관 키우기',
   'Warning acceptance': '경고 수용률', 'Safe walking': '안전 걷기', 'Avg. response': '평균 반응', 'Safe streak': '안전 연속',
@@ -292,6 +329,11 @@ const KO = {
   'Add another child': '자녀 추가하기', 'Child': '자녀',
   'Add children': '자녀 추가', 'Done': '완료', 'Connect device': '기기 연결하기',
   'Connected': '연결됨', 'Not connected': '연결 안 됨', 'Reconnect device': '기기 재연결', 'Open to connect': '눌러서 연결',
+  // reconnect help sheet (device offline)
+  'Reconnect': '재연결', 'Reconnect this device': '이 기기 재연결하기', 'Close': '닫기',
+  'Open JoanX on their phone': '아이 폰에서 조안X 열기', 'Check Wi-Fi or mobile data': 'Wi-Fi 또는 데이터 확인',
+  'Keep the app running in the background': '앱을 백그라운드에서 계속 실행하기',
+  'Send a reconnect reminder': '재연결 알림 보내기', 'Reminder sent': '알림을 보냈어요',
   'Waiting to connect': '연결 대기 중', 'Scan or share a code': 'QR 스캔 또는 코드 공유',
   'Switched to a new phone? Reconnect and scan the new QR shown in their JoanX app.': '새 휴대폰으로 바꿨나요? 다시 연결을 눌러, 아이 조안X 앱에 표시된 새 QR을 스캔하세요.',
   // device-change — child requests to move to a new phone; parent confirms by scanning its QR
@@ -374,6 +416,20 @@ const KO = {
   'Control your data': '데이터 관리', 'Your privacy is protected. JoanX never reads messages or sells your data.': '개인정보는 보호돼요. 조안X는 메시지를 읽거나 데이터를 판매하지 않아요.',
   'Share anonymous analytics': '익명 분석 공유', 'Personalized safety tips': '맞춤 안전 팁',
   'What we collect': '수집 항목', 'Third-party sharing': '제3자 공유', 'None': '없음', 'Delete all my data': '내 데이터 모두 삭제',
+  // data & privacy — on-device storage (F-23), sync (F-24), always-on (F-27/F-28), log (F-29)
+  'On this device': '이 기기에 저장', 'Safety events stored': '저장된 안전 이벤트',
+  'Only the latest 100 events are kept on the phone — older ones are removed automatically.':
+    '최근 100개 이벤트만 폰에 보관돼요 — 오래된 건 자동으로 삭제돼요.',
+  'Auto-sync': '자동 동기화', 'On': '켜짐', 'Last synced 2 min ago': '2분 전에 동기화됨',
+  'What gets sent': '전송 항목', 'Events only': '이벤트만',
+  'Safety events — never messages, photos or content': '안전 이벤트만 — 메시지·사진·내용은 절대 아니에요',
+  'Always-on protection': '상시 보호', 'Secure background service': '안전한 백그라운드 서비스', 'Running': '작동 중',
+  'Runs quietly on Android while your child walks': '아이가 걷는 동안 안드로이드에서 조용히 작동해요',
+  'Restarts after reboot': '재부팅 후 자동 시작', 'Protection resumes automatically if the phone restarts': '폰이 다시 켜지면 보호가 자동으로 재개돼요',
+  'Diagnostic log': '진단 로그', 'Log cleared': '로그를 지웠어요', 'Clear log': '로그 지우기',
+  'Walk detected': '걷기 감지됨', 'Warning shown · looked up in 2s': '경고 표시 · 2초 만에 고개 듦',
+  'Safe walk complete · +200': '안전 걷기 완료 · +200', 'Synced to cloud': '클라우드에 동기화됨',
+  'Kept 7 days on this device for troubleshooting, then deleted.': '문제 해결을 위해 이 기기에 7일간 보관 후 삭제돼요.',
 
   // ── parent: location detail ──
   'Smart mode only': '스마트 모드 전용', 'Location is only used in Smart mode while your child is walking. Never tracked at rest.': '위치는 자녀가 걸을 때 스마트 모드에서만 사용돼요. 멈춰 있을 땐 추적하지 않아요.',
@@ -412,7 +468,14 @@ const KO = {
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',
   'One gentle buzz': '부드러운 진동 한 번', 'I looked up': '고개 들었어요',
+  // grace period — subtle self-correct window before the warning (F-07)
+  'Walking — heads up in a sec': '걷는 중 — 잠시 후 알려줄게요', 'Look up now and no warning is needed.': '지금 고개를 들면 경고가 필요 없어요.', "I've got it": '알겠어요',
+  // staged escalation (F-08) + timed character message (F-09)
+  'Buzz': '진동', 'Warning': '경고', 'Message': '메시지',
+  'Eyes up!': '고개 들어요!', 'Phone away for now': '폰은 잠깐 넣어둬요', 'Look ahead!': '앞을 봐요!',
+  'still walking': '계속 걷는 중', 'Still on your phone?': '아직 폰 보고 있어요?',
   'Auto-dismisses in a moment · no nagging': '잠시 후 자동으로 사라져요 · 잔소리 없이',
+  'Look up soon, or I’ll keep reminding you': '곧 고개를 들지 않으면 계속 알려줄게요',
   "Hammy noticed you're walking. Let's put the phone away and stay safe.": '친구가 걷는 걸 알아챘어요. 폰을 넣고 안전하게 걸어요.',
   'Stop fast for bonus points': '빨리 멈추면 보너스 포인트', 'Eyes up while walking': '걸을 땐 고개 들어요', "Tap when you've looked up": '고개를 들면 눌러요',
   'Nice save!': '잘했어요!', "Stopped in": '멈춤:', "that's an immediate stop.": '즉시 멈춤이에요.', 'points': '포인트',

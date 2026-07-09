@@ -63,13 +63,17 @@ function Onboarding({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
 
   const [modal, setModal] = React.useState(null); // permission id of the active request sheet
+  const [denied, setDenied] = React.useState({}); // permissions the user skipped → fallback / limited state
+  const [showFallback, setShowFallback] = React.useState(false); // "limited protection" confirm before continuing
   const allGranted = perms.every(p => grants[p.id]);
   const finish = () => ctx.finishOnboarding('smart');
 
-  const grant = id => setGrants(g => ({ ...g, [id]: true }));   // tapping a normal toggle grants it
+  const grant = id => { setGrants(g => ({ ...g, [id]: true })); setDenied(d => { const n = { ...d }; delete n[id]; return n; }); }; // granting clears any "denied" fallback
+  const deny = id => setDenied(d => ({ ...d, [id]: true }));    // user skips a permission → its card drops to the limited state
   const openOne = id => setModal(id);                           // "special" perm → open its sheet
   const dismiss = () => setModal(null);
   const grantActive = () => { grant(modal); setModal(null); };  // "Go to settings" in the sheet
+  const denyActive = () => { deny(modal); setModal(null); };    // "Not now" in the sheet → limited fallback
 
   const modalPerm = modal && perms.find(p => p.id === modal);
   const Buddy = ({ size }) => <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />;
@@ -170,18 +174,24 @@ function Onboarding({ ctx }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {perms.map(p => {
                 const on = !!grants[p.id];
+                const off = !on && !!denied[p.id];   // skipped → limited fallback state
                 return (
-                  <div key={p.id} style={{ display: 'flex', gap: 13, alignItems: 'center', padding: '15px 16px', background: '#fff', borderRadius: 18 }}>
+                  <div key={p.id} style={{ display: 'flex', gap: 13, alignItems: 'center', padding: '15px 16px', background: off ? THEME.warningLight : '#fff', borderRadius: 18, border: off ? `1px solid ${shade(THEME.warning, 78)}` : '1px solid transparent' }}>
                     {/* bare ink icon — no chip background, per design direction */}
-                    <Icon name={p.icon} size={21} color={THEME.fg1} stroke={2.1} style={{ flexShrink: 0 }} />
+                    <Icon name={p.icon} size={21} color={off ? THEME.warning : THEME.fg1} stroke={2.1} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L(p.name)}</div>
-                      <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 2 }}>{L(p.blurb)}</div>
+                      {/* when skipped, the card owns up to the consequence instead of the sell */}
+                      <div style={{ fontSize: 12, color: off ? THEME.warning : THEME.fg2, lineHeight: 1.4, marginTop: 2, fontWeight: off ? 600 : 400 }}>{L(off ? p.warn : p.blurb)}</div>
                     </div>
                     {on ? (
                       <span className="jx-pop" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, color: THEME.success, fontWeight: 800, fontSize: 12.5 }}>
                         <Icon name="check" size={15} color={THEME.success} stroke={2.8} />{L('Allowed')}
                       </span>
+                    ) : off ? (
+                      <button onClick={() => (p.settings ? openOne(p.id) : grant(p.id))} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, border: `1.5px solid ${THEME.warning}`, cursor: 'pointer', fontFamily: 'inherit', background: 'transparent', color: shade(THEME.warning, -18), fontWeight: 800, fontSize: 12.5, padding: '8px 13px', borderRadius: 999 }}>
+                        <Icon name="rotate-cw" size={13} color={shade(THEME.warning, -18)} stroke={2.6} />{L('Turn on')}
+                      </button>
                     ) : (
                       <button onClick={() => (p.settings ? openOne(p.id) : grant(p.id))} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.fg1, color: '#fff', fontWeight: 800, fontSize: 12.5, padding: '9px 15px', borderRadius: 999 }}>{L('Allow')}</button>
                     )}
@@ -197,7 +207,9 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} disabled={!allGranted} onClick={allGranted ? () => setCharReveal(true) : undefined}>{L('Continue')}</Button>
+            {/* Continue is always tappable — if something's still off, we own the
+                consequence in a fallback sheet rather than hard-blocking (F-26). */}
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={allGranted ? () => setCharReveal(true) : () => setShowFallback(true)}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -278,24 +290,24 @@ function Onboarding({ ctx }) {
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('Show this to\nyour parent')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('Have a parent scan this QR in the JoanX Parent app to link your accounts.')}</p>
 
-            {/* QR — plain, centered, no shadow (tap simulates the parent scanning it).
-                At 0:00 it blurs out and an expired overlay + refresh takes over. */}
-            <div style={{ alignSelf: 'center', position: 'relative', marginTop: 4 }}>
-              <div onClick={() => !codeExpired && setPairing(true)} style={{ background: '#fff', borderRadius: 24, padding: 22, cursor: codeExpired ? 'default' : 'pointer', filter: codeExpired ? 'blur(4px)' : 'none', opacity: codeExpired ? .45 : 1, transition: 'opacity .25s, filter .25s' }}>
+            {/* connect card — QR while valid; at 0:00 it's replaced by a clean,
+                self-contained expired state (same footprint), not an overlay. */}
+            {codeExpired ? (
+              <div style={{ alignSelf: 'center', width: 250, minHeight: 250, marginTop: 4, background: '#fff', borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                <div style={{ width: 58, height: 58, borderRadius: 999, background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="timer-off" size={28} color={THEME.danger} stroke={2.3} /></div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: THEME.fg1, marginTop: 14, wordBreak: 'keep-all' }}>{L('This QR expired')}</div>
+                <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.5, marginTop: 6, maxWidth: 200, wordBreak: 'keep-all' }}>{L('The 5-minute code ran out. Get a new one to try again.')}</div>
+                <button onClick={regenCode} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: P_BRAND.primary, color: '#fff', border: 'none', borderRadius: 999, padding: '11px 20px', marginTop: 18, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+                  <Icon name="refresh-cw" size={16} color="#fff" stroke={2.5} />{L('Get a new QR')}
+                </button>
+              </div>
+            ) : (
+              <div onClick={() => setPairing(true)} style={{ alignSelf: 'center', width: 250, marginTop: 4, background: '#fff', borderRadius: 24, padding: 22, cursor: 'pointer', display: 'flex', justifyContent: 'center' }}>
                 <PairQR size={206} />
               </div>
-              {codeExpired && (
-                <div className="jx-pop" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: 16 }}>
-                  <div style={{ width: 46, height: 46, borderRadius: 999, background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="clock" size={23} color={THEME.danger} stroke={2.3} /></div>
-                  <div style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{L('This QR expired')}</div>
-                  <button onClick={regenCode} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: P_BRAND.primary, color: '#fff', border: 'none', borderRadius: 999, padding: '10px 18px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, cursor: 'pointer' }}>
-                    <Icon name="refresh-cw" size={15} color="#fff" stroke={2.5} />{L('Get a new QR')}
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
 
-            {/* live countdown chip — hidden once expired (overlay takes over).
+            {/* live countdown chip — only while valid.
                 Prototype shortcut: tap it to jump straight to the expired state. */}
             {!codeExpired && (
               <button onClick={() => setCodeLeft(0)} title={L('Tap to preview the expired state')} style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 18, padding: '7px 15px', borderRadius: 999, background: P_BRAND.primaryLight, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -304,14 +316,13 @@ function Onboarding({ ctx }) {
               </button>
             )}
 
-            <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '16px 2px 0' }}>
-              <Icon name={codeExpired ? 'alert-circle' : 'info'} size={13} color={codeExpired ? THEME.danger : THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
-              {codeExpired ? (
-                <span style={{ fontSize: 12, color: THEME.danger, lineHeight: 1.45, fontWeight: 700 }}>{L('The QR expired — tap “Get a new QR” to refresh it.')}</span>
-              ) : (
+            {/* validity note — only while valid; the expired card is self-explanatory */}
+            {!codeExpired && (
+              <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '16px 2px 0' }}>
+                <Icon name="info" size={13} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span style={{ fontSize: 12, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L("The linking code is valid for 5 minutes. If time runs out, please create a new one in your parent's app.")}</span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
@@ -447,7 +458,40 @@ function Onboarding({ ctx }) {
               <span style={{ fontSize: 12.5, color: THEME.warning, fontWeight: 600, lineHeight: 1.45 }}>{L(modalPerm.warn)}</span>
             </div>
             <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={grantActive}>{L('Go to settings')}</Button>
-            <button onClick={dismiss} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Cancel')}</button>
+            {/* declining is a real choice — it drops the card to the limited state (F-26) */}
+            <button onClick={denyActive} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Not now')}</button>
+          </div>
+        </div>
+      )}
+
+      {/* permission-denied fallback (F-26) — instead of hard-blocking, spell out
+          exactly which protections drop and let the child continue in limited mode.
+          Warnings, vibration and notifications still work for the granted ones. */}
+      {showFallback && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <div onClick={() => setShowFallback(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,17,0.44)', backdropFilter: 'blur(1.5px)', WebkitBackdropFilter: 'blur(1.5px)' }} />
+          <div className="jx-sheet-up" style={{ position: 'relative', background: '#fff', borderRadius: '30px 30px 0 0', padding: '10px 24px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -16px 44px rgba(20,18,16,0.28)' }}>
+            <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 16px' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+              <div style={{ width: 62, height: 62, borderRadius: 999, background: THEME.warningLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="shield-alert" size={30} color={THEME.warning} stroke={2.2} />
+              </div>
+            </div>
+            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '0 8px 8px', lineHeight: 1.2, textAlign: 'center' }}>{L('Protection will be limited')}</h1>
+            <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, margin: '0 2px 15px', textAlign: 'center' }}>{L('Without these, JoanX keeps running — but some warnings won’t work. You can turn them on anytime in Settings.')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, textAlign: 'left' }}>
+              {perms.filter(p => !grants[p.id]).map(p => (
+                <div key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: THEME.warningLight, borderRadius: 12, padding: '11px 13px' }}>
+                  <Icon name={p.icon} size={17} color={THEME.warning} stroke={2.1} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1 }}>{L(p.name)}</div>
+                    <div style={{ fontSize: 12, color: THEME.warning, fontWeight: 600, lineHeight: 1.4, marginTop: 1 }}>{L(p.warn)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setShowFallback(false)}>{L('Go back & allow')}</Button>
+            <button onClick={() => { perms.forEach(p => { if (!grants[p.id]) deny(p.id); }); setShowFallback(false); setCharReveal(true); }} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Continue with limited protection')}</button>
           </div>
         </div>
       )}
