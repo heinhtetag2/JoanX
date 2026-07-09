@@ -452,6 +452,103 @@ function Friends({ ctx, layout = 'list' }) {
         </div>
       </div>
     )),
+
+    // 21 · Feed — social post cards: header, stats, full-width Visit action
+    feed: () => friends.map(f => (
+      <div key={f.id} style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={42} bg={PURPLE.light} /><Dot online={f.online} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+            <div style={{ fontSize: 12, color: f.online ? THEME.success : THEME.fg2, fontWeight: 600, marginTop: 1 }}>{f.online ? L('Online now') : L('Last seen recently')}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+          </div>
+        </div>
+        <Button variant="secondary" size="sm" fullWidth onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main, marginTop: 12 }}><Icon name="home" size={16} color={PURPLE.main} stroke={2.4} />{L('Visit')}</Button>
+      </div>
+    )),
+
+    // 22 · Bento — mixed-size grid: a big lead tile then square cells
+    bento: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {friends.map((f, i) => {
+          const big = i === 0;
+          return (
+            <button key={f.id} onClick={() => visit(f)} style={{ gridColumn: big ? 'span 2' : 'span 1', display: 'flex', flexDirection: big ? 'row' : 'column', alignItems: 'center', gap: big ? 16 : 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 20, padding: big ? 18 : '16px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: big ? 'left' : 'center' }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={big ? 66 : 56} bg={PURPLE.light} /><Dot online={f.online} /></div>
+              <div style={{ flex: big ? 1 : 'none' }}>
+                <div style={{ fontSize: big ? 17 : 14.5, fontWeight: 800 }}>{f.name}</div>
+                <div style={{ display: 'flex', gap: 10, marginTop: big ? 6 : 3, justifyContent: big ? 'flex-start' : 'center' }}>
+                  <Stat icon="flame" color={THEME.gold} value={f.streak} />
+                  <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    ),
+
+    // 23 · Minimal — text-first rows, a presence dot, no avatars
+    minimal: () => (
+      <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+        {friends.map((f, i) => (
+          <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+            <span style={{ width: 9, height: 9, borderRadius: 999, background: f.online ? THEME.success : THEME.fg3, flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{f.name}</span>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+            <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
+          </div>
+        ))}
+      </div>
+    ),
+
+    // 24 · Badge — medallion avatars with a streak ribbon, 3 across
+    badge: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, padding: '8px 0' }}>
+        {friends.map(f => (
+          <button key={f.id} onClick={() => visit(f)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: 74, height: 74, borderRadius: 999, background: `linear-gradient(145deg, ${shade(f.color, 60)}, ${shade(f.color, 82)})`, border: '3px solid #fff', boxShadow: `0 0 0 1px ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={60} /></div>
+              <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', display: 'inline-flex', alignItems: 'center', gap: 3, background: PURPLE.main, color: '#fff', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}><Icon name="flame" size={11} color="#fff" stroke={2.4} />{f.streak}</div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, marginTop: 8 }}>{f.name}</div>
+          </button>
+        ))}
+      </div>
+    ),
+
+    // 25 · Magazine — editorial cards, mascot panel alternating left / right
+    magazine: () => friends.map((f, i) => {
+      const left = i % 2 === 0;
+      const pane = (
+        <div key="p" style={{ width: 110, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(160deg, ${shade(f.color, 66)}, ${shade(f.color, 84)})` }}>
+          <Mascot species={f.avatar} stage={2} color={f.color} size={72} />
+          <Dot online={f.online} />
+        </div>
+      );
+      const info = (
+        <div key="i" style={{ flex: 1, minWidth: 0, padding: '14px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, textAlign: left ? 'left' : 'right' }}>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: left ? 'flex-start' : 'flex-end' }}>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: left ? 'flex-start' : 'flex-end' }}>
+            <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}<Icon name="arrow-right" size={15} color={PURPLE.main} stroke={2.4} /></Button>
+          </div>
+        </div>
+      );
+      return (
+        <div key={f.id} style={{ display: 'flex', borderRadius: 20, overflow: 'hidden', border: `1px solid ${THEME.border}`, background: '#fff', marginBottom: 12 }}>
+          {left ? [pane, info] : [info, pane]}
+        </div>
+      );
+    }),
   };
 
   const renderBody = bodies[layout] || bodies.list;
