@@ -256,6 +256,202 @@ function Friends({ ctx, layout = 'list' }) {
         ))}
       </div>
     ),
+
+    // 11 · Split — two-tone rows: buddy-colored mascot half + white info half
+    split: () => friends.map(f => (
+      <div key={f.id} style={{ display: 'flex', borderRadius: 18, overflow: 'hidden', border: `1px solid ${THEME.border}`, marginBottom: 10, background: '#fff' }}>
+        <div style={{ width: 92, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(160deg, ${shade(f.color, 66)}, ${shade(f.color, 84)})` }}>
+          <Mascot species={f.avatar} stage={2} color={f.color} size={62} />
+          <Dot online={f.online} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15.5, fontWeight: 800 }}>{f.name}</div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+              <Stat icon="flame" color={THEME.gold} value={f.streak} />
+              <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}</Button>
+        </div>
+      </div>
+    )),
+
+    // 12 · Village — house cards with a colored roof (ties to visiting rooms)
+    village: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {friends.map(f => (
+          <button key={f.id} onClick={() => visit(f)} style={{ border: `1px solid ${THEME.border}`, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 18, overflow: 'hidden', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: 14, background: f.color }} />
+            <div style={{ padding: '12px 10px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: 60, height: 60, borderRadius: 14, background: shade(f.color, 86), display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={52} /></div>
+                <Dot online={f.online} />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>{f.name}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: THEME.fg2, fontWeight: 700 }}><Icon name="home" size={12} color={PURPLE.main} stroke={2.3} />{L('Visit house')}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    ),
+
+    // 13 · Rail — clean rows color-coded by a buddy-colored left bar
+    rail: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 16, border: `1px solid ${THEME.border}`, borderLeft: `5px solid ${f.color}`, padding: '12px 14px', marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={44} bg={PURPLE.light} /><Dot online={f.online} /></div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+          </div>
+        </div>
+        <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+      </div>
+    )),
+
+    // 14 · Poster — tall immersive cards, buddy centered on a rich gradient
+    poster: () => (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {friends.map(f => (
+          <button key={f.id} onClick={() => visit(f)} style={{ position: 'relative', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 20, overflow: 'hidden', aspectRatio: '0.82', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14, background: `linear-gradient(180deg, ${shade(f.color, 34)}, ${shade(f.color, -26)})` }}>
+            <div style={{ position: 'absolute', top: '27%', left: '50%', transform: 'translate(-50%,-50%)' }}><Mascot species={f.avatar} stage={2} color={f.color} size={82} /></div>
+            {f.online && <span style={{ position: 'absolute', top: 11, right: 11, width: 10, height: 10, borderRadius: 999, background: THEME.success, border: '2px solid rgba(255,255,255,.85)' }} />}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{f.name}</div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="flame" size={12} color="#fff" stroke={2.3} />{f.streak}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="gem" size={12} color="#fff" stroke={2.3} />{f.chars}</span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    ),
+
+    // 15 · Chips — wrapping friend pills, tag-cloud style
+    chips: () => (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        {friends.map(f => (
+          <button key={f.id} onClick={() => visit(f)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '6px 14px 6px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <MascotChip species={f.avatar} color={f.color} size={30} bg={PURPLE.light} />
+              <span style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 999, background: f.online ? THEME.success : THEME.fg3, border: '2px solid #fff' }} />
+            </div>
+            <span style={{ fontSize: 13.5, fontWeight: 800 }}>{f.name}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: THEME.fg2, fontWeight: 700 }}><Icon name="flame" size={12} color={THEME.gold} stroke={2.3} />{f.streak}</span>
+          </button>
+        ))}
+      </div>
+    ),
+
+    // 16 · Banner — smooth horizontal buddy-color wash fading into white
+    banner: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 18, overflow: 'hidden', border: `1px solid ${THEME.border}`, background: '#fff', padding: '12px 14px', marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${shade(f.color, 70)} 0%, ${shade(f.color, 90)} 42%, #fff 80%)` }} />
+        <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={46} bg="rgba(255,255,255,.6)" /><Dot online={f.online} /></div>
+        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+          </div>
+        </div>
+        <Icon name="arrow-right" size={18} color={PURPLE.main} stroke={2.4} style={{ position: 'relative' }} />
+      </div>
+    )),
+
+    // 17 · Roster — a squad card: overlapping avatar header + member rows
+    roster: () => (
+      <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: PURPLE.light }}>
+          <div style={{ display: 'flex' }}>
+            {friends.slice(0, 4).map((f, i) => (
+              <div key={f.id} style={{ marginLeft: i ? -12 : 0, border: '2px solid #fff', borderRadius: 999, display: 'flex' }}><MascotChip species={f.avatar} color={f.color} size={34} bg="#fff" /></div>
+            ))}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: PURPLE.dark }}>{L('Your squad')}</div>
+            <div style={{ fontSize: 12, color: PURPLE.dark, opacity: .8, fontWeight: 600 }}>{friends.length} {L('friends')}</div>
+          </div>
+        </div>
+        {friends.map((f, i) => (
+          <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: `1px solid ${THEME.border}`, cursor: 'pointer' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={38} bg={PURPLE.light} /><Dot online={f.online} /></div>
+            <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+            <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
+          </div>
+        ))}
+      </div>
+    ),
+
+    // 18 · Stats — data-forward cards, big stat blocks per friend
+    stats: () => friends.map(f => (
+      <div key={f.id} style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={44} bg={PURPLE.light} /><Dot online={f.online} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+            <div style={{ fontSize: 12, color: f.online ? THEME.success : THEME.fg2, fontWeight: 600, marginTop: 1 }}>{f.online ? L('Online now') : L('Last seen recently')}</div>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}</Button>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+          {[['flame', THEME.gold, f.streak, L('Streak')], ['gem', PURPLE.main, f.chars, L('Gems')]].map(([ic, col, val, lbl]) => (
+            <div key={lbl} style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '10px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={ic} size={15} color={col} stroke={2.3} /><span className="game-font" style={{ fontSize: 19, fontWeight: 500 }}>{val}</span></div>
+              <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )),
+
+    // 19 · Groups — split into Online / Offline sections
+    groups: () => {
+      const on = friends.filter(f => f.online), off = friends.filter(f => !f.online);
+      const section = (title, arr) => (arr.length ? (
+        <React.Fragment key={title}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4, margin: '10px 4px 8px' }}>{title} · {arr.length}</div>
+          <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+            {arr.map((f, i) => (
+              <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={40} bg={PURPLE.light} /><Dot online={f.online} /></div>
+                <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
+                <Stat icon="flame" color={THEME.gold} value={f.streak} />
+                <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+                <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
+              </div>
+            ))}
+          </div>
+        </React.Fragment>
+      ) : null);
+      return <div>{section(L('Online'), on)}{section(L('Offline'), off)}</div>;
+    },
+
+    // 20 · Ticket — event-ticket cards with a buddy-colored stub + perforation
+    ticket: () => friends.map(f => (
+      <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', borderRadius: 18, overflow: 'hidden', border: `1px solid ${THEME.border}`, background: '#fff', marginBottom: 10, cursor: 'pointer' }}>
+        <div style={{ width: 86, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: shade(f.color, 84) }}>
+          <Mascot species={f.avatar} stage={2} color={f.color} size={56} />
+          <Dot online={f.online} />
+          <span style={{ position: 'absolute', right: -1, top: 0, bottom: 0, borderRight: `2px dashed ${THEME.border}` }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
+              <Stat icon="flame" color={THEME.gold} value={f.streak} />
+              <Stat icon="gem" color={PURPLE.main} value={f.chars} />
+            </div>
+          </div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: PURPLE.main, fontWeight: 800, fontSize: 13 }}>{L('Visit')}<Icon name="arrow-right" size={15} color={PURPLE.main} stroke={2.4} /></div>
+        </div>
+      </div>
+    )),
   };
 
   const renderBody = bodies[layout] || bodies.list;

@@ -245,7 +245,7 @@ function App() {
 
               <div className="tw-label">Friends style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['list', 'List'], ['grid', 'Grid'], ['showcase', 'Showcase'], ['compact', 'Compact'], ['leaderboard', 'Leaderboard'], ['carousel', 'Carousel'], ['tiles', 'Tiles'], ['cover', 'Cover'], ['bubbles', 'Bubbles'], ['timeline', 'Timeline']].map(([v, l]) => (
+                {[['list', 'List'], ['grid', 'Grid'], ['showcase', 'Showcase'], ['compact', 'Compact'], ['leaderboard', 'Leaderboard'], ['carousel', 'Carousel'], ['tiles', 'Tiles'], ['cover', 'Cover'], ['bubbles', 'Bubbles'], ['timeline', 'Timeline'], ['split', 'Split'], ['village', 'Village'], ['rail', 'Rail'], ['poster', 'Poster'], ['chips', 'Chips'], ['banner', 'Banner'], ['roster', 'Roster'], ['stats', 'Stats'], ['groups', 'Groups'], ['ticket', 'Ticket']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.friendsLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, friendsLayout: v })); setStack([]); setScreen('friends'); }}>{l}</button>
                 ))}
