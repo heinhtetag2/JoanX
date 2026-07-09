@@ -106,8 +106,21 @@ html, body {
 @keyframes jxWiggle { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-13deg); } 40% { transform: rotate(11deg); } 60% { transform: rotate(-9deg); } 80% { transform: rotate(7deg); } }
 .jx-wiggle { animation: jxWiggle .55s ease-in-out infinite; }
 
-/* Egg wobble before it hatches — tilts harder as it goes, then a quick pop */
+/* Error shake — horizontal wobble for invalid inputs (code entry, dup ID).
+   Must NOT fade/shrink: the element stays fully visible after it settles. */
 @keyframes jxShake {
+  0%,100% { transform: translateX(0); }
+  15% { transform: translateX(-9px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-7px); }
+  60% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+.jx-shake { animation: jxShake .5s ease both; }
+
+/* Egg hatch — wobbles harder as it goes, then swells and pops away as the
+   buddy appears (its own class so it never touches error-shake elements). */
+@keyframes jxEggHatch {
   0% { transform: rotate(0) scale(1); }
   12% { transform: rotate(-8deg) scale(1.02); }
   24% { transform: rotate(7deg); }
@@ -119,7 +132,7 @@ html, body {
   92% { transform: rotate(4deg) scale(1.12); }
   100% { transform: rotate(0) scale(.6); opacity: 0; }
 }
-.jx-shake { animation: jxShake .9s cubic-bezier(.36,.07,.55,.9) both; }
+.jx-egg-hatch { animation: jxEggHatch .9s cubic-bezier(.36,.07,.55,.9) both; }
 
 /* Living gradient behind the egg before it hatches — two soft blobs slowly
    drift around a base tint, so the backdrop feels alive while you wait / tap.
