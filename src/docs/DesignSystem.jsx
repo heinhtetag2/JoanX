@@ -447,7 +447,7 @@ function ButtonsSection() {
 }
 
 function BadgesSection() {
-  const variants = ['default', 'primary', 'success', 'danger', 'warning', 'special', 'gold'];
+  const variants = ['default', 'primary', 'success', 'danger', 'warning', 'epic', 'gold'];
   return (
     <div>
       <p className="ds-p">
@@ -460,7 +460,7 @@ function BadgesSection() {
         <Badge variant="success"><Icon name="shield-check" size={12} color="var(--color-interactives-badge-evergreen-label)" stroke={2.4} />5일 안전</Badge>
       </div>
       <PropsTable rows={[
-        ['variant', "'default' | 'primary' | 'success' | 'danger' | 'warning' | 'special' | 'gold'", "'default'", 'sand / ocean / evergreen / rust / ember / iris / XP-gold'],
+        ['variant', "'default' | 'primary' | 'success' | 'danger' | 'warning' | 'epic' | 'gold'", "'default'", 'sand / ocean / evergreen / rust / ember / iris / XP-gold'],
         ['children', 'node', null, 'Text; pair with a 12px Icon for status badges'],
       ]} />
       <SubHead>Rarity chips (game layer)</SubHead>
@@ -649,13 +649,13 @@ import { screenBgActive } from './shared.jsx';           // child: reads the act
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <PointsChip pts={1240} />
-          <RarityPill rarity="common" /><RarityPill rarity="rare" /><RarityPill rarity="special" />
+          <RarityPill rarity="common" /><RarityPill rarity="rare" /><RarityPill rarity="epic" />
         </div>
       </div>
       <PropsTable rows={[
         ['StatCard', 'icon, color, bg, value, label, big', null, 'stat tile (Home + Profile) — game-font value, 34px icon well'],
         ['PointsChip', 'pts', null, 'white pill with gold star; headers (Profile / Decorate)'],
-        ['RarityPill', "rarity: 'common' | 'rare' | 'special'", "'common'", 'tiny uppercase pill; dex screens — label runs through L()'],
+        ['RarityPill', "rarity: 'common' | 'rare' | 'epic'", "'common'", 'tiny uppercase pill; dex screens — label runs through L()'],
       ]} />
 
       <SubHead>DexProgress — collection completion header</SubHead>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
 import { mixHue, screenBgFor } from './shared.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
@@ -116,7 +116,7 @@ function TodayTasksS({ accent }) {
     <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-          <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(accent, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="list-checks" size={17} color={shade(accent, -28)} stroke={2.3} /></span>
+          <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(accent, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="list-checks" size={17} color={shade(accent, -28)} stroke={2.3} /></span>
           {L("Today's tasks")}
         </span>
         <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>{done}/{tasks.length} {L('done')}</span>
@@ -187,7 +187,7 @@ function HomeSimpleOriginal({ ctx }) {
         <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', borderRadius: 24, padding: '18px 18px 20px', marginBottom: 14, cursor: 'pointer', overflow: 'hidden', background: `linear-gradient(160deg, ${shade(c.color, 78)} 0%, ${THEME.surface} 70%)`, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
+              <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
               <div className="game-font" style={{ fontSize: 24, fontWeight: 500, marginTop: 8 }}>{c.name}</div>
               <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
             </div>
@@ -213,7 +213,7 @@ function HomeSimpleOriginal({ ctx }) {
         <div onClick={() => ctx.tabTo('rewards')} style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard, cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L('Safe walking today')}
             </span>
             <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><Icon name="star" size={13} color={THEME.gold} fill={THEME.gold} stroke={2} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
@@ -284,7 +284,7 @@ function HomeSimpleSpotlight({ ctx }) {
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L("Today's safe-walk goal")}
             </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
@@ -367,7 +367,7 @@ function HomeSimpleMap({ ctx }) {
         <div onClick={() => ctx.nav('safety')} style={{ background: '#fff', borderRadius: 20, padding: 16, marginBottom: 14, boxShadow: THEME.shadowCard, cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L("Today's safe-walk goal")}
             </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
@@ -464,7 +464,7 @@ function HomeSimpleFocus({ ctx }) {
 function HomeSimpleCover({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const lite = ctx.mode === 'lite';
-  const headBg = `linear-gradient(160deg, ${shade(c.color, 58)} 0%, ${shade(c.color, 104)} 100%)`;
+  const headBg = `linear-gradient(160deg, ${shade(c.color, 58)} 0%, ${tint(c.color, .82)} 100%)`;
   const ink = shade(c.color, -52);
 
   return (
@@ -535,7 +535,7 @@ function HomeSimpleWave({ ctx }) {
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 110, background: '#fff' }}>
       {/* curved color header */}
-      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(c.color, 74)} 0%, ${shade(c.color, 106)} 100%)`, paddingTop: 50 }}>
+      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(c.color, 74)} 0%, ${tint(c.color, .85)} 100%)`, paddingTop: 50 }}>
         <div style={{ padding: '8px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={() => ctx.nav('profile')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
             <div style={{ fontSize: 13, color: ink, opacity: .8, fontWeight: 700 }}>{L('Good afternoon')}</div>
@@ -577,7 +577,7 @@ function HomeSimpleWave({ ctx }) {
         <div onClick={() => ctx.nav('safety')} style={{ ...float, padding: 16, marginBottom: 12, cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L("Today's safe-walk goal")}
             </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>
@@ -612,7 +612,7 @@ function HomeSimpleProfile({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const lite = ctx.mode === 'lite';
   const ink = shade(c.color, -52);
-  const heroBg = `linear-gradient(155deg, ${shade(c.color, 64)} 0%, ${shade(c.color, 104)} 100%)`;
+  const heroBg = `linear-gradient(155deg, ${shade(c.color, 64)} 0%, ${tint(c.color, .82)} 100%)`;
 
   const InlineStat = ({ icon, color, value, label }) => (
     <div style={{ flex: 1, textAlign: 'center' }}>
@@ -664,7 +664,7 @@ function HomeSimpleProfile({ ctx }) {
         <div onClick={() => ctx.nav('safety')} style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L("Today's safe-walk goal")}
             </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>

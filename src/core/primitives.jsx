@@ -39,6 +39,11 @@ const THEME = {
   shadowPrimary: '0 8px 18px rgba(68,122,175,0.34)',  // ocean glow under the CTA
   shadowDanger: '0 8px 18px rgba(209,69,50,0.34)',   // rust glow
 
+  // ── JoanX product brand — the logo magenta ───────────────────────────
+  // The pink behind the onboarding wash and its CTAs. Distinct from THEME.primary
+  // (ocean), which is the in-game action colour.
+  brand: '#E00477', brandDark: '#B00360', brandLight: '#FCE4F0',
+
   // ── JoanX game layer ─────────────────────────────────────────────────
   gold: '#d19900', goldLight: '#fff2d1',     // data-yellow 50 / 10 — points / XP
   joy: '#ce8345',                            // playful warm accent (ember 40)
@@ -46,14 +51,14 @@ const THEME = {
   // rarity
   rCommon: '#b0adab', rCommonBg: '#f8f7f7',  // sand 40 / 10
   rRare: '#447aaf',   rRareBg: '#ecf3fe',    // ocean 50 / 10
-  rSpecial: '#7f63c5', rSpecialBg: '#f5f1fd',// iris 50 / 10
+  rEpic: '#7f63c5',   rEpicBg: '#f5f1fd',   // iris 50 / 10
 };
 
 // rarity helper
 const RARITY = {
   common:  { label: 'Common',  fg: THEME.rCommon,  bg: THEME.rCommonBg },
   rare:    { label: 'Rare',    fg: THEME.rRare,    bg: THEME.rRareBg },
-  special: { label: 'Special', fg: THEME.rSpecial, bg: THEME.rSpecialBg },
+  epic:    { label: 'Epic',    fg: THEME.rEpic,    bg: THEME.rEpicBg },
 };
 
 // ── Buddy/brand-tinted screen backgrounds — shared by BOTH apps ──────
@@ -137,7 +142,7 @@ function Badge({ children, variant = 'default', style }) {
     success: bv('evergreen'),
     danger:  bv('rust'),
     warning: bv('ember'),
-    special: bv('iris'),
+    epic:    bv('iris'),
     gold:    { bg: THEME.goldLight, fg: '#9e7300' },  // game-layer XP accent (data-yellow, no system badge palette)
   };
   const { bg, fg } = map[variant] || map.default;

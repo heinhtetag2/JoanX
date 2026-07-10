@@ -2,54 +2,34 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, EGGS, PLAYER, POINTS, xpForLevel } from '../core/data.jsx';
 import { Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-
-// A soft speckled egg (used on the shop card and in the hatch overlay).
-function EggShape({ size = 120, color = '#e6a94b' }) {
-  return (
-    <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
-      <div style={{ width: '100%', height: '100%', borderRadius: '50% 50% 48% 48% / 62% 62% 38% 38%', background: `radial-gradient(120% 90% at 32% 26%, #fff 0%, ${color} 60%, ${shade(color, -22)} 100%)`, boxShadow: `inset -6px -9px 15px ${shade(color, -30)}55, 0 10px 22px rgba(46,43,41,.16)` }} />
-      {[[34, 26, 7, 9, .5], [54, 62, 6, 8, .45], [70, 38, 5, 6, .4]].map(([t, l, w, h, o], i) => (
-        <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: w, height: h, borderRadius: '50%', background: shade(color, -20), opacity: o }} />
-      ))}
-      <div style={{ position: 'absolute', top: '15%', left: '22%', width: '22%', height: '15%', borderRadius: '50%', background: 'rgba(255,255,255,.7)', transform: 'rotate(-18deg)', filter: 'blur(1px)' }} />
-    </div>
-  );
-}
-
-// A cracked eggshell half — sits under the hatched buddy so the reveal reads
-// as "just came out of the egg" (its own motif, not the onboarding gift card).
-function EggHalf({ color, flip }) {
-  return (
-    <div style={{ position: 'relative', width: 72, height: 40 }}>
-      <div style={{ width: '100%', height: '100%', background: `radial-gradient(130% 150% at 42% 0%, #fff 0%, ${color} 66%, ${shade(color, -22)} 100%)`, clipPath: 'polygon(0 32%, 13% 4%, 27% 30%, 41% 2%, 55% 30%, 69% 2%, 83% 28%, 100% 8%, 100% 100%, 0 100%)', borderRadius: '0 0 36px 36px / 0 0 44px 40px', transform: `rotate(${flip ? 15 : -15}deg)`, boxShadow: `inset 0 -6px 10px ${shade(color, -26)}44` }} />
-      {[[52, 34, 5, 6], [70, 62, 4, 5]].map(([t, l, w, h], i) => (
-        <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: w, height: h, borderRadius: '50%', background: shade(color, -20), opacity: .4 }} />
-      ))}
-    </div>
-  );
-}
+import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
 
 // ── Egg loot pool (A-2 / F-15) ───────────────────────────────────────
 // Collectible buddies distinct from the starter roster, so a hatch can be a
 // genuine "new buddy" until the pool is exhausted, then rolls into duplicates.
-const EGG_PRICE = 500;
 const EGG_POOL = [
   { id: 'egg-cocoa', species: 'cat',  name: 'Cocoa', color: '#a9744f', rarity: 'common'  },
   { id: 'egg-sky',   species: 'bird', name: 'Sky',   color: '#5aa9e6', rarity: 'common'  },
   { id: 'egg-maple', species: 'fox',  name: 'Maple', color: '#e08a3c', rarity: 'rare'    },
   { id: 'egg-luna',  species: 'owl',  name: 'Luna',  color: '#7c5cbf', rarity: 'rare'    },
-  { id: 'egg-nova',  species: 'cat',  name: 'Nova',  color: '#e0559a', rarity: 'special' },
+  { id: 'egg-nova',  species: 'cat',  name: 'Nova',  color: '#e0559a', rarity: 'epic'    },
 ];
-const RARITY_WEIGHT = { common: 6, rare: 3, special: 1 };
-const DUP_XP = { common: 30, rare: 60, special: 120 };
-// weighted-random pick from the pool
-const rollBuddy = () => {
-  const bag = EGG_POOL.flatMap(b => Array(RARITY_WEIGHT[b.rarity]).fill(b));
+// a pricier egg doesn't guarantee a rarer buddy — it shifts the odds
+const EGG_ODDS = {
+  common: { common: 8, rare: 2, epic: 0 },
+  rare:   { common: 3, rare: 6, epic: 1 },
+  epic:   { common: 0, rare: 4, epic: 6 },
+};
+const DUP_XP = { common: 30, rare: 60, epic: 120 };
+// weighted-random pick, biased by which egg was opened
+const rollBuddy = (eggRarity = 'common') => {
+  const w = EGG_ODDS[eggRarity] || EGG_ODDS.common;
+  const bag = EGG_POOL.flatMap(b => Array(w[b.rarity] || 0).fill(b));
   return bag[Math.floor(Math.random() * bag.length)];
 };
 
@@ -57,44 +37,31 @@ const rollBuddy = () => {
 function Shop({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const [pts, setPts] = React.useState(PLAYER.points);
-  const [owned, setOwned] = React.useState({ scarf: true, cape: true });
   const [toast, setToast] = React.useState(null);
 
   // egg & hatch flow state — { phase:'egg'|'reveal', buddy, dup, xp }
   const [hatch, setHatch] = React.useState(null);
   const eggOwned = React.useRef(new Set());   // which egg-pool buddies you've hatched already
 
-  const buyEgg = () => {
-    if (pts < EGG_PRICE) { setToast({ ok: false, msg: L('Not enough points yet') }); setTimeout(() => setToast(null), 1500); return; }
-    PLAYER.points -= EGG_PRICE; setPts(PLAYER.points);
-    // iOS 13+ needs motion permission, requested from this user gesture (best-effort)
-    try {
-      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') DeviceMotionEvent.requestPermission().catch(() => {});
-    } catch { /* older/unsupported browsers — tap still works */ }
-    setHatch({ phase: 'egg', buddy: rollBuddy() });
+  // A-2: price + eligibility come from EGGS (server-configurable). Epic has no
+  // price — it is only granted by events, missions and achievements.
+  const buyEgg = (egg) => {
+    const nope = (msg) => { setToast({ ok: false, msg }); setTimeout(() => setToast(null), 1600); };
+    if (egg.price == null) return nope(L('Only from events and missions'));
+    if (PLAYER.level < egg.minLevel) return nope(`${L('Unlocks at Lv')} ${egg.minLevel}`);
+    if (pts < egg.price) return nope(L('Not enough points yet'));
+    PLAYER.points -= egg.price; setPts(PLAYER.points);
+    requestMotionPermission();   // iOS 13+: must be asked from this user gesture
+    setHatch({ phase: 'egg', buddy: rollBuddy(egg.rarity), eggRarity: egg.rarity });
   };
   // tap the egg → it wobbles (crack), then the buddy pops out
   const crackEgg = () => {
     setHatch(h => (h && h.phase === 'egg' ? { ...h, phase: 'cracking' } : h));
-    setTimeout(revealEgg, 820);   // matches the jx-shake duration
+    setTimeout(revealEgg, HATCH_MS);
   };
 
   // shake-to-hatch: while the egg is waiting, a firm phone shake also cracks it
-  React.useEffect(() => {
-    if (hatch?.phase !== 'egg') return;
-    let last = null, lastFire = 0;
-    const onMotion = (e) => {
-      const a = e.accelerationIncludingGravity; if (!a) return;
-      const now = Date.now();
-      if (last && now - lastFire > 600) {
-        const jolt = Math.abs((a.x || 0) - last.x) + Math.abs((a.y || 0) - last.y) + Math.abs((a.z || 0) - last.z);
-        if (jolt > 26) { lastFire = now; crackEgg(); }
-      }
-      last = { x: a.x || 0, y: a.y || 0, z: a.z || 0 };
-    };
-    window.addEventListener('devicemotion', onMotion);
-    return () => window.removeEventListener('devicemotion', onMotion);
-  }, [hatch?.phase]);
+  useShakeToHatch(hatch?.phase === 'egg', crackEgg);
   // reveal the buddy; new ones join the collection, dupes pay XP
   const revealEgg = () => {
     setHatch(h => {
@@ -105,34 +72,15 @@ function Shop({ ctx }) {
       if (dup) {
         xp = DUP_XP[b.rarity];
         const active = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
-        if (active) active.xp = Math.min((active.xp || 0) + xp, active.xpMax || 500);
+        if (active) active.xp = Math.min((active.xp || 0) + xp, active.xpMax || xpForLevel(active.level || 1));
       } else {
         eggOwned.current.add(b.id);
-        CHARACTERS.push({ id: b.id, species: b.species, name: b.name, color: b.color, stage: 1, rarity: b.rarity, level: 1, xp: 0, xpMax: 200, owned: true, room: null, traits: { guard: 50, speed: 60, heart: 70 } });
+        CHARACTERS.push({ id: b.id, species: b.species, name: b.name, color: b.color, stage: 1, rarity: b.rarity, level: 1, xp: 0, xpMax: xpForLevel(1), owned: true, room: null, traits: { guard: 50, speed: 60, heart: 70 } });
       }
       return { ...h, phase: 'reveal', dup, xp };
     });
   };
 
-  const outfits = [
-    { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', price: 0 },
-    { id: 'cape', icon: 'wind', name: 'Guardian Cape', price: 0 },
-    { id: 'crown', icon: 'crown', name: 'Star Crown', price: 300 },
-    { id: 'shades', icon: 'glasses', name: 'Cool Shades', price: 250 },
-    { id: 'bow', icon: 'gift', name: 'Ribbon Bow', price: 200 },
-    { id: 'cap', icon: 'graduation-cap', name: 'Explorer Cap', price: 280 },
-  ];
-
-  const buy = (id, price, label) => {
-    if (owned[id]) return;
-    if (pts < price) { setToast({ ok: false, msg: L('Not enough points yet') }); setTimeout(() => setToast(null), 1500); return; }
-    PLAYER.points -= price; setPts(PLAYER.points); setOwned(o => ({ ...o, [id]: true }));
-    setToast({ ok: true, msg: `${label} ${L('unlocked!')}` }); setTimeout(() => setToast(null), 1600);
-  };
-
-  const PriceBtn = ({ id, price, label }) => owned[id]
-    ? <span style={{ fontSize: 11, fontWeight: 800, color: THEME.success, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="check" size={12} color={THEME.success} stroke={3} />{L('Owned')}</span>
-    : <button onClick={() => buy(id, price, label)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: pts >= price ? THEME.gold : THEME.surface2, color: pts >= price ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="star" size={12} color={pts >= price ? '#fff' : THEME.fg3} fill={pts >= price ? '#fff' : THEME.fg3} stroke={2} />{price}</button>;
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
@@ -145,47 +93,82 @@ function Shop({ ctx }) {
             <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{pts.toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your points')}</div>
+          {/* how points are actually earned (F-13 / A-1.1) — battles pay no points */}
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            {[['swords', L('Win battles')], ['flame', L('Keep streaks')], ['gift', L('Daily reward')]].map(([ic, t], i) => (
-              <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            {[['footprints', L('Safe walking'), `+${POINTS.perSafeMinute} / ${L('min')}`],
+              ['hand', L('Immediate stop'), `+${POINTS.immediateStopBonus}`],
+              ['shield-check', L('Accident-free day'), `+${POINTS.dailyAccidentFreeBonus}`]].map(([ic, t, v], i) => (
+              <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                 <Icon name={ic} size={16} color={THEME.gold} stroke={2.3} />
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{t}</span>
+                <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg1 }}>{v}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.fg2, textAlign: 'center', lineHeight: 1.15 }}>{t}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* buddy egg — buy → hatch → random buddy (A-2 / F-15) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: `linear-gradient(120deg, ${THEME.campingBg}, #fff 80%)`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
-          <div className="jx-float" style={{ width: 64, height: 74, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><EggShape size={58} color={THEME.camping} /></div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>{L('Buddy Egg')}</div>
-            <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Hatch a random new buddy')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7 }}>
-              {['common', 'rare', 'special'].map(r => (
-                <span key={r} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: RARITY[r].fg, background: RARITY[r].bg, padding: '2px 7px', borderRadius: 999 }}>{L(RARITY[r].label)}</span>
-              ))}
-            </div>
-          </div>
-          <button onClick={buyEgg} className="jx-press" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: pts >= EGG_PRICE ? THEME.camping : THEME.surface2, color: pts >= EGG_PRICE ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            <Icon name="star" size={13} color={pts >= EGG_PRICE ? '#fff' : THEME.fg3} fill={pts >= EGG_PRICE ? '#fff' : THEME.fg3} stroke={2} />{EGG_PRICE}
-          </button>
+        {/* buddy eggs — one per rarity, priced + gated by EGGS (A-2 / F-15) */}
+        <SectionHead title={L('Buddy Eggs')} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+          {EGGS.map(egg => {
+            const rar = RARITY[egg.rarity];
+            const locked = PLAYER.level < egg.minLevel;      // level gate
+            const unbuyable = egg.price == null;             // epic: reward-only
+            const afford = !unbuyable && pts >= egg.price;
+            const on = !unbuyable && !locked && afford;      // fully purchasable now
+            // the epic egg is a prize, not a dead item — never dim it. Only a
+            // level-locked egg should read as unavailable.
+            return (
+              <div key={egg.id} style={{ display: 'flex', alignItems: 'center', gap: 14, background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}${unbuyable ? '55' : '22'}`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, opacity: locked ? .78 : 1 }}>
+                <div className={on || unbuyable ? 'jx-float' : undefined} style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked ? 'grayscale(.5)' : 'none' }}>
+                  <EggShape size={56} rarity={egg.rarity} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ fontSize: 15, fontWeight: 800 }}>{L(egg.name)}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: rar.fg, background: rar.bg, padding: '2px 7px', borderRadius: 999 }}>{L(rar.label)}</span>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>
+                    {unbuyable
+                      ? L('Only from events, special missions and achievement rewards.')
+                      : locked
+                        ? `${L('Unlocks at Lv')} ${egg.minLevel}`
+                        : L('Hatch a random new buddy')}
+                  </div>
+                </div>
+
+                {unbuyable ? (
+                  <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '8px 12px', fontSize: 12, fontWeight: 800 }}>
+                    <Icon name="gift" size={13} color={THEME.gold} stroke={2.3} />{L('Reward')}
+                  </span>
+                ) : (
+                  <button onClick={() => buyEgg(egg)} className={on ? 'jx-press' : undefined} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? rar.fg : THEME.surface2, color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Icon name={locked ? 'lock' : 'star'} size={13} color={on ? '#fff' : THEME.fg3} fill={locked ? 'none' : (on ? '#fff' : THEME.fg3)} stroke={2} />
+                    {egg.price.toLocaleString()}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* outfits */}
+        {/* Outfits are NOT sold here (A-5): an outfit belongs to a character, so
+            it is bought on that buddy's own detail screen, where you can see it
+            on them. This card just points the way. */}
         <SectionHead title={L('Outfits')} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 18 }}>
-          {outfits.map(o => (
-            <div key={o.id} style={{ background: '#fff', borderRadius: 18, padding: '14px 8px 12px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={o.icon} size={22} color={THEME.primary} stroke={2.2} /></div>
-              <span style={{ fontSize: 11.5, fontWeight: 700, textAlign: 'center', lineHeight: 1.15 }}>{L(o.name)}</span>
-              <PriceBtn id={o.id} price={o.price} label={L(o.name)} />
-            </div>
-          ))}
-        </div>
+        <button onClick={() => ctx.nav('character', { id: c.id })} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 13, background: '#fff', border: 'none', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 18, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+          <div style={{ width: 46, height: 46, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Mascot species={c.species} stage={c.stage} color={c.color} size={44} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>{L('Dress up your buddy')}</div>
+            <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>{L('Outfits are bought on each buddy’s page — some unlock as they evolve.')}</div>
+          </div>
+          <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
+        </button>
 
         {/* rooms are earned by milestones (see Collection), not bought — so the
-            Shop stays outfits + eggs, avoiding a conflicting acquisition story. */}
+            Shop stays eggs only, avoiding a conflicting acquisition story. */}
       </div>
 
       {/* egg hatch overlay (A-2 / F-15) — portaled to the phone screen so it
@@ -194,31 +177,32 @@ function Shop({ ctx }) {
         const b = hatch.buddy, rar = RARITY[b.rarity];
         const reveal = hatch.phase === 'reveal';
         const cracking = hatch.phase === 'cracking';
+        const eggC = eggColorFor(hatch.eggRarity);   // shell colour of the egg bought
         return (
           <div className={`jx-fade${reveal ? '' : ' jx-egg-bg'}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
             ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(b.color, 70)} 0%, ${shade(b.color, 92)} 58%, #fff 100%)` }
-            : { '--egg-a': shade(b.color, 38), '--egg-b': shade(b.color, 66), '--egg-base': shade(b.color, 92) }) }}>
+            : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
             {!reveal ? (
               <React.Fragment>
-                {/* rings + tappable egg */}
+                {/* rings + tappable egg — tinted to the EGG, not the buddy inside */}
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
-                  <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${b.color}55` }} />
-                  <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${b.color}55` }} />
+                  <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
+                  <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
                   {/* glow that swells while the egg cracks */}
-                  {cracking && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(b.color, 60)} 0%, transparent 68%)` }} />}
+                  {cracking && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
                   <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? 'jx-egg-hatch' : 'jx-float'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
-                    <EggShape size={132} color={b.color} />
+                    <EggShape size={132} rarity={hatch.eggRarity} />
                   </button>
                 </div>
                 <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Buddy Egg')}</h2>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1 }}>
-                  <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={b.color} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap to hatch')}
+                  <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap to hatch')}
                 </div>
                 {/* shake affordance — parked at the far bottom, bigger + its own copy */}
                 {!cracking && (
                   <div style={{ position: 'absolute', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 46px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                    <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(b.color, 64), alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="vibrate" size={28} color={shade(b.color, -28)} stroke={2.3} />
+                    <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(eggC, 64), alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon name="vibrate" size={28} color={shade(eggC, -28)} stroke={2.3} />
                     </span>
                     <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Shake to hatch too')}</div>
                     <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('Give your phone a little shake')}</div>
@@ -252,8 +236,8 @@ function Shop({ ctx }) {
                   <div className="jx-burst" style={{ position: 'absolute', top: '48%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${b.color}`, opacity: 0, zIndex: 0 }} />
                   {/* cracked eggshell halves under the buddy's feet */}
                   <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 14, zIndex: 1 }}>
-                    <EggHalf color={b.color} />
-                    <EggHalf color={b.color} flip />
+                    <EggHalf color={eggC} />
+                    <EggHalf color={eggC} flip />
                   </div>
                   <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={2} color={b.color} size={182} /></div>
                 </div>

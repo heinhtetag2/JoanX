@@ -6,10 +6,11 @@ import { Badge, Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
+import { EggShape, EggHalf, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
 
 // Parent-app brand magenta — reused across the child onboarding flow so its
 // CTAs, inputs, and accents match the parent onboarding (per design request).
-const P_BRAND = { primary: '#E00477', primaryDark: '#B00360', primaryLight: '#FCE4F0' };
+const P_BRAND = { primary: THEME.brand, primaryDark: THEME.brandDark, primaryLight: THEME.brandLight };
 
 const pBrandBtn = { background: P_BRAND.primary, boxShadow: 'none' };
 
@@ -57,10 +58,32 @@ function Onboarding({ ctx }) {
   const [showQR, setShowQR] = React.useState(false); // show the child's shareable QR on the connect screen
   const [pairing, setPairing] = React.useState(false); // "connecting…" wait screen after the QR is scanned / code submitted
   const [connected, setConnected] = React.useState(false); // "connected" success screen after linking
-  const [charReveal, setCharReveal] = React.useState(false); // default-character congrats screen
+  const [charReveal, setCharReveal] = React.useState(false); // egg → hatch → congrats screen
+  // A-2: the first buddy arrives as an egg, not a handout. Tap or shake it and
+  // a random starter hatches out — same motif as the Shop's buddy egg.
+  const [eggPhase, setEggPhase] = React.useState('egg');     // egg | cracking | reveal
+  const [prize, setPrize] = React.useState(null);            // the starter that hatches
   const codeRef = React.useRef(null);
   const submitCode = () => (code.length < 6 ? setCodeErr(true) : setPairing(true)); // any complete code is accepted
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
+  const b = prize || c;                                      // buddy shown on the reveal
+
+  // hand the egg over: roll a starter now, show it only after the shell cracks
+  const openEgg = () => {
+    const starters = CHARACTERS.filter(x => x.owned);
+    setPrize(starters[Math.floor(Math.random() * starters.length)] || CHARACTERS[0]);
+    setEggPhase('egg');
+    requestMotionPermission();   // iOS 13+: must be asked from a user gesture
+    setCharReveal(true);
+  };
+  const crackEgg = () => {
+    setEggPhase(p => (p === 'egg' ? 'cracking' : p));
+    setTimeout(() => {
+      setEggPhase('reveal');
+      setPrize(p => { if (p) ctx.setBuddy(p.id, {}); return p; });   // adopt the hatched buddy app-wide
+    }, HATCH_MS);
+  };
+  useShakeToHatch(charReveal && eggPhase === 'egg', crackEgg);
 
   const [modal, setModal] = React.useState(null); // permission id of the active request sheet
   const [denied, setDenied] = React.useState({}); // permissions the user skipped → fallback / limited state
@@ -209,7 +232,7 @@ function Onboarding({ ctx }) {
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             {/* Continue is always tappable — if something's still off, we own the
                 consequence in a fallback sheet rather than hard-blocking (F-26). */}
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={allGranted ? () => setCharReveal(true) : () => setShowFallback(true)}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={allGranted ? openEgg : () => setShowFallback(true)}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -404,8 +427,46 @@ function Onboarding({ ctx }) {
         </>
       )}
 
-      {/* 3d · default character received — congrats reveal */}
-      {step === 4 && charReveal && (
+      {/* 3d · the buddy egg — tap or shake to hatch (A-2, same motif as the Shop) */}
+      {/* absolute inset:0 like the splash — an abspos child fills the parent's
+          padding box, so the wash reaches under the status bar with no pink gap */}
+      {step === 4 && charReveal && eggPhase !== 'reveal' && (
+        <>
+          <div className="jx-egg-bg" style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '50px 30px 0', overflow: 'hidden', '--egg-a': shade(THEME.gold, 38), '--egg-b': shade(THEME.gold, 66), '--egg-base': shade(THEME.gold, 92) }}>
+            {/* rings + the tappable egg */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
+              <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${THEME.gold}55` }} />
+              <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${THEME.gold}55` }} />
+              {eggPhase === 'cracking' && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(THEME.gold, 60)} 0%, transparent 68%)` }} />}
+              <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? 'jx-egg-hatch' : 'jx-float'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
+                {/* neutral gold shell — a buddy-tinted egg would give the surprise away */}
+                <EggShape size={132} />
+              </button>
+            </div>
+
+            <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Your first buddy!')}</h2>
+            <p style={{ fontSize: 14.5, color: THEME.fg2, lineHeight: 1.5, margin: '8px 0 0', maxWidth: 260 }}>{L('Someone is waiting inside. Hatch the egg to meet them.')}</p>
+
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 14, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: eggPhase === 'cracking' ? .85 : 1 }}>
+              <Icon name={eggPhase === 'cracking' ? 'hourglass' : 'pointer'} size={15} color={THEME.gold} stroke={2.3} className={eggPhase === 'cracking' ? 'jx-pulse-soft' : undefined} />{L(eggPhase === 'cracking' ? 'Hatching…' : 'Tap to hatch')}
+            </div>
+
+            {/* shake affordance — parked at the bottom, same as the Shop's */}
+            {eggPhase !== 'cracking' && (
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(THEME.gold, 64), alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="vibrate" size={28} color={shade(THEME.gold, -28)} stroke={2.3} />
+                </span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Shake to hatch too')}</div>
+                <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('Give your phone a little shake')}</div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* 3e · hatched — congrats reveal */}
+      {step === 4 && charReveal && eggPhase === 'reveal' && (
         <>
           <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
             {/* confetti burst raining from the top on reveal */}
@@ -418,20 +479,25 @@ function Onboarding({ ctx }) {
               <Icon key={i} name="sparkles" size={p.s} color={i % 2 ? THEME.gold : THEME.primary} fill={i % 2 ? THEME.gold : THEME.primary} stroke={0} className="jx-twinkle" style={{ position: 'absolute', top: p.t, left: p.l, animationDelay: `${p.d}s` }} />
             ))}
 
-            {/* gift eyebrow pill */}
+            {/* hatched eyebrow pill — the egg motif, not a gift box */}
             <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '5px 12px 5px 10px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 12 }}>
-              <Icon name="gift" size={14} color="#9e7300" stroke={2.4} />{L('A surprise gift!')}
+              <Icon name="egg" size={14} color="#9e7300" stroke={2.4} />{L('New buddy!')}
             </div>
             <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {/* soft standing glow — centered on the character */}
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(c.color, 78)} 0%, rgba(255,255,255,0) 68%)`, zIndex: 0 }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(b.color, 78)} 0%, rgba(255,255,255,0) 68%)`, zIndex: 0 }} />
               {/* one-shot burst ring — flares out from the character's center */}
               <div className="jx-burst" style={{ position: 'absolute', top: '50%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${THEME.gold}`, opacity: 0, zIndex: 0 }} />
-              <div className="jx-float" style={{ position: 'relative', zIndex: 1 }}><Buddy size={188} /></div>
+              {/* cracked shell halves under the buddy's feet — it just came out */}
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 14, zIndex: 1 }}>
+                <EggHalf color={THEME.gold} />
+                <EggHalf color={THEME.gold} flip />
+              </div>
+              <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={b.stage} color={b.color} size={188} /></div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, position: 'relative', marginTop: 8 }}>
-              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0 }}>{c.name}</h1>
-              <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(c.rarity === 'special' ? 'Special' : c.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
+              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0 }}>{b.name}</h1>
+              <Badge variant={b.rarity === 'epic' ? 'epic' : b.rarity === 'rare' ? 'primary' : 'default'}>{L(b.rarity === 'epic' ? 'Epic' : b.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
             </div>
             <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
           </div>
@@ -491,7 +557,7 @@ function Onboarding({ ctx }) {
               ))}
             </div>
             <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setShowFallback(false)}>{L('Go back & allow')}</Button>
-            <button onClick={() => { perms.forEach(p => { if (!grants[p.id]) deny(p.id); }); setShowFallback(false); setCharReveal(true); }} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Continue with limited protection')}</button>
+            <button onClick={() => { perms.forEach(p => { if (!grants[p.id]) deny(p.id); }); setShowFallback(false); openEgg(); }} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Continue with limited protection')}</button>
           </div>
         </div>
       )}

@@ -1,10 +1,10 @@
 // JoanX — child app · ChildHome
 
 import React from 'react';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, PLAYER, XP_CURVE } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgFor, StatCard } from './shared.jsx';
 
 // ── Child Home ───────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ function ChildHome({ ctx }) {
         <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', borderRadius: 24, padding: '18px 18px 20px', marginBottom: 14, cursor: 'pointer', overflow: 'hidden', background: `linear-gradient(160deg, ${shade(c.color, 78)} 0%, ${THEME.surface} 70%)`, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
+              <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
               <div className="game-font" style={{ fontSize: 24, fontWeight: 500, marginTop: 8 }}>{c.name}</div>
               <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
             </div>
@@ -64,9 +64,16 @@ function ChildHome({ ctx }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
             <div style={{ flex: 1 }}><Bar value={c.xp} max={c.xpMax} color={THEME.gold} glow /></div>
-            <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg1 }}>{c.xp}/{c.xpMax}</span>
+            <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg1 }}>{c.maxed ? L('MAX') : `${c.xp}/${c.xpMax}`}</span>
           </div>
-          <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center' }}>{c.stage < 3 ? `${c.xpMax - c.xp} XP → ${L('Stage')} ${c.stage + 1}` : L('Fully evolved — max stage!')}</div>
+          {/* A-3.2: at the level cap a buddy earns no more EXP — it's fully grown */}
+          <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center' }}>
+            {c.maxed
+              ? `Lv${XP_CURVE.maxLevel} · ${L('Fully grown — in your Collection')}`
+              : c.stage < 3
+                ? `${c.xpMax - c.xp} XP → ${L('Stage')} ${c.stage + 1}`
+                : L('Fully evolved — max stage!')}
+          </div>
         </div>
 
         {/* stat row */}
@@ -79,7 +86,7 @@ function ChildHome({ ctx }) {
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: shade(c.color, 124), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L("Today's safe-walk goal")}
             </span>
             <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(c.color, -28) }}>{PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}</span>

@@ -38,7 +38,7 @@ function CharacterDetail({ ctx }) {
         {/* hero */}
         <div style={{ borderRadius: 24, padding: '18px', background: `linear-gradient(165deg, ${shade(color, 74)}, #fff 75%)`, boxShadow: THEME.shadowCard, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
-            <Badge variant={orig.rarity === 'special' ? 'special' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
+            <Badge variant={orig.rarity === 'epic' ? 'epic' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
             <Badge variant="gold">{L('Stage')} {stage}</Badge>
           </div>
           <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}>

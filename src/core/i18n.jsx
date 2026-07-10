@@ -133,7 +133,7 @@ const KO = {
   'Still need help?': '더 도움이 필요하세요?',
   'Chat with our support team or email help@joanx.app — we usually reply within a day.':
     '고객지원팀과 채팅하거나 help@joanx.app로 메일 주세요 — 보통 하루 안에 답변드려요.',
-  'Common': '일반', 'Rare': '레어', 'Special': '스페셜',
+  'Common': '일반', 'Rare': '레어', 'Epic': '에픽',
   'Evolving': '성장 중', 'Level': '레벨', 'Stage': '단계',
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
   'to': '까지',
@@ -226,7 +226,7 @@ const KO = {
   'Your fighter': '내 파이터', 'Choose a buddy': '친구 선택', 'Find a match': '매칭 찾기',
 
   // ── rewards ──
-  '5-day streak': '5일 연속', '-day streak': '일 연속', '2 more days for a Special buddy!': '2일 더 하면 스페셜 친구!',
+  '5-day streak': '5일 연속', '-day streak': '일 연속',
   'Daily safe-walk reward': '매일 안전 걷기 보상', 'Ready to claim · +100 points': '받을 수 있어요 · +100 포인트',
   'Achievements': '업적',
   'First Steps': '첫 걸음', 'Walk safely for 10 minutes': '10분 안전하게 걷기',
@@ -243,6 +243,32 @@ const KO = {
   'Push notifications': '푸시 알림', 'Account': '계정', 'Protection mode': '보호 모드',
   'Managed by your parent': '부모님이 관리해요', 'Help & support': '도움말 및 지원', 'About JoanX': '조안X 정보',
   'Sign out': '로그아웃', 'This device is managed by a parent or guardian.': '이 기기는 부모님 또는 보호자가 관리합니다.',
+
+  // ── Help & support ──
+  'How can we help?': '무엇을 도와드릴까요?', 'Tap a question to see the answer.': '질문을 누르면 답을 볼 수 있어요.',
+  'Popular topics': '자주 묻는 질문', 'Still stuck?': '더 궁금한가요?',
+  'How do I earn safe points?': '안전 포인트는 어떻게 모으나요?',
+  'Walk with your phone down. Every safe minute adds points, and a full safe walk gives you a bonus.': '휴대폰을 내리고 걸어요. 안전하게 걸은 1분마다 포인트가 쌓이고, 한 번의 안전한 등하굣길을 마치면 보너스를 받아요.',
+  'How do I hatch an egg?': '알은 어떻게 부화하나요?',
+  'Collect enough safe points, then open the Shop and pick an egg. Walk safely to warm it up until it hatches.': '안전 포인트를 충분히 모은 뒤 상점에서 알을 골라요. 안전하게 걸으면 알이 따뜻해지고 곧 부화해요.',
+  'Why did my screen lock?': '화면이 왜 잠겼나요?',
+  'JoanX locks the screen when you use your phone while walking near a road. Stop walking and it unlocks right away.': '길 근처에서 걸으며 휴대폰을 보면 JoanX가 화면을 잠가요. 걸음을 멈추면 바로 풀려요.',
+  'How do I add a friend?': '친구는 어떻게 추가하나요?',
+  'Open Friends, tap Add friend, and share your friend code. Your friend enters it and you are connected.': '친구 탭에서 친구 추가를 누르고 내 친구 코드를 알려 주세요. 친구가 코드를 입력하면 연결돼요.',
+  'Can I change my buddy?': '대표 친구를 바꿀 수 있나요?',
+  'Yes. Open Collection House, tap any buddy you own, and set it as your featured buddy.': '네. 컬렉션 하우스에서 가지고 있는 친구를 누르고 대표 친구로 정하면 돼요.',
+  'Ask a parent': '부모님께 물어보기', 'They can change settings in the JoanX parent app.': 'JoanX 부모님 앱에서 설정을 바꿀 수 있어요.',
+  'Contact support': '고객지원 문의', 'We reply within 1–2 days.': '보통 1~2일 안에 답변드려요.',
+
+  // ── About JoanX ──
+  'Version': '버전', 'Legal': '약관 및 정책', 'Walk safe, have fun.': '안전하게 걷고, 즐겁게 놀아요.',
+  'Made for safer walks — points, buddies and streaks for keeping your head up near the road.': '더 안전한 등하굣길을 위해 만들었어요. 길에서 고개를 들고 걸으면 포인트와 친구, 연속 기록이 쌓여요.',
+  'Terms of service': '이용약관',
+  'JoanX is a walking-safety companion. Use it with a parent or guardian who manages your device. Play fair, be kind to friends, and never use the app while crossing a road.': 'JoanX는 보행 안전을 돕는 앱이에요. 기기를 관리하는 부모님 또는 보호자와 함께 사용하세요. 정정당당하게 즐기고, 친구에게 친절하며, 길을 건널 때는 절대 앱을 사용하지 마세요.',
+  'Privacy policy': '개인정보 처리방침',
+  'JoanX records how safely you walk — not where you walk. Raw locations and messages are never shared with friends, and never leave your device.': 'JoanX는 어디를 걷는지가 아니라 얼마나 안전하게 걷는지를 기록해요. 위치나 메시지 원문은 친구에게 공유되지 않고, 기기 밖으로 나가지 않아요.',
+  'Open-source licenses': '오픈소스 라이선스',
+  'Built with React and lucide-react, both under the ISC and MIT licenses. Mascot art is original to JoanX.': 'React와 lucide-react로 만들었어요(각각 ISC, MIT 라이선스). 마스코트 그림은 JoanX의 자체 제작물이에요.',
   'English': 'English', '한국어': '한국어',
 
   // ── points / shop ──
@@ -253,6 +279,19 @@ const KO = {
   // egg & hatch flow (A-2 / F-15)
   'Buddy Egg': '버디 알', 'Hatch a random new buddy': '랜덤으로 새 버디를 부화시켜요',
   'Tap to hatch': '눌러서 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
+  // outfits bought on the buddy's page (A-5)
+  'Unlocks at Stage': '해금 단계',
+  'Dress up your buddy': '내 친구 꾸미기',
+  'Outfits are bought on each buddy’s page — some unlock as they evolve.': '의상은 각 친구의 상세 화면에서 살 수 있어요 — 일부는 진화하면 열려요.',
+  // level cap (A-3.2)
+  'MAX': '최대', 'Fully grown — in your Collection': '완전히 성장했어요 — 컬렉션에 등록됐어요',
+  // egg shop (A-2.1)
+  'Buddy Eggs': '친구 알', 'Common Egg': '일반 알', 'Rare Egg': '레어 알', 'Epic Egg': '에픽 알',
+  'Unlocks at Lv': '해금 레벨 Lv', 'Reward': '보상',
+  'Only from events and missions': '이벤트와 미션으로만 얻을 수 있어요',
+  'Only from events, special missions and achievement rewards.': '이벤트, 스페셜 미션, 업적 보상으로만 얻을 수 있어요.',
+  'Your first buddy!': '첫 번째 친구예요!',
+  'Someone is waiting inside. Hatch the egg to meet them.': '알 속에 친구가 기다리고 있어요. 알을 부화시켜 만나 보세요.',
   'Shake to hatch too': '흔들어도 부화해요', 'Give your phone a little shake': '폰을 살짝 흔들어 보세요',
   'New buddy!': '새로운 버디!', 'Added to your collection': '컬렉션에 추가됐어요',
   'You already have': '이미 가지고 있어요', 'turned into XP': 'XP로 전환됐어요',
@@ -518,7 +557,26 @@ const KO = {
 
   // ── battle / villains (A-8) ──
   'Approaching the villain…': '빌런에게 접근 중…', 'Next villain': '다음 빌런', 'Power': '파워',
-  "One villain challenge a day. Battles pause while you're walking.": '하루 한 번 빌런에 도전해요. 걷는 동안에는 배틀이 멈춰요.',
+  "Five villain challenges a day. Battles pause while you're walking.": '하루 다섯 번까지 빌런에 도전할 수 있어요. 걷는 동안에는 배틀이 멈춰요.',
+  // repeat challenges (A-8.1)
+  'Rematch': '재대결', 'Challenge again': '다시 도전하기', 'Repeat challenge': '반복 도전',
+  'cleared': '클리어', 'New': '신규',
+  'First clear! A new villain is unlocked.': '첫 승리! 새로운 빌런이 열렸어요.',
+  'Still earned': '그래도', 'points for trying!': '포인트를 받았어요!',
+  // battle select layouts (BattleVariants.jsx)
+  'Opponent': '상대', 'Matchup': '전력 비교', 'Total power': '총 파워',
+  'Villain ladder': '빌런 사다리', 'Battles left': '남은 배틀',
+  'Likely win': '이길 것 같아요', 'Close call': '박빙이에요', 'Tough fight': '힘든 상대예요',
+  'Win chance': '승률', "Today's battles": '오늘의 배틀',
+  'Tap the card for stats': '카드를 눌러 능력치 보기', 'Ready when you are!': '준비되면 시작해요!',
+
+  // ── points & reward criteria (F-13 / F-14 · A-1.1) ──
+  'Immediate stop': '즉시 멈춤', 'Accident-free day': '무사고 하루',
+  'Ready to claim': '받을 수 있어요', 'Streak rewards': '연속 달성 보상',
+  'accident-free days': '일 연속 무사고', 'days to go': '일 남았어요', 'Earned': '획득 완료',
+  'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그',
+  'more days for': '일 더 모으면', 'Every milestone cleared — amazing!': '모든 목표를 달성했어요 — 정말 대단해요!',
+  'Battle again': '다시 도전하기',
   'Come back tomorrow for your next challenge.': '내일 다시 도전할 수 있어요.',
 
   // ── friends (F-32) ──

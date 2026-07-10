@@ -16,6 +16,22 @@ function shade(hex, amt) {
   return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
+// Soft background tint: mix `ratio` of white into the colour.
+//
+// Use this — not shade(c, +120) — to lighten an accent. shade() adds a flat
+// amount per channel, which only reads as "lighter" for already-pale colours:
+// a saturated base clamps its high channel and keeps the low ones, so the
+// brand magenta #E00477 lightens to #ff80f3 (hot pink) rather than a pale
+// wash. Mixing toward white preserves hue and drops saturation predictably.
+function tint(hex, ratio = 0.88) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const n = parseInt(c, 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const k = Math.min(1, Math.max(0, ratio));
+  return '#' + ch.map(v => Math.round(v + (255 - v) * k).toString(16).padStart(2, '0')).join('');
+}
+
 const SPECIES = {
   fox:  { name: 'Hammy', base: '#d99c5a', ears: 'pointy', tail: 'bushy',  feature: 'snout' },   // hamster in the Toy style
   cat:  { name: 'Mochi', base: '#a8c3eb', ears: 'cat',    tail: 'curl',   feature: 'whiskers' },
@@ -319,9 +335,10 @@ function MascotToy({ species = 'fox', size = 160, style, float, context }) {
 
 // ── 3D-Cute line ("cute") — a second, cuter 3D set from
 // character-references/3d-cute/ (koala, giraffe, axolotl, pig, chick, dino).
-// Fixed renders, so stage/mood don't apply. Each species carries its own
-// signature colour (CUTE_COLOR) which the app adopts as the accent/brand
-// colour while this style is active — see the effect in App.jsx.
+// Fixed renders, so stage/mood don't apply — and unlike the other lines, the
+// brand colour does NOT follow the character. Cute is a product identity, so
+// every buddy in it carries the same pink accent; picking a different buddy
+// changes the art, never the brand. (Other lines keep per-character colour.)
 const CUTE_DEFAULT = 'default.png';   // chick — any unmapped species
 const CUTE_SRC = {
   fox:  'fox.png',   // Dino    → Hammy slot
@@ -330,17 +347,9 @@ const CUTE_SRC = {
   owl:  'owl.png',   // Pig     → Sunny
   croc: 'croc.png',   // Koala   → Ember
 };
-// signature brand colour per character — becomes the app accent in cute mode.
-// Punchier than the pale render bodies so it reads on buttons / progress bars.
-const CUTE_COLOR = {
-  fox:  '#34a853',   // dino green (deeper / richer)
-  cat:  '#ee8aa2',   // axolotl pink
-  bird: '#efb022',   // giraffe amber
-  owl:  '#f0936b',   // pig coral
-  croc: '#9a8f83',   // koala taupe
-  _def: '#e6ae3c',   // chick gold
-};
-const cuteColor = (species) => CUTE_COLOR[species] || CUTE_COLOR._def;
+// the one brand colour for the whole cute line — the JoanX logo magenta, the
+// same pink that washes the onboarding background and fills its CTAs.
+const CUTE_BRAND = THEME.brand;
 // per-character optical tweaks (fraction of size). Renders differ in framing:
 // giraffe is tall (reads small), axolotl is wide (fills sideways), pig/chick
 // carry a baked ground-glow at the bottom. scale multiplies CUTE_BASE.
@@ -382,11 +391,12 @@ const STYLE_BUDDIES = {
   toy: [
     ['cat',  'Mochi', '#e79a52'],   // only Mochi has a real 3D render for now
   ],
+  // one brand colour across the line — switching buddy must not restyle the app
   cute: [
-    ['fox',  'Dino',    CUTE_COLOR.fox],
-    ['cat',  'Axolotl', CUTE_COLOR.cat],
-    ['bird', 'Giraffe', CUTE_COLOR.bird],
-    ['owl',  'Pig',     CUTE_COLOR.owl],
+    ['fox',  'Dino',    CUTE_BRAND],
+    ['cat',  'Axolotl', CUTE_BRAND],
+    ['bird', 'Giraffe', CUTE_BRAND],
+    ['owl',  'Pig',     CUTE_BRAND],
   ],
   // Soft 3D — restored SVG critters (0da9b64), with their 06-29 colours
   soft: [
@@ -887,4 +897,4 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-export { Mascot, MascotChip, STYLE_BUDDIES, shade };
+export { Mascot, MascotChip, STYLE_BUDDIES, shade, tint };

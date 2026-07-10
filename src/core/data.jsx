@@ -7,11 +7,27 @@
 // the danger-zone + GNSS surfaces back for reference.
 const FEATURES = { dangerZones: false };
 
+// A-8: villain challenges are rate-limited per day. The counter resets daily;
+// in the prototype it persists for the session only.
+const BATTLES_PER_DAY = 5;
+
+// A-8.1: the FIRST victory over a villain unlocks story progression, the next
+// villain, and the first-clear reward. Re-challenging an already-beaten villain
+// is allowed indefinitely, but pays a smaller repeat reward — it exists for
+// character progression and record improvement, not for farming.
+// Server-configurable: reward policy is a business decision.
+const BATTLE_REWARDS = {
+  firstClear: { points: 120, xp: 60 },
+  repeat:     { points: 40,  xp: 20 },   // strictly lower than firstClear
+  loss:       { points: 10,  xp: 0 },    // consolation for trying
+};
+
 const PLAYER = {
   name: 'Mina', age: 11, points: 1240,
-  streak: 5, level: 7, xp: 320, xpMax: 500,
+  streak: 5, level: 7, xp: 320, xpMax: 400,   // xpMax = xpForLevel(7); see XP_CURVE
   safeMinutesToday: 47, safeWalkGoal: 60,
   activeCharId: 'c2',
+  battlesToday: 0,                         // A-8: 0 … BATTLES_PER_DAY
   // public profile / house (F-32 / A-6·A-7)
   friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
 };
@@ -61,8 +77,65 @@ const FRIEND_SUGGESTIONS = [
   { id: 's3', name: 'Yuna', avatar: 'bird', color: '#67c7ce', mutual: 3 },
 ];
 
-// F-13: "10 pt per minute of non-use while walking."
-const SAFE_PT_PER_MIN = 10;
+// ── Point & reward criteria (F-13 / F-14 · spec A-1.1) ───────────────
+// Server-configurable: these values are business policy, not app logic, and are
+// expected to arrive from remote settings so they can be tuned without an app
+// release. The literals below are the launch defaults / offline fallback.
+const POINTS = {
+  perSafeMinute: 10,           // 10 pt per completed minute of phone-free walking
+  minSessionSeconds: 60,       // a session ending before 1 min awards nothing
+  immediateStopBonus: 20,      // +20 for stopping phone use right after a warning
+  dailyAccidentFreeBonus: 100, // +100 for an accident-free day
+  streak7Days: 7,   streak7Bonus: 300,        // +300 at 7 accident-free days
+  streak30Days: 30, streak30Reward: 'epic-egg', // 30 days → Special Egg / event reward
+};
+
+// F-13: "10 pt per minute of non-use while walking." (alias — prefer POINTS)
+const SAFE_PT_PER_MIN = POINTS.perSafeMinute;
+
+// ── XP curve & level cap (F-16 · spec A-3.1 / A-3.2) ─────────────────
+// EXP to reach the next level starts low and grows by a fixed step each level:
+//   Lv1→2 100 · Lv2→3 150 · Lv3→4 200 · Lv4→5 250 · Lv5→6 300 …
+// At maxLevel the character has completed its final growth stage, is registered
+// in the Collection, and earns no further EXP.
+// Server-configurable like POINTS/EGGS — balancing is business policy, so these
+// are the launch defaults / offline fallback.
+const XP_CURVE = { base: 100, step: 50, maxLevel: 10 };
+
+const isMaxLevel = (level) => level >= XP_CURVE.maxLevel;
+
+// EXP required to go from `level` to `level + 1`, or null at the cap (A-3.2).
+const xpForLevel = (level) => isMaxLevel(level)
+  ? null
+  : XP_CURVE.base + Math.max(0, level - 1) * XP_CURVE.step;
+
+// ── Outfits (A-5 · character customization) ──────────────────────────
+// Bought on the buddy's own detail screen, not in the Points shop — an outfit
+// belongs to a character, so it is chosen while looking at that character.
+//   price     — point cost (0 = granted, no purchase)
+//   minStage  — evolution stage required before it can be worn/bought
+const OUTFITS = [
+  { id: 'scarf',   icon: 'shirt',          name: 'Hero Scarf',     price: 0,   minStage: 2 },
+  { id: 'cape',    icon: 'wind',           name: 'Guardian Cape',  price: 0,   minStage: 3 },
+  { id: 'bow',     icon: 'gift',           name: 'Ribbon Bow',     price: 200, minStage: 1 },
+  { id: 'glasses', icon: 'glasses',        name: 'Cool Shades',    price: 250, minStage: 1 },
+  { id: 'cap',     icon: 'graduation-cap', name: 'Explorer Cap',   price: 280, minStage: 2 },
+  { id: 'crown',   icon: 'crown',          name: 'Star Crown',     price: 300, minStage: 3 },
+];
+
+// ── Egg shop (A-2 · MVP) ─────────────────────────────────────────────
+// Cost and eligibility per rarity. Like POINTS, these are business policy and
+// are expected to come from server settings so ops can tune them without an
+// app release; the values below are the launch defaults / offline fallback.
+//   price    — point cost, or null when the egg cannot be bought with points
+//   minLevel — player level required to purchase (0 = no gate)
+//   sources  — how an unbuyable egg is obtained instead
+const EGGS = [
+  { id: 'common', rarity: 'common', name: 'Common Egg', price: 500,  minLevel: 0 },
+  { id: 'rare',   rarity: 'rare',   name: 'Rare Egg',   price: 1500, minLevel: 5 },
+  { id: 'epic',   rarity: 'epic',   name: 'Epic Egg',   price: null, minLevel: 0,
+    sources: ['Events', 'Special missions', 'Achievement rewards'] },
+];
 
 // owned + collectible characters
 const CHARACTERS = [
@@ -75,11 +148,21 @@ const CHARACTERS = [
   { id: 'c10', species: 'cat', name: 'Bloo',   color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },
   // ── hidden for now — keeping the app to 4 characters (Hammy / Mochi / Pip / Sunny).
   //    Restore these to bring back Ember, Pixel and the two locked slots.
-  // { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'special', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
+  // { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'epic', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
   // { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#6697c9', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
-  // { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'special', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
+  // { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'epic', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
   // { id: 'c8', species: 'fox',  name: '???',    color: '#67c7ce', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
 ];
+
+// xpMax is derived, never authored — the curve is the single source of truth.
+// At the cap there is no "next level", so the bar is pinned full rather than
+// left dividing by null. `maxed` marks a character that finished its growth.
+CHARACTERS.forEach(c => {
+  c.level = Math.min(c.level, XP_CURVE.maxLevel);
+  c.maxed = isMaxLevel(c.level);
+  c.xpMax = c.maxed ? xpForLevel(XP_CURVE.maxLevel - 1) : xpForLevel(c.level);
+  c.xp = c.maxed ? c.xpMax : Math.min(c.xp, c.xpMax);
+});
 
 const ROOMS = [
   { id: 'r1', name: 'Cozy Den',   unlocked: true,  slots: 3, theme: '#ecf3fe' },
@@ -233,11 +316,15 @@ const VILLAINS = [
   { lv: 10, name: 'King Smombie',      species: 'croc', color: '#2f3a52', power: 440, defeated: false, desc: 'Ruler of the screen zombies. Beat it to master the streets.' },
 ];
 
+// A-8.1: how many times each villain has been cleared. The first clear is the
+// one that unlocks the ladder; every clear after it pays the repeat reward.
+VILLAINS.forEach(v => { v.clears = v.defeated ? 1 : 0; });
+
 // ── Friends (F-32 / A-10) — visit-only: featured buddy, rooms, likes,
 //    one-line guestbook. No chat, no real-time interaction. ──────────
 const FRIENDS = [
   { id: 'f1', name: 'Jisoo', avatar: 'cat',  color: '#e278a8', online: true,  streak: 9,  chars: 11, likes: 24, liked: false,
-    featured: { species: 'cat',  name: 'Cloud',  color: '#e278a8', stage: 3, rarity: 'special' },
+    featured: { species: 'cat',  name: 'Cloud',  color: '#e278a8', stage: 3, rarity: 'epic' },
     rooms: [{ name: 'Candy Room', theme: '#fdeef5' }, { name: 'Cloud Loft', theme: '#eef4fd' }],
     guest: [{ by: 'Tom', text: 'Your Cloud is so cool!' }, { by: 'Aria', text: 'Nice 9-day streak 🔥' }] },
   { id: 'f2', name: 'Tom',   avatar: 'bird', color: '#67c7ce', online: false, streak: 4,  chars: 7,  likes: 12, liked: true,
@@ -284,4 +371,4 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-export { ACHIEVEMENTS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, PERMISSIONS, PLAYER, REACTIONS_7D, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS };
+export { ACHIEVEMENTS, BATTLES_PER_DAY, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, EGGS, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, REACTIONS_7D, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS, XP_CURVE, isMaxLevel, xpForLevel };

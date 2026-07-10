@@ -33,10 +33,12 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 
 | ID | Feature | Status | Screens | Note |
 |----|---------|--------|---------|------|
-| F-13 | Points · XP growth | ✅ | `ChildHome` `Rewards` `CharacterDetail` | |
-| F-14 | Daily accident-free reward | ✅ | `Rewards` | Streak row |
-| F-15 | Character acquisition · rarity | 🔧 | `Collection` `Shop` | **Egg flow missing** (A-2): buy egg → hatch → random char, duplicates→XP |
+| F-13 | Points · XP growth | ✅ | `ChildHome` `Rewards` `CharacterDetail` | Criteria in `POINTS` (data.jsx), spec A-1.1; server-configurable |
+| F-14 | Daily accident-free reward | ✅ | `Rewards` | +100 daily · +300 at 7d · Special Egg at 30d |
+| F-15 | Character acquisition · rarity | ✅ | `Collection` `Shop` `Onboarding` | Egg flow: buy/starter egg → tap or shake → hatch → random char, duplicates→XP. Grades Common/Rare/Epic |
 | F-16 | Character evolution (3 stages) | ✅ | `CharacterDetail` | |
+| A-3.1 | EXP curve | ✅ | `data.jsx` | `100 + (n−1)×50` — Lv1→2 100 … Lv5→6 300. `XP_CURVE`; server-configurable. `xpMax` derived, never authored |
+| A-3.2 | Max level Lv.10 + core loop | ✅ | `data.jsx` `ChildHome` | `XP_CURVE.maxLevel`; `xpForLevel()` returns null at cap; `c.maxed` flag; hatch new eggs to keep growing |
 | F-17 | Character customization | ✅ | `Shop` `CharacterDetail` | No stat effects |
 | F-18 | Collection House (≥3 rooms) | ✅ | `MyHouse` | 4 rooms, 2 condition-locked |
 | F-19 | Battle system (PvE, 1/day) | ✅ | `Battle` | Score-based, no real-time controls |
@@ -72,18 +74,20 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 
 | ID | Checkpoint | Status | Screens | Note |
 |----|-----------|--------|---------|------|
-| A-2 | Egg acquisition (points → egg → hatch) | ❌ | `Shop` | **The one real gap** — no egg/hatch flow anywhere |
+| A-2 | Egg acquisition (points → egg → hatch) | ✅ | `Shop` `Onboarding` `EggHatch` | Shared motif in `EggHatch.jsx`; tap or shake to hatch; duplicates→XP |
+| A-2.1 | Egg purchase · price + eligibility | ✅ | `Shop` | Common 500 · Rare 1,500 (Lv.5+) · Epic reward-only. Config in `EGGS` (data.jsx); server-configurable |
 | A-4 | Character encyclopedia | ✅ | `CharacterDex` | Silhouettes + completion % |
 | A-6 | House ≥3 rooms, free placement | ✅ | `MyHouse` | |
 | A-7 | Room decoration | ✅ | `DecorateRoom` | |
-| A-8 | 10 villains Lv1–10, 1/day | ✅ | `Battle` `VillainDex` | Full roster Smombie Rookie → King Smombie |
+| A-8 | 10 villains Lv1–10, 5/day | ✅ | `Battle` `VillainDex` | Full roster Smombie Rookie → King Smombie; daily allowance `BATTLES_PER_DAY` |
+| A-8.1 | Repeat challenges | ✅ | `Battle` | First clear unlocks the ladder + pays `BATTLE_REWARDS.firstClear`; rematches pay the lower `repeat`. `v.clears` tracks the record. Server-configurable |
 | A-9 | Villain encyclopedia | ✅ | `VillainDex` | Road + list layouts |
 | A-10 | Friend visit system | ✅ | `FriendHouse` | Likes + one-line guestbook, no chat |
 | A-11 | Out-of-scope guard | ✅ | — | No PvP/chat/cash/gacha anywhere |
 
 ## Action list (what to build / fix next)
 
-1. **❌ A-2 / 🔧 F-15 — Egg & hatch flow**: egg purchase in `Shop.jsx`, hatch-reveal moment, duplicate→XP toast.
+1. ~~**A-2 / F-15 — Egg & hatch flow**~~ — done: `EggHatch.jsx` (shared), `Shop.jsx` (buy → hatch → duplicate→XP toast), `Onboarding.jsx` (starter egg).
 2. **🔧 F-08 — Stage escalation**: storyboard vibration → on-screen warning → character message in `WarningOverlay.jsx`.
 3. **🔧 F-09 — Timed character toast**: bottom-center ~20% height, 1.5 s auto-dismiss variant.
 4. **🔧 F-20 — Reports reframe**: risky-behavior *reduction rate* metric in `ParentReports.jsx`.

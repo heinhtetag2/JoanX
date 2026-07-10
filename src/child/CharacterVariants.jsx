@@ -1,10 +1,10 @@
 // JoanX — child app · CharacterVariants
 
 import React from 'react';
-import { CHARACTERS } from '../core/data.jsx';
+import { CHARACTERS, OUTFITS, PLAYER } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
 import { mixHue } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
 
@@ -28,12 +28,49 @@ function CharVariant({ ctx, variant }) {
   };
 
   const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
-  const items = [
-    { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', on: stage >= 2 },
-    { id: 'cape', icon: 'wind', name: 'Guardian Cape', on: stage >= 3 },
-    { id: 'hat', icon: 'crown', name: 'Star Crown', on: false, locked: true },
-    { id: 'glasses', icon: 'glasses', name: 'Cool Shades', on: false, locked: true },
-  ];
+
+  // A-5: outfits are bought here, on the buddy they belong to — not in the
+  // Points shop. Free ones are granted as the buddy evolves into their stage.
+  const [pts, setPts] = React.useState(PLAYER.points);
+  const [bought, setBought] = React.useState(() => new Set());
+  const [worn, setWorn] = React.useState(() => new Set());
+  const [note, setNote] = React.useState(null);
+
+  const locked = (o) => stage < o.minStage;                      // needs a later stage
+  const ownedOutfit = (o) => o.price === 0 ? !locked(o) : bought.has(o.id);
+  const toast = (msg) => { setNote(msg); setTimeout(() => setNote(null), 1600); };
+
+  const buyOutfit = (o) => {
+    if (locked(o)) return toast(`${L('Unlocks at Stage')} ${o.minStage}`);
+    if (ownedOutfit(o)) return;
+    if (pts < o.price) return toast(L('Not enough points yet'));
+    PLAYER.points -= o.price; setPts(PLAYER.points);
+    setBought(s => new Set(s).add(o.id));
+    setWorn(s => new Set(s).add(o.id));
+    toast(`${L(o.name)} ${L('unlocked!')}`);
+  };
+  const toggleWear = (o) => {
+    if (!ownedOutfit(o)) return;
+    setWorn(s => { const n = new Set(s); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n; });
+  };
+
+  // free outfits equip themselves the moment the buddy reaches their stage
+  const isWorn = (o) => ownedOutfit(o) && (o.price === 0 || worn.has(o.id));
+
+  // The existing Items tab IS the outfit shop — no second section. A tile is
+  // locked only when stage-gated; an affordable unowned tile shows its price.
+  const items = OUTFITS.map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked(o) }));
+  const tapItem = (it) => {
+    const o = OUTFITS.find(x => x.id === it.id);
+    if (!o || locked(o)) return;
+    ownedOutfit(o) ? toggleWear(o) : buyOutfit(o);
+  };
+  // the line under each tile's name
+  const itemStatus = (it) => it.locked
+    ? `${L('Stage')} ${it.minStage}`
+    : it.own
+      ? (it.on ? L('Equipped') : L('Tap to equip'))
+      : `★ ${it.price}`;
   const traits = [
     { k: 'guard', label: 'Guard', icon: 'shield', color: THEME.primary },
     { k: 'speed', label: 'Speed', icon: 'gauge', color: THEME.gold },
@@ -105,10 +142,11 @@ function CharVariant({ ctx, variant }) {
   const itemContent = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, width: '100%' }}>
       {items.map(it => (
-        <div key={it.id} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
           <div style={{ width: 34, height: 34, borderRadius: 999, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}><Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} /></div>
           <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
-        </div>
+          <span style={{ fontSize: 8.5, fontWeight: 800, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
+        </button>
       ))}
     </div>
   );
@@ -176,15 +214,15 @@ function CharVariant({ ctx, variant }) {
   const itemContentShowcase = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, width: '100%' }}>
       {items.map(it => (
-        <div key={it.id} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 16, background: it.on ? `${accent}14` : THEME.surface2, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '10px 12px' }}>
+        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 16, background: it.on ? `${accent}14` : THEME.surface2, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '10px 12px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
           <div style={{ width: 36, height: 36, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
             <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: it.locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(it.name)}</div>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: it.on ? accent : THEME.fg3, marginTop: 1 }}>{it.locked ? L('Locked') : it.on ? L('Equipped') : L('Tap to equip')}</div>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold, marginTop: 1 }}>{itemStatus(it)}</div>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -257,12 +295,13 @@ function CharVariant({ ctx, variant }) {
         ) : (
           <div className="no-sb" style={{ display: 'flex', gap: 10, width: '100%', overflowX: 'auto' }}>
             {items.map(it => (
-              <div key={it.id} style={{ flex: 1, minWidth: 70, borderRadius: 16, background: it.on ? `${accent}16` : tileBg, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '12px 6px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+              <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ flex: 1, minWidth: 70, borderRadius: 16, background: it.on ? `${accent}16` : tileBg, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '12px 6px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
                   <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
                 </div>
                 <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
-              </div>
+                <span style={{ fontSize: 8.5, fontWeight: 800, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
+              </button>
             ))}
           </div>
         )}
@@ -328,13 +367,14 @@ function CharVariant({ ctx, variant }) {
           // 2×2 item cards with a corner badge
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, width: '100%' }}>
             {items.map(it => (
-              <div key={it.id} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}12` : THEME.surface2, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '13px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center' }}>
+              <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}12` : THEME.surface2, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '13px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, textAlign: 'center', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 {it.on && <span style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={10} color="#fff" stroke={3.5} /></span>}
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
                   <Icon name={it.locked ? 'lock' : it.icon} size={19} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.15 }}>{L(it.name)}</span>
-              </div>
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
+              </button>
             ))}
           </div>
         )}
@@ -365,7 +405,7 @@ function CharVariant({ ctx, variant }) {
   );
   const Badges = (
     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-      <Badge variant={orig.rarity === 'special' ? 'special' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
+      <Badge variant={orig.rarity === 'epic' ? 'epic' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
       <Badge variant="gold">{L('Stage')} {stage}</Badge>
     </div>
   );
@@ -384,14 +424,14 @@ function CharVariant({ ctx, variant }) {
     wave: '#fff',
     vivid: `linear-gradient(180deg, ${shade(color, 96)} 0%, ${shade(color, 38)} 60%, ${shade(color, 2)} 100%)`,
     focus: `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(color, -24, 0.06, 0.78)} 0%, ${mixHue(color, 4, 0.10, 0.72)} 50%, ${mixHue(color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`,
-    showcase: `linear-gradient(180deg, ${shade(color, 74)} 0%, ${shade(color, 102)} 32%, ${THEME.surface2} 60%)`,
+    showcase: `linear-gradient(180deg, ${shade(color, 74)} 0%, ${tint(color, .82)} 32%, ${THEME.surface2} 60%)`,
   })[variant] || THEME.screenBg;
 
   // ── hero per variant ──
   let hero;
   if (variant === 'cover') {
     hero = (
-      <div style={{ background: `linear-gradient(160deg, ${shade(color, 60)}, ${shade(color, 104)})`, borderRadius: '0 0 28px 28px', padding: '50px 18px 22px' }}>
+      <div style={{ background: `linear-gradient(160deg, ${shade(color, 60)}, ${tint(color, .82)})`, borderRadius: '0 0 28px 28px', padding: '50px 18px 22px' }}>
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ textAlign: 'center', marginTop: 6 }}>
           {Badges}
@@ -404,7 +444,7 @@ function CharVariant({ ctx, variant }) {
     );
   } else if (variant === 'wave') {
     hero = (
-      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(color, 70)}, ${shade(color, 104)})`, padding: '50px 18px 0' }}>
+      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(color, 70)}, ${tint(color, .82)})`, padding: '50px 18px 0' }}>
         <TopBar />
         <div style={{ textAlign: 'center', marginTop: 6, paddingBottom: 30 }}>
           {Badges}
@@ -458,7 +498,7 @@ function CharVariant({ ctx, variant }) {
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', textAlign: 'center', marginTop: 8, cursor: 'pointer' }}>
           <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', width: 250, height: 210, background: `radial-gradient(circle at 50% 28%, ${color}2e 0%, ${color}00 64%)`, pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}><Buddy size={162} /></div>
-          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${shade(color, 62)} 0%, ${shade(color, 104)} 58%, ${shade(color, 104)}00 78%)` }} />
+          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${shade(color, 62)} 0%, ${tint(color, .82)} 58%, ${tint(color, .82)}00 78%)` }} />
         </div>
         <div style={{ textAlign: 'center', marginTop: 10 }}>
           {Badges}
@@ -476,6 +516,11 @@ function CharVariant({ ctx, variant }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 110, background: bg }}>
       {hero}
       <div style={{ padding: pad }}>{body}</div>
+
+      {/* outfit purchase feedback */}
+      {note && (
+        <div className="jx-fade" style={{ position: 'fixed', left: '50%', bottom: 128, transform: 'translateX(-50%)', zIndex: 60, background: THEME.fg1, color: '#fff', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>{note}</div>
+      )}
 
       {/* evolve moment (F-16) — burst + the buddy re-skinning to its next stage */}
       {evolving && (

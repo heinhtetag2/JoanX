@@ -33,7 +33,7 @@ const COLLECTION_LAYOUTS = [
 ];
 
 const rarBadge = (c, style) => (
-  <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'} style={style}>Lv{c.level}</Badge>
+  <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={style}>Lv{c.level}</Badge>
 );
 
 // ── shared building blocks ───────────────────────────────────────────
@@ -118,7 +118,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
             {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
             <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
             <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
-            <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
+            <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>
         ))}
       </div>
@@ -195,7 +195,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   });
 
   // 6 · BY RARITY — regroup across rooms into Special / Rare / Common bands
-  else if (variant === 'rarity') body = ['special', 'rare', 'common'].map(rk => {
+  else if (variant === 'rarity') body = ['epic', 'rare', 'common'].map(rk => {
     const list = owned.filter(c => c.rarity === rk);
     if (!list.length) return null;
     const R = RARITY[rk];
@@ -446,7 +446,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   else if (variant === 'masonry') body = (
     <div style={{ columns: 2, columnGap: 10 }}>
       {owned.map(c => {
-        const sz = c.rarity === 'special' ? 108 : c.rarity === 'rare' ? 86 : 66;
+        const sz = c.rarity === 'epic' ? 108 : c.rarity === 'rare' ? 86 : 66;
         return (
           <button key={c.id} onClick={() => openC(c)} style={{ display: 'inline-flex', width: '100%', breakInside: 'avoid', marginBottom: 10, flexDirection: 'column', alignItems: 'center', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 18, background: `linear-gradient(180deg, ${shade(c.color, 72)}, #fff)`, boxShadow: THEME.shadowCard, padding: '16px 10px 12px' }}>
             <Mascot species={c.species} stage={c.stage} color={c.color} size={sz} />

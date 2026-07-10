@@ -59,7 +59,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
           {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
           <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
           <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{nameOf(c)}</div>
-          <Badge variant={c.rarity === 'special' ? 'special' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
+          <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
         </button>
       ))}
     </div>
@@ -137,7 +137,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
   ));
 
   // 6 · BY RARITY — grouped into Common / Rare / Special shelves
-  else if (variant === 'rarity') body = ['special', 'rare', 'common'].map(rar => {
+  else if (variant === 'rarity') body = ['epic', 'rare', 'common'].map(rar => {
     const group = all.filter(c => c.rarity === rar);
     if (!group.length) return null;
     return (

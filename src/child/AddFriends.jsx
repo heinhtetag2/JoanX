@@ -8,7 +8,7 @@ import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { ScreenHeader, screenBgActive } from './shared.jsx';
 
 // JoanX brand magenta (same ramp as the onboarding CTAs) — 50 / 60 / 10.
-const BRAND = { main: '#E00477', dark: '#B00360', light: '#FCE4F0' };
+const BRAND = { main: THEME.brand, dark: THEME.brandDark, light: THEME.brandLight };
 
 // ── Add friends (F-32) — code, requests, suggestions · five layouts ──
 function AddFriends({ ctx, layout = 'list' }) {

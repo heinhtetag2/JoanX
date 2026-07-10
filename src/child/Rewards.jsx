@@ -1,7 +1,7 @@
 // JoanX — child app · Rewards
 
 import React from 'react';
-import { ACHIEVEMENTS, PLAYER } from '../core/data.jsx';
+import { ACHIEVEMENTS, PLAYER, POINTS } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { screenBgActive, Confetti } from './shared.jsx';
@@ -11,7 +11,14 @@ function Rewards({ ctx }) {
   const streakDone = [true, true, true, true, true, false, false];
   const [claimed, setClaimed] = React.useState(false);
   const [pop, setPop] = React.useState(false);
-  const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += 100; setTimeout(() => setPop(false), 1900); };
+  const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += POINTS.dailyAccidentFreeBonus; setTimeout(() => setPop(false), 1900); };
+
+  // next accident-free milestone (A-1.1): 7 days → +300, 30 days → Special Egg
+  const nextMilestone = PLAYER.streak < POINTS.streak7Days
+    ? { days: POINTS.streak7Days - PLAYER.streak, prize: `+${POINTS.streak7Bonus} ${L('points')}` }
+    : PLAYER.streak < POINTS.streak30Days
+      ? { days: POINTS.streak30Days - PLAYER.streak, prize: L('a Special Egg') }
+      : null;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 56, paddingBottom: 110, background: screenBgActive() }}>
       <div style={{ padding: '0 18px' }}>
@@ -23,7 +30,11 @@ function Rewards({ ctx }) {
             <div style={{ width: 46, height: 46, borderRadius: 14, background: THEME.joyBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="flame" size={26} color={THEME.joy} stroke={2.3} /></div>
             <div>
               <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{PLAYER.streak}{L('-day streak')}</div>
-              <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('2 more days for a Special buddy!')}</div>
+              <div style={{ fontSize: 12.5, color: THEME.fg2 }}>
+                {nextMilestone
+                  ? `${nextMilestone.days} ${L('more days for')} ${nextMilestone.prize}`
+                  : L('Every milestone cleared — amazing!')}
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -42,11 +53,38 @@ function Rewards({ ctx }) {
           <div style={{ width: 44, height: 44, borderRadius: 13, background: claimed ? '#fff' : THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={claimed ? 'calendar-check' : 'gift'} size={22} color={claimed ? THEME.success : THEME.gold} stroke={2.3} /></div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800 }}>{L('Daily safe-walk reward')}</div>
-            <div style={{ fontSize: 12, color: claimed ? '#274427' : THEME.fg2 }}>{claimed ? L('Claimed — see you tomorrow!') : L('Ready to claim · +100 points')}</div>
+            <div style={{ fontSize: 12, color: claimed ? '#274427' : THEME.fg2 }}>{claimed ? L('Claimed — see you tomorrow!') : `${L('Ready to claim')} · +${POINTS.dailyAccidentFreeBonus} ${L('points')}`}</div>
           </div>
           {claimed
             ? <Badge variant="success">{L('Claimed')}</Badge>
             : <Button variant="gold" size="sm" onClick={claim}>{L('Claim')}</Button>}
+        </div>
+
+        {/* accident-free streak milestones (F-14 / A-1.1) */}
+        <SectionHead title={L('Streak rewards')} />
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden', marginBottom: 18 }}>
+          {[
+            { icon: 'flame', days: POINTS.streak7Days, label: L('accident-free days'), prize: `+${POINTS.streak7Bonus}` },
+            { icon: 'egg', days: POINTS.streak30Days, label: L('accident-free days'), prize: L('Special Egg') },
+          ].map((m, i) => {
+            const hit = PLAYER.streak >= m.days;
+            return (
+              <div key={m.days} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: hit ? THEME.successLight : THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon name={hit ? 'check' : m.icon} size={19} color={hit ? THEME.success : THEME.gold} stroke={2.3} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800 }}>{m.days} {m.label}</div>
+                  <div style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600, marginTop: 1 }}>
+                    {hit ? L('Earned') : `${m.days - PLAYER.streak} ${L('days to go')}`}
+                  </div>
+                </div>
+                <span className="game-font" style={{ flexShrink: 0, fontSize: 12.5, fontWeight: 500, color: hit ? THEME.success : THEME.fg2, background: hit ? THEME.successLight : THEME.goldLight, borderRadius: 999, padding: '4px 10px' }}>
+                  {m.prize}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {pop && (
@@ -56,7 +94,7 @@ function Rewards({ ctx }) {
               <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="gift" size={32} color={THEME.gold} stroke={2.3} /></div>
               <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Daily reward claimed!')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+100 points</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} />+{POINTS.dailyAccidentFreeBonus} {L('points')}</span>
               </div>
             </div>
           </div>

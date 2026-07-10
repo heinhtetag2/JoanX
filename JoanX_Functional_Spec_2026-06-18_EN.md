@@ -52,9 +52,9 @@ A motivation structure to sustain safe behavior: the character growth, collectio
 
 | ID | Feature | Description | Mode |
 |----|---------|-------------|------|
-| F-13 | Points · character growth | Converts safe behavior into points and then into experience (XP). 10 pt per minute of non-use while walking; bonus points for an immediate stop. | Smart |
-| F-14 | Daily accident-free reward | Provides an additional reward upon achieving an accident-free day. | Smart |
-| F-15 | Character acquisition · rarity | A default starter character is granted. Common/Rare/Special grades, acquired in connection with behavior patterns. Duplicates convert to XP, etc. | Smart |
+| F-13 | Points · character growth | Converts safe behavior into points and then into experience (XP). 10 pt per completed minute of non-use while walking (sessions under 1 minute award nothing); +20 Immediate Stop Bonus. Values are server-configurable — see A-1.1. | Smart |
+| F-14 | Daily accident-free reward | +100 for an accident-free day; +300 at 7 consecutive days; a Special Egg or event reward at 30 consecutive days. See A-1.1. | Smart |
+| F-15 | Character acquisition · rarity | The starter character is granted as an egg, hatched by the user on first run. Common/Rare/Epic grades, acquired in connection with behavior patterns. Duplicates convert to XP, etc. | Smart |
 | F-16 | Character evolution | An evolution structure of at least 3 stages, with appearance changes per stage. More safe behavior yields faster growth. | Smart |
 | F-17 | Character customization | Customizing appearance, color, and decorative elements. Some elements are obtained through behavior rewards or events. | Smart |
 | F-18 | Collection House | Composed of multiple Rooms, with characters arranged by attribute. Some Rooms unlock upon meeting conditions, expanding gradually. | Smart |
@@ -102,6 +102,20 @@ This appendix is the detailed implementation specification for F-13–F-19 of Ch
 ### A-1. Purpose
 This system does not provide a game in itself; its purpose is to provide a reward and collection system that fosters children's safe-walking habits over the long term. It does not provide real-time gameplay.
 
+### A-1.1. Point & Reward Criteria (F-13 / F-14)
+Users earn **10 points for every 1 minute of safe walking**. If a safe-walking session ends before reaching 1 minute, **no points are awarded for that session** — partial minutes do not accrue. Additionally, if the user voluntarily stops using their phone immediately after receiving a warning, they receive an **Immediate Stop Bonus**.
+
+| Criterion | Reward |
+|-----------|--------|
+| 1 consecutive minute of safe walking | 10 points |
+| Immediate Stop Bonus (stop phone use immediately after a warning) | +20 points |
+| Daily Accident-Free Bonus | +100 points |
+| 7 consecutive accident-free days | +300 points |
+| 30 consecutive accident-free days | Special Egg reward or event reward |
+
+- The point values and reward criteria are designed to be **configurable through server-side settings**, allowing them to be adjusted according to business policies without requiring an app update.
+- The app ships with the values above as launch defaults, used as the offline fallback when remote settings are unavailable.
+
 ### A-2. Character Acquisition System
 - Users earn points through safe behavior.
 - Points can be used to obtain a Character Egg.
@@ -110,11 +124,45 @@ This system does not provide a game in itself; its purpose is to provide a rewar
 - Duplicate acquisitions convert to XP.
 - No cash-payment feature is included.
 
+#### A-2.1. Egg Purchase (MVP)
+Users can purchase Eggs using Points. The purchase cost varies depending on the Egg's rarity level.
+
+| Egg | Cost | Eligibility |
+|-----|------|-------------|
+| Common Egg | 500 pt | — |
+| Rare Egg | 1,500 pt | Available only for users above Lv.5 |
+| Epic Egg | Cannot be purchased with Points | Only obtainable through Events, Special Missions, or Achievement Rewards |
+
+- A higher-rarity egg does not guarantee a higher-rarity character; it shifts the drop odds.
+- The Egg purchase costs and eligibility requirements are designed to be **adjustable through server settings**, allowing the business team to modify them according to operational policies.
+- The app ships with the values above as launch defaults, used as the offline fallback when remote settings are unavailable.
+
 ### A-3. Character Growth & Evolution
 - Characters have an XP-based growth structure.
 - XP is earned through safe-behavior scores.
 - Characters have an evolution structure of at least 3 stages: Stage 1 / Stage 2 / Stage 3.
 - Appearance changes occur upon evolution.
+
+#### A-3.1. EXP Curve (F-16)
+The EXP required for character level progression starts low and gradually increases as the character's level goes higher. In the MVP the requirement follows this growth curve:
+
+| Progression | EXP required |
+|-------------|--------------|
+| Lv.1 → Lv.2 | 100 EXP |
+| Lv.2 → Lv.3 | 150 EXP |
+| Lv.3 → Lv.4 | 200 EXP |
+| Lv.4 → Lv.5 | 250 EXP |
+| Lv.5 → Lv.6 | 300 EXP |
+
+- Higher levels continue to require more EXP with the same gradual growth pattern: `EXP(n → n+1) = 100 + (n − 1) × 50`.
+- The EXP values can be **adjusted through server settings** based on business needs and balancing requirements.
+- The app ships with the values above as launch defaults, used as the offline fallback when remote settings are unavailable.
+
+#### A-3.2. Maximum Level & Core Loop (F-16)
+- In the MVP, a character's **maximum level is Lv.10**.
+- Once a character reaches Lv.10 it completes its final growth stage and is **registered in the Collection**. It earns no further EXP.
+- After that, users hatch new Eggs and continue growing different types of characters — this is the core gameplay loop.
+- The maximum level and the number of growth stages are designed to be **expandable in future service updates** based on business needs, and are read from server settings alongside the EXP curve.
 
 ### A-4. Character Encyclopedia
 - All acquired characters are automatically registered in the encyclopedia.
@@ -139,7 +187,10 @@ This system does not provide a game in itself; its purpose is to provide a rewar
 
 ### A-8. Villain Battle System
 - Implemented as PvE (Player versus Environment). Real-time PvP is not provided.
-- Up to 1 challenge per day.
+- Up to **5 challenges per day**. The remaining count is shown on the battle screen, and the result screen offers "Battle again" while challenges remain.
+- The daily allowance resets at local midnight; unused challenges do not carry over.
+- A challenge is consumed when the battle resolves — win or lose.
+- When the allowance is exhausted, the challenge action is disabled until the next reset.
 - Battle outcomes are calculated from accumulated safe-behavior scores and character growth state, not real-time controls.
 
 | Level | Villain |
@@ -156,6 +207,21 @@ This system does not provide a game in itself; its purpose is to provide a rewar
 | Lv10 | King Smombie |
 
 Users unlock and challenge villains sequentially.
+
+#### A-8.1. Repeat Challenges
+After defeating a villain for the first time, players can continue challenging the same villain repeatedly.
+
+- The **first victory** unlocks story progression, new villains, and **first-clear rewards**.
+- **Subsequent challenges** are designed for character progression, record improvement, and repeatable rewards.
+- **Repeat challenge rewards are lower than the first-clear rewards.**
+- Repeat challenges still consume one of the day's challenges (A-8).
+- The reward policy is designed to be **configurable through server settings** based on business requirements.
+
+| Outcome | Reward (launch default) |
+|---------|-------------------------|
+| First clear | 120 pt · 60 EXP · unlocks the next villain |
+| Repeat clear | 40 pt · 20 EXP · increments the clear count |
+| Loss | 10 pt |
 
 ### A-9. Villain Encyclopedia
 - Discovered or defeated villains are registered in the encyclopedia.

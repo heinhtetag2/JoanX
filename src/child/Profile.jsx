@@ -85,9 +85,9 @@ function Profile({ ctx }) {
             <Icon name="lock" size={15} color={THEME.fg3} stroke={2.3} />
           </div>
           <Sep />
-          <Row icon="life-buoy" label={L('Help & support')} onClick={() => {}}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
+          <Row icon="life-buoy" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
           <Sep />
-          <Row icon="info" label={L('About JoanX')} onClick={() => {}}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
+          <Row icon="info" label={L('About JoanX')} onClick={() => ctx.nav('about')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
         </div>
 
         <Button variant="outline" size="lg" fullWidth icon="log-out" onClick={() => {}}>{L('Sign out')}</Button>
