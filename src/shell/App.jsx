@@ -1,5 +1,5 @@
 import React from 'react';
-import { AddFriends, Battle, CharDetailVariant, CharacterDex, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AddFriends, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -34,7 +34,7 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'owl', color: '#f0936b', name: 'Pig', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey' });
+  const [tw, setTw] = React.useState({ overlay: 'sheet', species: 'owl', color: '#f0936b', name: 'Pig', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -60,6 +60,9 @@ function App() {
 
   // switch the active character line (classic / korean) for every Mascot
   React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
+
+  // DexProgress reads this at render time, like Mascot reads JX_CHAR_STYLE
+  React.useEffect(() => { window.JX_DEX_HEADER = tw.dexHeader; setBump(b => b + 1); }, [tw.dexHeader]);
 
   // Each character style has its own buddy roster (name + brand colour per
   // species). When the style or the selected buddy changes, adopt that buddy's
@@ -119,7 +122,7 @@ function App() {
       battle: <Battle ctx={ctx} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: <Profile ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
-      chardex: <CharacterDex ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
+      chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
@@ -248,6 +251,22 @@ function App() {
                 {COLLECTION_LAYOUTS.map(({ id, label }) => (
                   <button key={id} className={'tw-chip' + (tw.collectionLayout === id ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, collectionLayout: id })); setStack([]); setScreen('collection'); }}>{label}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Dex layout</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {DEX_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.dexLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, dexLayout: id })); setStack([{ screen: 'collection', params: {} }]); setScreen('chardex'); }}>{label}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Dex header</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {DEX_HEADERS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.dexHeader === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, dexHeader: id })); setStack([{ screen: 'collection', params: {} }]); setScreen('chardex'); }}>{label}</button>
                 ))}
               </div>
 

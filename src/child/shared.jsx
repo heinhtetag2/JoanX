@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
-import { Bar, Icon, RARITY, THEME, mixHue, screenBgFor } from '../core/primitives.jsx';
+import { Icon, RARITY, THEME, mixHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { DexHeader } from './DexHeaders.jsx';
 
 // Page background tinted by the *active* buddy's colour — keeps every screen's
 // top gradient aligned with the buddy (green for Hammy, etc.), like the home.
@@ -49,42 +50,11 @@ function RarityPill({ rarity }) {
   return <span style={{ fontSize: 9.5, fontWeight: 800, color: r.fg, background: r.bg, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: .3 }}>{L(r.label)}</span>;
 }
 
-// completion header used by both encyclopedias
-function DexProgress({ have, total, label, icon = 'sparkles', accent = THEME.gold }) {
-  const pct = Math.round((have / total) * 100);
-  return (
-    <div style={{ position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, ${accent}14 0%, #fff 58%)`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
-      {/* faded emblem watermark for a little illustration/depth */}
-      <Icon name={icon} size={116} color={accent} stroke={1.6} style={{ position: 'absolute', top: -26, right: -22, opacity: .1, transform: 'rotate(12deg)', pointerEvents: 'none' }} />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 13, position: 'relative' }}>
-        {/* emblem badge */}
-        <div style={{ width: 50, height: 50, flexShrink: 0, borderRadius: 16, background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name={icon} size={26} color={accent} stroke={2.2} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg2 }}>{L(label)}</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
-            <span className="game-font" style={{ fontSize: 26, fontWeight: 500, color: THEME.fg1, lineHeight: 1.1 }}>{pct}%</span>
-            <span style={{ fontSize: 12, color: THEME.fg3, fontWeight: 600 }}>{have} {L('of')} {total}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* single progress indicator: one segment per entry (or a continuous bar when there are too many to read) */}
-      <div style={{ marginTop: 14, position: 'relative' }}>
-        {total <= 14 ? (
-          <div style={{ display: 'flex', gap: 5 }}>
-            {Array.from({ length: total }).map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 8, borderRadius: 999, background: i < have ? accent : `${accent}22`, transition: 'background .3s' }} />
-            ))}
-          </div>
-        ) : (
-          <Bar value={have} max={total} color={accent} height={9} />
-        )}
-      </div>
-    </div>
-  );
+// completion header used by both encyclopedias. The presentation lives in
+// DexHeaders.jsx; this reads the active variant the way Mascot reads
+// window.JX_CHAR_STYLE, so the four call sites don't have to thread it through.
+function DexProgress(props) {
+  return <DexHeader variant={window.JX_DEX_HEADER || 'rows'} {...props} />;
 }
 
 // small points chip for the profile / decoration headers

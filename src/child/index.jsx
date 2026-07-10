@@ -12,6 +12,8 @@ export { Battle } from './Battle.jsx';
 export { Rewards } from './Rewards.jsx';
 export { Shop } from './Shop.jsx';
 export { CharacterDex } from './CharacterDex.jsx';
+export { CharacterDexVariant, DEX_LAYOUTS } from './CharacterDexVariants.jsx';
+export { DEX_HEADERS } from './DexHeaders.jsx';
 export { VillainDex } from './VillainDex.jsx';
 export { Friends } from './Friends.jsx';
 export { FriendHouse } from './FriendHouse.jsx';

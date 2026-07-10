@@ -23,7 +23,7 @@ function VillainList({ ctx }) {
       <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.nav('battle')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
-        <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} />
+        <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
         {VILLAINS.map((v, i) => {
           const discovered = v.defeated || i === firstOpen;     // seen = beaten or the current one
           const current = i === firstOpen;
@@ -118,7 +118,7 @@ function VillainRoad({ ctx }) {
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 242, background: screenBgActive() }}>
         <div style={{ padding: '0 16px' }}>
-          <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} />
+          <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
         </div>
 
         <div style={{ position: 'relative', height: H }}>

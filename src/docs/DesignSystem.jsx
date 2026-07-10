@@ -660,13 +660,15 @@ import { screenBgActive } from './shared.jsx';           // child: reads the act
 
       <SubHead>DexProgress — collection completion header</SubHead>
       <div style={{ maxWidth: 420 }}>
-        <DexProgress have={8} total={12} label="Discovered" icon="sparkles" accent={THEME.gold} />
+        <DexProgress have={8} total={12} label="Discovered" icon="book-open" accent={THEME.gold} />
       </div>
       <PropsTable rows={[
-        ['have / total', 'number', null, '≤14 entries → one segment each; more → continuous Bar'],
+        ['have / total', 'number', null, 'drives the numeral, the progress, and the ✓ at 100%'],
         ['label', 'string (EN key)', null, 'runs through L()'],
-        ['icon', 'string', "'sparkles'", 'emblem badge + faded watermark'],
-        ['accent', 'color', 'THEME.gold', 'tints the gradient, emblem and segments'],
+        ['icon', 'string', "'book-open'", 'emblem / marker, per variant'],
+        ['accent', 'color', 'THEME.gold', 'emblem glyph, ✓, and progress fill'],
+        ['accentLight', 'color', 'THEME.goldLight', 'emblem bg + progress track — pass the accent’s paired Light token'],
+        ['— layout', 'window.JX_DEX_HEADER', "'rows'", 'one of DEX_HEADERS; set from Tweaks → Dex header'],
       ]} />
 
       <SubHead>Confetti — celebration burst
