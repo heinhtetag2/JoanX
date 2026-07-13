@@ -611,6 +611,8 @@ const KO = {
   'Change buddy': '친구 바꾸기', 'Decorate rooms': '방 꾸미기', 'Decorate': '꾸미기',
   'House background': '집 배경', 'Not enough points yet': '포인트가 부족해요',
   'Notes your friends left when they visited.': '친구들이 방문하며 남긴 메모예요.', 'Like': '좋아요',
+  'See all': '전체 보기', 'No notes yet': '아직 메모가 없어요',
+  'When a friend visits your room, the note they leave shows up here.': '친구가 내 방에 놀러 와서 남긴 메모가 여기에 모여요.',
   'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
   'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
   // room styles (A-12)

@@ -110,7 +110,9 @@ function Shop({ ctx }) {
             // level-locked egg should read as unavailable.
             return (
               <div key={egg.id} style={{ display: 'flex', alignItems: 'center', gap: 14, background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}${unbuyable ? '55' : '22'}`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, opacity: locked ? .78 : 1 }}>
-                <div className={on || unbuyable ? 'jx-float' : undefined} style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked ? 'grayscale(.5)' : 'none' }}>
+                {/* the eggs in this list sit still — the float belongs to the hatch flow, where
+                    the egg is the thing you tap, not to a price list you are reading down */}
+                <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked ? 'grayscale(.5)' : 'none' }}>
                   <EggShape size={56} rarity={egg.rarity} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

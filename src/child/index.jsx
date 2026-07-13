@@ -19,6 +19,7 @@ export { CharacterDexVariant, DEX_LAYOUTS } from './CharacterDexVariants.jsx';
 export { DEX_HEADERS } from './DexHeaders.jsx';
 export { VillainDex } from './VillainDex.jsx';
 export { Friends } from './Friends.jsx';
+export { Guestbook } from './Guestbook.jsx';
 export { FriendHouse } from './FriendHouse.jsx';
 export { MyHouse } from './MyHouse.jsx';
 export { DecorateRoom } from './DecorateRoom.jsx';

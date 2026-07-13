@@ -87,10 +87,13 @@ function RoundBadge({ round, tier, inline }) {
 // warning that preceded it. Gentle stays calm; urgent gets the danger rail, the firmer
 // copy, and the "this is being recorded" line (F-08.3) — which the sheet and spotlight
 // variants already showed but the toast did not.
+// The speech bubble stays the neutral surface at every tier. The tone lives in the headline,
+// the rail, and the round badge — colouring the bubble too tinted the whole message block and
+// made the copy fight its own background instead of just being read.
 const TOAST_TONE = {
   gentle: { rail: THEME.primary, chip: THEME.primaryLight, ink: THEME.primary, bubble: THEME.surface2 },
-  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning, bubble: THEME.warningLight },
-  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,  bubble: THEME.dangerLight },
+  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning, bubble: THEME.surface2 },
+  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,  bubble: THEME.surface2 },
 };
 
 // Four message layouts, all built on the design-system tokens (DESIGN-SYSTEM.md §4/§5):
@@ -98,6 +101,7 @@ const TOAST_TONE = {
 // "not a big floaty blur") · child-app CTAs render flat. Flip between them in Tweaks →
 // Message style, the same way the home/collection/battle layout sets work.
 const MSG_LAYOUTS = [
+  { id: 'sheet',  label: 'Sheet' },
   { id: 'card',   label: 'Card' },
   { id: 'bubble', label: 'Bubble' },
   { id: 'hero',   label: 'Hero' },
@@ -106,7 +110,15 @@ const MSG_LAYOUTS = [
 
 // system card recipe + the tone rail, shared by every layout
 const MSG_CARD = { background: THEME.surface, borderRadius: 20, boxShadow: THEME.shadowCard, width: '100%' };
+const RAIL_H = 5;   // tone rail — clipped by the card, never drawn past its corners
 const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5 Button)
+
+// Every buddy in the 3D-cute line carries CUTE_BRAND (= THEME.brand, the JoanX magenta),
+// so when that line is worn the ocean CTA is the only thing on screen not in the brand.
+// Derive it from the buddy actually in play rather than a style flag: a buddy that carries
+// the brand gets a brand-coloured action, anything else keeps ocean (the in-game action
+// colour) — so the comic line is untouched.
+const ctaStyle = (c) => (c && c.color === THEME.brand ? { ...FLAT, background: THEME.brand } : FLAT);
 
 function DismissBtn({ onClick }) {
   return (
@@ -114,7 +126,7 @@ function DismissBtn({ onClick }) {
   );
 }
 
-function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismiss }) {
+function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismiss }) {
   const pool = interventionMessages(round);
   const [i, setI] = React.useState((round - 1) % pool.length);
   const [show, setShow] = React.useState(true);
@@ -134,7 +146,7 @@ function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismis
   const sub = urgent ? L(tier.body) : `${c.name} · ${L('still walking')}`;
   const ink = urgent ? THEME.danger : THEME.fg1;
 
-  const Rail = () => <div style={{ height: 5, background: tone.rail, borderRadius: '20px 20px 0 0' }} />;
+  const Rail = () => <div style={{ height: RAIL_H, background: tone.rail }} />;
   const Badge_ = () => round > 1 ? (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: tone.chip, color: tone.ink }}>
       <Icon name="triangle-alert" size={12} color={tone.ink} stroke={2.4} />
@@ -143,7 +155,7 @@ function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismis
   ) : null;
   const Actions = ({ stacked }) => (
     <div style={{ display: 'flex', flexDirection: stacked ? 'column' : 'row', gap: stacked ? 8 : 10, marginTop: 16 }}>
-      <Button variant="primary" size="md" fullWidth onClick={onRespond} style={FLAT}>{L('I looked up')}</Button>
+      <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
       {stacked
         ? <button onClick={onDismiss} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '10px', borderRadius: 14, background: 'transparent', color: THEME.fg2 }}>{L('Got it!')}</button>
         : <DismissBtn onClick={onDismiss} />}
@@ -151,15 +163,43 @@ function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismis
   );
 
   const bodies = {
+    // 0 · SHEET — the warning sheet's pattern, reused for the message stage: a bottom sheet
+    // that rises over the dim, buddy on the left speaking into a bubble on the right, the
+    // stop CTA paired with a quiet dismiss, and a countdown of the window before the next
+    // nudge. The child already learned this shape at the warning step, so the message step
+    // costs them no new reading — only the copy changes.
+    sheet: (
+      <React.Fragment>
+        <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 14px' }} />
+        {round > 1 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><Badge_ /></div>}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
+          <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}>
+            <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
+            <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
+          <DismissBtn onClick={onDismiss} />
+        </div>
+        <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
+      </React.Fragment>
+    ),
     // 1 · CARD — buddy left, message right, actions below. The straight system card.
+    // The buddy sits on a tone-tinted stage rather than floating in white: it grounds the
+    // character, and it puts the tier colour *with* the speaker instead of only in a hairline
+    // at the card's top edge, where it was easy to miss.
     card: (
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={76} /></div>
+          <div style={{ flexShrink: 0, width: 84, height: 84, borderRadius: 22, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={74} /></div>
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="game-font" style={{ fontSize: 21, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
-            <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
+            <div className="game-font" style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 5, lineHeight: 1.4 }}>{sub}</div>
           </div>
         </div>
         <Actions />
@@ -208,7 +248,7 @@ function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismis
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <Button variant="primary" size="md" fullWidth onClick={onRespond} style={FLAT}>{L('I looked up')}</Button>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
           <DismissBtn onClick={onDismiss} />
         </div>
       </div>
@@ -216,14 +256,31 @@ function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismis
   };
 
   const hero = layout === 'hero';
+  const sheet = layout === 'sheet';
+
+  // SHEET — anchored to the bottom edge, no gutter, rounded on top only. It rises with the
+  // same jx-overlay-up motion the warning sheet uses, so the two stages feel like one surface.
+  if (sheet) {
+    return (
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
+        <div className="jx-overlay-up" style={{ opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', background: THEME.surface, borderRadius: '32px 32px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -10px 30px rgba(0,0,0,.16)' }}>
+          {bodies.sheet}
+        </div>
+      </div>
+    );
+  }
+
   return (
     // F-09: bottom-centre, ~20% of screen height. Gutter is the system's 18px, and the card
     // spans it — no arbitrary max-width pinching it in.
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: '20%', display: 'flex', alignItems: 'flex-end', padding: `0 18px calc(env(safe-area-inset-bottom) + 18px)`, pointerEvents: 'none' }}>
-      <div style={{ ...MSG_CARD, opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0 }}>
+      {/* overflow is hidden so the rail is cut to the card's radius — except on hero, where the
+          buddy is *meant* to break the top edge, so there the rail gets its own clipping sleeve. */}
+      <div style={{ ...MSG_CARD, opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0, overflow: hero ? 'visible' : 'hidden' }}>
         {/* tone rail — reads before any copy is parsed (gentle → firm → urgent) */}
-        {!hero && <Rail />}
-        {hero && <div style={{ height: 5, background: tone.rail, borderRadius: '20px 20px 0 0' }} />}
+        {hero
+          ? <div style={{ borderRadius: '20px 20px 0 0', overflow: 'hidden' }}><Rail /></div>
+          : <Rail />}
         {bodies[layout] || bodies.card}
       </div>
     </div>
@@ -313,6 +370,7 @@ function WarningOverlay({ ctx }) {
   // Dismiss control — same label everywhere: it acknowledges the warning, it doesn't end the risk.
   const GotIt = () => (
     <button onClick={() => standDown('dismissed')} style={{
+      flexShrink: 0, whiteSpace: 'nowrap',   // the modal is inset now — without this the label wraps
       border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13,
       padding: '11px 18px', borderRadius: 999, background: THEME.surface2, color: THEME.fg2,
     }}>{L('Got it!')}</button>
@@ -396,22 +454,20 @@ function WarningOverlay({ ctx }) {
 
           {/* ── VARIANT: bottom sheet ── */}
           {variant === 'sheet' && (
-            <div className="jx-overlay-up" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: '#fff', borderRadius: '32px 32px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -10px 30px rgba(0,0,0,.16)' }}>
-              <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 14px' }} />
+            // A floating modal, not a docked sheet: inset from the phone's edges on all four
+            // sides so it reads as a card the app is holding up, not a drawer welded to the
+            // bottom bezel. Radius is even now that no edge is flush.
+            <div className="jx-overlay-up" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '18px 18px 20px', boxShadow: THEME.shadowXl }}>
               {round > 1 && <RoundBadge round={round} tier={tier} />}
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
                 <div className="jx-pop"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-                <Button variant="primary" size="md" fullWidth onClick={respond}>{L('I looked up')}</Button>
+                <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle(c)}>{L('I looked up')}</Button>
                 <GotIt />
               </div>
-              {/* live countdown of the escalate-to-message window (F-08) */}
-              <div style={{ marginTop: 12, height: 5, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
-                <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: THEME.gold }} />
-              </div>
-              <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 6 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
+              <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
             </div>
           )}
 
@@ -422,8 +478,13 @@ function WarningOverlay({ ctx }) {
               {round > 1 && <div style={{ marginTop: 10 }}><RoundBadge round={round} tier={tier} inline /></div>}
               <div className="game-font" style={{ fontSize: 26, fontWeight: 500, marginTop: 10 }}>{L(tier.title)} {PLAYER.name}!</div>
               <div style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45 }}>{L(tier.body)}</div>
-              <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280 }}>{L('I looked up')}</Button>
-              <div style={{ marginTop: 12 }}><GotIt /></div>
+              {/* One thing on this screen looks like a button, and it is the safe action. The
+                  dismiss is deliberately plain text: it acknowledges the warning, it does not end
+                  the risk (F-08.2), so it should never compete with "I looked up". It cannot be a
+                  filled pill here anyway — surface2 (#f8f7f7) is the spotlight backdrop's own
+                  colour, so a filled secondary is invisible against it. */}
+              <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle(c) }}>{L('I looked up')}</Button>
+              <button onClick={() => standDown('dismissed')} style={{ marginTop: 14, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, color: THEME.fg2, padding: '6px 16px' }}>{L('Got it!')}</button>
             </div>
           )}
 

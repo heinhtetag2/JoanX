@@ -1,11 +1,48 @@
 // JoanX — child app · Friends
 
 import React from 'react';
-import { CHARACTERS, FRIENDS, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, FRIENDS, MY_GUESTBOOK, PLAYER } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { ScreenHeader, screenBgActive } from './shared.jsx';
+
+// ── "Me" card — the Friends screen leads with you (F-32) ────────────
+// Guestbook notes are the payoff of a friend's visit, but they used to live inside
+// My Profile, which sits behind the Profile tab's settings — three taps away, with nothing
+// on the social tab hinting at them. So the child's own profile now heads the Friends
+// screen, and tapping it opens the Guestbook directly. "My Room" stays reachable from the
+// same card, since that is the page friends actually land on when they visit.
+function MeCard({ ctx, me }) {
+  const notes = MY_GUESTBOOK.length;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: THEME.surface, borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
+      <button onClick={() => ctx.nav('guestbook')} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+        <div style={{ width: 52, height: 52, borderRadius: 999, background: PURPLE.light, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          <Mascot species={me.species} stage={me.stage} color={me.color} size={48} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{PLAYER.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 3 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>
+              <Icon name="book-heart" size={13} color={PURPLE.main} stroke={2.3} />
+              {notes > 0 ? `${L('Guestbook')} · ${notes}` : L('Guestbook')}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>
+              <Icon name="heart" size={13} color={THEME.joy} fill={THEME.joy} stroke={2} />
+              {PLAYER.likes}
+            </span>
+          </div>
+        </div>
+        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.5} />
+      </button>
+      {/* the room is still one tap away — it is the page a visiting friend actually lands on */}
+      <button onClick={() => ctx.nav('myhouse')} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: PURPLE.light, color: PURPLE.dark, border: 'none', borderRadius: 999, padding: '9px 13px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
+        <Icon name="home" size={14} color={PURPLE.dark} stroke={2.4} />{L('My Room')}
+      </button>
+    </div>
+  );
+}
 
 // Friends-area brand purple (design-system iris ramp) — 50 / 60 / 10.
 const PURPLE = { main: '#7f63c5', dark: '#603fab', light: '#f5f1fd' };
@@ -707,11 +744,9 @@ function Friends({ ctx, layout = 'list' }) {
       {/* your own avatar leads the header: your room is the page friends land on when they
           visit you, so it belongs on the screen you visit theirs from (F-32) */}
       <ScreenHeader title={L('Friends')}
-        left={<button onClick={() => ctx.nav('myhouse')} aria-label={L('My Room')} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, padding: 0, overflow: 'hidden' }}>
-          <Mascot species={me.species} stage={me.stage} color={me.color} size={34} />
-        </button>}
         right={<button onClick={() => ctx.nav('addfriend')} aria-label={L('Add friends')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: PURPLE.main, border: 'none', borderRadius: 999, padding: '8px 13px', boxShadow: 'none', cursor: 'pointer', fontFamily: 'inherit' }}><Icon name="user-plus" size={15} color="#fff" stroke={2.5} /><span style={{ fontSize: 12.5, fontWeight: 700, color: '#fff' }}>{L('Add')}</span></button>} />
       <div style={{ padding: '0 16px' }}>
+        <MeCard ctx={ctx} me={me} />
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 10px', textTransform: 'uppercase', letterSpacing: .4 }}>{L(layout === 'leaderboard' ? 'Friend ranking' : 'Your friends')}</div>
         {friends.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '26px 24px', background: '#fff', borderRadius: 20, border: `1px solid ${THEME.border}` }}>

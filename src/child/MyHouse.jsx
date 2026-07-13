@@ -6,7 +6,10 @@ import { Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
 import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
+import { GuestbookNote } from './Guestbook.jsx';
 import { ROOM_STYLES } from './DecorateRoom.jsx';
+
+const PREVIEW_NOTES = 2;   // My Profile shows a taste; the Guestbook screen holds the rest
 
 // ── My Profile / House (F-32) — the public page friends visit ────────
 function MyHouse({ ctx }) {
@@ -106,21 +109,19 @@ function MyHouse({ ctx }) {
           );
         })}
 
-        {/* guestbook received */}
-        <SectionHead title={L('Guestbook')} />
+        {/* Guestbook — a preview only. The full list is its own screen now (reached from the
+            "me" card on Friends); rendering the rows from the shared GuestbookNote keeps the
+            two surfaces from drifting apart. */}
+        <SectionHead title={L('Guestbook')} action={MY_GUESTBOOK.length > PREVIEW_NOTES ? L('See all') : null} onAction={() => ctx.nav('guestbook')} />
         <div style={{ fontSize: 12, color: THEME.fg2, margin: '-6px 4px 10px' }}>{L('Notes your friends left when they visited.')}</div>
-        {MY_GUESTBOOK.map((g, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 16, padding: '12px 14px', boxShadow: THEME.shadowCard, marginBottom: 8 }}>
-            <MascotChip species={g.avatar} color={g.color} size={34} bg={THEME.primaryLight} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{g.by}</div>
-              <div style={{ fontSize: 13.5, color: THEME.fg1, marginTop: 1, lineHeight: 1.4 }}>{g.text}</div>
-            </div>
-            <button onClick={() => toggleLike(i)} aria-label={L('Like')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-              <Icon name="heart" size={18} color={THEME.joy} stroke={2.3} fill={likes[i] ? THEME.joy : 'none'} />
-            </button>
-          </div>
+        {MY_GUESTBOOK.slice(0, PREVIEW_NOTES).map((g, i) => (
+          <GuestbookNote key={i} note={g} liked={likes[i]} onLike={() => toggleLike(i)} />
         ))}
+        {MY_GUESTBOOK.length > PREVIEW_NOTES && (
+          <button onClick={() => ctx.nav('guestbook')} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.surface2, color: THEME.fg2, fontWeight: 800, fontSize: 13, padding: '12px', borderRadius: 14 }}>
+            {L('See all')} · {MY_GUESTBOOK.length}
+          </button>
+        )}
       </div>
 
       {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 20 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}

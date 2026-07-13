@@ -378,6 +378,14 @@ function MascotToyCute({ species = 'fox', size = 160, style, float }) {
   );
 }
 
+// Styles whose whole line shares one brand colour. For these, the buddy is art and the
+// brand is fixed: hatching a new character changes who you see, never how the app looks.
+// (The comic/soft lines are the older behaviour — each buddy recolours the app.)
+const STYLE_BRAND = { cute: CUTE_BRAND };
+
+// The locked brand colour of a character style, or null if the style recolours per buddy.
+const styleBrand = (style) => STYLE_BRAND[style || window.JX_CHAR_STYLE] || null;
+
 // Per-style buddy roster: [species, displayName, brandColor]. Drives the
 // Tweaks "Buddy" selector — options change with the chosen Character Style —
 // and the accent/brand colour the app adopts when a buddy is picked.
@@ -897,4 +905,4 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-export { Mascot, MascotChip, STYLE_BUDDIES, shade, tint };
+export { Mascot, MascotChip, STYLE_BUDDIES, shade, styleBrand, tint };

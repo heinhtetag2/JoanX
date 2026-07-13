@@ -1,11 +1,11 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
-import { STYLE_BUDDIES } from '../core/characters.jsx';
+import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
@@ -34,7 +34,7 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'card', species: 'cat', color: THEME.brand, name: 'Axolotl', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'cat', color: THEME.brand, name: 'Axolotl', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -64,27 +64,39 @@ function App() {
   // DexProgress reads this at render time, like Mascot reads JX_CHAR_STYLE
   React.useEffect(() => { window.JX_DEX_HEADER = tw.dexHeader; setBump(b => b + 1); }, [tw.dexHeader]);
 
-  // Each character style has its own buddy roster (name + brand colour per
-  // species). When the style or the selected buddy changes, adopt that buddy's
-  // name and colour so the label, art, and accent all stay in sync.
+  // Each character style has its own buddy roster (name + brand colour per species). When
+  // the style or the selected buddy changes, adopt that buddy's name and colour so the
+  // label, art, and accent stay in sync — EXCEPT on a brand-locked style (3D Cute), where
+  // the whole line shares one colour: the buddy is art, the brand never moves.
   React.useEffect(() => {
+    const locked = styleBrand(tw.charStyle);
     const roster = STYLE_BUDDIES[tw.charStyle] || [];
+    const row = roster.find(r => r[0] === tw.species);
+    if (locked) {
+      // keep the species we were given (a hatch can bring one the roster doesn't name) and
+      // only pin the colour back to the line's brand
+      const name = row ? row[1] : tw.name;
+      if (tw.color !== locked || name !== tw.name) setTw(s => ({ ...s, color: locked, name }));
+      return;
+    }
     // if the current species isn't offered in this style, snap to its first buddy
-    const row = roster.find(r => r[0] === tw.species) || roster[0];
-    if (!row) return;
-    const [species, name, col] = row;
+    const pick = row || roster[0];
+    if (!pick) return;
+    const [species, name, col] = pick;
     if (species !== tw.species || col !== tw.color || name !== tw.name) {
       setTw(s => ({ ...s, species, color: col, name }));
     }
   }, [tw.charStyle, tw.species]);
 
-  // commit an evolved / recolored character and make it the active buddy
+  // Commit an evolved / hatched character and make it the active buddy. On a brand-locked
+  // style the new buddy brings its species, stage and name — but not its colour, so the app
+  // looks the same after a hatch as it did before it.
   const setBuddy = (id, patch) => {
     const c = CHARACTERS.find(x => x.id === id);
     if (c) Object.assign(c, patch);
     PLAYER.activeCharId = id;
     // keep the tweak panel in sync so it doesn't snap the buddy back
-    if (patch) setTw(s => ({ ...s, species: c.species, color: c.color, stage: c.stage, name: c.name }));
+    if (patch) setTw(s => ({ ...s, species: c.species, color: styleBrand(s.charStyle) || c.color, stage: c.stage, name: c.name }));
     setBump(b => b + 1);
   };
 
@@ -124,7 +136,7 @@ function App() {
       shop: <Shop ctx={ctx} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
+      myhouse: <MyHouse ctx={ctx} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -141,7 +153,7 @@ function App() {
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 
-  const activeChildTab = ['friends', 'friendhouse', 'addfriend'].includes(screen) ? 'friends'
+  const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
     : ['myhouse', 'decorate'].includes(screen) ? 'profile'   // the house/rooms are now a Profile detail
     : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && onboarded && !['battle'].includes(screen);
