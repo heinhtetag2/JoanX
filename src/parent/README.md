@@ -24,7 +24,7 @@ Each parent screen lives in its own file and is re-exported from `index.jsx`
 
 Cross-screen primitives live here, imported by the screens that need them:
 
-- **`BRAND`** — the pink palette (logo magenta `#E00477`, with `ink` for active states)
+- **`BRAND`** — the brand palette (buddy green `#4B814F`, with `ink` for active states)
 - **`brandBtn`** — the branded CTA style
 - **`ParentHead`** — the standard screen header
 - **`ChoiceGroup`** — the Korean-style radio group (add-child + onboarding)

@@ -39,10 +39,11 @@ const THEME = {
   shadowPrimary: '0 8px 18px rgba(68,122,175,0.34)',  // ocean glow under the CTA
   shadowDanger: '0 8px 18px rgba(209,69,50,0.34)',   // rust glow
 
-  // ── JoanX product brand — the logo magenta ───────────────────────────
-  // The pink behind the onboarding wash and its CTAs. Distinct from THEME.primary
-  // (ocean), which is the in-game action colour.
-  brand: '#E00477', brandDark: '#B00360', brandLight: '#FCE4F0',
+  // ── JoanX product brand — the buddy green ────────────────────────────
+  // The green behind the onboarding wash and its CTAs, and the app's accent everywhere the
+  // buddy colour isn't already driving it. Distinct from THEME.primary (ocean), which stays
+  // the in-game action colour.
+  brand: '#4B814F', brandDark: '#365C39', brandLight: '#E9F1E9',
 
   // ── JoanX game layer ─────────────────────────────────────────────────
   gold: '#d19900', goldLight: '#fff2d1',     // data-yellow 50 / 10 — points / XP
@@ -118,10 +119,13 @@ function screenBgFor(color) {
 // Icon — keeps the kebab-case string API (name="chevron-left") but renders via
 // lucide-react. Names map to lucide's PascalCase icon components.
 const _pascalIcon = n => String(n).split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
-function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none', style }) {
+// `className` is passed through: callers animate icons by class (the hatch's twinkling
+// sparkles are Icons with .jx-twinkle). It used to be dropped on the floor, so every
+// animated icon in the app rendered static and nobody noticed.
+function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none', style, className }) {
   const Cmp = LucideIcons[_pascalIcon(name)];
-  if (!Cmp) return <span style={{ display: 'inline-flex', width: size, height: size, ...style }} />;
-  return <Cmp size={size} color={color} strokeWidth={stroke} fill={fill}
+  if (!Cmp) return <span className={className} style={{ display: 'inline-flex', width: size, height: size, ...style }} />;
+  return <Cmp size={size} color={color} strokeWidth={stroke} fill={fill} className={className}
     style={{ display: 'inline-flex', flexShrink: 0, ...style }} />;
 }
 

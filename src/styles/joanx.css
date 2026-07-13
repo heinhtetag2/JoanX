@@ -158,3 +158,77 @@ html, body {
    before the warning escalates into the repeating character message (F-08). */
 @keyframes jxCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 .jx-countdown { transform-origin: left center; animation: jxCountdown 5s linear both; }
+
+/* ── Scroll-story motion (parent · How JoanX works) ──────────────────
+   Two things carry a long-form page: a cue that says "there is more below",
+   and content that arrives as you reach it rather than sitting there pre-loaded. */
+
+/* the scroll cue — a slow nudge downward, not a jitter */
+@keyframes jxNudge { 0%, 100% { transform: translateY(0); opacity: .55; } 50% { transform: translateY(6px); opacity: 1; } }
+.jx-nudge { animation: jxNudge 1.8s ease-in-out infinite; }
+
+/* reveal-on-scroll: sections start just below and slightly faded, then settle.
+   The .in class is added by an IntersectionObserver as each section enters view. */
+.jx-reveal { opacity: 0; transform: translateY(22px); transition: opacity .5s ease, transform .5s cubic-bezier(.4,0,.2,1); }
+.jx-reveal.in { opacity: 1; transform: translateY(0); }
+
+/* Motion here is decoration, not feedback — if the reader asked for less of it,
+   show the content, skip the choreography. */
+@media (prefers-reduced-motion: reduce) {
+  .jx-nudge { animation: none; }
+  .jx-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── Scroll-story CTA — the one button on a pitch surface, so it is allowed to move.
+   Three layers: the gradient drifts, a highlight sweeps across it, and it presses. */
+@keyframes jxCtaFlow  { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+@keyframes jxCtaShine { 0% { left: -50%; } 55%, 100% { left: 125%; } }
+@keyframes jxCtaBreathe { 0%, 100% { box-shadow: 0 8px 26px var(--jx-cta-glow-soft, rgba(167,139,245,.38)); } 50% { box-shadow: 0 10px 38px var(--jx-cta-glow, rgba(167,139,245,.62)); } }
+
+.jx-cta {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(90deg, #8f6fe0 0%, #b06fd6 25%, #d06fc0 50%, #b06fd6 75%, #8f6fe0 100%);
+  background-size: 300% 100%;
+  animation: jxCtaFlow 7s linear infinite, jxCtaBreathe 3.2s ease-in-out infinite;
+  transition: transform .14s cubic-bezier(.34,1.56,.64,1);
+}
+/* the sweep — a light travelling across the fill, the thing that reads as "alive" */
+.jx-cta::after {
+  content: '';
+  position: absolute; top: 0; height: 100%; width: 34%; left: -50%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: skewX(-18deg);
+  animation: jxCtaShine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.jx-cta > * { position: relative; z-index: 1; }   /* keep the label above the sweep */
+.jx-cta:active { transform: scale(.97); }
+
+/* Motion here is decoration, not feedback — honour the OS request and hold still. */
+@media (prefers-reduced-motion: reduce) {
+  .jx-cta { animation: none; background-position: 0 50%; box-shadow: 0 8px 26px rgba(167,139,245,.38); }
+  .jx-cta::after { animation: none; display: none; }
+  .jx-cta:active { transform: none; }
+}
+
+/* ── Scroll-story · the subscription page ────────────────────────────
+   The story ends at the update wall. Everything past it is a *different* page, not
+   more of the same scroll — so it fills the screen and snaps into place, and the
+   reader lands on it rather than drifting into it.
+   `proximity` (not `mandatory`) because this is the only snap target on the page:
+   the rest of the story must stay free-scrolling. */
+/* overscroll-behavior:contain — without it, wheeling past the bottom chains to the page
+   behind the phone: the frame scrolls away and the "keep scrolling" pull that opens the
+   plans is swallowed by the window instead of reaching the story. */
+.jx-story { scroll-snap-type: y proximity; scroll-padding-top: 54px; overscroll-behavior: contain; }
+.jx-page {
+  min-height: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (prefers-reduced-motion: reduce) { .jx-story { scroll-snap-type: none; } }

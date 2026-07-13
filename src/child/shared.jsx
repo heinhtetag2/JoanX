@@ -4,6 +4,7 @@ import React from 'react';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
 
 // Page background tinted by the *active* buddy's colour — keeps every screen's
@@ -31,6 +32,39 @@ function ScreenHeader({ title, onBack, left, right }) {
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>{right}</div>
     </div>
   );
+}
+
+// ── The hatch celebration, extracted ────────────────────────────────
+// This is the confetti-and-sparkles moment from the egg reveal (Shop / Onboarding), lifted
+// out so any "you did it" beat can use the same one. Worth extracting rather than
+// re-inventing: a child should learn one celebration, and a second, slightly-different one
+// would just read as a bug.
+//
+// `screen` wraps it in a full-phone overlay. position:'fixed' resolves against the phone
+// frame rather than the browser window, because the frame carries a transform (the prototype
+// scales it to fit) and a transformed ancestor becomes the containing block for fixed
+// children — which is what keeps the confetti inside the phone.
+function HatchCelebration({ color = THEME.primary, accent = THEME.gold, screen = false }) {
+  const cols  = [color, accent, shade(color, 42), THEME.gold, shade(color, -16), THEME.success, color, accent];
+  const lefts = ['18%', '30%', '44%', '56%', '68%', '80%', '24%', '74%'];
+  const dl    = [0, .12, .04, .18, .08, .22, .3, .26];
+  const stars = [{ t: '20%', l: '18%', s: 20, d: 0 }, { t: '15%', l: '77%', s: 15, d: .5 },
+                 { t: '42%', l: '85%', s: 12, d: 1 }, { t: '45%', l: '11%', s: 13, d: .3 },
+                 { t: '11%', l: '48%', s: 12, d: .8 }];
+  const bits = (
+    <React.Fragment>
+      {/* confetti raining from the top — tinted to the buddy */}
+      {cols.map((c, i) => (
+        <div key={`cf${i}`} className="jx-confetti" style={{ position: 'absolute', top: '7%', left: lefts[i], width: i % 3 ? 7 : 9, height: i % 2 ? 8 : 11, borderRadius: i % 2 ? 999 : 2, background: c, animationDelay: `${dl[i]}s` }} />
+      ))}
+      {/* twinkling sparkles */}
+      {stars.map((p, i) => (
+        <Icon key={`sp${i}`} name="sparkles" size={p.s} color={i % 2 ? THEME.gold : color} fill={i % 2 ? THEME.gold : color} stroke={0} className="jx-twinkle" style={{ position: 'absolute', top: p.t, left: p.l, animationDelay: `${p.d}s` }} />
+      ))}
+    </React.Fragment>
+  );
+  if (!screen) return bits;
+  return <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 70 }}>{bits}</div>;
 }
 
 function Confetti({ n = 14 }) {
@@ -82,4 +116,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, Confetti, RarityPill, DexProgress, PointsChip, StatCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, Confetti, RarityPill, DexProgress, PointsChip, StatCard };

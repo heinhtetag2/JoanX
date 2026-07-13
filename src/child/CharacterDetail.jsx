@@ -1,7 +1,7 @@
 // JoanX — child app · CharacterDetail
 
 import React from 'react';
-import { CHARACTERS } from '../core/data.jsx';
+import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -96,7 +96,7 @@ function CharacterDetail({ ctx }) {
           </div>
         </div>
 
-        <Button variant="primary" size="lg" fullWidth style={{ boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
+        <Button variant="primary" size="lg" fullWidth style={{ background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
     </div>
   );

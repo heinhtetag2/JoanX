@@ -18,18 +18,40 @@ const SAFE_CONFIRM_MS = INTERVENTION.safeConfirmSeconds * 1000; // F-08.4 — sa
 const GRACE_MS = 2600;    // spec: INTERVENTION.graceSeconds (10s)
 const IGNORE_MS = MESSAGE_GAP_MS * 2 + MESSAGE_MS;  // two unanswered messages = ignored
 
-function RewardToast({ secs = 2.1, pts = 30 }) {
+// The payoff. The child just looked up — so the buddy leads, not a system checkmark: this is
+// the one beat in the whole intervention that belongs to the character. The check becomes a
+// small badge on the buddy's shoulder, the stop time is stated as the thing it earned
+// ("immediate stop"), and the points land as the headline number rather than a footnote pill.
+function RewardToast({ c, secs = 2.1, pts = 30 }) {
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.34)', zIndex: 5 }} className="jx-fade">
       <Confetti />
-      <div className="jx-pop" style={{ width: 240, background: '#fff', borderRadius: 26, padding: '24px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
-        <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-          <Icon name="check" size={34} color={THEME.success} stroke={3} />
+      <div className="jx-pop" style={{ width: 268, background: '#fff', borderRadius: 26, padding: '22px 20px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
+
+        {/* the buddy, with the check riding on it */}
+        <div style={{ position: 'relative', width: 108, height: 108, margin: '0 auto 10px' }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: THEME.brandLight }} />
+          <div className="jx-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {c && <Mascot species={c.species} stage={c.stage} color={c.color} size={98} />}
+          </div>
+          <span className="jx-pop" style={{ position: 'absolute', right: -2, bottom: 2, width: 34, height: 34, borderRadius: 999, background: THEME.success, border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="check" size={17} color="#fff" stroke={3.2} />
+          </span>
         </div>
-        <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Nice save!')}</div>
-        <div style={{ fontSize: 13, color: THEME.fg2, margin: '4px 0 14px' }}>{L('Stopped in')} {secs}s — {L("that's an immediate stop.")}</div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 16 }} className="game-font">
-          <Icon name="star" size={18} color={THEME.gold} stroke={2.4} fill={THEME.gold} /> +{pts} {L('points')}
+
+        <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{L('Nice save!')}</div>
+
+        {/* what the stop was worth, in the app's own words (F-12) */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '5px 11px', borderRadius: 999, background: THEME.successLight, color: THEME.success, fontSize: 11.5, fontWeight: 800 }}>
+          <Icon name="hand" size={13} color={THEME.success} stroke={2.4} />
+          {secs}s · {L('Immediate stop')}
+        </div>
+
+        {/* the points are the headline, not a footnote */}
+        <div style={{ marginTop: 14, borderRadius: 18, background: THEME.goldLight, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Icon name="star" size={22} color={THEME.gold} stroke={2.2} fill={THEME.gold} />
+          <span className="game-font" style={{ fontSize: 26, fontWeight: 500, color: '#8a6600', lineHeight: 1 }}>+{pts}</span>
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: '#9e7300' }}>{L('points')}</span>
         </div>
       </div>
     </div>
@@ -49,9 +71,9 @@ function StageSteps({ stage, onLight }) {
         const on = i === stage, done = i < stage;
         return (
           <React.Fragment key={i}>
-            {i > 0 && <span style={{ width: 16, height: 2, borderRadius: 2, background: i <= stage ? THEME.primary : barOff, transition: 'background .3s' }} />}
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 24, padding: on ? '0 11px 0 8px' : '0', width: on ? 'auto' : 24, justifyContent: 'center', borderRadius: 999, background: on ? THEME.primary : (done ? THEME.primaryLight : idleBg), transition: 'all .3s' }}>
-              <Icon name={s.ic} size={12.5} color={on ? '#fff' : (done ? THEME.primary : idleFg)} stroke={2.4} />
+            {i > 0 && <span style={{ width: 16, height: 2, borderRadius: 2, background: i <= stage ? THEME.brand : barOff, transition: 'background .3s' }} />}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 24, padding: on ? '0 11px 0 8px' : '0', width: on ? 'auto' : 24, justifyContent: 'center', borderRadius: 999, background: on ? THEME.brand : (done ? THEME.brandLight : idleBg), transition: 'all .3s' }}>
+              <Icon name={s.ic} size={12.5} color={on ? '#fff' : (done ? THEME.brand : idleFg)} stroke={2.4} />
               {on && <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{L(s.l)}</span>}
             </span>
           </React.Fragment>
@@ -87,13 +109,15 @@ function RoundBadge({ round, tier, inline }) {
 // warning that preceded it. Gentle stays calm; urgent gets the danger rail, the firmer
 // copy, and the "this is being recorded" line (F-08.3) — which the sheet and spotlight
 // variants already showed but the toast did not.
-// The speech bubble stays the neutral surface at every tier. The tone lives in the headline,
-// the rail, and the round badge — colouring the bubble too tinted the whole message block and
-// made the copy fight its own background instead of just being read.
+// The speech bubble is a warm off-white at every tier — neutral like a grey, but with warmth
+// in it so it doesn't read as a system panel. The tone lives in the headline, the rail, and the
+// round badge; tinting the bubble as well coloured the whole block and made the copy fight its
+// own background instead of just being read.
+const BUBBLE = '#F7F3EE';
 const TOAST_TONE = {
-  gentle: { rail: THEME.primary, chip: THEME.primaryLight, ink: THEME.primary, bubble: THEME.surface2 },
-  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning, bubble: THEME.surface2 },
-  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,  bubble: THEME.surface2 },
+  gentle: { rail: THEME.brand,   chip: THEME.brandLight,   ink: THEME.brandDark, bubble: BUBBLE },
+  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning,  bubble: BUBBLE },
+  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,   bubble: BUBBLE },
 };
 
 // Four message layouts, all built on the design-system tokens (DESIGN-SYSTEM.md §4/§5):
@@ -118,7 +142,9 @@ const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5
 // Derive it from the buddy actually in play rather than a style flag: a buddy that carries
 // the brand gets a brand-coloured action, anything else keeps ocean (the in-game action
 // colour) — so the comic line is untouched.
-const ctaStyle = (c) => (c && c.color === THEME.brand ? { ...FLAT, background: THEME.brand } : FLAT);
+// The safety CTA wears the brand green in every variant: this overlay is the product's own
+// voice, not an in-game action, so the ocean primary would read as a stranger here.
+const ctaStyle = () => ({ ...FLAT, background: THEME.brand });
 
 function DismissBtn({ onClick }) {
   return (
@@ -155,7 +181,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
   ) : null;
   const Actions = ({ stacked }) => (
     <div style={{ display: 'flex', flexDirection: stacked ? 'column' : 'row', gap: stacked ? 8 : 10, marginTop: 16 }}>
-      <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
+      <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
       {stacked
         ? <button onClick={onDismiss} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '10px', borderRadius: 14, background: 'transparent', color: THEME.fg2 }}>{L('Got it!')}</button>
         : <DismissBtn onClick={onDismiss} />}
@@ -180,7 +206,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
           <DismissBtn onClick={onDismiss} />
         </div>
         <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
@@ -248,7 +274,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle(c)}>{L('I looked up')}</Button>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
           <DismissBtn onClick={onDismiss} />
         </div>
       </div>
@@ -405,7 +431,7 @@ function WarningOverlay({ ctx }) {
                 <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Walking — heads up in a sec')}</div>
                 <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Look up now and no warning is needed.')}</div>
               </div>
-              <button onClick={respond} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.primaryLight, color: THEME.primary, fontWeight: 800, fontSize: 12.5, padding: '9px 13px', borderRadius: 999 }}>{L("I've got it")}</button>
+              <button onClick={respond} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.brandLight, color: THEME.brandDark, fontWeight: 800, fontSize: 12.5, padding: '9px 13px', borderRadius: 999 }}>{L("I've got it")}</button>
             </div>
             {/* depleting bar = the remaining grace before the gentle buzz */}
             <div style={{ marginTop: 11, height: 4, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
@@ -415,7 +441,7 @@ function WarningOverlay({ ctx }) {
         </div>
       )}
 
-      {phase === 'reward' ? <RewardToast /> : (
+      {phase === 'reward' ? <RewardToast c={c} /> : (
         <React.Fragment>
           {/* escalation stepper — only once the grace window has passed */}
           {!grace && <StageSteps stage={stage} onLight={lightBg} />}
@@ -464,7 +490,7 @@ function WarningOverlay({ ctx }) {
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-                <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle(c)}>{L('I looked up')}</Button>
+                <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle()}>{L('I looked up')}</Button>
                 <GotIt />
               </div>
               <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
@@ -483,7 +509,7 @@ function WarningOverlay({ ctx }) {
                   the risk (F-08.2), so it should never compete with "I looked up". It cannot be a
                   filled pill here anyway — surface2 (#f8f7f7) is the spotlight backdrop's own
                   colour, so a filled secondary is invisible against it. */}
-              <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle(c) }}>{L('I looked up')}</Button>
+              <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('I looked up')}</Button>
               <button onClick={() => standDown('dismissed')} style={{ marginTop: 14, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, color: THEME.fg2, padding: '6px 16px' }}>{L('Got it!')}</button>
             </div>
           )}
@@ -498,8 +524,8 @@ function WarningOverlay({ ctx }) {
                     <div style={{ fontSize: 14, fontWeight: 800 }}>{round === 1 ? L('Eyes up while walking') : L(tier.title) + ' ' + PLAYER.name + '!'}</div>
                     <div style={{ fontSize: 12, color: THEME.fg2 }}>{round === 1 ? L("Tap when you've looked up") : L(tier.body)}</div>
                   </div>
-                  <div style={{ width: 34, height: 34, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon name="check" size={18} color={THEME.primary} stroke={2.6} />
+                  <div style={{ width: 34, height: 34, borderRadius: 999, background: THEME.brandLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="check" size={18} color={THEME.brand} stroke={2.6} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}><GotIt /></div>

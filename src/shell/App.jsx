@@ -3,7 +3,7 @@ import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, Char
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
@@ -26,6 +26,7 @@ function App() {
   const [pScreen, setPScreen] = React.useState('p_reports');
   const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
+  const [story, setStory] = React.useState(false);   // Tweaks → the "How JoanX works" scroll-story, over any screen
   // prototype "state" toggles (Tweaks): drive the edge states screens usually skip
   //   limited  · a permission is off → running-app limited-protection state (F-26)
   //   offline  · device disconnected → protection paused
@@ -34,7 +35,9 @@ function App() {
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'cat', color: THEME.brand, name: 'Axolotl', stage: 3, play: 'max', charStyle: 'cute', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic' });
+  // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
+  // opens with buddy and brand in agreement
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -194,6 +197,7 @@ function App() {
           {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
           {role === 'parent' && parentOnboarded && !['p_addchild', 'p_connect'].includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay ctx={ctx} />)}
+          {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>
       </div>
@@ -235,6 +239,16 @@ function App() {
               <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => { setOnboarded(true); setOverlay(true); }}>
                 ▶ Trigger a {mode === 'lite' ? 'block' : 'warning'}
               </button>
+
+              <div className="tw-label">Story</div>
+              <div className="tw-row">
+                <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => setStory(true)}>▲ How JoanX works</button>
+              </div>
+              <div className="tw-row" style={{ marginTop: 8 }}>
+                {STORY_THEMES_LIST.map(t => (
+                  <button key={t.id} className={'tw-chip' + (tw.storyTheme === t.id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, storyTheme: t.id }))}>{t.label}</button>
+                ))}
+              </div>
 
               <div className="tw-label">Warning style</div>
               <div className="tw-row">

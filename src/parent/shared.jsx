@@ -4,12 +4,13 @@ import React from 'react';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 
-// Brand palette derived from the JoanX logo magenta (#E00477).
+// Brand palette derived from the JoanX buddy green (#4B814F) — the same brand the child
+// app wears, so the two apps read as one product.
 const BRAND = {
-  primary:     '#E00477',            // core brand magenta
-  primaryDark: '#B00360',            // pressed / deep accent
-  primaryLight:'#FCE4F0',            // soft tint — badges, chips, backgrounds
-  onPrimary:   '#FFFFFF',            // text/icons on the magenta
+  primary:     '#4B814F',            // core brand green
+  primaryDark: '#365C39',            // pressed / deep accent
+  primaryLight:'#E9F1E9',            // soft tint — badges, chips, backgrounds
+  onPrimary:   '#FFFFFF',            // text/icons on the green
   shadowPrimary: 'none',             // flat CTAs/accents — no brand glow (matches the child app)
   ink:         '#3D3D3D',            // softened logo black — active/focus states (inputs, radios, cards)
 };

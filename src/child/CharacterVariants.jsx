@@ -77,6 +77,10 @@ function CharVariant({ ctx, variant }) {
     { k: 'heart', label: 'Heart', icon: 'heart', color: THEME.joy },
   ];
   const accent = color;
+  // The "Set as my buddy" CTA is an *app* action, not part of this character's card, so it
+  // wears the app accent (the active buddy's colour — the same one the tab bar's fight button
+  // uses). Tinting it with the character you're merely previewing made the two disagree.
+  const appAccent = (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color;
   // color-heavy backgrounds get frosted cards (the bg tints through); light ones stay crisp white
   const onColorBg = variant === 'vivid' || variant === 'focus' || variant === 'showcase';
   const card = onColorBg
@@ -309,7 +313,7 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
   const SetBtn = (
-    <Button key="set" variant="primary" size="lg" fullWidth style={{ marginTop: 2, background: accent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
+    <Button key="set" variant="primary" size="lg" fullWidth style={{ marginTop: 2, background: appAccent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
   );
   // wave gets its own panel — rounded pill tabs (accent-filled active),
   // a vertical bar chart for stats, square swatches, and 2×2 item cards.

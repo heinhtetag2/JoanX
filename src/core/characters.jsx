@@ -21,7 +21,7 @@ function shade(hex, amt) {
 // Use this — not shade(c, +120) — to lighten an accent. shade() adds a flat
 // amount per channel, which only reads as "lighter" for already-pale colours:
 // a saturated base clamps its high channel and keeps the low ones, so the
-// brand magenta #E00477 lightens to #ff80f3 (hot pink) rather than a pale
+// a neon brand (e.g. the old magenta #E00477) lightens to #ff80f3 (hot pink) rather than a pale
 // wash. Mixing toward white preserves hue and drops saturation predictably.
 function tint(hex, ratio = 0.88) {
   let c = hex.replace('#', '');

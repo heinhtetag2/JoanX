@@ -6,7 +6,7 @@ import { CHARACTERS, EGGS, PLAYER, POINTS, rarityOf, xpForLevel } from '../core/
 import { Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { screenBgActive, ScreenHeader , HatchCelebration } from './shared.jsx';
 import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
 
 // ── Egg hatching (A-2 / F-15) ────────────────────────────────────────
@@ -203,17 +203,8 @@ function Shop({ ctx }) {
               </React.Fragment>
             ) : (
               <React.Fragment>
-                {/* confetti raining from the top — tinted to the buddy + its rarity */}
-                {[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
-                  const cols = [b.color, rar.fg, shade(b.color, 42), THEME.gold, shade(b.color, -16), THEME.success, b.color, rar.fg];
-                  const lefts = ['18%', '30%', '44%', '56%', '68%', '80%', '24%', '74%'];
-                  const dl = [0, .12, .04, .18, .08, .22, .3, .26];
-                  return <div key={`cf${i}`} className="jx-confetti" style={{ position: 'absolute', top: '7%', left: lefts[i], width: i % 3 ? 7 : 9, height: i % 2 ? 8 : 11, borderRadius: i % 2 ? 999 : 2, background: cols[i], animationDelay: `${dl[i]}s` }} />;
-                })}
-                {/* twinkling sparkles */}
-                {[{ t: '20%', l: '18%', s: 20, d: 0 }, { t: '15%', l: '77%', s: 15, d: .5 }, { t: '42%', l: '85%', s: 12, d: 1 }, { t: '45%', l: '11%', s: 13, d: .3 }, { t: '11%', l: '48%', s: 12, d: .8 }].map((p, i) => (
-                  <Icon key={i} name="sparkles" size={p.s} color={i % 2 ? THEME.gold : b.color} fill={i % 2 ? THEME.gold : b.color} stroke={0} className="jx-twinkle" style={{ position: 'absolute', top: p.t, left: p.l, animationDelay: `${p.d}s` }} />
-                ))}
+                {/* the hatch celebration — now shared, so the missions beat plays the same one */}
+                <HatchCelebration color={b.color} accent={rar.fg} />
 
                 {/* status ribbon — solid white pill so it reads on any buddy tint */}
                 <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid rgba(46,43,41,.08)', color: hatch.dup ? shade(THEME.gold, -40) : THEME.fg1, borderRadius: 999, padding: '6px 14px 6px 12px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 16 }}>

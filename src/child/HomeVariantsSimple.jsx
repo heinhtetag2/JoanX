@@ -3,7 +3,7 @@ import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
+import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
 // A standalone DUPLICATE of the 6 home layouts (Original + the 5 in
@@ -110,10 +110,30 @@ function TodayTasksS({ accent }) {
   const done = tasks.filter(t => t.done).length;
   const earned = tasks.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
   const allDone = done === tasks.length;
-  const complete = id => setTasks(ts => ts.map(t => (t.id === id && !t.done ? { ...t, done: true } : t)));
+  // Clearing the last mission is the biggest thing that happens on this screen all day, and
+  // it used to pass with a line of text. It now rains from the top of the phone.
+  //
+  // Fired on the *transition*, not on `allDone`: a child who already finished today would
+  // otherwise get confetti every time they opened the app, which turns a reward into wallpaper.
+  const [cheer, setCheer] = React.useState(false);
+  const complete = (id) => {
+    // the state updater stays pure — firing the celebration from inside it would run twice
+    // under StrictMode's double-invoke, and updaters are not the place for side effects
+    const next = tasks.map(t => (t.id === id && !t.done ? { ...t, done: true } : t));
+    const wasAll = tasks.every(t => t.done);
+    setTasks(next);
+    if (!wasAll && next.every(t => t.done)) setCheer(true);
+  };
+  React.useEffect(() => {
+    if (!cheer) return undefined;
+    const t = setTimeout(() => setCheer(false), 2800);   // outlives the slowest piece's fall
+    return () => clearTimeout(t);
+  }, [cheer]);
 
   return (
     <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
+      {/* the same celebration the egg hatch plays — one 'you did it' moment, learned once */}
+      {cheer && <HatchCelebration screen color={accent} accent={THEME.gold} />}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
           <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(accent, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="list-checks" size={17} color={shade(accent, -28)} stroke={2.3} /></span>
@@ -405,9 +425,15 @@ function HomeSimpleFocus({ ctx }) {
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: bg }}>
       <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button onClick={() => ctx.nav('profile')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-          <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}</div>
-          <div className="game-font" style={{ fontSize: 21, fontWeight: 500, color: THEME.fg1 }}>{PLAYER.name}</div>
+        {/* the buddy's face leads the greeting, and doubles as the way into the profile */}
+        <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+          <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+            <Mascot species={c.species} stage={c.stage} color={c.color} size={42} />
+          </div>
+          <div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}</div>
+            <div className="game-font" style={{ fontSize: 21, fontWeight: 500, color: THEME.fg1 }}>{PLAYER.name}</div>
+          </div>
         </button>
         <HomeActionsS ctx={ctx} />
       </div>

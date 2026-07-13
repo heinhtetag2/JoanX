@@ -8,9 +8,17 @@ import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
 import { EggShape, EggHalf, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
 
-// Parent-app brand magenta — reused across the child onboarding flow so its
-// CTAs, inputs, and accents match the parent onboarding (per design request).
-const P_BRAND = { primary: THEME.brand, primaryDark: THEME.brandDark, primaryLight: THEME.brandLight };
+// The first buddy every new child is given (for now): Hammy, the green one. Onboarding and
+// the hatch wear his colour, so the flow that hands you a green buddy is itself green —
+// the child app tints to the buddy it is about, and here that buddy is the starter.
+// (This was the product magenta, which left a green buddy sitting inside a pink flow.)
+const STARTER_ID = 'c1';
+const STARTER_GREEN = THEME.success;      // evergreen 50 — the same #4b814f Hammy carries
+const P_BRAND = {
+  primary: STARTER_GREEN,
+  primaryDark: shade(STARTER_GREEN, -28),
+  primaryLight: THEME.successLight,
+};
 
 const pBrandBtn = { background: P_BRAND.primary, boxShadow: 'none' };
 
@@ -70,10 +78,12 @@ function Onboarding({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
   const b = prize || c;                                      // buddy shown on the reveal
 
-  // hand the egg over: roll a starter now, show it only after the shell cracks
+  // hand the egg over. The first buddy is fixed, not rolled: a brand-new child should meet
+  // the same buddy the whole onboarding is themed around. (Random starters come later, from
+  // the Shop's eggs, where the odds are the point.)
   const openEgg = () => {
     const starters = CHARACTERS.filter(x => x.owned);
-    setPrize(starters[Math.floor(Math.random() * starters.length)] || CHARACTERS[0]);
+    setPrize(CHARACTERS.find(x => x.id === STARTER_ID) || starters[0] || CHARACTERS[0]);
     setEggPhase('egg');
     requestMotionPermission();   // iOS 13+: must be asked from a user gesture
     setCharReveal(true);
@@ -384,7 +394,7 @@ function Onboarding({ ctx }) {
             {/* radar — staggered rings ripple out from the buddy */}
             <div className="jx-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 240, height: 240, marginBottom: 14 }}>
               {[0, 0.8, 1.6].map((d, i) => (
-                <div key={`ring${i}`} className="jx-ring-slow" style={{ position: 'absolute', top: '50%', left: '50%', width: 170, height: 170, marginTop: -85, marginLeft: -85, borderRadius: 999, border: '2px solid rgba(224,4,119,.45)', animationDelay: `${d}s` }} />
+                <div key={`ring${i}`} className="jx-ring-slow" style={{ position: 'absolute', top: '50%', left: '50%', width: 170, height: 170, marginTop: -85, marginLeft: -85, borderRadius: 999, border: `2px solid ${shade(c.color, 20)}`, animationDelay: `${d}s` }} />
               ))}
               <div style={{ width: 124, height: 124, borderRadius: 999, background: shade(c.color, 82), border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
                 <div className="jx-float"><Buddy size={98} /></div>
@@ -425,7 +435,7 @@ function Onboarding({ ctx }) {
                 <Buddy size={86} />
               </div>
               {/* parent — tucked behind, overlapping */}
-              <div style={{ width: 104, height: 104, borderRadius: 999, background: P_BRAND.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(224,4,119,.10)' }}>
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: P_BRAND.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: `inset 0 0 0 1px ${shade(P_BRAND.primary, 60)}` }}>
                 <Icon name="users" size={44} color={P_BRAND.primary} stroke={2.2} />
               </div>
             </div>
@@ -452,12 +462,12 @@ function Onboarding({ ctx }) {
           padding box, so the wash reaches under the status bar with no pink gap */}
       {step === 4 && charReveal && eggPhase !== 'reveal' && (
         <>
-          <div className="jx-egg-bg" style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '50px 30px 0', overflow: 'hidden', '--egg-a': shade(THEME.gold, 38), '--egg-b': shade(THEME.gold, 66), '--egg-base': shade(THEME.gold, 92) }}>
+          <div className="jx-egg-bg" style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '50px 30px 0', overflow: 'hidden', '--egg-a': shade(P_BRAND.primary, 38), '--egg-b': shade(P_BRAND.primary, 66), '--egg-base': shade(P_BRAND.primary, 92) }}>
             {/* rings + the tappable egg */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
-              <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${THEME.gold}55` }} />
-              <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${THEME.gold}55` }} />
-              {eggPhase === 'cracking' && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(THEME.gold, 60)} 0%, transparent 68%)` }} />}
+              <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${P_BRAND.primary}55` }} />
+              <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${P_BRAND.primary}55` }} />
+              {eggPhase === 'cracking' && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(P_BRAND.primary, 60)} 0%, transparent 68%)` }} />}
               <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? 'jx-egg-hatch' : 'jx-float'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
                 {/* neutral gold shell — a buddy-tinted egg would give the surprise away */}
                 <EggShape size={132} />
@@ -468,14 +478,14 @@ function Onboarding({ ctx }) {
             <p style={{ fontSize: 14.5, color: THEME.fg2, lineHeight: 1.5, margin: '8px 0 0', maxWidth: 260 }}>{L('Someone is waiting inside. Hatch the egg to meet them.')}</p>
 
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 14, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: eggPhase === 'cracking' ? .85 : 1 }}>
-              <Icon name={eggPhase === 'cracking' ? 'hourglass' : 'pointer'} size={15} color={THEME.gold} stroke={2.3} className={eggPhase === 'cracking' ? 'jx-pulse-soft' : undefined} />{L(eggPhase === 'cracking' ? 'Hatching…' : 'Tap to hatch')}
+              <Icon name={eggPhase === 'cracking' ? 'hourglass' : 'pointer'} size={15} color={P_BRAND.primary} stroke={2.3} className={eggPhase === 'cracking' ? 'jx-pulse-soft' : undefined} />{L(eggPhase === 'cracking' ? 'Hatching…' : 'Tap to hatch')}
             </div>
 
             {/* shake affordance — parked at the bottom, same as the Shop's */}
             {eggPhase !== 'cracking' && (
               <div style={{ position: 'absolute', left: 0, right: 0, bottom: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(THEME.gold, 64), alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="vibrate" size={28} color={shade(THEME.gold, -28)} stroke={2.3} />
+                <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(P_BRAND.primary, 74), alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="vibrate" size={28} color={P_BRAND.primary} stroke={2.3} />
                 </span>
                 <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Shake to hatch too')}</div>
                 <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('Give your phone a little shake')}</div>
@@ -499,15 +509,18 @@ function Onboarding({ ctx }) {
               <Icon key={i} name="sparkles" size={p.s} color={i % 2 ? THEME.gold : THEME.primary} fill={i % 2 ? THEME.gold : THEME.primary} stroke={0} className="jx-twinkle" style={{ position: 'absolute', top: p.t, left: p.l, animationDelay: `${p.d}s` }} />
             ))}
 
-            {/* hatched eyebrow pill — the egg motif, not a gift box */}
-            <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '5px 12px 5px 10px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 12 }}>
-              <Icon name="egg" size={14} color="#9e7300" stroke={2.4} />{L('New buddy!')}
+            {/* The pill announcing the hatch. It used to be a gold chip with an egg icon — but
+                the egg has just cracked open on screen, so repeating it says nothing, and the
+                gold belonged to points, not to this buddy. It now wears the buddy's own colour:
+                the first thing the child sees is the colour their buddy will keep. */}
+            <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: shade(b.color, 78), color: shade(b.color, -34), borderRadius: 999, padding: '6px 13px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 12 }}>
+              {L('New buddy!')}
             </div>
             <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {/* soft standing glow — centered on the character */}
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(b.color, 78)} 0%, rgba(255,255,255,0) 68%)`, zIndex: 0 }} />
               {/* one-shot burst ring — flares out from the character's center */}
-              <div className="jx-burst" style={{ position: 'absolute', top: '50%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${THEME.gold}`, opacity: 0, zIndex: 0 }} />
+              <div className="jx-burst" style={{ position: 'absolute', top: '50%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${P_BRAND.primary}`, opacity: 0, zIndex: 0 }} />
               {/* cracked shell halves under the buddy's feet — it just came out */}
               <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 14, zIndex: 1 }}>
                 <EggHalf color={THEME.gold} />
