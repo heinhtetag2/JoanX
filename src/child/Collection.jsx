@@ -1,7 +1,7 @@
 // JoanX — child app · Collection
 
 import React from 'react';
-import { CHARACTERS, ROOMS } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, visibleCharacters } from '../core/data.jsx';
 import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
@@ -20,7 +20,7 @@ function Collection({ ctx }) {
   if (loading) {
     return (
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-        <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<Sk w={44} h={16} r={999} />} />
+        <ScreenHeader title={L('Collection House')} right={<Sk w={44} h={16} r={999} />} />
         <div style={{ padding: '0 16px' }}>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}><Sk h={58} r={16} /><Sk h={58} r={16} /></div>
           {[0, 1].map(i => (
@@ -51,7 +51,7 @@ function Collection({ ctx }) {
   if (empty) {
     return (
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-        <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>0/{CHARACTERS.length}</span></div>} />
+        <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>0/{visibleCharacters().length}</span></div>} />
         <div style={{ padding: '40px 28px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <div className="jx-float" style={{ width: 96, height: 96, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}><Icon name="egg" size={46} color={THEME.primary} stroke={1.8} /></div>
           <h2 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '10px 0 0' }}>{L('No buddies yet')}</h2>
@@ -69,7 +69,7 @@ function Collection({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{CHARACTERS.length}</span></div>} />
+      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{visibleCharacters().length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {/* encyclopedia entry point (Friends now has its own tab) */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -135,7 +135,7 @@ function Collection({ ctx }) {
         {/* all characters grid incl. locked */}
         <SectionHead title={L('All buddies')} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-          {CHARACTERS.map(c => (
+          {visibleCharacters().map(c => (
             <button key={c.id} disabled={!c.owned} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
               {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
               <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}>

@@ -3,7 +3,7 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { CHARACTERS, ROOMS } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -74,7 +74,7 @@ const EmptySlot = ({ size = 56 }) => (
 // ── the variant screen ───────────────────────────────────────────────
 function CollectionVariant({ variant = 'shelf', ctx }) {
   const [tab, setTab] = React.useState(0);   // used by the 'tabs' variant
-  const all = CHARACTERS;
+  const all = visibleCharacters();   // hidden Epics stay out of the collection until unlocked (F-15.2)
   const owned = all.filter(c => c.owned);
   const rooms = ROOMS;
   const openC = (c) => c && c.owned && ctx.nav('character', { id: c.id });
@@ -523,7 +523,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} onBack={() => ctx.back()} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{all.length}</span></div>} />
+      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{all.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {/* encyclopedia entry — kept across every variant */}
         <button onClick={() => ctx.nav('chardex')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: 'none', borderRadius: 16, padding: '13px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16 }}>

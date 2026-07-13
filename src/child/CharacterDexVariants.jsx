@@ -4,7 +4,7 @@
 // CharacterDex.jsx; everything below is an alternative reading of the same set.
 
 import React from 'react';
-import { CHARACTERS, SPECIES_INFO } from '../core/data.jsx';
+import { SPECIES_INFO, visibleCharacters } from '../core/data.jsx';
 import { Bar, Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -45,7 +45,7 @@ function MetaLine({ c, style }) {
 }
 
 function CharacterDexVariant({ variant = 'grid', ctx }) {
-  const all = CHARACTERS;
+  const all = visibleCharacters();   // hidden Epics stay out of the dex until unlocked (F-15.2)
   const owned = all.filter(c => c.owned).length;
   const open = (c) => c.owned && ctx.nav('character', { id: c.id });
 

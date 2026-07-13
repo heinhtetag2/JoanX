@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
-import { Icon, RARITY, THEME, mixHue, screenBgFor } from '../core/primitives.jsx';
+import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { DexHeader } from './DexHeaders.jsx';
 
@@ -80,4 +80,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { mixHue, screenBgFor, screenBgActive, ScreenHeader, Confetti, RarityPill, DexProgress, PointsChip, StatCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, Confetti, RarityPill, DexProgress, PointsChip, StatCard };

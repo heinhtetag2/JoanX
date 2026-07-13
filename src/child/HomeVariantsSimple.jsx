@@ -3,7 +3,7 @@ import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { mixHue, screenBgFor } from './shared.jsx';
+import { isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
 // A standalone DUPLICATE of the 6 home layouts (Original + the 5 in
@@ -394,8 +394,13 @@ function HomeSimpleFocus({ ctx }) {
   const lite = ctx.mode === 'lite';
   const pct = Math.min(1, c.xp / c.xpMax);   // ring tracks the buddy's XP toward the next level
   const R = 94, SW = 9, ring = 2 * (R + SW), circ = 2 * Math.PI * R;
-  // mixed "aurora" wash — analogous tones derived from the buddy hue, fading to sand
-  const bg = `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(c.color, -24, 0.06, 0.78)} 0%, ${mixHue(c.color, 4, 0.10, 0.72)} 50%, ${mixHue(c.color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`;
+  // mixed "aurora" wash — analogous tones derived from the buddy hue, fading to sand.
+  // A neon brand colour (the cute line's magenta) can't take these alphas straight:
+  // pastelise it and sweep pink → lavender → periwinkle instead. See primitives.jsx.
+  const [w1, w2, w3] = isNeon(c.color)
+    ? [pastelHue(c.color, 4, 0.86, 0.62), pastelHue(c.color, -46, 0.83, 0.54), pastelHue(c.color, -94, 0.81, 0.46)]
+    : [mixHue(c.color, -24, 0.06, 0.78), mixHue(c.color, 4, 0.10, 0.72), mixHue(c.color, 26, 0.14, 0.6)];
+  const bg = `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${w1} 0%, ${w2} 50%, ${w3} 100%), ${THEME.surface2}`;
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: bg }}>
@@ -413,10 +418,9 @@ function HomeSimpleFocus({ ctx }) {
 
       {/* goal ring + buddy */}
       <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', width: ring, height: ring, margin: '8px auto 0', cursor: 'pointer' }}>
-        <div style={{ position: 'absolute', inset: 18, borderRadius: 999, background: `radial-gradient(circle at 50% 45%, ${c.color}33 0%, ${c.color}1c 52%, ${c.color}00 74%)` }} />
         <svg width={ring} height={ring} viewBox={`0 0 ${ring} ${ring}`} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
           <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={c.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)', filter: `drop-shadow(0 0 6px ${shade(c.color, 40)})` }} />
+          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={c.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>

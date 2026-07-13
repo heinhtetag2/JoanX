@@ -517,11 +517,23 @@ const KO = {
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',
   'One gentle buzz': '부드러운 진동 한 번', 'I looked up': '고개 들었어요',
+  // 2s hold window after the buzz — stop inside it and no warning is shown (F-08.1)
+  'Stop within 2s and no warning appears.': '2초 안에 멈추면 경고가 표시되지 않아요.', 'I stopped': '멈췄어요',
+  // dismiss → re-assess → buzz + warn again, one tone firmer (F-08.2 / F-08.3)
+  'Got it!': '알겠어!', 'Still walking — I’ll check again in a moment': '아직 걷는 중 — 잠시 후 다시 확인할게요',
+  'Looks safe — making sure…': '안전해 보여요 — 확인 중…',
+  'Buzzing again — still walking': '다시 진동 — 아직 걷는 중', 'Reminder': '알림', 'recorded in your report': '리포트에 기록됨',
+  'Still walking,': '아직 걷고 있어요,', 'Phone down until you stop — I mean it this time.': '멈출 때까지 폰은 내려둬요 — 이번엔 진심이에요.',
+  'This is unsafe,': '위험해요,', 'Stop walking or put the phone away now. This is going in your report.': '지금 멈추거나 폰을 넣어요. 이 기록은 리포트에 남아요.',
   // grace period — subtle self-correct window before the warning (F-07)
   'Walking — heads up in a sec': '걷는 중 — 잠시 후 알려줄게요', 'Look up now and no warning is needed.': '지금 고개를 들면 경고가 필요 없어요.', "I've got it": '알겠어요',
   // staged escalation (F-08) + timed character message (F-09)
   'Buzz': '진동', 'Warning': '경고', 'Message': '메시지',
   'Eyes up!': '고개 들어요!', 'Phone away for now': '폰은 잠깐 넣어둬요', 'Look ahead!': '앞을 봐요!',
+  // rotating message pools per tone tier (F-09) — no line repeats back-to-back
+  'Watch your step!': '발밑 조심해요!',
+  'Eyes on the path, please': '가는 길을 봐요', 'Phone down while walking': '걸을 땐 폰을 내려요', 'Head up — I mean it': '고개 들어요 — 진심이에요',
+  'Stop walking — now': '지금 멈춰요', 'This is unsafe': '위험해요', 'Put the phone away': '폰을 넣어요', 'Look up before you get hurt': '다치기 전에 고개를 들어요',
   'still walking': '계속 걷는 중', 'Still on your phone?': '아직 폰 보고 있어요?',
   'Auto-dismisses in a moment · no nagging': '잠시 후 자동으로 사라져요 · 잔소리 없이',
   'Look up soon, or I’ll keep reminding you': '곧 고개를 들지 않으면 계속 알려줄게요',

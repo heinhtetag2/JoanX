@@ -249,7 +249,7 @@ function HomeFocus({ ctx }) {
       <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', width: 2 * (R + SW), height: 2 * (R + SW), margin: '14px auto 6px', cursor: 'pointer' }}>
         <svg width="100%" height="100%" viewBox={`0 0 ${2 * (R + SW)} ${2 * (R + SW)}`} style={{ transform: 'rotate(-90deg)' }}>
           <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={c.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)', filter: `drop-shadow(0 0 6px ${shade(c.color, 40)})` }} />
+          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={c.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>

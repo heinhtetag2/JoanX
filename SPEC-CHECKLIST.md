@@ -24,7 +24,13 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 |----|---------|--------|---------|------|
 | F-07 | Grace-period handling (10 s) | ⚙️ | — | Timing logic; optional pre-warning countdown design |
 | F-08 | Staged intervention UX | 🔧 | `WarningOverlay` | 3 warning styles exist; the vibration → warning → character-message escalation isn't storyboarded |
-| F-09 | Character message (1.5 s toast) | 🔧 | `WarningOverlay` | Banner ≈ close; needs the timed bottom toast (~20% height, 1.5 s, 3 s interval) |
+| F-08.1 | Warning display condition (2 s hold after the buzz) | ✅ | `WarningOverlay` | `BUZZ_HOLD_MS = 2000`; stopping inside the window skips the warning and closes as a self-correction |
+| F-08.2 | Dismiss ("Got it!") → 5 s cooldown → re-intervene | ✅ | `WarningOverlay` | `INTERVENTION.recheckSeconds` = 5 (server-configurable, pilot-tunable); silent for the same hazard, then re-assess → buzz → overlay only if the risk persists |
+| F-08.3 | Progressive tone + event logging | ✅ | `WarningOverlay` | `INTERVENTION.tiers` gentle → firm → urgent; `logRiskEvent()` records immediate / delayed / ignored for F-13/F-14 and F-20. No screen block (F-10 out of MVP) |
+| F-08.4 | Safe-state confirmation (anti-flicker) | ✅ | `WarningOverlay` | `INTERVENTION.safeConfirmSeconds` = 1 (pilot-tunable); escalation freezes on the first safe reading, overlay comes down only once safe holds |
+| F-09 | Character message (1.5 s toast) | ✅ | `WarningOverlay` | `CharMessageToast` — bottom-center ~20% height, up for `messageSeconds`, min `messageGapSeconds` between messages, only while the risk is live |
+| F-09.1 | Message rotation (anti-fatigue) | ✅ | `WarningOverlay` | `INTERVENTION.messages` pool per tone tier; no back-to-back repeat, each round starts at a different offset |
+| F-09.2 | Configurable message timing | ✅ | — | `INTERVENTION.messageSeconds` / `.messageGapSeconds` — server-configurable, retunable from pilot results |
 | F-10 | Full-screen block (Lite) | 🚫 | `LiteBlock.jsx` | Built ahead of scope — parked |
 | F-11 | Overlay warning (Smart) | ✅ | `WarningOverlay` | Sheet / spotlight / banner variants |
 | F-12 | User-response classification | ⚙️ | — | Surfaces in parent metrics (F-20) |
@@ -36,6 +42,8 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 | F-13 | Points · XP growth | ✅ | `ChildHome` `Rewards` `CharacterDetail` | Criteria in `POINTS` (data.jsx), spec A-1.1; server-configurable |
 | F-14 | Daily accident-free reward | ✅ | `Rewards` | +100 daily · +300 at 7d · Special Egg at 30d |
 | F-15 | Character acquisition · rarity | ✅ | `Collection` `Shop` `Onboarding` | Egg flow: buy/starter egg → tap or shake → hatch → random char, duplicates→XP. Grades Common/Rare/Epic |
+| F-15.1 | MVP roster 15 (8/5/2) + extensible | ✅ | `data.jsx` | `CHARACTERS` = 8 Common · 5 Rare · 2 Epic, each tagged `set: 'mvp'`; `RARITIES` is a list, so a new tier or a seasonal/event set is data, not a code change |
+| F-15.2 | Epics hidden until unlocked | ✅ | `CharacterDex` `Collection` | `visibleCharacters()` gates every roster surface — hidden Epics have no slot, no silhouette, and are out of the totals; hatching one reveals it |
 | F-16 | Character evolution (3 stages) | ✅ | `CharacterDetail` | |
 | A-3.1 | EXP curve | ✅ | `data.jsx` | `100 + (n−1)×50` — Lv1→2 100 … Lv5→6 300. `XP_CURVE`; server-configurable. `xpMax` derived, never authored |
 | A-3.2 | Max level Lv.10 + core loop | ✅ | `data.jsx` `ChildHome` | `XP_CURVE.maxLevel`; `xpForLevel()` returns null at cap; `c.maxed` flag; hatch new eggs to keep growing |
@@ -89,7 +97,7 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 
 1. ~~**A-2 / F-15 — Egg & hatch flow**~~ — done: `EggHatch.jsx` (shared), `Shop.jsx` (buy → hatch → duplicate→XP toast), `Onboarding.jsx` (starter egg).
 2. **🔧 F-08 — Stage escalation**: storyboard vibration → on-screen warning → character message in `WarningOverlay.jsx`.
-3. **🔧 F-09 — Timed character toast**: bottom-center ~20% height, 1.5 s auto-dismiss variant.
+3. ~~**🔧 F-09 — Timed character toast**~~ — done: `CharMessageToast` in `WarningOverlay.jsx` (1.5 s display, 3 s minimum gap, rotating message pools, both timings server-configurable).
 4. **🔧 F-20 — Reports reframe**: risky-behavior *reduction rate* metric in `ParentReports.jsx`.
 5. **🔧 F-26 — Permission fallback**: denied-permission state in `Onboarding.jsx` (warnings keep working without location).
 6. **🚫 Parked screens**: `LiteBlock.jsx` (F-10), `ParentSchedule.jsx` + Time-rules block (F-21) — excluded this revision; don't expand.

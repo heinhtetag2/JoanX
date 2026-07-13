@@ -70,8 +70,7 @@ function _toHsl(hex) {
   if (mx === mn) { h = s = 0; } else { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
   return [h, s, l];
 }
-function mixHue(hex, degShift, lShift, alpha) {
-  let [h, s, l] = _toHsl(hex); h = (h + degShift / 360 + 1) % 1; l = Math.max(0, Math.min(1, l + (lShift || 0))); s = Math.max(0, Math.min(1, s + 0.04));
+function _hsla(h, s, l, alpha) {
   let r, g, b;
   if (s === 0) { r = g = b = l; } else {
     const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
@@ -80,13 +79,39 @@ function mixHue(hex, degShift, lShift, alpha) {
   }
   return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha == null ? 1 : alpha})`;
 }
+function mixHue(hex, degShift, lShift, alpha) {
+  let [h, s, l] = _toHsl(hex); h = (h + degShift / 360 + 1) % 1; l = Math.max(0, Math.min(1, l + (lShift || 0))); s = Math.max(0, Math.min(1, s + 0.04));
+  return _hsla(h, s, l, alpha);
+}
+
+// ── Neon-brand guard ─────────────────────────────────────────────────
+// mixHue's *additive* lightness shift assumes an already-muted input: a comic
+// buddy sits at s ≈ .26–.72 / l ≈ .40–.59, so a wash built off it lands soft.
+// The JoanX brand magenta does not — at s ≈ .97 the same recipe returns
+// fluorescent pink, and mixHue's ±30° sweep runs purple → pink → red, which
+// reads as a random mix rather than a palette.
+//
+// For colours that hot, pastelise instead: cap the saturation, lift to an
+// *absolute* (light) lightness, and sweep the hue toward blue — pink →
+// lavender → periwinkle, the same family THEME.screenBg already uses. Muted
+// buddy colours stay on the original path, untouched.
+const NEON = 0.80;                                   // above every comic buddy (max .72)
+const isNeon = hex => !!hex && _toHsl(hex)[1] > NEON;
+function pastelHue(hex, degShift, l, alpha, sMax = 0.80) {
+  const [h, s] = _toHsl(hex);
+  return _hsla((h + degShift / 360 + 1) % 1, Math.min(s, sMax), l, alpha);
+}
+
 // Build the soft top-of-screen wash, tinted by whatever brand/buddy colour is in
 // play (green buddy → green wash, magenta brand → pink wash…). Falls back to the
 // static token when no color is given.
 function screenBgFor(color) {
   if (!color) return THEME.screenBg;
+  const [a, b, c] = isNeon(color)
+    ? [pastelHue(color, 4, 0.86, 0.30), pastelHue(color, -48, 0.83, 0.26), pastelHue(color, -98, 0.81, 0.28)]
+    : [mixHue(color, -30, 0.13, 0.32), mixHue(color, 2, 0.15, 0.24), mixHue(color, 32, 0.17, 0.30)];
   return `linear-gradient(180deg, rgba(248,247,247,0) 0, ${THEME.surface2} 400px), `
-    + `linear-gradient(115deg, ${mixHue(color, -30, 0.13, 0.32)} 0%, ${mixHue(color, 2, 0.15, 0.24)} 52%, ${mixHue(color, 32, 0.17, 0.30)} 100%), `
+    + `linear-gradient(${isNeon(color) ? 120 : 115}deg, ${a} 0%, ${b} 52%, ${c} 100%), `
     + `${THEME.surface2}`;
 }
 
@@ -230,4 +255,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, Button, Icon, Input, RARITY, SectionHead, StatusBar, THEME, Toggle, mixHue, screenBgFor };
+export { Badge, Bar, Button, Icon, Input, RARITY, SectionHead, StatusBar, THEME, Toggle, isNeon, mixHue, pastelHue, screenBgFor };

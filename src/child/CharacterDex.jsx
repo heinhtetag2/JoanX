@@ -1,7 +1,7 @@
 // JoanX — child app · CharacterDex
 
 import React from 'react';
-import { CHARACTERS, SPECIES_INFO } from '../core/data.jsx';
+import { SPECIES_INFO, visibleCharacters } from '../core/data.jsx';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
@@ -9,14 +9,17 @@ import { ScreenHeader, RarityPill, DexProgress, screenBgActive } from './shared.
 
 // ── Character Encyclopedia (A-4) ─────────────────────────────────────
 function CharacterDex({ ctx }) {
-  const owned = CHARACTERS.filter(c => c.owned).length;
+  // F-15.2 — hidden Epics are absent from the dex entirely: not a slot, not a silhouette,
+  // and not part of the denominator, which would otherwise give their existence away.
+  const roster = visibleCharacters();
+  const owned = roster.filter(c => c.owned).length;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Encyclopedia')} onBack={() => ctx.nav('collection')}
-        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="book-open" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned}/{CHARACTERS.length}</span></div>} />
+        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="book-open" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned}/{roster.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
-        <DexProgress have={owned} total={CHARACTERS.length} label="Characters collected" />
-        {CHARACTERS.map(c => {
+        <DexProgress have={owned} total={roster.length} label="Characters collected" />
+        {roster.map(c => {
           const info = SPECIES_INFO[c.species] || {};
           return (
             <div key={c.id} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, cursor: c.owned ? 'pointer' : 'default', alignItems: 'center' }}>

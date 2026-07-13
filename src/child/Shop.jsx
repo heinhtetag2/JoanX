@@ -2,35 +2,25 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { CHARACTERS, EGGS, PLAYER, POINTS, xpForLevel } from '../core/data.jsx';
+import { CHARACTERS, EGGS, PLAYER, POINTS, rarityOf, xpForLevel } from '../core/data.jsx';
 import { Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
 
-// ── Egg loot pool (A-2 / F-15) ───────────────────────────────────────
-// Collectible buddies distinct from the starter roster, so a hatch can be a
-// genuine "new buddy" until the pool is exhausted, then rolls into duplicates.
-const EGG_POOL = [
-  { id: 'egg-cocoa', species: 'cat',  name: 'Cocoa', color: '#a9744f', rarity: 'common'  },
-  { id: 'egg-sky',   species: 'bird', name: 'Sky',   color: '#5aa9e6', rarity: 'common'  },
-  { id: 'egg-maple', species: 'fox',  name: 'Maple', color: '#e08a3c', rarity: 'rare'    },
-  { id: 'egg-luna',  species: 'owl',  name: 'Luna',  color: '#7c5cbf', rarity: 'rare'    },
-  { id: 'egg-nova',  species: 'cat',  name: 'Nova',  color: '#e0559a', rarity: 'epic'    },
-];
-// a pricier egg doesn't guarantee a rarer buddy — it shifts the odds
-const EGG_ODDS = {
-  common: { common: 8, rare: 2, epic: 0 },
-  rare:   { common: 3, rare: 6, epic: 1 },
-  epic:   { common: 0, rare: 4, epic: 6 },
-};
-const DUP_XP = { common: 30, rare: 60, epic: 120 };
-// weighted-random pick, biased by which egg was opened
-const rollBuddy = (eggRarity = 'common') => {
-  const w = EGG_ODDS[eggRarity] || EGG_ODDS.common;
-  const bag = EGG_POOL.flatMap(b => Array(w[b.rarity] || 0).fill(b));
-  return bag[Math.floor(Math.random() * bag.length)];
+// ── Egg hatching (A-2 / F-15) ────────────────────────────────────────
+// Eggs hatch straight from the roster in data.jsx — there is no second, private
+// pool of buddies. That is what makes the collection totals mean something: every
+// buddy you can hatch is one of the 15, and an unowned one is a genuinely new
+// character until the tier is exhausted, after which the tier rolls duplicates.
+// Odds come from the egg (server-configurable); only the Epic Egg can hatch an Epic.
+const rollBuddy = (egg) => {
+  const odds = egg.odds || {};
+  // weight each candidate by its tier, preferring buddies you don't own yet so a
+  // hatch stays exciting while there is anything left to find
+  const bag = CHARACTERS.flatMap(c => Array((odds[c.rarity] || 0) * (c.owned ? 1 : 3)).fill(c));
+  return bag.length ? bag[Math.floor(Math.random() * bag.length)] : null;
 };
 
 // ── Points & Shop ────────────────────────────────────────────────────
@@ -41,7 +31,6 @@ function Shop({ ctx }) {
 
   // egg & hatch flow state — { phase:'egg'|'reveal', buddy, dup, xp }
   const [hatch, setHatch] = React.useState(null);
-  const eggOwned = React.useRef(new Set());   // which egg-pool buddies you've hatched already
 
   // A-2: price + eligibility come from EGGS (server-configurable). Epic has no
   // price — it is only granted by events, missions and achievements.
@@ -52,7 +41,7 @@ function Shop({ ctx }) {
     if (pts < egg.price) return nope(L('Not enough points yet'));
     PLAYER.points -= egg.price; setPts(PLAYER.points);
     requestMotionPermission();   // iOS 13+: must be asked from this user gesture
-    setHatch({ phase: 'egg', buddy: rollBuddy(egg.rarity), eggRarity: egg.rarity });
+    setHatch({ phase: 'egg', buddy: rollBuddy(egg), eggRarity: egg.rarity });
   };
   // tap the egg → it wobbles (crack), then the buddy pops out
   const crackEgg = () => {
@@ -65,17 +54,18 @@ function Shop({ ctx }) {
   // reveal the buddy; new ones join the collection, dupes pay XP
   const revealEgg = () => {
     setHatch(h => {
-      if (!h) return h;
+      if (!h || !h.buddy) return h;
       const b = h.buddy;
-      const dup = eggOwned.current.has(b.id);
+      const dup = b.owned;
       let xp = 0;
       if (dup) {
-        xp = DUP_XP[b.rarity];
+        xp = rarityOf(b.rarity).dupXp;
         const active = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
         if (active) active.xp = Math.min((active.xp || 0) + xp, active.xpMax || xpForLevel(active.level || 1));
       } else {
-        eggOwned.current.add(b.id);
-        CHARACTERS.push({ id: b.id, species: b.species, name: b.name, color: b.color, stage: 1, rarity: b.rarity, level: 1, xp: 0, xpMax: xpForLevel(1), owned: true, room: null, traits: { guard: 50, speed: 60, heart: 70 } });
+        // joins the collection — and for an Epic this is the moment it stops being
+        // hidden and appears in the dex at all (F-15.2)
+        b.owned = true; b.level = 1; b.xp = 0; b.xpMax = xpForLevel(1);
       }
       return { ...h, phase: 'reveal', dup, xp };
     });

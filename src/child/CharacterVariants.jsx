@@ -5,7 +5,7 @@ import { CHARACTERS, OUTFITS, PLAYER } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { mixHue } from './shared.jsx';
+import { isNeon, mixHue, pastelHue } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
 
 function CharVariant({ ctx, variant }) {
@@ -418,13 +418,22 @@ function CharVariant({ ctx, variant }) {
   );
 
   // ── per-variant background ──
+  // shade() adds a flat per-channel amount, which assumes a muted input: on the
+  // neon brand magenta shade(c, 74) clamps red to 255 and lands on #ff4ec1 — a
+  // hotter, hue-shifted pink than the brand itself. Pastelise those instead, the
+  // same pink → lavender family the home wash uses. See primitives.jsx.
+  const neon = isNeon(color);
   const ink = shade(color, -52);
   const bg = ({
     cover: THEME.surface2,
     wave: '#fff',
     vivid: `linear-gradient(180deg, ${shade(color, 96)} 0%, ${shade(color, 38)} 60%, ${shade(color, 2)} 100%)`,
-    focus: `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(color, -24, 0.06, 0.78)} 0%, ${mixHue(color, 4, 0.10, 0.72)} 50%, ${mixHue(color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`,
-    showcase: `linear-gradient(180deg, ${shade(color, 74)} 0%, ${tint(color, .82)} 32%, ${THEME.surface2} 60%)`,
+    focus: neon
+      ? `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${pastelHue(color, 4, 0.86, 0.62)} 0%, ${pastelHue(color, -46, 0.83, 0.54)} 50%, ${pastelHue(color, -94, 0.81, 0.46)} 100%), ${THEME.surface2}`
+      : `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(color, -24, 0.06, 0.78)} 0%, ${mixHue(color, 4, 0.10, 0.72)} 50%, ${mixHue(color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`,
+    showcase: neon
+      ? `linear-gradient(180deg, ${pastelHue(color, 4, 0.86, 1)} 0%, ${pastelHue(color, -34, 0.93, 1)} 32%, ${THEME.surface2} 60%)`
+      : `linear-gradient(180deg, ${shade(color, 74)} 0%, ${tint(color, .82)} 32%, ${THEME.surface2} 60%)`,
   })[variant] || THEME.screenBg;
 
   // ── hero per variant ──
@@ -464,10 +473,9 @@ function CharVariant({ ctx, variant }) {
       <div style={{ padding: '50px 18px 0' }}>
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', width: ring, height: ring, margin: '12px auto 0', cursor: 'pointer' }}>
-          <div style={{ position: 'absolute', inset: 18, borderRadius: 999, background: `radial-gradient(circle at 50% 45%, ${color}30 0%, ${color}00 72%)` }} />
           <svg width={ring} height={ring} viewBox={`0 0 ${ring} ${ring}`} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
             <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-            <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ filter: `drop-shadow(0 0 6px ${shade(color, 40)})` }} />
+            <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} />
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Buddy size={148} /></div>
         </div>
@@ -496,9 +504,10 @@ function CharVariant({ ctx, variant }) {
       <div style={{ padding: '50px 18px 0' }}>
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', textAlign: 'center', marginTop: 8, cursor: 'pointer' }}>
-          <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', width: 250, height: 210, background: `radial-gradient(circle at 50% 28%, ${color}2e 0%, ${color}00 64%)`, pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}><Buddy size={162} /></div>
-          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${shade(color, 62)} 0%, ${tint(color, .82)} 58%, ${tint(color, .82)}00 78%)` }} />
+          {/* contact shadow. shade() clamps on a neon brand colour (shade(#E00477,62)
+              → #ff42b5), so the "shadow" came out hotter than the buddy — pastelise it. */}
+          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${neon ? pastelHue(color, 0, 0.80, 1) : shade(color, 62)} 0%, ${tint(color, .82)} 58%, ${tint(color, .82)}00 78%)` }} />
         </div>
         <div style={{ textAlign: 'center', marginTop: 10 }}>
           {Badges}

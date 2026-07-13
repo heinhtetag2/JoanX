@@ -87,7 +87,7 @@ const CHAPTERS = [
         note: 'Day-streak row with per-day rewards covers it.' },
       { id: 'F-15', title: 'Character acquisition · rarity', mode: 'Smart', status: 'done',
         screens: ['Collection.jsx', 'Shop.jsx'],
-        note: 'Collection grid + rarity, plus the A-2 egg flow: buy a Buddy Egg (500 pts) → tap-to-crack hatch animation → weighted-random buddy reveal; duplicates convert to XP. Live drifting gradient behind the egg while it waits.' },
+        note: 'A 15-character roster (8 Common · 5 Rare · 2 Epic) with the 2 Epics hidden until unlocked, plus the A-2 egg flow: buy a Buddy Egg (500 pts) → tap-to-crack hatch animation → weighted-random reveal from the roster; duplicates convert to XP. Live drifting gradient behind the egg while it waits.' },
       { id: 'F-16', title: 'Character evolution (3 stages)', mode: 'Smart', status: 'done',
         screens: ['CharacterDetail.jsx', 'CharacterVariants.jsx'],
         note: 'Stage 1→3 with appearance changes. When a buddy fills its XP a "Ready to evolve" card appears on its detail; tapping Evolve plays a burst moment and the buddy re-skins to the next stage (unlocking stage-gated items). Sunny is seeded XP-full to demo it.' },
@@ -162,7 +162,7 @@ const CHAPTERS = [
     items: [
       { id: 'A-2', title: 'Egg acquisition (points → egg → hatch)', mode: 'Smart', status: 'done',
         screens: ['Shop.jsx'],
-        note: 'Buy a Buddy Egg for 500 points → tap-to-crack (egg wobble) → weighted-random reveal from a 5-buddy pool with rarity odds; new buddies join the collection, duplicates convert to XP (30/60/120 by rarity). Points-only — no cash payment (per spec).' },
+        note: 'Buy a Buddy Egg for 500 points → tap-to-crack (egg wobble) → weighted-random reveal from the 15-character roster with per-egg rarity odds; new buddies join the collection, duplicates convert to XP (30/60/120 by rarity). Only the Epic Egg can hatch an Epic. Points-only — no cash payment (per spec).' },
       { id: 'A-4', title: 'Character encyclopedia', mode: 'Smart', status: 'done',
         screens: ['CharacterDex.jsx'],
         note: 'Name, rarity, stage, description, silhouettes for unowned, completion %.' },

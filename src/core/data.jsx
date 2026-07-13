@@ -93,6 +93,64 @@ const POINTS = {
 // F-13: "10 pt per minute of non-use while walking." (alias — prefer POINTS)
 const SAFE_PT_PER_MIN = POINTS.perSafeMinute;
 
+// ── Staged intervention (F-07 / F-08 · spec F-08.1–F-08.3) ───────────
+// One risk event can run several intervention rounds:
+//   grace → buzz → (risk persists holdMs) → warning overlay → character message
+//   → dismissed or ignored → recheckMs cooldown → re-assess → buzz + warning again
+// Server-configurable like POINTS: the cooldown and round cap are policy, and the
+// tone ladder is copy, so both are expected from remote settings. Forced screen
+// blocking is deliberately absent — it is out of MVP scope (F-10).
+const INTERVENTION = {
+  graceSeconds: 10,     // F-07 — self-correct window before any intervention
+  buzzHoldSeconds: 2,   // F-08.1 — risk must persist this long past the buzz to warrant a warning
+  // F-08.2 — cooldown after a dismiss/ignore: for this long, the same hazardous situation
+  // produces no further warning of any kind. When it lapses the risk is re-assessed, and only
+  // if the unsafe behavior is still going does the next round fire. Pilot-tunable.
+  recheckSeconds: 5,
+  // F-08.4 — the overlay comes down as soon as the risk ends (phone put away, or walking
+  // stops), but sensors flutter: a single stray sample would otherwise flicker the overlay
+  // off and back on. So the safe state must hold for this long before the overlay is removed.
+  // Short enough to feel instant, long enough to outlast a blip. Pilot-tunable.
+  safeConfirmSeconds: 1,
+  maxRounds: 3,         // tone ladder length; further rounds repeat the strongest tier
+  // F-09 — character message: on screen for messageSeconds, and at least
+  // messageGapSeconds must pass before another one appears. Both are pilot-tunable, so
+  // they live here rather than in the component — remote settings can retune them without
+  // an app release once field data comes back.
+  messageSeconds: 1.5,
+  messageGapSeconds: 3,
+  // F-08.3 — each ignored round comes back firmer. Tone only: never a screen block.
+  tiers: [
+    { key: 'gentle', title: 'Eyes up,',        body: "Let's put the phone away while we're walking." },
+    { key: 'firm',   title: 'Still walking,',  body: 'Phone down until you stop — I mean it this time.' },
+    { key: 'urgent', title: 'This is unsafe,', body: 'Stop walking or put the phone away now. This is going in your report.' },
+  ],
+  // F-09 — the same line twice running breeds fatigue and then resistance, so each tone
+  // tier gets a pool the toast rotates through. Keep every pool at 3+ lines: the rotation
+  // guarantees no back-to-back repeat only while there is something else to say.
+  messages: {
+    gentle: ['Eyes up!', 'Phone away for now', 'Look ahead!', 'Watch your step!'],
+    firm:   ['Still on your phone?', 'Eyes on the path, please', 'Phone down while walking', 'Head up — I mean it'],
+    urgent: ['Stop walking — now', 'This is unsafe', 'Put the phone away', 'Look up before you get hurt'],
+  },
+};
+
+// The tone tier for an intervention round (1-based); the last tier repeats at the cap.
+const interventionTier = (round) =>
+  INTERVENTION.tiers[Math.min(Math.max(round, 1), INTERVENTION.tiers.length) - 1];
+
+// F-09 — the rotation pool for a round's tone tier.
+const interventionMessages = (round) => INTERVENTION.messages[interventionTier(round).key];
+
+// F-12 / F-20 — every risk event is logged: the outcome classification feeds the
+// reward system (immediate-stop bonus) and the parent report. In-memory for the
+// prototype; the shipped app posts these to the server.
+const RISK_EVENT_LOG = [];
+
+// outcome: 'immediate' (stopped in the grace/buzz window) · 'delayed' (stopped after a
+// warning) · 'ignored' (dismissed or ignored through every round and still walking).
+const logRiskEvent = (event) => { RISK_EVENT_LOG.push(event); return event; };
+
 // ── XP curve & level cap (F-16 · spec A-3.1 / A-3.2) ─────────────────
 // EXP to reach the next level starts low and grows by a fixed step each level:
 //   Lv1→2 100 · Lv2→3 150 · Lv3→4 200 · Lv4→5 250 · Lv5→6 300 …
@@ -130,29 +188,67 @@ const OUTFITS = [
 //   price    — point cost, or null when the egg cannot be bought with points
 //   minLevel — player level required to purchase (0 = no gate)
 //   sources  — how an unbuyable egg is obtained instead
+//   odds     — relative weight per rarity tier of what hatches. A pricier egg does not
+//              guarantee a rarer buddy, it shifts the odds. Only the Epic Egg can hatch an
+//              Epic, which is what keeps the two hidden characters genuinely rare (F-15.2).
 const EGGS = [
-  { id: 'common', rarity: 'common', name: 'Common Egg', price: 500,  minLevel: 0 },
-  { id: 'rare',   rarity: 'rare',   name: 'Rare Egg',   price: 1500, minLevel: 5 },
+  { id: 'common', rarity: 'common', name: 'Common Egg', price: 500,  minLevel: 0,
+    odds: { common: 8, rare: 2, epic: 0 } },
+  { id: 'rare',   rarity: 'rare',   name: 'Rare Egg',   price: 1500, minLevel: 5,
+    odds: { common: 3, rare: 6, epic: 0 } },
   { id: 'epic',   rarity: 'epic',   name: 'Epic Egg',   price: null, minLevel: 0,
-    sources: ['Events', 'Special missions', 'Achievement rewards'] },
+    sources: ['Events', 'Special missions', 'Achievement rewards'],
+    odds: { common: 0, rare: 4, epic: 6 } },
 ];
 
-// owned + collectible characters
-const CHARACTERS = [
-  { id: 'c1', species: 'fox',  name: 'Hammy',  color: '#4b814f', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c2', species: 'cat',  name: 'Mochi',  color: '#e1874a', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
-  { id: 'c3', species: 'bird', name: 'Pip',    color: '#447aaf', stage: 1, rarity: 'common',  level: 2, xp: 60,  xpMax: 200, owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c6', species: 'owl',  name: 'Sunny',  color: '#e0554a', stage: 2, rarity: 'rare',    level: 5, xp: 350, xpMax: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },   // XP-full → ready to evolve to Stage 3 (F-16)
-  // legacy (06-29 / 0da9b64) versions of Hammy & Mochi, kept as new characters — old colours, new names
-  { id: 'c9',  species: 'fox', name: 'Toffee', color: '#d99c5a', stage: 2, rarity: 'rare',    level: 7, xp: 320, xpMax: 500, owned: true,  room: 'r2', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c10', species: 'cat', name: 'Bloo',   color: '#a8c3eb', stage: 2, rarity: 'common',  level: 4, xp: 140, xpMax: 300, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },
-  // ── hidden for now — keeping the app to 4 characters (Hammy / Mochi / Pip / Sunny).
-  //    Restore these to bring back Ember, Pixel and the two locked slots.
-  // { id: 'c4', species: 'croc', name: 'Ember',  color: '#9867e4', stage: 3, rarity: 'epic', level: 12, xp: 80, xpMax: 800, owned: true,  room: 'r2', traits: { guard: 95, speed: 70, heart: 88 } },
-  // { id: 'c5', species: 'cat',  name: 'Pixel',  color: '#6697c9', stage: 1, rarity: 'rare',    level: 3, xp: 150, xpMax: 200, owned: true,  room: null, traits: { guard: 48, speed: 66, heart: 58 } },
-  // { id: 'c7', species: 'cat',  name: '???',    color: '#e278a8', stage: 1, rarity: 'epic', level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Walk safely 7 days in a row', room: null, traits: {} },
-  // { id: 'c8', species: 'fox',  name: '???',    color: '#67c7ce', stage: 1, rarity: 'rare',    level: 0, xp: 0,   xpMax: 200, owned: false, locked: 'Reach a 14-day streak', room: null, traits: {} },
+// ── Rarity tiers (A-4 / F-15) ────────────────────────────────────────
+// The tier list is data, not a hard-coded union: a future tier (Legendary,
+// seasonal-only…) is one more entry here plus its dex styling. Nothing below
+// counts tiers or assumes there are exactly three.
+//   dupXp              — XP a duplicate of this tier converts to
+//   hiddenUntilUnlocked — the character is not shown anywhere until it is owned:
+//                        no dex slot, no silhouette, no "???" placeholder (F-15.2)
+const RARITIES = [
+  { key: 'common', label: 'Common', badge: 'default', dupXp: 30 },
+  { key: 'rare',   label: 'Rare',   badge: 'primary', dupXp: 60 },
+  { key: 'epic',   label: 'Epic',   badge: 'epic',    dupXp: 120, hiddenUntilUnlocked: true },
 ];
+
+const rarityOf = (key) => RARITIES.find(r => r.key === key) || RARITIES[0];
+
+// ── Character roster (F-15 · MVP = 15 characters) ────────────────────
+// 8 Common · 5 Rare · 2 Epic. `set` groups a release: everything shipping in the
+// MVP is 'mvp', and a seasonal or event drop is a new set added here (and gated by
+// the server) without touching any screen — the dex renders whatever the roster holds.
+//   owned  — in the child's collection
+//   locked — how an unowned character is obtained (dex hint; hidden tiers never show it)
+const CHARACTERS = [
+  // ── Common ×8 ──
+  { id: 'c2',  species: 'cat',  name: 'Mochi',   color: '#e1874a', stage: 2, rarity: 'common', set: 'mvp', level: 4, xp: 140, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', stage: 1, rarity: 'common', set: 'mvp', level: 2, xp: 60,  owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
+  { id: 'c10', species: 'cat',  name: 'Bloo',    color: '#a8c3eb', stage: 2, rarity: 'common', set: 'mvp', level: 4, xp: 140, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c11', species: 'cat',  name: 'Cocoa',   color: '#a9744f', stage: 1, rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 45, speed: 70, heart: 62 } },
+  { id: 'c12', species: 'bird', name: 'Sky',     color: '#5aa9e6', stage: 1, rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 } },
+  { id: 'c13', species: 'croc', name: 'Snap',    color: '#5c9e6b', stage: 1, rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 } },
+  { id: 'c14', species: 'owl',  name: 'Pebble',  color: '#8b8073', stage: 1, rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 } },
+  { id: 'c15', species: 'fox',  name: 'Biscuit', color: '#d8a657', stage: 1, rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 52, speed: 64, heart: 70 } },
+  // ── Rare ×5 ──
+  { id: 'c1',  species: 'fox',  name: 'Hammy',   color: '#4b814f', stage: 2, rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c6',  species: 'owl',  name: 'Sunny',   color: '#e0554a', stage: 2, rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },   // XP-full → ready to evolve to Stage 3 (F-16)
+  { id: 'c9',  species: 'fox',  name: 'Toffee',  color: '#d99c5a', stage: 2, rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'r2', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c16', species: 'owl',  name: 'Luna',    color: '#7c5cbf', stage: 1, rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 } },
+  { id: 'c17', species: 'croc', name: 'Basil',   color: '#3f7f8c', stage: 1, rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 } },
+  // ── Epic ×2 — hidden until unlocked (F-15.2): no dex slot, no silhouette, no name ──
+  { id: 'c18', species: 'croc', name: 'Ember',   color: '#9867e4', stage: 1, rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Walk safely 30 days in a row', room: null, traits: { guard: 95, speed: 70, heart: 88 } },
+  { id: 'c19', species: 'bird', name: 'Zephyr',  color: '#e0559a', stage: 1, rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Win a special event mission', room: null, traits: { guard: 80, speed: 96, heart: 82 } },
+];
+
+// F-15.2 — an Epic stays invisible until it is unlocked. Every "show me the roster"
+// surface (dex, collection, totals) goes through this, so a hidden character leaks
+// nowhere — not even as a locked slot or a completion denominator that hints at it.
+const isRevealed = (c) => c.owned || !rarityOf(c.rarity).hiddenUntilUnlocked;
+const visibleCharacters = () => CHARACTERS.filter(isRevealed);
+const charactersOfRarity = (key) => CHARACTERS.filter(c => c.rarity === key);
 
 // xpMax is derived, never authored — the curve is the single source of truth.
 // At the cap there is no "next level", so the bar is pinned full rather than
@@ -371,4 +467,4 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-export { ACHIEVEMENTS, BATTLES_PER_DAY, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, EGGS, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, REACTIONS_7D, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS, XP_CURVE, isMaxLevel, xpForLevel };
+export { ACHIEVEMENTS, BATTLES_PER_DAY, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, EGGS, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, INTERVENTION, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS, XP_CURVE, charactersOfRarity, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, rarityOf, visibleCharacters, xpForLevel };
