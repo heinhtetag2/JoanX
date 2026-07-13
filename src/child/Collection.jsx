@@ -71,9 +71,11 @@ function Collection({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{visibleCharacters().length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
-        {/* encyclopedia entry point (Friends now has its own tab) */}
+        {/* entry points into the two things that live off the collection: the dex
+            (every character) and My Room (the house those characters are placed in) */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          {[['book-open', 'Encyclopedia', 'chardex', THEME.primary, THEME.primaryLight]].map(([ic, lbl, dest, col, bg]) => (
+          {[['book-open', 'Encyclopedia', 'chardex', THEME.primary, THEME.primaryLight],
+            ['home', 'My Room', 'myhouse', THEME.success, THEME.successLight]].map(([ic, lbl, dest, col, bg]) => (
             <button key={dest} onClick={() => ctx.nav(dest)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: 'none', borderRadius: 16, padding: '13px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
               <span style={{ width: 34, height: 34, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={ic} size={17} color={col} stroke={2.3} /></span>
               <span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, textAlign: 'left', lineHeight: 1.15 }}>{L(lbl)}</span>

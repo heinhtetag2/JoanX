@@ -75,6 +75,8 @@ The feature group through which a guardian configures the usage environment and 
 
 | ID | Feature | Description | Mode |
 |----|---------|-------------|------|
+| F-33 | **[Added]** Guardian account sign-in | The parent/guardian account uses **phone number + SMS verification** as the primary authentication method. There is no password, so there is no password-reset flow: a returning parent re-verifies the same way a new one does. Verifying an unknown number creates the account; a known number signs straight in. | Common |
+| F-33.1 | **[Added]** Social sign-in & email scope | To satisfy platform policy and reduce typing, the app also supports **Google Sign-In on Android** and **Sign in with Apple on iOS**; each is offered only on its own platform. **Email login is excluded from the MVP**, but it is modeled as a disabled sign-in method rather than an absent one, so a later business decision can enable it by turning the method on and adding its form — no rework of the sign-in flow. | Common |
 | F-20 | Guardian report metrics | Provides behavior-change metrics rather than raw event counts: risky-behavior reduction rate, warning-acceptance rate, and safe-walking-time increase rate. | Common |
 | F-21 | **[Excluded]** Time-based policy settings | Strong restrictions during commute hours; policy settings by time band. | Excluded |
 | F-22 | Smart intervention-intensity settings | Adjust warning sensitivity, warning frequency, whether notifications are received, and the gamification activation level. | Smart |

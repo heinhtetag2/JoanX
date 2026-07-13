@@ -4,7 +4,7 @@ import React from 'react';
 import { CHARACTERS, INTERVENTION, PLAYER, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot } from '../core/characters.jsx';
+import { Mascot, MascotChip } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
 
 // Timings. Everything the spec pins down (the 2s hold, the 1.5s message, the 3s gap, the 5s
@@ -88,12 +88,33 @@ function RoundBadge({ round, tier, inline }) {
 // copy, and the "this is being recorded" line (F-08.3) — which the sheet and spotlight
 // variants already showed but the toast did not.
 const TOAST_TONE = {
-  gentle: { rail: THEME.primary, chip: THEME.primaryLight, ink: THEME.primary },
-  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning },
-  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger },
+  gentle: { rail: THEME.primary, chip: THEME.primaryLight, ink: THEME.primary, bubble: THEME.surface2 },
+  firm:   { rail: THEME.warning, chip: THEME.warningLight, ink: THEME.warning, bubble: THEME.warningLight },
+  urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,  bubble: THEME.dangerLight },
 };
 
-function CharMessageToast({ c, round, tier, onRespond, onDismiss }) {
+// Four message layouts, all built on the design-system tokens (DESIGN-SYSTEM.md §4/§5):
+// card radius 20 · padding 16 · screen gutter 18 · shadowCard (hairline ring + whisper,
+// "not a big floaty blur") · child-app CTAs render flat. Flip between them in Tweaks →
+// Message style, the same way the home/collection/battle layout sets work.
+const MSG_LAYOUTS = [
+  { id: 'card',   label: 'Card' },
+  { id: 'bubble', label: 'Bubble' },
+  { id: 'hero',   label: 'Hero' },
+  { id: 'row',    label: 'Row' },
+];
+
+// system card recipe + the tone rail, shared by every layout
+const MSG_CARD = { background: THEME.surface, borderRadius: 20, boxShadow: THEME.shadowCard, width: '100%' };
+const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5 Button)
+
+function DismissBtn({ onClick }) {
+  return (
+    <button onClick={onClick} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '13px 20px', borderRadius: 14, background: THEME.surface2, color: THEME.fg2 }}>{L('Got it!')}</button>
+  );
+}
+
+function CharMessageToast({ c, round, tier, layout = 'card', onRespond, onDismiss }) {
   const pool = interventionMessages(round);
   const [i, setI] = React.useState((round - 1) % pool.length);
   const [show, setShow] = React.useState(true);
@@ -109,36 +130,101 @@ function CharMessageToast({ c, round, tier, onRespond, onDismiss }) {
 
   const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
   const urgent = tier.key === 'urgent';
-  return (
-    // F-09 pins the message bottom-centre at ~20% of screen height. The card now actually
-    // fills that band instead of sitting in it as a thin strip.
-    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: '20%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 14px calc(env(safe-area-inset-bottom) + 18px)', pointerEvents: 'none' }}>
-      <div style={{ opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', background: '#fff', borderRadius: 24, overflow: 'hidden', boxShadow: THEME.shadowXl, width: '100%', maxWidth: 360, minHeight: 168 }}>
-        {/* tone rail — the one element that reads instantly, before any copy is parsed */}
-        <div style={{ height: 5, background: tone.rail }} />
-        <div style={{ padding: '13px 15px 15px' }}>
-          {/* F-08.3 — a repeat round is recorded, and the child is told so plainly */}
-          {round > 1 && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: tone.chip, color: tone.ink, marginBottom: 10 }}>
-              <Icon name="triangle-alert" size={12} color={tone.ink} stroke={2.4} />
-              {L('Reminder')} {round} · {L('recorded in your report')}
-            </div>
-          )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-            <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={72} /></div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="game-font" style={{ fontSize: 21, fontWeight: 500, lineHeight: 1.2, color: urgent ? THEME.danger : THEME.fg1 }}>{L(pool[i])}</div>
-              {/* at the firmest tier the rotating nudge alone isn't enough — say what to do */}
-              <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 3, lineHeight: 1.4 }}>{urgent ? L(tier.body) : `${c.name} · ${L('still walking')}`}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 9, marginTop: 14 }}>
-            <button onClick={onRespond} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.primary, color: '#fff', fontWeight: 800, fontSize: 14, padding: '13px 14px', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-              <Icon name="check" size={17} color="#fff" stroke={2.7} />{L('I looked up')}
-            </button>
-            <button onClick={onDismiss} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.surface2, color: THEME.fg2, fontWeight: 800, fontSize: 13, padding: '13px 16px', borderRadius: 999 }}>{L('Got it!')}</button>
+  const line = L(pool[i]);
+  const sub = urgent ? L(tier.body) : `${c.name} · ${L('still walking')}`;
+  const ink = urgent ? THEME.danger : THEME.fg1;
+
+  const Rail = () => <div style={{ height: 5, background: tone.rail, borderRadius: '20px 20px 0 0' }} />;
+  const Badge_ = () => round > 1 ? (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: tone.chip, color: tone.ink }}>
+      <Icon name="triangle-alert" size={12} color={tone.ink} stroke={2.4} />
+      {L('Reminder')} {round} · {L('recorded in your report')}
+    </span>
+  ) : null;
+  const Actions = ({ stacked }) => (
+    <div style={{ display: 'flex', flexDirection: stacked ? 'column' : 'row', gap: stacked ? 8 : 10, marginTop: 16 }}>
+      <Button variant="primary" size="md" fullWidth onClick={onRespond} style={FLAT}>{L('I looked up')}</Button>
+      {stacked
+        ? <button onClick={onDismiss} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '10px', borderRadius: 14, background: 'transparent', color: THEME.fg2 }}>{L('Got it!')}</button>
+        : <DismissBtn onClick={onDismiss} />}
+    </div>
+  );
+
+  const bodies = {
+    // 1 · CARD — buddy left, message right, actions below. The straight system card.
+    card: (
+      <div style={{ padding: 16 }}>
+        {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={76} /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="game-font" style={{ fontSize: 21, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
+            <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
           </div>
         </div>
+        <Actions />
+      </div>
+    ),
+
+    // 2 · BUBBLE — the buddy *says* it: tinted speech bubble with a tail, like the warning sheet.
+    bubble: (
+      <div style={{ padding: 16 }}>
+        {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={84} /></div>
+          <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '16px 16px 16px 4px', padding: '12px 14px', marginBottom: 6 }}>
+            <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 3, lineHeight: 1.4 }}>{sub}</div>
+          </div>
+        </div>
+        <Actions />
+      </div>
+    ),
+
+    // 3 · HERO — buddy breaks the card's top edge and the copy centres under it. The most
+    // "character-first" of the four; the message reads as the buddy addressing the child.
+    hero: (
+      <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
+        <div className="jx-float" style={{ marginTop: -42, marginBottom: 2 }}>
+          <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} />
+        </div>
+        {round > 1 && <div style={{ marginBottom: 8 }}><Badge_ /></div>}
+        <div className="game-font" style={{ fontSize: 21, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
+        <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
+        <Actions stacked />
+      </div>
+    ),
+
+    // 4 · ROW — the tightest: an avatar chip, the line, and the CTA on one axis. Closest to
+    // the home screen's safety banner, so it costs the child the least attention.
+    row: (
+      <div style={{ padding: 16 }}>
+        {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <MascotChip species={c.species} stage={c.stage} color={c.color} size={56} bg={tone.chip} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="game-font" style={{ fontSize: 18, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <Button variant="primary" size="md" fullWidth onClick={onRespond} style={FLAT}>{L('I looked up')}</Button>
+          <DismissBtn onClick={onDismiss} />
+        </div>
+      </div>
+    ),
+  };
+
+  const hero = layout === 'hero';
+  return (
+    // F-09: bottom-centre, ~20% of screen height. Gutter is the system's 18px, and the card
+    // spans it — no arbitrary max-width pinching it in.
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: '20%', display: 'flex', alignItems: 'flex-end', padding: `0 18px calc(env(safe-area-inset-bottom) + 18px)`, pointerEvents: 'none' }}>
+      <div style={{ ...MSG_CARD, opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0 }}>
+        {/* tone rail — reads before any copy is parsed (gentle → firm → urgent) */}
+        {!hero && <Rail />}
+        {hero && <div style={{ height: 5, background: tone.rail, borderRadius: '20px 20px 0 0' }} />}
+        {bodies[layout] || bodies.card}
       </div>
     </div>
   );
@@ -303,7 +389,7 @@ function WarningOverlay({ ctx }) {
 
           {/* ── STAGE 3: repeating character message — ignoring it for IGNORE_MS logs
               an "ignored" event and starts the next, firmer round ── */}
-          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} onRespond={respond} onDismiss={() => standDown('dismissed')} />}
+          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} onRespond={respond} onDismiss={() => standDown('dismissed')} />}
 
           {/* ── STAGE 2: the on-screen warning (chosen variant) ── */}
           {phase === 'warn' && (<React.Fragment>
@@ -366,4 +452,4 @@ function WarningOverlay({ ctx }) {
   );
 }
 
-export { WarningOverlay };
+export { MSG_LAYOUTS, WarningOverlay };

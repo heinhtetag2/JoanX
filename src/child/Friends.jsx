@@ -1,7 +1,7 @@
 // JoanX — child app · Friends
 
 import React from 'react';
-import { FRIENDS } from '../core/data.jsx';
+import { CHARACTERS, FRIENDS, PLAYER } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
@@ -27,6 +27,7 @@ const Dot = ({ online, ring = '#fff' }) => (
 // ── Friends list (F-32) — a primary tab (no back), five layout variants ──
 function Friends({ ctx, layout = 'list' }) {
   const friends = ctx.demo?.empty ? [] : FRIENDS;   // first-run: no friends added yet
+  const me = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];   // your buddy = your avatar
   const visit = f => ctx.nav('friendhouse', { id: f.id });
 
   // ── variant bodies ──────────────────────────────────────────────────
@@ -703,7 +704,12 @@ function Friends({ ctx, layout = 'list' }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
+      {/* your own avatar leads the header: your room is the page friends land on when they
+          visit you, so it belongs on the screen you visit theirs from (F-32) */}
       <ScreenHeader title={L('Friends')}
+        left={<button onClick={() => ctx.nav('myhouse')} aria-label={L('My Room')} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, padding: 0, overflow: 'hidden' }}>
+          <Mascot species={me.species} stage={me.stage} color={me.color} size={34} />
+        </button>}
         right={<button onClick={() => ctx.nav('addfriend')} aria-label={L('Add friends')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: PURPLE.main, border: 'none', borderRadius: 999, padding: '8px 13px', boxShadow: 'none', cursor: 'pointer', fontFamily: 'inherit' }}><Icon name="user-plus" size={15} color="#fff" stroke={2.5} /><span style={{ fontSize: 12.5, fontWeight: 700, color: '#fff' }}>{L('Add')}</span></button>} />
       <div style={{ padding: '0 16px' }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 10px', textTransform: 'uppercase', letterSpacing: .4 }}>{L(layout === 'leaderboard' ? 'Friend ranking' : 'Your friends')}</div>

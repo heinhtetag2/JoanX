@@ -363,6 +363,13 @@ const KO = {
   'By continuing you agree to our Terms & Privacy Policy.': '계속하면 이용약관 및 개인정보 처리방침에 동의하게 됩니다.',
   'Create account': '계정 만들기', 'Sign in': '로그인',
   'Basic info': '기본 정보', 'Login details': '로그인 정보',
+  // parent sign-in: phone + SMS verification, with Google / Apple (F-33)
+  'Sign in with your phone': '휴대폰 번호로 로그인', "We'll text you a 6-digit code. New here? This creates your account.": '6자리 인증번호를 문자로 보내드려요. 처음이시면 계정이 함께 만들어져요.',
+  'Send code': '인증번호 받기', 'Verify': '확인', 'Enter the code': '인증번호 입력',
+  'We sent a 6-digit code to': '인증번호 6자리를 보냈어요:',
+  'Didn’t get it? You can resend in': '문자가 안 왔나요? 재전송 가능까지', 'Resend code': '인증번호 다시 보내기',
+  'Continue with Google': 'Google로 계속하기', 'Sign in with Apple': 'Apple로 로그인',
+  'What should we call you?': '이름을 알려줄래요?', 'This is the name your buddy will use.': '친구가 이 이름으로 불러줄 거예요.', 'e.g. Mina': '예: 민아',
   'Already have an account?': '이미 계정이 있으신가요?', 'New to JoanX?': 'JoanX가 처음이신가요?',
   'Reset your password': '비밀번호 재설정',
   "Enter your email and we'll send you a link to reset your password.": '이메일을 입력하시면 비밀번호 재설정 링크를 보내드려요.',
@@ -544,7 +551,7 @@ const KO = {
   'Calls & texts still work': '전화와 문자는 계속 돼요', 'Unlocks when you stop walking': '걷기를 멈추면 잠금 해제',
 
   // ── encyclopedias (A-4 / A-9) ──
-  'Encyclopedia': '도감', 'Villain Dex': '빌런 도감', 'Dex': '도감',
+  'Encyclopedia': '도감', 'Villain Dex': '빌런 도감', 'Dex': '도감', 'My Room': '내 방', 'Me': '나',
   'Characters collected': '수집한 캐릭터', 'Villains defeated': '물리친 빌런',
   'of': '/', 'discovered': '발견', 'Stage': '단계',
   'Not yet discovered': '아직 발견하지 못함', 'Defeated': '물리침', 'Now': '지금',

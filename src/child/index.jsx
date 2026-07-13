@@ -23,7 +23,7 @@ export { FriendHouse } from './FriendHouse.jsx';
 export { MyHouse } from './MyHouse.jsx';
 export { DecorateRoom } from './DecorateRoom.jsx';
 export { AddFriends } from './AddFriends.jsx';
-export { WarningOverlay } from './WarningOverlay.jsx';
+export { MSG_LAYOUTS, WarningOverlay } from './WarningOverlay.jsx';
 export { LiteBlock } from './LiteBlock.jsx';
 export { CharDetailVariant } from './CharacterVariants.jsx';
 export { HOME_LAYOUTS, HomeVariant } from './HomeVariants.jsx';

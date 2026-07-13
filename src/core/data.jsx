@@ -201,6 +201,40 @@ const EGGS = [
     odds: { common: 0, rare: 4, epic: 6 } },
 ];
 
+// ── Parent account sign-in (F-33) ────────────────────────────────────
+// Phone number + SMS verification is the primary method. Social sign-in is there to
+// satisfy platform policy and save typing: Google on Android, Sign in with Apple on iOS.
+// Email/password is out of MVP scope — note it is *disabled* here, not deleted: the flow
+// renders whatever methods are enabled for the platform, so adding email later is this
+// flag plus its form, not a rebuild of the screen.
+const AUTH = {
+  smsCodeLength: 6,
+  smsResendSeconds: 180,   // how long before "Resend code" becomes available again
+  methods: [
+    { key: 'phone',  label: 'Phone number',        enabled: true,  primary: true },
+    { key: 'google', label: 'Continue with Google', enabled: true,  platforms: ['android'] },
+    { key: 'apple',  label: 'Sign in with Apple',   enabled: true,  platforms: ['ios'] },
+    { key: 'email',  label: 'Continue with email',  enabled: false },   // excluded from the MVP (F-33.1)
+  ],
+};
+
+// ios · android · web. The prototype runs in a desktop browser, and 'web' is treated as
+// "show everything" so both social buttons can be reviewed side by side in the demo.
+const devicePlatform = () => {
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'web';
+};
+
+// The sign-in methods to offer on this device, in order.
+const authMethods = (platform = devicePlatform()) =>
+  AUTH.methods.filter(m => m.enabled && (!m.platforms || platform === 'web' || m.platforms.includes(platform)));
+
+// Mock: phone numbers that already have an account, so verifying one signs in rather
+// than walking through profile creation. Swap for the real lookup.
+const KNOWN_PHONES = ['010-1234-5678', '01012345678'];
+
 // ── Rarity tiers (A-4 / F-15) ────────────────────────────────────────
 // The tier list is data, not a hard-coded union: a future tier (Legendary,
 // seasonal-only…) is one more entry here plus its dex styling. Nothing below
@@ -467,4 +501,4 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-export { ACHIEVEMENTS, BATTLES_PER_DAY, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, EGGS, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, INTERVENTION, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS, XP_CURVE, charactersOfRarity, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, rarityOf, visibleCharacters, xpForLevel };
+export { ACHIEVEMENTS, AUTH, KNOWN_PHONES, authMethods, devicePlatform, BATTLES_PER_DAY, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHILDREN, CHILD_REPORTS, DECOR, EGGS, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, HOUSE_BGS, INTERVENTION, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SPECIES_INFO, TODAY_TASKS, VILLAINS, XP_CURVE, charactersOfRarity, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, rarityOf, visibleCharacters, xpForLevel };

@@ -56,6 +56,8 @@ Status legend: ✅ Done · 🔧 Needs work · ❌ Not built · ⚙️ Engine/no 
 
 | ID | Feature | Status | Screens | Note |
 |----|---------|--------|---------|------|
+| F-33 | Guardian sign-in (phone + SMS) | ✅ | `ParentOnboarding` | Phone → 6-digit SMS code → profile (new accounts only). No password anywhere, so no reset flow |
+| F-33.1 | Google (Android) / Apple (iOS) · email excluded | ✅ | `ParentOnboarding` `data.jsx` | `AUTH.methods` + `authMethods(platform)`; email is `enabled: false`, not absent — flip the flag to add it later |
 | F-20 | Guardian report metrics | 🔧 | `ParentReports` | Reframe "Risky moments" count as a risky-behavior **reduction rate** |
 | F-21 | Time-based policy settings | 🚫 | `ParentSchedule` | Built ahead of scope — parked |
 | F-22 | Intervention-intensity settings | ✅ | `ParentSettings` | Sensitivity, notifications, game toggle |

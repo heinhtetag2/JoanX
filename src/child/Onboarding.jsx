@@ -48,10 +48,12 @@ function PairQR({ size = 190 }) {
 
 // ── Onboarding / permissions ─────────────────────────────────────────
 // Smart mode is the only mode now. The flow is:
-//   splash → 2 intro slides → permission guide → connect-to-parent (QR).
+//   splash → 2 intro slides → connect-to-parent (code / QR) → permissions.
+// The child device carries no account of its own: identity comes from the parent it pairs
+// with, so there is no sign-in here (F-33 is the parent app only).
 function Onboarding({ ctx }) {
   const perms = PERMISSIONS;
-  const [step, setStep] = React.useState(0);     // 0 splash · 1-2 slides · 3 guide · 4 connect
+  const [step, setStep] = React.useState(0);     // 0 splash · 1-2 slides · 3 connect · 4 permissions
   const [grants, setGrants] = React.useState({});
   const [code, setCode] = React.useState('');    // parent's 6-digit code, typed on the connect screen
   const [codeErr, setCodeErr] = React.useState(false); // validation error on the connect screen
@@ -89,6 +91,10 @@ function Onboarding({ ctx }) {
   const [denied, setDenied] = React.useState({}); // permissions the user skipped → fallback / limited state
   const [showFallback, setShowFallback] = React.useState(false); // "limited protection" confirm before continuing
   const allGranted = perms.every(p => grants[p.id]);
+  // F-26 staged requests: we ask for exactly one permission at a time. The live one is the
+  // first that isn't granted yet; everything after it waits its turn. A denied permission
+  // stays live (it's still the blocker), so the sequence can't be walked around.
+  const stepIdx = perms.findIndex(p => !grants[p.id]);
   const finish = () => ctx.finishOnboarding('smart');
 
   const grant = id => { setGrants(g => ({ ...g, [id]: true })); setDenied(d => { const n = { ...d }; delete n[id]; return n; }); }; // granting clears any "denied" fallback
@@ -126,7 +132,7 @@ function Onboarding({ ctx }) {
     return () => clearTimeout(t);
   }, [step]);
 
-  // value-prop slides shown at steps 1–2 (step 3 = permission guide)
+  // value-prop slides shown at steps 1–2 (step 3 = connect)
   const SLIDES = [
     { title: 'Walk safe, grow your buddy', sub: "JoanX notices when you're walking on your phone — and turns staying safe into a game." },
     { title: 'Every safe walk levels you up', sub: 'Earn points, evolve your buddy, and beat the distractions.' },
@@ -185,21 +191,32 @@ function Onboarding({ ctx }) {
       {step === 4 && !charReveal && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '6px 22px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '4px 0 12px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('To keep you safe,\nwe need a little help')}</h1>
+            {/* Skip rides the title's first line rather than sitting in a band of its own —
+                permissions are never hard-blocked (F-26), and it lands in the same
+                limited-protection sheet Continue does when something is still off. */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '4px 0 12px' }}>
+              <h1 className="game-font" style={{ flex: 1, fontSize: 22, fontWeight: 500, margin: 0, lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('To keep you safe,\nwe need a little help')}</h1>
+              <button onClick={() => setShowFallback(true)} style={{ flexShrink: 0, marginTop: 3, padding: '4px 2px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, color: P_BRAND.primary, cursor: 'pointer' }}>{L('Skip')}</button>
+            </div>
             {/* the buddy does the asking — keeps the request in the game's voice */}
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', margin: '0 0 18px' }}>
               <div style={{ flexShrink: 0 }}><Buddy size={58} /></div>
               <p style={{ flex: 1, background: '#fff', borderRadius: '16px 16px 16px 4px', padding: '11px 13px', fontSize: 13, color: THEME.fg2, lineHeight: 1.5, margin: 0 }}>{L('For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.')}</p>
             </div>
 
-            {/* one flat card per permission — copy + Allow pill; a quiet "Allowed" label once granted.
-                A pill, not a toggle: granting is one-way, so it shouldn't look reversible. */}
+            {/* One flat card per permission — copy + Allow pill; a quiet "Allowed" label once granted.
+                A pill, not a toggle: granting is one-way, so it shouldn't look reversible.
+                Staged, per F-26: only one permission is live at a time. The next unlocks when the
+                current one is granted, so the child faces a single decision instead of a wall of
+                four — and the system prompts arrive one at a time, the way the OS expects. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {perms.map(p => {
+              {perms.map((p, i) => {
                 const on = !!grants[p.id];
-                const off = !on && !!denied[p.id];   // skipped → limited fallback state
+                const off = !on && !!denied[p.id];      // skipped → limited fallback state
+                const live = i === stepIdx;             // the one permission we're asking for now
+                const locked = !on && !live;            // waiting its turn — shown, but not yet askable
                 return (
-                  <div key={p.id} style={{ display: 'flex', gap: 13, alignItems: 'center', padding: '15px 16px', background: off ? THEME.warningLight : '#fff', borderRadius: 18, border: off ? `1px solid ${shade(THEME.warning, 78)}` : '1px solid transparent' }}>
+                  <div key={p.id} style={{ display: 'flex', gap: 13, alignItems: 'center', padding: '15px 16px', background: off ? THEME.warningLight : '#fff', borderRadius: 18, border: off ? `1px solid ${shade(THEME.warning, 78)}` : '1px solid transparent', opacity: locked ? 0.45 : 1, transition: 'opacity .25s ease' }}>
                     {/* bare ink icon — no chip background, per design direction */}
                     <Icon name={p.icon} size={21} color={off ? THEME.warning : THEME.fg1} stroke={2.1} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -211,6 +228,8 @@ function Onboarding({ ctx }) {
                       <span className="jx-pop" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, color: THEME.success, fontWeight: 800, fontSize: 12.5 }}>
                         <Icon name="check" size={15} color={THEME.success} stroke={2.8} />{L('Allowed')}
                       </span>
+                    ) : locked ? (
+                      <Icon name="lock" size={17} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginRight: 6 }} />
                     ) : off ? (
                       <button onClick={() => (p.settings ? openOne(p.id) : grant(p.id))} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, border: `1.5px solid ${THEME.warning}`, cursor: 'pointer', fontFamily: 'inherit', background: 'transparent', color: shade(THEME.warning, -18), fontWeight: 800, fontSize: 12.5, padding: '8px 13px', borderRadius: 999 }}>
                         <Icon name="rotate-cw" size={13} color={shade(THEME.warning, -18)} stroke={2.6} />{L('Turn on')}
@@ -230,9 +249,10 @@ function Onboarding({ ctx }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            {/* Continue is always tappable — if something's still off, we own the
-                consequence in a fallback sheet rather than hard-blocking (F-26). */}
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={allGranted ? openEgg : () => setShowFallback(true)}>{L('Continue')}</Button>
+            {/* Continue unlocks only once every permission is granted. Nobody is trapped:
+                Skip (top right) is the way past, and it owns the consequence in the
+                limited-protection sheet rather than pretending nothing was lost (F-26). */}
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} disabled={!allGranted} onClick={allGranted ? openEgg : undefined}>{L('Continue')}</Button>
           </div>
         </>
       )}
