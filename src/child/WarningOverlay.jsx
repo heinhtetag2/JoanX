@@ -1,7 +1,7 @@
 // JoanX — child app · WarningOverlay
 
 import React from 'react';
-import { CHARACTERS, INTERVENTION, PLAYER, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
+import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
@@ -359,9 +359,14 @@ function WarningOverlay({ ctx }) {
     if (!confirming || hold) return;
     const t = setTimeout(() => {
       const from = stoppedAt.current;
+      // The points are earned HERE, whether or not anything is shown for them: the outcome
+      // classification is what feeds the reward system and the parent report (F-12 / F-20).
       logRiskEvent({ outcome: from === 'grace' || from === 'buzz' ? 'immediate' : 'delayed', rounds: round, tier: tier.key });
       setConfirming(false);
-      setPhase('reward');
+      // FEATURES.rewardToast off → the child looked up, so give them the screen back. The
+      // celebration is banked silently rather than staged as a second interruption.
+      if (FEATURES.rewardToast) setPhase('reward');
+      else ctx.closeOverlay();
     }, SAFE_CONFIRM_MS);
     return () => clearTimeout(t);
   }, [confirming, hold]);

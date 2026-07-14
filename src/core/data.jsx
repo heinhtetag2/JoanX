@@ -7,7 +7,13 @@ import { shade } from './characters.jsx';   // room themes tint their walls from
 // algorithm, F-06 GNSS) — EXCLUDED in the 2026.06.18 revision. Off = the
 // in-scope build (Smart mode, motion only, no GPS). Flip to true to bring
 // the danger-zone + GNSS surfaces back for reference.
-const FEATURES = { dangerZones: false };
+// rewardToast — the "잘했어요! +30 포인트" celebration after the child looks up. OFF: the points
+// are still earned and logged (logRiskEvent → the reward system and the parent report), they
+// are simply banked in the background instead of being announced. Looking up should hand the
+// screen straight back; a modal is a second interruption tacked onto the one we just resolved,
+// and it pays the child for a moment that ought to be its own reward. The toast itself is kept
+// (RewardToast in WarningOverlay) — parked, not deleted — so flipping this back on restores it.
+const FEATURES = { dangerZones: false, rewardToast: false };
 
 // ── A-8.1 · Battle rewards & the daily limit ─────────────────────────
 // Every win pays the BASIC reward. A first win pays that basic reward PLUS a first-clear
