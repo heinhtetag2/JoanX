@@ -1,10 +1,10 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { activeVillains, BATTLE_ODDS, battlesPerDay, POINTS, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, rewardTier, resetVillainRecord, isBoss, nextVillain, PLAYER, rarityOf, recommendedLevel, resolveBattle, roleOf, STATS, statsFor, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, rewardTier, resetVillainRecord, isBoss, nextVillain, PLAYER, rarityOf, recommendedLevel, resolveBattle, roleOf, STATS, statsFor, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
 import { Bar, Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
-import { Mascot, shade, tint } from '../core/characters.jsx';
+import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 
@@ -459,12 +459,24 @@ function Battle({ ctx, layout = 'classic' }) {
 // only motion is on the buddy — the thing the child is meant to look at.
 function WalkingBlock({ ctx, buddy }) {
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Battle')} onBack={() => ctx.nav('home')} />
-      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+    <div style={{ position: 'absolute', inset: 0, background: screenBgActive() }}>
+      {/* Close, not Back — and it is the ONLY control. This screen is a state the app put the
+          child in, not a place they navigated to, so there is nothing "behind" it to go back
+          to. A "Back home" button underneath was a second door to the same room. */}
+      <ScreenHeader title={L('Battle')} right={
+        <button onClick={() => ctx.nav('home')} aria-label={L('Close')}
+          style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Icon name="x" size={19} color={THEME.fg1} stroke={2.4} />
+        </button>
+      } />
 
-        {/* the buddy, walking with you — ripple rather than a spinner */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 200, height: 200, marginTop: 12 }}>
+      {/* The message IS the screen, so it sits in the middle of it rather than stacked under
+          the header with dead space below. Nothing to scroll, nothing to press, nothing to
+          read twice — this is the one screen whose whole job is to get a child's eyes back up. */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 32px' }}>
+
+        {/* the buddy, walking with you — a soft ripple rather than a spinner */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 200, height: 200 }}>
           <div className="jx-ring-slow" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-ring" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-float" style={{ position: 'relative' }}>
@@ -472,42 +484,12 @@ function WalkingBlock({ ctx, buddy }) {
           </div>
         </div>
 
-        <h2 className="game-font" style={{ fontSize: 23, fontWeight: 500, margin: '6px 0 0', color: THEME.fg1 }}>
+        <h2 className="game-font" style={{ fontSize: 23, fontWeight: 500, margin: '10px 0 0', color: THEME.fg1 }}>
           {L('Battles pause while you walk')}
         </h2>
-        <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.55, margin: '8px 0 0', maxWidth: 280 }}>
+        <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.55, margin: '10px 0 0', maxWidth: 280 }}>
           {L('Eyes up — the villains will still be there. They open again as soon as you stop.')}
         </p>
-
-        {/* The walk is not lost time — it is what pays for the battles. This is deliberately
-            the SAME card the Home screen uses for the daily goal: same wrapper, same buddy
-            tint, same Bar, same game-font counter. A child arriving here from Home should
-            recognise it instantly rather than meet a one-off card invented for this screen. */}
-        <div style={{ width: '100%', maxWidth: 330, background: '#fff', borderRadius: 18, padding: 16, marginTop: 22, boxShadow: THEME.shadowCard, textAlign: 'left' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(buddy.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon name="footprints" size={17} color={shade(buddy.color, -28)} stroke={2.3} />
-              </span>
-              {L("Today's safe-walk goal")}
-            </span>
-            <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(buddy.color, -28) }}>
-              {PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}
-            </span>
-          </div>
-          <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={buddy.color} height={12} />
-          <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>
-            {L('Safe walking')} · +{POINTS.perSafeMinute} {L('points')} / {L('min')}
-          </div>
-        </div>
-
-        {/* the system's secondary CTA, not a bare blue link — the child app's accent is the
-            buddy's own colour, and an ocean-blue text link belonged to no palette on screen */}
-        <div style={{ width: '100%', maxWidth: 330, marginTop: 14 }}>
-          <Button variant="outline" size="lg" fullWidth icon="home" onClick={() => ctx.nav('home')}>
-            {L('Back home')}
-          </Button>
-        </div>
       </div>
     </div>
   );
