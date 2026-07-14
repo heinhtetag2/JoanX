@@ -4,7 +4,7 @@ import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, POINTS, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, rewardTier, resetVillainRecord, isBoss, nextVillain, PLAYER, rarityOf, recommendedLevel, resolveBattle, roleOf, STATS, statsFor, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
 import { Bar, Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 
@@ -479,26 +479,35 @@ function WalkingBlock({ ctx, buddy }) {
           {L('Eyes up — the villains will still be there. They open again as soon as you stop.')}
         </p>
 
-        {/* the walk is not lost time: it is what pays for the battles */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', maxWidth: 320, background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 16, padding: '13px 15px', marginTop: 20 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Icon name="footprints" size={17} color={THEME.gold} stroke={2.3} />
+        {/* The walk is not lost time — it is what pays for the battles. This is deliberately
+            the SAME card the Home screen uses for the daily goal: same wrapper, same buddy
+            tint, same Bar, same game-font counter. A child arriving here from Home should
+            recognise it instantly rather than meet a one-off card invented for this screen. */}
+        <div style={{ width: '100%', maxWidth: 330, background: '#fff', borderRadius: 18, padding: 16, marginTop: 22, boxShadow: THEME.shadowCard, textAlign: 'left' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 800 }}>
+              <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(buddy.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name="footprints" size={17} color={shade(buddy.color, -28)} stroke={2.3} />
+              </span>
+              {L("Today's safe-walk goal")}
+            </span>
+            <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: shade(buddy.color, -28) }}>
+              {PLAYER.safeMinutesToday}/{PLAYER.safeWalkGoal} {L('min')}
+            </span>
           </div>
-          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1 }}>{L('You are earning right now')}</div>
-            <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 1 }}>
-              {L('Safe walking')} · +{POINTS.perSafeMinute} / {L('min')}
-            </div>
+          <Bar value={PLAYER.safeMinutesToday} max={PLAYER.safeWalkGoal} color={buddy.color} height={12} />
+          <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 8 }}>
+            {L('Safe walking')} · +{POINTS.perSafeMinute} {L('points')} / {L('min')}
           </div>
-          <span className="game-font" style={{ flexShrink: 0, fontSize: 15, fontWeight: 500, color: THEME.fg1 }}>
-            {PLAYER.safeMinutesToday} {L('min')}
-          </span>
         </div>
 
-        <button onClick={() => ctx.nav('home')} className="jx-press"
-          style={{ marginTop: 16, background: 'none', border: 'none', color: THEME.primary, fontSize: 14, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer', padding: '10px 16px' }}>
-          {L('Back home')}
-        </button>
+        {/* the system's secondary CTA, not a bare blue link — the child app's accent is the
+            buddy's own colour, and an ocean-blue text link belonged to no palette on screen */}
+        <div style={{ width: '100%', maxWidth: 330, marginTop: 14 }}>
+          <Button variant="outline" size="lg" fullWidth icon="home" onClick={() => ctx.nav('home')}>
+            {L('Back home')}
+          </Button>
+        </div>
       </div>
     </div>
   );
