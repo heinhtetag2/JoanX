@@ -1,7 +1,7 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { CHARACTERS, HOUSE_BGS, MY_GUESTBOOK, PLAYER, ROOMS } from '../core/data.jsx';
+import { buyItem, CHARACTERS, HOUSE_BGS, MY_GUESTBOOK, PLAYER, ROOMS } from '../core/data.jsx';
 import { Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
@@ -22,10 +22,12 @@ function MyHouse({ ctx }) {
   const [toast, setToast] = React.useState(null);
   const bgObj = HOUSE_BGS.find(b => b.id === bg) || HOUSE_BGS[0];
 
+  // A-5.1 — a wallpaper is an item like any other, so it buys through buyItem()
   const chooseBg = (b) => {
     if (!b.owned) {
-      if (pts < b.cost) { setToast(L('Not enough points yet')); setTimeout(() => setToast(null), 1500); return; }
-      PLAYER.points -= b.cost; setPts(PLAYER.points); b.owned = true;
+      const verdict = buyItem(b, PLAYER);
+      if (!verdict.ok) { setToast(L('Not enough points yet')); setTimeout(() => setToast(null), 1500); return; }
+      setPts(PLAYER.points);
     }
     setBg(b.id); PLAYER.houseBg = b.id;
   };
@@ -75,7 +77,7 @@ function MyHouse({ ctx }) {
                   {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 18, height: 18, borderRadius: 999, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></div>}
                 </div>
                 <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 5 }}>{L(b.name)}</div>
-                {!b.owned && <div style={{ fontSize: 10.5, color: THEME.gold, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}><Icon name="star" size={10} color={THEME.gold} fill={THEME.gold} stroke={2} />{b.cost}</div>}
+                {!b.owned && <div style={{ fontSize: 10.5, color: THEME.gold, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}><Icon name="star" size={10} color={THEME.gold} fill={THEME.gold} stroke={2} />{b.price}</div>}
               </button>
             );
           })}

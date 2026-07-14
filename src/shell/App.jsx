@@ -1,6 +1,6 @@
 import React from 'react';
 import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
@@ -9,13 +9,19 @@ import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
+import ProjectDocs from '../docs/ProjectDocs.jsx';
+
+// The roles that replace the phone with a full-page document. One list, because four
+// separate `.includes(...)` checks is how a fifth doc page gets half-added.
+const DOC_ROLES = ['design', 'checklist', 'docs'];
+const isDocRole = (r) => DOC_ROLES.includes(r);
 
 // JoanX — app shell: iOS frame, router, app switcher, Tweaks panel.
 // Tab definitions + TabBar come from nav.jsx (window globals).
 
 function App() {
   const initialView = new URLSearchParams(window.location.search).get('view');
-  const [role, setRole] = React.useState(['design', 'checklist'].includes(initialView) ? initialView : 'child');   // ?view=design / ?view=checklist deep-link the doc pages
+  const [role, setRole] = React.useState(isDocRole(initialView) ? initialView : 'child');   // ?view=design / ?view=checklist / ?view=docs deep-link the doc pages
   const [onboarded, setOnboarded] = React.useState(true);   // start on Home; "Replay onboarding" (Tweaks) shows it
   const [parentOnboarded, setParentOnboarded] = React.useState(true);   // parent app: splash → intro → auth; replay from Tweaks
   const __q = new URLSearchParams(window.location.search);
@@ -32,7 +38,9 @@ function App() {
   //   offline  · device disconnected → protection paused
   //   empty    · brand-new user → first-run empty states
   //   loading  · data still loading → skeleton shimmer
-  const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false });
+  //   walking  · the child is walking → battles are closed (F-19), the one screen the
+  //              product must not let them stare at mid-stride
+  const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false, walking: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
@@ -53,10 +61,16 @@ function App() {
   }, []);
 
   // apply tweak overrides to whichever buddy is currently active, incl. its
-  // name so the label matches the character/style that's actually shown
+  // name so the label matches the character/style that's actually shown.
+  // A-3.3 — the stage tweak sets the LEVEL, not the stage: stage is derived from level,
+  // so writing it directly produced illegal buddies (Stage 3 at Lv.5) whose art and
+  // stats disagreed. Levelling to the stage's threshold previews the same form and
+  // keeps the level, stage and stats telling one story.
   React.useEffect(() => {
     const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
-    c.species = tw.species; c.color = tw.color; c.stage = tw.stage;
+    c.species = tw.species; c.color = tw.color;
+    const gate = STAGES.find(s => s.stage === tw.stage);
+    if (gate) { c.level = Math.max(c.level, gate.minLevel); applyXpCurve([c]); }
     if (tw.name) c.name = tw.name;
     setBump(b => b + 1);
   }, [tw.species, tw.color, tw.stage, tw.name]);
@@ -167,13 +181,13 @@ function App() {
       {/* top control: app switch */}
       <div className="topbar">
         <div className="seg">
-          {[['child', 'Child app', 'smartphone'], ['parent', 'Parent app', 'users'], ['design', 'Design system', 'palette'], ['checklist', 'Spec checklist', 'list-checks']].map(([r, l, ic]) => (
+          {[['child', 'Child app', 'smartphone'], ['parent', 'Parent app', 'users'], ['design', 'Design system', 'palette'], ['checklist', 'Spec checklist', 'list-checks'], ['docs', 'Documentation', 'book-open']].map(([r, l, ic]) => (
             <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>
               <Icon name={ic} size={15} color={role === r ? '#fff' : THEME.fg3} stroke={2.2} />{l}
             </button>
           ))}
         </div>
-        {!['design', 'checklist'].includes(role) && (
+        {!isDocRole(role) && (
           <button className="gear" onClick={() => setTweaksOpen(o => !o)} title="Tweaks">
             <Icon name="sliders-horizontal" size={19} color={THEME.fg1} stroke={2.2} />
           </button>
@@ -183,9 +197,10 @@ function App() {
       {/* doc pages (full page, replace the phone) */}
       {role === 'design' && <DesignSystem />}
       {role === 'checklist' && <SpecChecklist />}
+      {role === 'docs' && <ProjectDocs />}
 
       {/* phone */}
-      {!['design', 'checklist'].includes(role) && (
+      {!isDocRole(role) && (
       <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', marginBottom: -(1 - scale) * 844 }}>
       <div className="bezel">
         <div className="island" />
@@ -205,7 +220,7 @@ function App() {
       )}
 
       {/* tweaks panel */}
-      {tweaksOpen && !['design', 'checklist'].includes(role) && (
+      {tweaksOpen && !isDocRole(role) && (
         <div className="tweaks">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h4>Tweaks</h4>
@@ -269,6 +284,13 @@ function App() {
                 {[['limited', 'Limited'], ['offline', 'Offline'], ['empty', 'First-run'], ['loading', 'Loading']].map(([k, l]) => (
                   <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); setStack([]); }}>{l}</button>
                 ))}
+                {/* F-19 — walking closes the battle screen. It writes straight to PLAYER.walking,
+                    which is the flag canChallenge() actually reads, so the toggle exercises the
+                    real rule rather than a screen-only mock of it. */}
+                <button className={'tw-chip' + (demo.walking ? ' on' : '')}
+                  onClick={() => { const next = !demo.walking; PLAYER.walking = next; setDemo(d => ({ ...d, walking: next })); }}>
+                  Walking
+                </button>
               </div>
 
               <div className="tw-label">Villain dex</div>

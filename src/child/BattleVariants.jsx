@@ -5,7 +5,7 @@
 // result) are shared by every layout and stay there too.
 
 import React from 'react';
-import { BATTLES_PER_DAY, PLAYER, VILLAINS } from '../core/data.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, PLAYER, STATS, statsFor, statMax, winPercent } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, mixHue, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -117,17 +117,32 @@ const BATTLE_LAYOUTS = [
   { id: 'sysreview', label: 'Sys · Review' },
 ];
 
-const SAFE_WALK_BONUS = 30;   // same bonus the result screen shows in "Battle math"
+// the same bonus the result screen shows in "Battle math" — read from BATTLE_ODDS so a
+// server retune moves it here too, instead of this file quietly promising an old number
+const SAFE_WALK_BONUS = BATTLE_ODDS.safeWalkBonus;
 
-// how a matchup reads before it's fought — drives the Tactics verdict
-function verdict(myTotal, theirs) {
-  const d = myTotal - theirs;
-  if (d >= 40) return { label: 'Likely win', color: THEME.success, bg: THEME.successLight };
-  if (d >= 0) return { label: 'Close call', color: THEME.warning, bg: THEME.warningLight };
+// A-8.2 — how a matchup reads before it's fought. Bands off the WIN CHANCE, not a power
+// gap: the odds are the thing the battle is actually decided by, so a layout that judged
+// the matchup on raw subtraction would tell the child a different story from the roll.
+function verdictOf(odds) {
+  if (odds >= 65) return { label: 'Likely win', color: THEME.success, bg: THEME.successLight };
+  if (odds >= 35) return { label: 'Close call', color: THEME.warning, bg: THEME.warningLight };
   return { label: 'Tough fight', color: THEME.danger, bg: THEME.dangerLight };
 }
 
-const traitsOf = (c) => [['shield', c.traits.guard], ['gauge', c.traits.speed], ['heart', c.traits.heart]];
+// A-3.3 — every layout reads the four core stats through here, so a stat added to the
+// STATS registry shows up in all of them and none of them can drift to its own numbers.
+// Each row is [icon, value, barMax] — the ceiling travels with the value so a layout
+// drawing a bar cannot pair a 300-point HP with a 0–100 axis.
+const traitsOf = (c) => { const s = statsFor(c); return STATS.map(t => [t.icon, s[t.key], statMax(t.key)]); };
+
+// one tint per stat, cycled — keyed by position so a fifth stat still gets a colour
+const STAT_TINT = [
+  [THEME.danger, THEME.dangerLight],    // HP
+  [THEME.joy, THEME.joyBg],             // Courage
+  [THEME.primary, THEME.primaryLight],  // Protection
+  [THEME.success, THEME.successLight],  // Speed
+];
 
 // map a verdict onto the Badge primitive's semantic variants
 const badgeOf = (v) => v.color === THEME.success ? 'success' : v.color === THEME.warning ? 'warning' : 'danger';
@@ -189,10 +204,10 @@ function FlipCard({ c, total }) {
       {back ? (
         <div style={{ width: '100%' }}>
           <div className="game-font" style={{ fontSize: 20, fontWeight: 500, textAlign: 'center', marginBottom: 14 }}>{c.name}</div>
-          {traitsOf(c).map(([ic, val], i) => (
+          {traitsOf(c).map(([ic, val, top], i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <Icon name={ic} size={16} color={THEME.fg2} stroke={2.3} />
-              <div style={{ flex: 1 }}><Bar value={val} max={100} color={c.color} height={9} /></div>
+              <div style={{ flex: 1 }}><Bar value={val} max={top} color={c.color} height={9} /></div>
               <span className="game-font" style={{ width: 28, fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{val}</span>
             </div>
           ))}
@@ -222,7 +237,7 @@ function Quota({ left, usedToday }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: THEME.primaryLight, borderRadius: 14, padding: '11px 14px', marginBottom: 16 }}>
       <Icon name="info" size={18} color={THEME.primary} stroke={2.3} />
       <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: THEME.primaryDark, fontWeight: 600 }}>{usedToday ? L('Come back tomorrow for your next challenge.') : L("Five villain challenges a day. Battles pause while you're walking.")}</span>
-      <span className="game-font" style={{ flexShrink: 0, fontSize: 12, fontWeight: 500, color: THEME.primaryDark, background: '#fff', borderRadius: 999, padding: '3px 9px' }}>{left}/{BATTLES_PER_DAY}</span>
+      <span className="game-font" style={{ flexShrink: 0, fontSize: 12, fontWeight: 500, color: THEME.primaryDark, background: '#fff', borderRadius: 999, padding: '3px 9px' }}>{left}/{battlesPerDay()}</span>
     </div>
   );
 }
@@ -230,7 +245,7 @@ function Quota({ left, usedToday }) {
 function QuotaPips({ left }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
-      {Array.from({ length: BATTLES_PER_DAY }, (_, i) => (
+      {Array.from({ length: battlesPerDay() }, (_, i) => (
         <span key={i} style={{ width: 8, height: 8, borderRadius: 999, background: i < left ? THEME.primary : THEME.border }} />
       ))}
       <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2, marginLeft: 4 }}>{L('Battles left')} {left}</span>
@@ -269,11 +284,13 @@ function VillainRibbon({ villain }) {
 function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, left, usedToday, start, power }) {
   const myPower = power(sel);
   const myTotal = myPower + SAFE_WALK_BONUS;
-  const v = verdict(myTotal, villain.power);
+  // A-8.2 — every layout judges the matchup by the same win chance the fight is rolled against
+  const odds = winPercent(sel, villain);
+  const v = verdictOf(odds);
 
   const cta = usedToday
     ? <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L('Come back tomorrow')}</Button>
-    : <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Find a match')} · {left}/{BATTLES_PER_DAY}</Button>;
+    : <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Find a match')} · {left}/{battlesPerDay()}</Button>;
 
   let body;
 
@@ -321,7 +338,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
       <QuotaPips left={left} />
       <SectionHead title={L('Villain ladder')} />
       <div className="no-sb" style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 2px 10px', margin: '0 -2px' }}>
-        {VILLAINS.map(vl => {
+        {activeVillains().map(vl => {
           const now = vl.lv === villain.lv;
           return (
             <div key={vl.lv} style={{ flexShrink: 0, width: 74, borderRadius: 16, padding: '10px 4px 8px', textAlign: 'center', background: now ? THEME.dangerLight : '#fff', border: now ? `2px solid ${THEME.danger}` : '2px solid transparent', boxShadow: THEME.shadowCard, opacity: vl.defeated ? .55 : 1 }}>
@@ -762,7 +779,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           <div>
             <div style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .5 }}>{L('Battles left')}</div>
             <div style={{ display: 'flex', gap: 5, marginTop: 5 }}>
-              {Array.from({ length: BATTLES_PER_DAY }, (_, i) => (
+              {Array.from({ length: battlesPerDay() }, (_, i) => (
                 <span key={i} style={{ width: 12, height: 12, borderRadius: 999, border: `2px solid ${i < left ? THEME.primary : THEME.border}`, background: i < left ? THEME.primary : 'transparent' }} />
               ))}
             </div>
@@ -782,7 +799,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
     <React.Fragment>
       <QuotaPips left={left} />
       <div style={{ background: '#fff', borderRadius: 20, padding: '6px 14px', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
-        {VILLAINS.slice(0, 6).map((vl, i) => {
+        {activeVillains().slice(0, 6).map((vl, i) => {
           const now = vl.lv === villain.lv;
           return (
             <div key={vl.lv} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none', opacity: vl.defeated ? .5 : 1 }}>
@@ -1052,7 +1069,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           </div>
         </div>
         <div className="game-font" style={{ textAlign: 'center', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.6)', letterSpacing: 1.4, paddingTop: 9 }}>
-          {L('Battles left')} {left} / {BATTLES_PER_DAY}
+          {L('Battles left')} {left} / {battlesPerDay()}
         </div>
       </div>
       <BuddyDots owned={owned} sel={sel} setSel={setSel} />
@@ -1134,15 +1151,21 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
     </React.Fragment>
   );
 
-  // 35 · RADAR — the three traits plotted as a shape you can compare at a glance
+  // 35 · RADAR — the core stats plotted as a shape you can compare at a glance. The
+  // polygon takes its point count from the stat registry (a triangle at 3, a diamond at
+  // 4), and the axes are scaled to the biggest stat rather than a fixed 100 — HP runs
+  // several times higher than the others and would otherwise peg every axis to the rim.
   else if (variant === 'radar') {
     const R = 74, cx = 100, cy = 92;
+    const vals = traitsOf(sel).map(([, v]) => v);
+    const n = Math.max(3, vals.length);
+    const top = Math.max(100, ...vals);
+    const ang = (i) => (i / n) * 2 * Math.PI - Math.PI / 2;
     const pt = (val, i) => {
-      const a = (i / 3) * 2 * Math.PI - Math.PI / 2, r = (val / 100) * R;
+      const a = ang(i), r = (val / top) * R;
       return `${cx + Math.cos(a) * r},${cy + Math.sin(a) * r}`;
     };
-    const axis = (i) => { const a = (i / 3) * 2 * Math.PI - Math.PI / 2; return [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; };
-    const vals = traitsOf(sel).map(([, v]) => v);
+    const axis = (i) => { const a = ang(i); return [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; };
     body = (
       <React.Fragment>
         <VillainRibbon villain={villain} />
@@ -1242,18 +1265,18 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
 
   // 39 · TIMELINE — today's five challenges as slots; the next one is open
   else if (variant === 'timeline') {
-    const used = BATTLES_PER_DAY - left;
+    const used = battlesPerDay() - left;
     body = (
       <React.Fragment>
         <div style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 12 }}>{L("Today's battles")}</div>
-          {Array.from({ length: BATTLES_PER_DAY }, (_, i) => {
+          {Array.from({ length: battlesPerDay() }, (_, i) => {
             const done = i < used, next = i === used;
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: i === BATTLES_PER_DAY - 1 ? 0 : 12 }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: i === battlesPerDay() - 1 ? 0 : 12 }}>
                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'stretch' }}>
                   <span style={{ width: 14, height: 14, borderRadius: 999, flexShrink: 0, background: done ? THEME.success : next ? THEME.danger : THEME.border }} />
-                  {i < BATTLES_PER_DAY - 1 && <span style={{ flex: 1, width: 2, background: THEME.border, minHeight: 16 }} />}
+                  {i < battlesPerDay() - 1 && <span style={{ flex: 1, width: 2, background: THEME.border, minHeight: 16 }} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0, paddingBottom: 2 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 800, color: next ? THEME.danger : done ? THEME.fg2 : THEME.fg3 }}>
@@ -1558,7 +1581,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
             {[1, 3, 4, 5, 7].map(i => <span key={i} style={{ gridArea: `${Math.floor(i / 3) + 1} / ${(i % 3) + 1}`, background: THEME.fg3, borderRadius: 3 }} />)}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            {Array.from({ length: BATTLES_PER_DAY }, (_, i) => (
+            {Array.from({ length: battlesPerDay() }, (_, i) => (
               <span key={i} style={{ width: 9, height: 9, borderRadius: 999, background: i < left ? THEME.success : THEME.border }} />
             ))}
           </div>
@@ -1574,7 +1597,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
 
   // 53 · BRACKET — the ladder drawn as a tournament tree closing on the final
   else if (variant === 'bracket') {
-    const upcoming = VILLAINS.filter(vl => !vl.defeated).slice(0, 4);
+    const upcoming = activeVillains().filter(vl => !vl.defeated).slice(0, 4);
     const seat = (label, meta, foe, c) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', borderRadius: 12, padding: '8px 10px', boxShadow: THEME.shadowCard, minWidth: 0 }}>
         <div style={{ flexShrink: 0 }}>{foe
@@ -1698,7 +1721,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
       <div style={{ borderRadius: 12, background: THEME.fg1, padding: 12, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
         <div style={{ background: THEME.goldLight, borderRadius: 6, padding: '10px 12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, fontWeight: 800, color: '#9e7300', textTransform: 'uppercase', letterSpacing: .6, borderBottom: `1px solid ${THEME.gold}`, paddingBottom: 5 }}>
-            <span>{L('Battle')}</span><span>{left}/{BATTLES_PER_DAY}</span>
+            <span>{L('Battle')}</span><span>{left}/{battlesPerDay()}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 4px' }}>
             <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: '#9e7300', width: 16 }}>A</span>
@@ -1834,11 +1857,11 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
       <div style={{ background: '#fff', borderRadius: 20, padding: '18px 14px 14px', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
         <div style={{ position: 'relative', height: 58, marginBottom: 6 }}>
           <div style={{ position: 'absolute', left: 10, right: 10, top: 20, height: 6, borderRadius: 999, background: THEME.border }} />
-          <div style={{ position: 'absolute', left: 10, top: 20, height: 6, borderRadius: 999, background: THEME.success, width: `${(VILLAINS.filter(x => x.defeated).length / (VILLAINS.length - 1)) * 100}%` }} />
-          {VILLAINS.map((vl, i) => {
+          <div style={{ position: 'absolute', left: 10, top: 20, height: 6, borderRadius: 999, background: THEME.success, width: `${(activeVillains().filter(x => x.defeated).length / (activeVillains().length - 1)) * 100}%` }} />
+          {activeVillains().map((vl, i) => {
             const now = vl.lv === villain.lv;
             return (
-              <div key={vl.lv} style={{ position: 'absolute', left: `calc(10px + ${(i / (VILLAINS.length - 1)) * 100}% - ${(i / (VILLAINS.length - 1)) * 20}px)`, top: now ? 12 : 16, transform: 'translateX(-50%)', textAlign: 'center' }}>
+              <div key={vl.lv} style={{ position: 'absolute', left: `calc(10px + ${(i / (activeVillains().length - 1)) * 100}% - ${(i / (activeVillains().length - 1)) * 20}px)`, top: now ? 12 : 16, transform: 'translateX(-50%)', textAlign: 'center' }}>
                 <span style={{ display: 'block', width: now ? 22 : 14, height: now ? 22 : 14, borderRadius: 999, background: '#fff', border: `3px solid ${vl.defeated ? THEME.success : now ? THEME.danger : THEME.border}` }} />
                 <span className="game-font" style={{ fontSize: 9.5, fontWeight: 500, color: now ? THEME.danger : THEME.fg3 }}>{vl.lv}</span>
               </div>
@@ -2109,13 +2132,13 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
 
   // 72 · BOARD GAME — the ladder as squares on a board, your token mid-track
   else if (variant === 'boardgame') {
-    const done = VILLAINS.filter(x => x.defeated).length;
+    const done = activeVillains().filter(x => x.defeated).length;
     body = (
       <React.Fragment>
         <QuotaPips left={left} />
         <div style={{ background: '#fff', borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 6 }}>
-            {VILLAINS.map((vl, i) => {
+            {activeVillains().map((vl, i) => {
               const now = i === done;
               return (
                 <div key={vl.lv} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: vl.defeated ? THEME.successLight : now ? THEME.dangerLight : THEME.surface2, border: now ? `2px solid ${THEME.danger}` : `1px solid ${THEME.border}` }}>
@@ -2227,7 +2250,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           </div>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 12 }}>
-          {VILLAINS.slice(0, 6).map((vl, i) => {
+          {activeVillains().slice(0, 6).map((vl, i) => {
             const now = vl.lv === villain.lv;
             return (
               <div key={vl.lv} style={{ width: 74, height: 74, borderRadius: 999, border: `2.5px ${vl.defeated ? 'solid' : 'dashed'} ${vl.defeated ? THEME.success : now ? THEME.danger : THEME.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: `rotate(${[-8, 6, -4, 9, -6, 3][i]}deg)`, opacity: vl.defeated || now ? 1 : .5 }}>
@@ -2314,8 +2337,8 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>{sel.name} {myTotal} · {L(villain.name)} {villain.power}</div>
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {VILLAINS.filter(vl => !vl.defeated).slice(0, 4).map(vl => {
-            const w = verdict(myTotal, vl.power);
+          {activeVillains().filter(vl => !vl.defeated).slice(0, 4).map(vl => {
+            const w = verdictOf(winPercent(sel, vl));
             return (
               <div key={vl.lv} style={{ flex: 1, background: '#fff', borderRadius: 14, padding: '10px 4px', boxShadow: THEME.shadowCard, textAlign: 'center' }}>
                 <div className="game-font" style={{ fontSize: 10.5, fontWeight: 500, color: THEME.fg3 }}>Lv{vl.lv}</div>
@@ -2337,7 +2360,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
       <div style={{ borderRadius: 18, background: '#3a3733', padding: 10, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
         {[0, 1].map(row => (
           <div key={row} style={{ display: 'flex', gap: 8, background: 'linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0))', borderBottom: `4px solid ${THEME.fg2}`, borderRadius: 6, padding: '10px 8px', marginBottom: row ? 0 : 8 }}>
-            {VILLAINS.slice(row * 3, row * 3 + 3).map(vl => {
+            {activeVillains().slice(row * 3, row * 3 + 3).map(vl => {
               const now = vl.lv === villain.lv;
               return (
                 <div key={vl.lv} style={{ flex: 1, textAlign: 'center' }}>
@@ -2409,9 +2432,10 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
     <React.Fragment>
       <Quota left={left} usedToday={usedToday} />
       <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-        <StatCard icon="shield" color={THEME.primary} bg={THEME.primaryLight} value={sel.traits.guard} label={L('Guard')} />
-        <StatCard icon="gauge" color={THEME.success} bg={THEME.successLight} value={sel.traits.speed} label={L('Speed')} />
-        <StatCard icon="heart" color={THEME.danger} bg={THEME.dangerLight} value={sel.traits.heart} label={L('Heart')} />
+        {STATS.map((s, i) => (
+          <StatCard key={s.key} icon={s.icon} color={STAT_TINT[i % STAT_TINT.length][0]} bg={STAT_TINT[i % STAT_TINT.length][1]}
+            value={statsFor(sel)[s.key]} label={L(s.label)} />
+        ))}
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
         <StatCard icon="sparkles" color={THEME.gold} bg={THEME.goldLight} value={myTotal} label={L('Total power')} big />
@@ -2461,10 +2485,10 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           </div>
         ))}
         <div style={{ borderTop: `1px solid ${THEME.border}`, paddingTop: 12, marginTop: 2 }}>
-          {traitsOf(sel).map(([ic, val], i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i === 2 ? 0 : 8 }}>
+          {traitsOf(sel).map(([ic, val, top], i, all) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i === all.length - 1 ? 0 : 8 }}>
               <Icon name={ic} size={15} color={THEME.fg2} stroke={2.3} />
-              <div style={{ flex: 1 }}><Bar value={val} max={100} color={THEME.fg3} height={7} /></div>
+              <div style={{ flex: 1 }}><Bar value={val} max={top} color={THEME.fg3} height={7} /></div>
               <span className="game-font" style={{ width: 28, fontSize: 12.5, fontWeight: 500, textAlign: 'right' }}>{val}</span>
             </div>
           ))}
@@ -2477,7 +2501,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
   // 85 · SYS PROGRESS — the DexProgress header, reused for the villain ladder
   else if (variant === 'sysprogress') body = (
     <React.Fragment>
-      <DexProgress have={VILLAINS.filter(x => x.defeated).length} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} />
+      <DexProgress have={activeVillains().filter(x => x.defeated).length} total={activeVillains().length} label="Villains defeated" icon="skull" accent={THEME.danger} />
       <SysCard style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Mascot species={sel.species} stage={sel.stage} color={sel.color} size={64} />
@@ -2725,7 +2749,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
         </div>
       </SysCard>
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <StatCard icon="swords" color={THEME.primary} bg={THEME.primaryLight} value={`${left}/${BATTLES_PER_DAY}`} label={L('Battles left')} />
+        <StatCard icon="swords" color={THEME.primary} bg={THEME.primaryLight} value={`${left}/${battlesPerDay()}`} label={L('Battles left')} />
         <StatCard icon="trending-up" color={v.color} bg={v.bg} value={L(v.label)} label={L('Matchup')} />
       </div>
       <BuddyDots owned={owned} sel={sel} setSel={setSel} />
@@ -2763,7 +2787,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
           {usedToday ? L('Come back tomorrow for your next challenge.') : L("Five villain challenges a day. Battles pause while you're walking.")}
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-          {Array.from({ length: BATTLES_PER_DAY }, (_, i) => (
+          {Array.from({ length: battlesPerDay() }, (_, i) => (
             <span key={i} style={{ width: 10, height: 10, borderRadius: 999, background: i < left ? THEME.primary : THEME.border }} />
           ))}
         </div>
@@ -2828,7 +2852,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
       <SysCard style={{ marginBottom: 16 }}>
         <div className="t-h3" style={{ marginBottom: 12 }}>{L('Matchup')}</div>
         {[[L('Your fighter'), `${sel.name} · Lv${sel.level}`], [L('Power'), myPower], [L('Safe-walk bonus'), `+${SAFE_WALK_BONUS}`],
-          [L('Your total'), myTotal], [L('Opponent'), `${L(villain.name)} · ${villain.power}`], [L('Battles left'), `${left}/${BATTLES_PER_DAY}`]].map(([k, val], i) => (
+          [L('Your total'), myTotal], [L('Opponent'), `${L(villain.name)} · ${villain.power}`], [L('Battles left'), `${left}/${battlesPerDay()}`]].map(([k, val], i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
             <span className="t-body-sm" style={{ color: THEME.fg2 }}>{k}</span>
             <span className="t-h4">{val}</span>

@@ -3,7 +3,7 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { CHARACTERS, ROOMS, visibleCharacters } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, STATS, statsFor, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -299,7 +299,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       <SectionHead title={L('All buddies')} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {owned.map(c => {
-          const R = RARITY[c.rarity], t = c.traits || {};
+          const R = RARITY[c.rarity], t = statsFor(c);   // A-3.3 — the same derived stats the battle uses
           return (
             <button key={c.id} onClick={() => openC(c)} style={{ border: `2px solid ${R.fg}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', fontFamily: 'inherit', background: '#fff', boxShadow: THEME.shadowCard, padding: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 11px', background: R.fg }}>
@@ -308,7 +308,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
               </div>
               <div style={{ background: `linear-gradient(180deg, ${R.bg}, #fff)`, padding: '10px 8px 6px', display: 'flex', justifyContent: 'center' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={84} /></div>
               <div style={{ display: 'flex', gap: 6, padding: '8px 10px 11px' }}>
-                {[['shield', t.guard || 50], ['zap', t.speed || 60], ['heart', t.heart || 70]].map(([ic, v], i) => (
+                {STATS.map(s => [s.icon, t[s.key]]).map(([ic, v], i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, background: THEME.surface2, borderRadius: 8, padding: '4px 0' }}>
                     <Icon name={ic} size={11} color={THEME.fg2} stroke={2.3} /><span style={{ fontSize: 11, fontWeight: 800, color: THEME.fg1 }}>{v}</span>
                   </div>

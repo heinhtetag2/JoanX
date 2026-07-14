@@ -49,6 +49,17 @@ function Eyes({ mood, cx1, cx2, cy, r }) {
       </g>
     );
   }
+  // A-3.3 — the Stage 3 face. A grown buddy looks self-assured rather than wide-eyed:
+  // the arc curves UP (a confident squint), which is the same stroke as `sleepy` flipped,
+  // and reads as pride next to the Stage 1 hatchling's big alert eyes.
+  if (mood === 'proud') {
+    return (
+      <g stroke="#2b2826" strokeWidth="3.5" strokeLinecap="round" fill="none">
+        <path d={`M ${cx1 - r} ${cy + r * 0.5} q ${r} ${-r * 1.1} ${2 * r} 0`} />
+        <path d={`M ${cx2 - r} ${cy + r * 0.5} q ${r} ${-r * 1.1} ${2 * r} 0`} />
+      </g>
+    );
+  }
   const er = mood === 'alert' ? r * 1.18 : r;
   return (
     <g>

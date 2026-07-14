@@ -952,7 +952,7 @@ function AssetsSection() {
           <img src="/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ height: 34 }} />
           <code style={{ fontSize: 11, display: 'block', marginTop: 10, color: 'rgba(255,255,255,.55)' }}>/assets/brand/logo-wordmark.svg</code>
         </div>
-        {['onboarding/intro.png', 'onboarding/add-child.png', 'backgrounds/page-bg.jpg'].map(p => (
+        {['onboarding/intro.png', 'onboarding/add-child.png', 'backgrounds/page-bg-green.jpg'].map(p => (
           <div key={p} className="ds-tile" style={{ padding: 12, width: 160 }}>
             <img src={`/assets/${p}`} alt="" style={{ width: '100%', height: 84, objectFit: 'cover', borderRadius: 10 }} />
             <code style={{ fontSize: 10.5, display: 'block', marginTop: 8, color: THEME.fg3, wordBreak: 'break-all' }}>/assets/{p}</code>

@@ -21,7 +21,7 @@ function GuestbookNote({ note, liked, onLike }) {
       <MascotChip species={note.avatar} color={note.color} size={34} bg={THEME.primaryLight} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{note.by}</div>
-        <div style={{ fontSize: 13.5, color: THEME.fg1, marginTop: 1, lineHeight: 1.4 }}>{note.text}</div>
+        <div style={{ fontSize: 13.5, color: THEME.fg1, marginTop: 1, lineHeight: 1.4 }}>{note.emoji ? `${note.emoji} ` : ''}{L(note.text)}</div>
       </div>
       <button onClick={onLike} aria-label={L('Like')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
         <Icon name="heart" size={18} color={THEME.joy} stroke={2.3} fill={liked ? THEME.joy : 'none'} />

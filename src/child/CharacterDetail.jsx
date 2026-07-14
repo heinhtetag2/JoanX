@@ -1,7 +1,7 @@
 // JoanX — child app · CharacterDetail
 
 import React from 'react';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { battlePower, CHARACTERS, nextStageAt, PLAYER, STATS, statsFor } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -24,11 +24,16 @@ function CharacterDetail({ ctx }) {
     { id: 'glasses', icon: 'glasses', name: 'Cool Shades', on: false, locked: true },
   ];
 
-  const traits = [
-    { k: 'guard', label: 'Guard', icon: 'shield', color: THEME.primary },
-    { k: 'speed', label: 'Speed', icon: 'gauge', color: THEME.gold },
-    { k: 'heart', label: 'Heart', icon: 'heart', color: THEME.joy },
-  ];
+  // A-3.3 — the four core stats villain battles are fought with. Values are DERIVED
+  // from rarity, level and stage (statsFor), so this card cannot drift from the number
+  // the battle actually uses. Colour is presentation and stays here; the stat list
+  // itself comes from data, so a fifth stat needs no edit to this screen.
+  const stats = statsFor(orig);
+  const nextAt = nextStageAt(level);
+  const STAT_COLOR = { hp: THEME.joy, courage: THEME.gold, protection: THEME.primary, speed: '#4b9a6b' };
+  // bars are relative to the best stat on show — a fixed /100 max would peg every bar
+  // full the moment a buddy levels past it
+  const statMax = Math.max(...STATS.map(s => stats[s.key]), 1);
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
@@ -53,17 +58,28 @@ function CharacterDetail({ ctx }) {
           </div>
         </div>
 
-        {/* traits */}
+        {/* core stats (A-3.3) — HP · Courage · Protection · Speed */}
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{L('Battle traits')}</div>
-          {traits.map(t => (
-            <div key={t.k} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <Icon name={t.icon} size={16} color={t.color} stroke={2.3} />
-              <span style={{ fontSize: 12.5, fontWeight: 700, width: 48 }}>{L(t.label)}</span>
-              <div style={{ flex: 1 }}><Bar value={orig.traits[t.k] || 50} max={100} color={t.color} height={8} /></div>
-              <span className="game-font" style={{ fontSize: 12, fontWeight: 500, width: 24, textAlign: 'right' }}>{orig.traits[t.k] || 50}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 800 }}>{L('Battle stats')}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: THEME.fg2, background: THEME.surface2, borderRadius: 999, padding: '3px 9px' }}>
+              <Icon name="swords" size={11} color={THEME.fg2} stroke={2.4} />{L('Power')} {battlePower(orig)}
+            </span>
+          </div>
+          {STATS.map(s => (
+            <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <Icon name={s.icon} size={16} color={STAT_COLOR[s.key]} stroke={2.3} />
+              <span style={{ fontSize: 12.5, fontWeight: 700, width: 66 }}>{L(s.label)}</span>
+              <div style={{ flex: 1 }}><Bar value={stats[s.key]} max={statMax} color={STAT_COLOR[s.key]} height={8} /></div>
+              <span className="game-font" style={{ fontSize: 12, fontWeight: 500, width: 30, textAlign: 'right' }}>{stats[s.key]}</span>
             </div>
           ))}
+          {/* what the next stage is worth — the stat step is the reason to keep walking */}
+          <div style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600, marginTop: 4 }}>
+            {nextAt
+              ? `${L('Every stat grows with each level — Stage')} ${stage + 1} ${L('at Lv')} ${nextAt}.`
+              : L('Fully grown — every stat is at its peak.')}
+          </div>
         </div>
 
         {/* customize color */}
@@ -86,9 +102,9 @@ function CharacterDetail({ ctx }) {
         {/* customize items */}
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{L('Items')}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10 }}>
             {items.map(it => (
-              <div key={it.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: 16, background: it.on ? THEME.primaryLight : THEME.surface2, border: it.on ? `2px solid ${THEME.primary}` : `2px solid transparent`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <div key={it.id} style={{ position: 'relative', aspectRatio: '1', minWidth: 0, borderRadius: 16, background: it.on ? THEME.primaryLight : THEME.surface2, border: it.on ? `2px solid ${THEME.primary}` : `2px solid transparent`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                 <Icon name={it.locked ? 'lock' : it.icon} size={20} color={it.locked ? THEME.fg3 : it.on ? THEME.primary : THEME.fg2} stroke={2.2} />
                 <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
               </div>

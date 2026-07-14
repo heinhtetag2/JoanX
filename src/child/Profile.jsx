@@ -1,7 +1,7 @@
 // JoanX — child app · Profile
 
 import React from 'react';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, LINK, PARENT_SEES, PLAYER } from '../core/data.jsx';
 import { Badge, Button, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -15,6 +15,7 @@ function Profile({ ctx }) {
   const [sound, setSound] = React.useState(true);
   const [haptics, setHaptics] = React.useState(true);
   const [push, setPush] = React.useState(true);
+  const [seeOpen, setSeeOpen] = React.useState(false);   // A-13 — "what my parent can see" disclosure
 
   const Row = ({ icon, label, children, last, onClick }) => (
     <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: last ? 'none' : 'none', cursor: onClick ? 'pointer' : 'default' }}>
@@ -72,6 +73,50 @@ function Profile({ ctx }) {
           <Row icon="bell" label={L('Push notifications')}><Toggle on={push} onChange={setPush} /></Row>
         </div>
 
+        {/* A-13 — who this device is linked to. "Managed by your parent" told the child a
+            rule was being enforced but never by WHOM, and there was nowhere to check. The
+            link is a fact about the child's own device, so it belongs in their settings:
+            who, since when, and — the part that earns trust — exactly what that person can
+            and cannot see. Unlinking is deliberately NOT here: it is the parent's action,
+            and a child who can quietly disconnect makes the whole product a promise the
+            parent cannot rely on. */}
+        <div style={sectionLabel}>{L('Parent')}</div>
+        <div style={groupCard}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: THEME.primaryDark }}>
+                {LINK.parent.name[0]}
+              </div>
+              {LINK.connected && <span style={{ position: 'absolute', right: -1, bottom: -1, width: 13, height: 13, borderRadius: 999, background: THEME.success, border: '2.5px solid #fff' }} />}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 800 }}>{L(LINK.parent.relation)} · {LINK.parent.name}</div>
+              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 2 }}>
+                {LINK.connected ? `${L('Connected since')} ${LINK.since}` : L('Not connected')}
+              </div>
+            </div>
+            <Badge variant={LINK.connected ? 'success' : 'warning'}>{LINK.connected ? L('Connected') : L('Offline')}</Badge>
+          </div>
+          <Sep />
+          <Row icon="eye" label={L('What my parent can see')} onClick={() => setSeeOpen(o => !o)}>
+            <Icon name={seeOpen ? 'chevron-up' : 'chevron-down'} size={17} color={THEME.fg3} stroke={2.3} />
+          </Row>
+          {seeOpen && (
+            <div style={{ padding: '2px 14px 14px' }}>
+              {PARENT_SEES.map(r => (
+                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0' }}>
+                  <Icon name={r.icon} size={15} color={r.shared ? THEME.fg2 : THEME.fg3} stroke={2.2} />
+                  <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: r.shared ? THEME.fg1 : THEME.fg3 }}>{L(r.label)}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 800, color: r.shared ? THEME.success : THEME.fg3 }}>
+                    <Icon name={r.shared ? 'check' : 'x'} size={12} color={r.shared ? THEME.success : THEME.fg3} stroke={2.8} />
+                    {L(r.shared ? 'Shared' : 'Private')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* account */}
         <div style={sectionLabel}>{L('Account')}</div>
         <div style={groupCard}>
@@ -79,7 +124,7 @@ function Profile({ ctx }) {
             <Icon name={lite ? 'shield' : 'hand-heart'} size={18} color={THEME.fg2} stroke={2.2} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700 }}>{L('Protection mode')}</div>
-              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1 }}>{L('Managed by your parent')}</div>
+              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1 }}>{L('Set by')} {LINK.parent.name}</div>
             </div>
             <Badge variant={lite ? 'warning' : 'primary'}>{lite ? L('Lite') : L('Smart')}</Badge>
             <Icon name="lock" size={15} color={THEME.fg3} stroke={2.3} />

@@ -213,6 +213,18 @@ const KO = {
   'Evolve to Stage': '진화하기 — 단계', 'to evolve': '에서 진화 가능', 'Reach': '필요:',
   'Fully evolved — max stage!': '완전 진화 — 최고 단계!',
   'Battle traits': '배틀 특성', 'Stats': '능력', 'Guard': '방어', 'Speed': '스피드', 'Heart': '하트',
+  // A-3.3 — the buddy's stage lines. Stat names (HP/Courage/Protection) and stage names
+  // (Hatchling/Growing/Guardian) are defined once in the "core battle stats" block below.
+  'Reach Lv': '레벨', 'Fully grown — final stage': '완전히 자랐어요 — 마지막 단계',
+  'Hi! I just hatched.': '안녕! 나 방금 태어났어.',
+  'Where are we walking today?': '오늘은 어디로 걸어갈까?',
+  'Keep me safe and I will grow!': '안전하게 지켜주면 내가 자랄게!',
+  'I am getting stronger!': '점점 강해지고 있어!',
+  'Eyes up — I am watching with you.': '앞을 봐 — 나도 같이 보고 있어.',
+  'We make a good team.': '우리 팀워크 최고야.',
+  'Fully grown — and still walking beside you.': '다 자랐지만 여전히 네 옆에서 걸어.',
+  'Nothing gets past us now.': '이제 아무것도 우릴 못 지나가.',
+  'You taught me every step of this.': '이 모든 걸 네가 가르쳐줬어.',
   'Color': '색상', 'Items': '아이템', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
   'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
@@ -243,6 +255,19 @@ const KO = {
   'Push notifications': '푸시 알림', 'Account': '계정', 'Protection mode': '보호 모드',
   'Managed by your parent': '부모님이 관리해요', 'Help & support': '도움말 및 지원', 'About JoanX': '조안X 정보',
   'Sign out': '로그아웃', 'This device is managed by a parent or guardian.': '이 기기는 부모님 또는 보호자가 관리합니다.',
+  // A-9 — the parent link, shown in the child's own settings. 'Parent', 'Connected',
+  // 'Not connected' and 'Offline' already exist in the parent-app block — the child app
+  // reuses those rather than re-declaring them, so the two sides cannot drift apart.
+  'Mum': '엄마', 'Dad': '아빠',
+  'Connected since': '연결일',
+  'What my parent can see': '보호자가 볼 수 있는 것', 'Shared': '공유됨', 'Private': '비공개', 'Set by': '설정한 사람:',
+  'How long you walked safely': '안전하게 걸은 시간',
+  'Warnings you got while walking': '걷는 중 받은 경고',
+  'Your points and streak': '내 포인트와 연속 기록',
+  'Which app types are blocked': '차단된 앱 종류',
+  'Where you are': '내 위치',
+  'Your messages and guestbook': '내 메시지와 방명록',
+  'Your photos': '내 사진',
 
   // ── Help & support ──
   'How can we help?': '무엇을 도와드릴까요?', 'Tap a question to see the answer.': '질문을 누르면 답을 볼 수 있어요.',
@@ -285,11 +310,59 @@ const KO = {
   'Outfits are bought on each buddy’s page — some unlock as they evolve.': '의상은 각 친구의 상세 화면에서 살 수 있어요 — 일부는 진화하면 열려요.',
   // level cap (A-3.2)
   'MAX': '최대', 'Fully grown — in your Collection': '완전히 성장했어요 — 컬렉션에 등록됐어요',
+  // point → EXP exchange (A-1.2)
+  'Grow your buddy': '친구 키우기', 'Turn points into EXP for a buddy.': '포인트를 친구의 EXP로 바꿔요.',
+  'Convert': '교환하기', 'Max': '최대로', 'More': '늘리기', 'Less': '줄이기', 'Level up!': '레벨 업!',
+  'This buddy finished growing. Pick another one.': '이 친구는 다 자랐어요. 다른 친구를 골라요.',
+  'Almost at the level cap': '최고 레벨에 거의 도달했어요',
   // egg shop (A-2.1)
   'Buddy Eggs': '친구 알', 'Common Egg': '일반 알', 'Rare Egg': '레어 알', 'Epic Egg': '에픽 알',
   'Unlocks at Lv': '해금 레벨 Lv', 'Reward': '보상',
   'Only from events and missions': '이벤트와 미션으로만 얻을 수 있어요',
   'Only from events, special missions and achievement rewards.': '이벤트, 스페셜 미션, 업적 보상으로만 얻을 수 있어요.',
+  // egg acquisition (A-2.1) — earned eggs + the routes that grant them
+  'Your eggs': '내 알', 'Earned — ready to hatch': '획득 완료 — 부화할 수 있어요',
+  'Hatch': '부화하기', 'Also earn from': '이렇게도 얻어요',
+  'Missions': '미션', 'Distance & time': '거리 · 시간', 'Point shop': '포인트 상점',
+  'Level-up reward': '레벨업 보상', 'Events & seasons': '이벤트 · 시즌',
+  // character unlock routes (A-4.1) — earned by safe behaviour, not only by the odds
+  'Hatch a Common Egg': '일반 알 부화하기', 'Hatch a Rare Egg': '레어 알 부화하기', 'Hatch an Epic Egg': '에픽 알 부화하기',
+  '7 days accident-free': '7일 연속 무사고', '30 days accident-free': '30일 연속 무사고',
+  'Walk 100 km safely': '누적 100km 안전하게 걷기',
+  'Halve your phone use while walking': '걸을 때 폰 사용 절반으로 줄이기',
+  'Early Walker': '아침 산책러',
+  'Win a special event mission': '스페셜 이벤트 미션 달성',
+  'Not yet discovered': '아직 발견하지 못함',
+  // friend-house reactions (A-10) — every one is a kind one, by design
+  'Leave a reaction': '반응 남기기', 'You said': '내 반응',
+  'Nice': '좋아요', 'Love it': '너무 좋아요', 'Amazing': '멋져요', 'So cool': '최고예요', 'Well done': '잘했어요',
+  // villain clear rewards (A-8.4)
+  'waiting in Your Eggs': '내 알에서 기다려요', 'Boss bonus': '보스 보너스',
+  // villain records & re-challenges (A-8.1)
+  'Your record': '내 전적', 'Wins': '승', 'Losses': '패', 'Best power': '최고 파워',
+  'Reset': '초기화', 'New personal best': '자기 최고 기록!',
+  'First-clear reward already earned — rematches pay the repeat reward.':
+    '첫 클리어 보상은 이미 받았어요 — 재도전은 반복 보상을 받아요.',
+  // core battle stats & growth stages (A-3.3)
+  'Battle stats': '배틀 능력치', 'HP': '체력', 'Courage': '용기', 'Protection': '보호', 'Power': '파워',
+  'Every stat grows with each level — Stage': '레벨이 오르면 모든 능력치가 자라요 — 단계',
+  'at Lv': '· Lv', 'Fully grown — every stat is at its peak.': '완전히 성장했어요 — 모든 능력치가 최고치예요.',
+  'Hatchling': '갓 태어난', 'Growing': '성장 중', 'Guardian': '수호자',
+  // items: categories, slots & new stock (A-5.1)
+  'Character items': '캐릭터 아이템', 'Room items': '방 아이템',
+  'Limited edition': '한정판', 'Villain battles': '빌런 배틀',
+  'Safe streak': '연속 안전', 'Less phone use': '폰 사용 줄이기',
+  'Wood Floor': '나무 바닥', 'Meadow Floor': '풀밭 바닥', 'Aurora': '오로라',
+  'Champion Trophy': '챔피언 트로피', 'Star Lantern': '별 랜턴',
+  'Night Goggles': '나이트 고글', 'Victory Medal': '승리 메달', 'Winter Wreath': '겨울 화환',
+  'Reach level 8': '레벨 8 달성', 'Quick Reflex': '빠른 반응', 'Collector': '수집가',
+  'Defeat 5 villains': '빌런 5명 물리치기', 'Defeat 10 villains': '빌런 10명 물리치기',
+  'Winter event': '겨울 이벤트',
+  // weekly safe-walk missions (A-1.1)
+  'Weekly missions': '주간 미션',
+  'Walk safely 5 days': '5일 안전하게 걷기',
+  'Walk 15 km safely': '15km 안전하게 걷기',
+  'Stop right away 10 times': '즉시 멈추기 10회',
   'Your first buddy!': '첫 번째 친구예요!',
   'Someone is waiting inside. Hatch the egg to meet them.': '알 속에 친구가 기다리고 있어요. 알을 부화시켜 만나 보세요.',
   'Shake to hatch too': '흔들어도 부화해요', 'Give your phone a little shake': '폰을 살짝 흔들어 보세요',
@@ -559,21 +632,71 @@ const KO = {
   'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
   'Boss': '보스', 'Reward': '보상', 'Start battle': '배틀 시작',
 
-  // villain roster (names + blurbs, A-8/A-9)
-  'Smombie Rookie': '스몸비 새내기', 'Smombie Walker': '스몸비 워커', 'Distractor': '방해꾼',
-  'Dark Walker': '어둠의 워커', 'Crossroad Phantom': '교차로 유령', 'Alley Stalker': '골목 스토커',
-  'Screen Master': '스크린 마스터', 'Attention Reaper': '집중력 사신', 'Doom Walker': '파멸의 워커',
-  'King Smombie': '스몸비 대왕',
-  'A freshly-hatched screen zombie. Shuffles along, eyes glued to the glow.': '갓 태어난 스크린 좀비. 화면에 눈을 붙인 채 터덜터덜 걸어요.',
-  'Walks and scrolls at once — bumps into lampposts, never looks up.': '걸으면서 스크롤까지 — 가로등에 부딪혀도 고개를 들지 않아요.',
-  'Pings and buzzes to steal your attention at the worst moment.': '가장 위험한 순간에 알림과 진동으로 집중력을 훔쳐가요.',
-  'Crosses the road head-down in the dark. Your next challenge.': '어두운 밤, 고개를 숙인 채 길을 건너요. 너의 다음 도전 상대!',
-  'Haunts busy junctions, luring walkers into traffic.': '복잡한 교차로에 숨어 보행자를 차도로 꾀어내요.',
-  'Lurks where sightlines are short and cars come fast.': '시야가 좁고 차가 빨리 달리는 골목에 숨어 있어요.',
-  'Bends every walker to the pull of the screen.': '모든 보행자를 화면의 유혹에 빠뜨려요.',
-  'Harvests focus until nothing is left for the road.': '길을 볼 집중력이 남지 않을 때까지 몽땅 거둬가요.',
-  'Marches on, blind to every warning.': '어떤 경고도 못 본 척 앞만 보고 걸어가요.',
-  'Ruler of the screen zombies. Beat it to master the streets.': '스크린 좀비의 왕. 물리치면 거리의 진짜 주인이 돼요.',
+  // villain roster (A-8/A-9) — original IP characters, each one a risk to a walking
+  // child made visible. Name · risk · tagline · story · ability, per villain.
+  'Temp': '템프', 'Haze': '헤이즈', 'Rush': '러시', 'Noct': '녹트', 'Glitch': '글리치',
+  'Maze': '메이즈', 'Vex': '벡스', 'Grim': '그림', 'Vilord': '빌로드', 'Nox': '녹스',
+  'Mid-boss': '중간 보스', 'Final boss': '최종 보스', 'Villain': '빌런',
+
+  'Temptation — the phone that begs to be checked': '유혹 — 자꾸만 확인하고 싶어지는 폰',
+  'Offers you one peek. One peek is all a road needs.': '딱 한 번만 보라고 해요. 도로에는 그 한 번이면 충분해요.',
+  'Temp was born the first time someone said "just one look" and stepped off the kerb. It has been offering ever since, and it never has to ask twice.': '누군가 "딱 한 번만"이라며 인도를 벗어난 그 순간 템프가 태어났어요. 그 뒤로 계속 권하고 있고, 두 번 말할 필요도 없었죠.',
+  'Just One Peek': '딱 한 번만',
+  'Pulls your eyes down for a second — and a second is all a car needs.': '단 1초 시선을 빼앗아요 — 자동차에는 그 1초면 충분해요.',
+
+  'Carelessness — attention that quietly drains away': '부주의 — 소리 없이 새어 나가는 집중력',
+  'Softens the world until a crossing looks like a pavement.': '세상을 흐릿하게 만들어 횡단보도를 인도처럼 보이게 해요.',
+  'Haze does not attack. It settles, the way fog settles, until the difference between the road and the path stops mattering to you.': '헤이즈는 공격하지 않아요. 안개처럼 내려앉을 뿐이죠. 차도와 인도의 차이가 아무래도 상관없어질 때까지요.',
+  'Blur': '흐림',
+  'Fades the edges of the street so you miss the one that matters.': '거리의 경계선을 지워, 정말 중요한 선을 놓치게 해요.',
+
+  'Impulse — moving before looking': '충동 — 보기 전에 움직이는 것',
+  'Runs first. Looks never.': '먼저 달려요. 보는 법은 없어요.',
+  'Rush is the voice that says the gap is big enough. It is right almost every time, and that is exactly what makes it dangerous.': '러시는 "지금 건너도 충분해"라고 속삭이는 목소리예요. 거의 매번 맞아요 — 그래서 더 위험하죠.',
+  'Go Now': '지금 가',
+  'Shoves you off the kerb before the light has changed.': '신호가 바뀌기도 전에 등을 떠밀어요.',
+
+  'Darkness — being unseen by the people driving': '어둠 — 운전자에게 보이지 않는 것',
+  'Puts out the lights and waits at the crossing.': '불을 꺼뜨리고 횡단보도에서 기다려요.',
+  'Noct does not hide you from the road — it hides you from the driver. By the time the headlights find you, the braking distance is already gone.': '녹트는 도로에서 너를 숨기는 게 아니라, 운전자에게서 너를 숨겨요. 헤드라이트가 너를 찾았을 땐 이미 멈출 거리가 없어요.',
+  'Lights Out': '소등',
+  'Drains the streetlights so a driver sees you a heartbeat too late.': '가로등을 꺼뜨려, 운전자가 한 박자 늦게 너를 보게 해요.',
+
+  'Confusion — danger that will not follow the rules': '혼란 — 규칙을 지키지 않는 위험',
+  'Makes a green light lie to you.': '초록불이 거짓말을 하게 만들어요.',
+  'Glitch is the car that comes from the side you already checked. It exists to teach one lesson: safe is something you confirm, not something you assume.': '글리치는 이미 확인한 쪽에서 튀어나오는 자동차예요. 알려주는 건 하나뿐 — 안전은 짐작하는 게 아니라 확인하는 거예요.',
+  'Wrong Signal': '거짓 신호',
+  'Scrambles what is safe and what is not, so the rules stop holding.': '안전한 것과 위험한 것을 뒤섞어, 규칙을 무너뜨려요.',
+
+  'Complexity — losing your way and ending up where you should not be': '복잡함 — 길을 잃고 가면 안 될 곳에 서는 것',
+  'Folds a street you know into one you do not.': '아는 길을 모르는 길로 접어버려요.',
+  'Maze never puts a child in front of a car. It just makes sure they end up on the road nobody walks — and lets that road do the rest.': '메이즈는 아이를 차 앞에 세우지 않아요. 아무도 걷지 않는 길로 데려다 놓고, 나머지는 그 길에 맡기죠.',
+  'Endless Detour': '끝없는 우회',
+  'Rebuilds the way home until you are somewhere you have never walked.': '집에 가는 길을 계속 바꿔, 한 번도 걸어본 적 없는 곳에 데려다 놔요.',
+
+  'Anxiety — pressure that crowds out the road': '불안 — 도로를 밀어내는 압박감',
+  'Whispers that you are late, until nothing else fits in your head.': '늦었다고 속삭여, 머릿속에 다른 게 들어갈 자리를 없애요.',
+  'Vex does not want to hurt you. It wants you worried — about the bell, the message, the answer you owe someone. A worried child crosses without looking.': '벡스는 너를 다치게 하고 싶은 게 아니라, 걱정하게 만들고 싶어요. 종소리, 읽지 않은 메시지, 해야 할 대답. 걱정에 빠진 아이는 보지 않고 건너니까요.',
+  'Hurry Up': '서둘러',
+  'Fills your head with what you are late for, so the crossing gets none of it.': '늦은 일들로 머리를 가득 채워, 횡단보도에는 아무 생각도 남기지 않아요.',
+
+  'Fear — freezing at the exact moment you must move': '두려움 — 움직여야 할 순간에 굳어버리는 것',
+  'Roots you to the spot, in the worst spot to be rooted.': '가장 멈추면 안 되는 곳에 너를 붙박아요.',
+  'Grim is the horn, the size of the truck, the size of the road. It stops a child halfway across — the one place on a street where standing still is the most dangerous thing you can do.': '그림은 경적 소리, 트럭의 크기, 도로의 크기예요. 건너던 아이를 도로 한복판에 세워요 — 가만히 서 있는 게 가장 위험한 바로 그 자리에요.',
+  'Freeze': '얼어붙기',
+  'Locks you mid-crossing, where standing still is the worst move there is.': '횡단보도 한가운데에 너를 묶어둬요. 멈춰 서는 게 최악인 그곳에요.',
+
+  'The hand behind the others — every distraction, arriving together': '배후의 손 — 모든 방해가 한꺼번에 몰려와요',
+  'Does not chase you. Sends the other eight.': '직접 쫓아오지 않아요. 나머지 여덟을 보내죠.',
+  'Vilord commands the eight. It has watched you beat them one by one, and it does not intend to fight you the same way — it will send them all at once.': '빌로드는 여덟 빌런을 거느려요. 네가 하나씩 물리치는 걸 지켜봤고, 같은 방식으로 싸울 생각은 없어요 — 이번엔 전부 한꺼번에 보낼 거예요.',
+  'Command the Eight': '여덟을 부리다',
+  'Borrows a trick from every villain you have already beaten.': '네가 이미 물리친 빌런들의 기술을 하나씩 빌려 써요.',
+
+  'The source — the dark that every other danger comes out of': '근원 — 모든 위험이 흘러나오는 어둠',
+  'The dark the others are made of. Beat it and the street is yours.': '다른 빌런들을 이루는 어둠 그 자체. 물리치면 거리는 네 것이에요.',
+  'Nox is not a villain who arrived; it is the dark that was always there, and every other villain is a piece of it. Put it out and the city can look up again.': '녹스는 찾아온 빌런이 아니라, 처음부터 거기 있던 어둠이에요. 다른 빌런들은 모두 그 조각이죠. 이 어둠을 걷어내면 도시가 다시 고개를 들 수 있어요.',
+  'Total Dark': '완전한 어둠',
+  'Snuffs every light, every sound and every warning at once.': '모든 빛과 소리와 경고를 한 번에 꺼버려요.',
 
   // ── battle / villains (A-8) ──
   'Approaching the villain…': '빌런에게 접근 중…', 'Next villain': '다음 빌런', 'Power': '파워',
@@ -581,7 +704,23 @@ const KO = {
   // repeat challenges (A-8.1)
   'Rematch': '재대결', 'Challenge again': '다시 도전하기', 'Repeat challenge': '반복 도전',
   'cleared': '클리어', 'New': '신규',
+  // F-19 — walking closes the battle screen
+  'Battles pause while you walk': '걷는 동안에는 배틀이 쉬어요',
+  'Eyes up — the villains will still be there. They open again as soon as you stop.': '앞을 봐요 — 빌런은 도망가지 않아요. 멈추면 바로 다시 열려요.',
+  'You are earning right now': '지금도 포인트를 모으고 있어요',
+  // A-8.2 — recommended level & win probability
+  'Your chance': '승률', 'Recommended': '권장', 'New personal best': '최고 기록 경신',
+  'is under the recommended level — you can still fight, the odds are just longer.': '권장 레벨보다 낮아요 — 도전할 수 있지만 승률이 낮아요.',
+  'Likely win': '유리해요', 'Close call': '접전이에요', 'Tough fight': '힘든 상대예요',
   'First clear! A new villain is unlocked.': '첫 승리! 새로운 빌런이 열렸어요.',
+  // A-8.1 — basic reward vs first-clear bonus, and the story a first win unlocks
+  'Basic': '기본 보상', 'First-clear bonus': '첫 승리 보너스',
+  'Story unlocked': '이야기 해금', 'Chapter': '챕터', 'Story chapters': '이야기 챕터',
+  'Beat it to unlock its story': '물리치면 이야기가 열려요',
+  // A-8 — the ending: the final boss falls, the story closes, the special reward lands
+  'Nox is out.': '녹스를 꺼뜨렸어요.', 'Ending unlocked': '엔딩 해금', 'Special reward': '특별 보상',
+  'The final villain is beaten — the ending is yours.': '최종 빌런을 물리쳤어요 — 엔딩은 네 것이에요.',
+  'The dark the others were made of is gone. The city can look up again — and so can you.': '다른 빌런들을 이루던 어둠이 사라졌어요. 이제 도시가 다시 고개를 들 수 있어요 — 너처럼요.',
   'Still earned': '그래도', 'points for trying!': '포인트를 받았어요!',
   // battle select layouts (BattleVariants.jsx)
   'Opponent': '상대', 'Matchup': '전력 비교', 'Total power': '총 파워',
@@ -605,7 +744,11 @@ const KO = {
   'JoanX has no chat — just friendly visits, likes, and guestbook notes.': 'JoanX에는 채팅이 없어요 — 방문, 좋아요, 방명록만 있어요.',
   '’s house': '님의 집', 'Featured buddy': '대표 친구',
   'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
-  'Rooms': '방', 'Guestbook': '방명록', 'Write one line…': '한 줄 남기기…', 'Sign': '남기기',
+  'Rooms': '방', 'Guestbook': '방명록',
+  'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '방문당 한 개',
+  // guestbook stamps (GUEST_STAMPS) — the fixed set children pick from
+  'I stopped by!': '놀러 왔어요!', 'Your room is awesome!': '방 진짜 멋져요!', 'Nice streak!': '연속 기록 대단해요!',
+  'Cool collection!': '컬렉션 멋져요!', 'Strong buddy!': '친구가 정말 강해요!', 'Congrats on the new buddy!': '새 친구 축하해요!',
 
   // ── my profile / house + decoration (A-6 / A-7) ──
   'My Profile': '내 프로필', 'Friends see this': '친구에게 보여요', 'My rooms': '내 방',
@@ -734,7 +877,7 @@ const KO = {
   'mutual friends': '함께 아는 친구', 'Added': '추가됨', 'Request sent!': '요청을 보냈어요!', 'Friend added!': '친구가 추가됐어요!',
 
   // ── in-scope build (danger zones / GNSS gated off) ──
-  'Motion sensor': '모션 센서', 'You beat Distractor': '디스트랙터를 물리쳤어요',
+  'Motion sensor': '모션 센서', 'You beat Rush': '러시를 물리쳤어요',
   "JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.": 'JoanX는 메시지를 읽거나 엿듣거나 위치를 추적하지 않아요. 걷기를 감지하는 기기 내 모션만 사용하며, 자녀의 신원과 분리해 저장해요.',
 
   // ── AI parent report (F-31) ──

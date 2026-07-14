@@ -1,7 +1,7 @@
 // JoanX — child app · CharacterDex
 
 import React from 'react';
-import { SPECIES_INFO, visibleCharacters } from '../core/data.jsx';
+import { SPECIES_INFO, unlockHints, visibleCharacters } from '../core/data.jsx';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
@@ -39,7 +39,10 @@ function CharacterDex({ ctx }) {
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, color: THEME.fg3 }}>
                     <Icon name="lock" size={13} color={THEME.fg3} stroke={2.3} />
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{L(c.locked || 'Not yet discovered')}</span>
+                    {/* A-4.1 — the routes are DERIVED from the grant tables (unlockHints), not
+                        authored per character, so a locked slot can never promise a way in
+                        that the odds or the unlock rules no longer actually offer. */}
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{unlockHints(c).map(L).join(" · ")}</span>
                   </div>
                 )}
               </div>

@@ -1,10 +1,10 @@
 // JoanX — child app · shared
 
 import React from 'react';
-import { CHARACTERS, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, moodForStage, PLAYER, stageOf } from '../core/data.jsx';
 import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { shade } from '../core/characters.jsx';
+import { Mascot, shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
 
 // Page background tinted by the *active* buddy's colour — keeps every screen's
@@ -44,6 +44,41 @@ function ScreenHeader({ title, onBack, left, right }) {
 // frame rather than the browser window, because the frame carries a transform (the prototype
 // scales it to fit) and a transformed ancestor becomes the containing block for fixed
 // children — which is what keeps the confetti inside the phone.
+// ── Stage-up moment (A-3.3) ──────────────────────────────────────────
+// A stage is presentation, and presentation the child never sees is worth nothing — so the
+// transformation gets its own beat wherever the level that earned it landed: a battle win,
+// a mission, the point exchange. It used to be a button on the character screen, which
+// meant a buddy could cross the threshold and only "evolve" if the child happened to visit.
+// No stats change here (that was the level's doing) — this is purely the reveal.
+function StageUpMoment({ character, stage, color, onDone }) {
+  const c = color || character?.color || THEME.primary;
+  const info = stageOf(stage);
+  React.useEffect(() => {
+    const t = setTimeout(() => onDone && onDone(), 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  if (!character) return null;
+  return (
+    <div className="jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: `radial-gradient(circle at 50% 42%, ${shade(c, 16)} 0%, #17130f 74%)` }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 230, height: 230, marginBottom: 20 }}>
+        <div className="jx-burst" style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, background: `radial-gradient(circle, ${shade(c, 52)} 0%, transparent 66%)` }} />
+        <div className="jx-ring" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(c, 44)}99` }} />
+        <div className="jx-ring-slow" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(c, 44)}99` }} />
+        {/* keyed on stage so React remounts the mascot and the pop replays on the NEW form */}
+        <div key={stage} className="jx-pop" style={{ position: 'relative' }}>
+          <Mascot species={character.species} stage={stage} color={c} mood={moodForStage(stage)} size={170} context="detail" />
+        </div>
+      </div>
+      <div className="game-font" style={{ color: '#fff', fontSize: 26, fontWeight: 500 }}>
+        {L('Stage')} {stage} · {L(info.name)}
+      </div>
+      <div style={{ color: 'rgba(255,255,255,.82)', fontSize: 13.5, marginTop: 8, maxWidth: 260, lineHeight: 1.5 }}>
+        “{L(info.lines[0])}”
+      </div>
+    </div>
+  );
+}
+
 function HatchCelebration({ color = THEME.primary, accent = THEME.gold, screen = false }) {
   const cols  = [color, accent, shade(color, 42), THEME.gold, shade(color, -16), THEME.success, color, accent];
   const lefts = ['18%', '30%', '44%', '56%', '68%', '80%', '24%', '74%'];
@@ -116,4 +151,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, Confetti, RarityPill, DexProgress, PointsChip, StatCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, DexProgress, PointsChip, StatCard };

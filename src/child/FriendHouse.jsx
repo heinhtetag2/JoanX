@@ -1,8 +1,8 @@
 // JoanX — child app · FriendHouse
 
 import React from 'react';
-import { FRIENDS, PLAYER } from '../core/data.jsx';
-import { Button, Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
+import { FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal } from '../core/data.jsx';
+import { Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { ScreenHeader, RarityPill } from './shared.jsx';
@@ -11,19 +11,38 @@ import { ScreenHeader, RarityPill } from './shared.jsx';
 //    one-line guestbook. Visit-only, no chat/real-time. ──────────────
 function FriendHouse({ ctx }) {
   const f = FRIENDS.find(x => x.id === ctx.params?.id) || FRIENDS[0];
-  const [liked, setLiked] = React.useState(f.liked);
-  const [likes, setLikes] = React.useState(f.likes);
-  const [entries, setEntries] = React.useState(f.guest);
-  const [draft, setDraft] = React.useState('');
+  // A-10 — which reaction I left (or none), and the running tally per reaction. Both come
+  // straight off the friend row, which react() keeps in step, so leaving one here shows up
+  // on the friends list too rather than only inside this screen.
+  const [mine, setMine] = React.useState(f.myReaction);
+  const [counts, setCounts] = React.useState(() => ({ ...f.reactions }));
+  const likes = reactionTotal(f);
+  // Copy, don't alias: f.guest is mutated below to persist the note across visits, and a shared
+  // reference would make the state prepend and that mutation both show up — the note twice.
+  const [entries, setEntries] = React.useState(() => [...f.guest]);
+  const [picked, setPicked] = React.useState(null);   // the stamp mid-tap, held briefly so the press reads as "sent"
+  const [signed, setSigned] = React.useState(false);
 
-  const toggleLike = () => {
-    const next = !liked; setLiked(next); setLikes(n => n + (next ? 1 : -1));
-    f.liked = next; f.likes = likes + (next ? 1 : -1);
+  // react() owns the switch/take-back rules and the counting — this only mirrors the result
+  // into state so the row repaints.
+  const leaveReaction = (key) => {
+    setMine(react(f, key));
+    setCounts({ ...f.reactions });
   };
-  const sign = () => {
-    const t = draft.trim(); if (!t) return;
-    const e = { by: PLAYER.name, text: t };
-    setEntries(list => [e, ...list]); f.guest.unshift(e); setDraft('');
+  // One tap leaves the note. The stamp stays lit for a beat before the picker swaps to the
+  // confirmation, so the child sees which one they sent rather than the row just vanishing.
+  const timer = React.useRef(null);
+  React.useEffect(() => () => clearTimeout(timer.current), []);
+  const leave = (s) => {
+    if (signed || picked) return;
+    setPicked(s);
+    timer.current = setTimeout(() => {
+      const e = { by: PLAYER.name, emoji: s.emoji, text: s.text };
+      // `mine` drives the one-shot pop and lives only in this render's copy — the stored note
+      // stays clean so re-opening the house doesn't re-animate a note that's just sitting there.
+      setEntries(list => [{ ...e, mine: true }, ...list]); f.guest.unshift(e);
+      setSigned(true);
+    }, 320);
   };
   const fc = f.featured;
 
@@ -41,11 +60,31 @@ function FriendHouse({ ctx }) {
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}><RarityPill rarity={fc.rarity} /></div>
         </div>
 
-        {/* like sticker */}
-        <button onClick={toggleLike} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: liked ? THEME.joyBg : '#fff', border: `1.5px solid ${liked ? THEME.joy : THEME.border}`, borderRadius: 16, padding: '13px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>
-          <Icon name="heart" size={19} color={THEME.joy} stroke={2.3} fill={liked ? THEME.joy : 'none'} />
-          <span style={{ fontSize: 14, fontWeight: 800, color: liked ? THEME.joy : THEME.fg1 }}>{liked ? L('Liked!') : L('Leave a like')}</span>
-        </button>
+        {/* A-10 — reactions, not just a like. One per visitor: picking another moves your
+            reaction rather than stacking a second one, and tapping the one you left takes
+            it back. Every reaction is a kind one — see REACTIONS in data.jsx for why. */}
+        <div style={{ background: '#fff', borderRadius: 16, padding: '12px 10px 11px', boxShadow: THEME.shadowCard, marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {REACTIONS.map(r => {
+              const on = mine === r.key;
+              const n = counts[r.key] || 0;
+              return (
+                <button key={r.key} onClick={() => leaveReaction(r.key)} aria-label={L(r.label)}
+                  className="jx-press"
+                  style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                    background: on ? `${r.color}1c` : THEME.surface2,
+                    border: on ? `1.5px solid ${r.color}` : '1.5px solid transparent',
+                    borderRadius: 13, padding: '8px 2px 6px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: 'none' }}>
+                  <span style={{ fontSize: 19, lineHeight: 1 }}>{r.emoji}</span>
+                  <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: on ? r.color : THEME.fg2 }}>{n}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: mine ? reactionOf(mine).color : THEME.fg3, marginTop: 8 }}>
+            {mine ? `${L('You said')} ${reactionOf(mine).emoji} ${L(reactionOf(mine).label)}` : L('Leave a reaction')}
+          </div>
+        </div>
 
         {/* rooms */}
         <SectionHead title={L('Rooms')} />
@@ -59,19 +98,33 @@ function FriendHouse({ ctx }) {
           ))}
         </div>
 
-        {/* guestbook */}
+        {/* guestbook — a stamp is picked, never typed (see GUEST_STAMPS) */}
         <SectionHead title={L('Guestbook')} />
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <input value={draft} onChange={e => setDraft(e.target.value.slice(0, 60))} placeholder={L('Write one line…')} maxLength={60}
-            style={{ flex: 1, minWidth: 0, border: `1.5px solid ${THEME.border}`, borderRadius: 14, padding: '11px 14px', fontFamily: 'inherit', fontSize: 13.5, color: THEME.fg1, background: '#fff', outline: 'none' }} />
-          <Button variant="primary" size="md" icon="send" onClick={sign} disabled={!draft.trim()}>{L('Sign')}</Button>
-        </div>
+        {signed ? (
+          <div className="jx-pop" style={{ display: 'flex', alignItems: 'center', gap: 9, background: THEME.joyBg, border: `1.5px solid ${THEME.joy}`, borderRadius: 16, padding: '13px 14px', marginBottom: 12 }}>
+            <Icon name="check" size={17} color={THEME.joy} stroke={2.6} />
+            <span style={{ fontSize: 13.5, fontWeight: 800, color: THEME.joy }}>{L('Note left!')}</span>
+            <span style={{ fontSize: 12.5, color: THEME.fg2, marginLeft: 'auto' }}>{L('One note per visit')}</span>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '0 2px 10px' }}>{L('Tap a note to leave it.')}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {GUEST_STAMPS.map((s, i) => (
+                <button key={i} className="jx-press" onClick={() => leave(s)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: picked === s ? THEME.primaryLight : '#fff', border: `1.5px solid ${picked === s ? THEME.primary : THEME.border}`, borderRadius: 999, padding: '9px 14px', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: picked === s ? THEME.primaryDark : THEME.fg1, cursor: 'pointer' }}>
+                  <span style={{ fontSize: 15 }}>{s.emoji}</span>{L(s.text)}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         {entries.map((e, i) => (
-          <div key={i} style={{ display: 'flex', gap: 10, background: '#fff', borderRadius: 16, padding: '12px 14px', boxShadow: THEME.shadowCard, marginBottom: 8 }}>
+          <div key={i} className={e.mine ? 'jx-pop' : undefined} style={{ display: 'flex', gap: 10, background: '#fff', borderRadius: 16, padding: '12px 14px', boxShadow: THEME.shadowCard, marginBottom: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 800, color: THEME.primaryDark }}>{e.by[0]}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{e.by}</div>
-              <div style={{ fontSize: 13.5, color: THEME.fg1, marginTop: 1, lineHeight: 1.4 }}>{e.text}</div>
+              <div style={{ fontSize: 13.5, color: THEME.fg1, marginTop: 1, lineHeight: 1.4 }}>{e.emoji ? `${e.emoji} ` : ''}{L(e.text)}</div>
             </div>
           </div>
         ))}

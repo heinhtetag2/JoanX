@@ -7,11 +7,11 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { margin: 0; }
 
-/* Page backdrop behind the phone mock — the blue gradient wash. Declared here
+/* Page backdrop behind the phone mock — the green gradient wash. Declared here
    (last stylesheet) so it wins over tripme-tokens' `html,body { background: var(--bg) }`,
    whose `background` shorthand would otherwise reset this image to a flat white. */
 html, body {
-  background: #0a1f6b url("/assets/backgrounds/page-bg.jpg") center center / cover no-repeat fixed;
+  background: #10502f url("/assets/backgrounds/page-bg-green.jpg") center center / cover no-repeat fixed;
 }
 
 /* Fredoka covers Latin; Jua is a popular rounded Korean face for the kid headers. */

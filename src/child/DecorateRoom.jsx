@@ -1,7 +1,7 @@
 // JoanX — child app · DecorateRoom
 
 import React from 'react';
-import { CHARACTERS, DECOR, PLAYER, ROOMS } from '../core/data.jsx';
+import { buyItem, CHARACTERS, DECOR, PLAYER, ROOMS } from '../core/data.jsx';
 import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -39,10 +39,13 @@ function DecorateRoom({ ctx }) {
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1500); };
 
   const pickRoom = (r) => { setRoomId(r.id); setTheme(r.theme); setStyleId(r.style || 'cozy'); setPlaced({}); };
+  // A-5.1 — buying goes through buyItem() so the points check, the level gate and the
+  // ownership write are the same here as on every other item surface.
   const tapDecor = (d) => {
     if (!ownedDecor[d.id]) {
-      if (pts < d.cost) { say(L('Not enough points yet')); return; }
-      PLAYER.points -= d.cost; setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
+      const verdict = buyItem(d, PLAYER);
+      if (!verdict.ok) { say(L(verdict.reason === 'level' ? 'Unlocks at Lv' : 'Not enough points yet')); return; }
+      setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
       setPlaced(p => ({ ...p, [d.id]: true })); return;
     }
     setPlaced(p => ({ ...p, [d.id]: !p[d.id] }));
@@ -116,7 +119,7 @@ function DecorateRoom({ ctx }) {
                 <Icon name={d.icon} size={26} color={isOn ? THEME.primary : THEME.fg2} stroke={2.1} />
                 <div style={{ fontSize: 12, fontWeight: 700 }}>{L(d.name)}</div>
                 {own ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success }}>{isOn ? L('Placed') : L('Owned')}</span>
-                     : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><Icon name="star" size={10} color={THEME.gold} fill={THEME.gold} stroke={2} />{d.cost}</span>}
+                     : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><Icon name="star" size={10} color={THEME.gold} fill={THEME.gold} stroke={2} />{d.price}</span>}
               </button>
             );
           })}

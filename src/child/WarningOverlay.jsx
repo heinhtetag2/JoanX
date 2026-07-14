@@ -449,8 +449,12 @@ function WarningOverlay({ ctx }) {
           {/* ── STAGE 1: gentle buzz + the 2s hold window (F-08).
               The warning only lands if the risk keeps going for BUZZ_HOLD_MS after the buzz;
               stopping in here (button, or the phone simply going down) skips it entirely. */}
+          {/* No "I stopped" button here: in the real product the buzz stage has no UI to press —
+              the child stops by looking up or putting the phone down, and detection reports it.
+              A button would be inventing an interaction the shipped app doesn't have. The layer
+              itself stands in for that detection signal so the demo can still reach the save. */}
           {phase === 'buzz' && (
-            <div className="jx-fade" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+            <div className="jx-fade" onClick={respond} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, cursor: 'pointer' }}>
               <div style={{ position: 'relative', width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, border: '2px solid rgba(255,255,255,.55)' }} />
                 <div className="jx-ring-slow" style={{ position: 'absolute', inset: 0, borderRadius: 999, border: '2px solid rgba(255,255,255,.55)' }} />
@@ -466,7 +470,6 @@ function WarningOverlay({ ctx }) {
                 <div style={{ height: 4, borderRadius: 999, background: 'rgba(255,255,255,.28)', overflow: 'hidden' }}>
                   <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: '#fff', animationDuration: `${BUZZ_HOLD_MS}ms` }} />
                 </div>
-                <button onClick={respond} style={{ marginTop: 14, width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: '#fff', color: THEME.fg1, fontWeight: 800, fontSize: 13.5, padding: '11px 14px', borderRadius: 999 }}>{L('I stopped')}</button>
               </div>
             </div>
           )}

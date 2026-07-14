@@ -1,7 +1,7 @@
 // JoanX — child app · CharacterVariants
 
 import React from 'react';
-import { CHARACTERS, OUTFITS, PLAYER } from '../core/data.jsx';
+import { buyItem, canBuyItem, CHARACTERS, moodForStage, nextStageAt, OUTFITS, PLAYER, STAGES, stageBand, stageOf, STATS, statsFor } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
@@ -12,20 +12,15 @@ function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const [color, setColor] = React.useState(orig.color);
   const [tab, setTab] = React.useState('stat');
-  // Evolution (F-16): a buddy that's filled its XP can evolve to the next stage.
-  // `stage` is state so the evolve moment re-skins the buddy + unlocks stage items live.
-  const [stage, setStage] = React.useState(orig.stage);
+  // A-3.3 — the stage is READ, not chosen. It follows the level (Stage 1 Lv.1–3, Stage 2
+  // Lv.4–7, Stage 3 Lv.8–10, all server-tunable), so there is no "Evolve now" button any
+  // more: the buddy transforms the moment the level that earns it lands, wherever that
+  // happens — a battle, a mission, or the point exchange. A manual button would let a
+  // Lv.8 buddy sit un-evolved because the child never opened this screen.
   const level = orig.level;
-  const [evolving, setEvolving] = React.useState(false);
-  const [evolvedStage, setEvolvedStage] = React.useState(null);
-  const ready = orig.xp >= orig.xpMax;             // XP full → ready to evolve
-  const canEvolve = stage < 3 && ready;
-  const evolve = () => {
-    if (evolving || stage >= 3) return;
-    setEvolving(true); setEvolvedStage(null);
-    setTimeout(() => { const ns = Math.min(3, stage + 1); setStage(ns); setEvolvedStage(ns); if (ctx.setBuddy) ctx.setBuddy(orig.id, { stage: ns }); }, 1500);
-    setTimeout(() => setEvolving(false), 3200);
-  };
+  const stage = orig.stage;
+  const info = stageOf(stage);            // art · anim · expression · lines for this stage
+  const nextAt = nextStageAt(level);      // level the next stage lands at, or null if grown
 
   const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
 
@@ -37,14 +32,21 @@ function CharVariant({ ctx, variant }) {
   const [note, setNote] = React.useState(null);
 
   const locked = (o) => stage < o.minStage;                      // needs a later stage
-  const ownedOutfit = (o) => o.price === 0 ? !locked(o) : bought.has(o.id);
+  // A-5.1 — an outfit can arrive three ways: granted at price 0, bought here, or EARNED
+  // by a rule (level, achievement, event, villain), which sets `owned` on the item row.
+  // Missing that last case would show a hat the child has already won as still for sale.
+  const ownedOutfit = (o) => o.owned || bought.has(o.id) || (o.price === 0 && !locked(o));
   const toast = (msg) => { setNote(msg); setTimeout(() => setNote(null), 1600); };
 
   const buyOutfit = (o) => {
-    if (locked(o)) return toast(`${L('Unlocks at Stage')} ${o.minStage}`);
     if (ownedOutfit(o)) return;
-    if (pts < o.price) return toast(L('Not enough points yet'));
-    PLAYER.points -= o.price; setPts(PLAYER.points);
+    const verdict = canBuyItem(o, PLAYER, stage);
+    if (!verdict.ok) {
+      if (verdict.reason === 'stage') return toast(`${L('Unlocks at Stage')} ${verdict.need}`);
+      if (verdict.reason === 'level') return toast(`${L('Unlocks at Lv')} ${verdict.need}`);
+      return toast(L('Not enough points yet'));
+    }
+    buyItem(o, PLAYER, stage); setPts(PLAYER.points);
     setBought(s => new Set(s).add(o.id));
     setWorn(s => new Set(s).add(o.id));
     toast(`${L(o.name)} ${L('unlocked!')}`);
@@ -71,11 +73,16 @@ function CharVariant({ ctx, variant }) {
     : it.own
       ? (it.on ? L('Equipped') : L('Tap to equip'))
       : `★ ${it.price}`;
-  const traits = [
-    { k: 'guard', label: 'Guard', icon: 'shield', color: THEME.primary },
-    { k: 'speed', label: 'Speed', icon: 'gauge', color: THEME.gold },
-    { k: 'heart', label: 'Heart', icon: 'heart', color: THEME.joy },
-  ];
+  // A-3.3 — the four core stats, derived from rarity + level + stage in data.jsx.
+  // `stage` is component state (it changes live when the buddy evolves), so the stats
+  // are read against that rather than the stale roster row — evolving must visibly
+  // move the numbers, which is the whole point of a stage-up.
+  const STAT_COLOR = { hp: THEME.joy, courage: THEME.gold, protection: THEME.primary, speed: '#4b9a6b' };
+  const statVals = statsFor({ ...orig, level, stage });
+  // rings are relative to the biggest stat on show: HP runs into the hundreds, so a
+  // fixed /100 dial would peg every ring full and tell the child nothing.
+  const statMax = Math.max(...STATS.map(s => statVals[s.key]), 1);
+  const traits = STATS.map(s => ({ k: s.key, label: s.label, icon: s.icon, color: STAT_COLOR[s.key] }));
   const accent = color;
   // The "Set as my buddy" CTA is an *app* action, not part of this character's card, so it
   // wears the app accent (the active buddy's colour — the same one the tab bar's fight button
@@ -111,14 +118,14 @@ function CharVariant({ ctx, variant }) {
   const traitsContent = (
     <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
       {traits.map(t => {
-        const v = orig.traits[t.k] || 50;
+        const v = statVals[t.k];
         const R = 27, SW = 6, sz = 2 * (R + SW), circ = 2 * Math.PI * R;
         return (
           <div key={t.k} style={{ textAlign: 'center' }}>
             <div style={{ position: 'relative', width: sz, height: sz, margin: '0 auto' }}>
               <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{ transform: 'rotate(-90deg)' }}>
                 <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-                <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
+                <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - v / statMax)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
               </svg>
               <div className="game-font" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 500, color: THEME.fg1 }}>{v}</div>
             </div>
@@ -144,9 +151,9 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
   const itemContent = (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, width: '100%' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10, width: '100%' }}>
       {items.map(it => (
-        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
+        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
           <div style={{ width: 34, height: 34, borderRadius: 999, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}><Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} /></div>
           <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
           <span style={{ fontSize: 8.5, fontWeight: 800, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
@@ -181,14 +188,14 @@ function CharVariant({ ctx, variant }) {
   const traitsContentShowcase = (
     <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
       {traits.map(t => {
-        const v = orig.traits[t.k] || 50;
+        const v = statVals[t.k];
         const R = 31, SW = 7, sz = 2 * (R + SW), circ = 2 * Math.PI * R;
         return (
           <div key={t.k} style={{ textAlign: 'center' }}>
             <div style={{ position: 'relative', width: sz, height: sz, margin: '0 auto' }}>
               <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{ transform: 'rotate(-90deg)' }}>
                 <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={`${t.color}26`} strokeWidth={SW} />
-                <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
+                <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - v / statMax)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
               </svg>
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                 <Icon name={t.icon} size={13} color={t.color} stroke={2.5} />
@@ -215,15 +222,20 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
   // items as 2-col rows with name + equip status
+  // minmax(0,1fr), not 1fr: a 1fr track's automatic minimum is min-content, so the
+  // un-wrappable item name would push the track wider than half the card and the
+  // second column would hang off the right edge. The tiles must be free to shrink.
   const itemContentShowcase = (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, width: '100%' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, width: '100%' }}>
       {items.map(it => (
-        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 16, background: it.on ? `${accent}14` : THEME.surface2, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '10px 12px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
+        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, borderRadius: 16, background: it.on ? `${accent}14` : THEME.surface2, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '10px 10px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
             <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: it.locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(it.name)}</div>
+            {/* wraps rather than ellipsizes — half a tile is ~78px of text and a child
+                who reads "Guardian C…" learns nothing about what they're equipping */}
+            <div style={{ fontSize: 11, fontWeight: 800, color: it.locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2 }}>{L(it.name)}</div>
             <div style={{ fontSize: 9.5, fontWeight: 700, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold, marginTop: 1 }}>{itemStatus(it)}</div>
           </div>
         </button>
@@ -273,13 +285,13 @@ function CharVariant({ ctx, variant }) {
         {tab === 'stat' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, width: '100%' }}>
             {traits.map(t => {
-              const v = orig.traits[t.k] || 50;
+              const v = statVals[t.k];
               return (
                 <div key={t.k} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                   <Icon name={t.icon} size={16} color={t.color} stroke={2.5} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, width: 46, flexShrink: 0 }}>{L(t.label)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, width: 64, flexShrink: 0 }}>{L(t.label)}</span>
                   <div style={{ flex: 1, height: 9, borderRadius: 999, background: `${t.color}26`, overflow: 'hidden' }}>
-                    <div style={{ width: `${v}%`, height: '100%', borderRadius: 999, background: t.color, transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+                    <div style={{ width: `${Math.round((v / statMax) * 100)}%`, height: '100%', borderRadius: 999, background: t.color, transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
                   </div>
                   <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: THEME.fg1, width: 26, textAlign: 'right', flexShrink: 0 }}>{v}</span>
                 </div>
@@ -336,14 +348,14 @@ function CharVariant({ ctx, variant }) {
           // semicircle gauges (speedometer style)
           <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
             {traits.map(t => {
-              const v = orig.traits[t.k] || 50;
+              const v = statVals[t.k];
               const R = 30, SW = 8, W = 2 * (R + SW), H = R + SW + 16, cy = R + SW, arc = Math.PI * R;
               return (
                 <div key={t.k} style={{ textAlign: 'center' }}>
                   <div style={{ position: 'relative', width: W, height: H }}>
                     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
                       <path d={`M ${SW} ${cy} A ${R} ${R} 0 0 1 ${W - SW} ${cy}`} fill="none" stroke={`${t.color}26`} strokeWidth={SW} strokeLinecap="round" />
-                      <path d={`M ${SW} ${cy} A ${R} ${R} 0 0 1 ${W - SW} ${cy}`} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={arc} strokeDashoffset={arc * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
+                      <path d={`M ${SW} ${cy} A ${R} ${R} 0 0 1 ${W - SW} ${cy}`} fill="none" stroke={t.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={arc} strokeDashoffset={arc * (1 - v / statMax)} style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)' }} />
                     </svg>
                     <div className="game-font" style={{ position: 'absolute', left: 0, right: 0, top: cy - 19, fontSize: 18, fontWeight: 500, color: THEME.fg1, textAlign: 'center' }}>{v}</div>
                   </div>
@@ -369,9 +381,9 @@ function CharVariant({ ctx, variant }) {
           </div>
         ) : (
           // 2×2 item cards with a corner badge
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, width: '100%' }}>
             {items.map(it => (
-              <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', borderRadius: 16, background: it.on ? `${accent}12` : THEME.surface2, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '13px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, textAlign: 'center', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
+              <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}12` : THEME.surface2, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '13px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, textAlign: 'center', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 {it.on && <span style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={10} color="#fff" stroke={3.5} /></span>}
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
                   <Icon name={it.locked ? 'lock' : it.icon} size={19} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
@@ -385,26 +397,45 @@ function CharVariant({ ctx, variant }) {
       </div>
     </div>
   );
-  // Evolve CTA — shown in-flow when the buddy has maxed XP and isn't stage 3 yet
-  const EvolveCTA = canEvolve ? (
-    <button key="evolve" onClick={evolve} className="jx-press" style={{ width: '100%', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: accent, color: '#fff', borderRadius: 16, padding: '15px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, boxShadow: 'none' }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ position: 'relative', display: 'inline-flex', width: 9, height: 9 }}>
-          <span className="jx-pulse-soft" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff' }} />
-        </span>
-        <span style={{ fontSize: 15.5, fontWeight: 800 }}>{L('Evolve now')}</span>
-      </span>
-      <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,.9)' }}>
-        {L('Stage')} {stage} <Icon name="arrow-right" size={13} color="rgba(255,255,255,.9)" stroke={2.8} /> {stage + 1}
-      </span>
-    </button>
-  ) : null;
-  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, EvolveCTA, SetBtn].filter(Boolean);
+  // A-3.3 — the growth panel. Replaces the old "Evolve now" button: there is nothing to
+  // press, so this explains where the buddy IS and what the next form costs, in levels.
+  const StagePanel = (
+    <div key="stage" style={{ ...card }}>
+      {head('sparkles', `${L('Stage')} ${stage} · ${L(info.name)}`)}
+      {/* the three stages as a track — the one you're in is lit, the rest show their level gate */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {STAGES.map(s => {
+          const on = s.stage === stage, done = s.stage < stage;
+          return (
+            <div key={s.stage} style={{ flex: 1, textAlign: 'center', background: on ? tint(accent, .14) : tileBg, border: `1.5px solid ${on ? accent : 'transparent'}`, borderRadius: 12, padding: '8px 4px' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: on ? shade(accent, -34) : done ? THEME.fg2 : THEME.fg3 }}>{L(s.name)}</div>
+              <div className="game-font" style={{ fontSize: 11, fontWeight: 500, color: on ? shade(accent, -20) : THEME.fg3, marginTop: 2 }}>
+                {L('Lv')} {s.minLevel}{stageBand(s.stage).max ? `–${stageBand(s.stage).max}` : '+'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {/* what the buddy says at this stage — its voice grows up with it */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: tileBg, borderRadius: 12, padding: '10px 12px' }}>
+        <Icon name="message-circle" size={15} color={accent} stroke={2.3} />
+        <span style={{ fontSize: 12.5, color: THEME.fg1, fontWeight: 600, lineHeight: 1.4 }}>“{L(info.lines[0])}”</span>
+      </div>
+      <div style={{ fontSize: 12, color: THEME.fg2, fontWeight: 700, marginTop: 10, textAlign: 'center' }}>
+        {nextAt
+          ? `${L('Reach Lv')} ${nextAt} → ${L('Stage')} ${stage + 1}`
+          : L('Fully grown — final stage')}
+      </div>
+    </div>
+  );
+  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, StagePanel, SetBtn].filter(Boolean);
 
   // ── mascot (centered) ──
+  // A-3.3 — form, idle animation and face all come from the stage table, so a stage-up
+  // changes how the buddy looks AND how it moves, not just a number on a badge.
   const Buddy = ({ size }) => (
-    <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}>
-      <Mascot species={orig.species} stage={stage} color={color} size={size} context="detail" />
+    <div className={info.anim} style={{ display: 'flex', justifyContent: 'center' }}>
+      <Mascot species={orig.species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" />
     </div>
   );
   const Badges = (
@@ -535,23 +566,9 @@ function CharVariant({ ctx, variant }) {
         <div className="jx-fade" style={{ position: 'fixed', left: '50%', bottom: 128, transform: 'translateX(-50%)', zIndex: 60, background: THEME.fg1, color: '#fff', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>{note}</div>
       )}
 
-      {/* evolve moment (F-16) — burst + the buddy re-skinning to its next stage */}
-      {evolving && (
-        <div className="jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: `radial-gradient(circle at 50% 42%, ${shade(color, 16)} 0%, #17130f 74%)` }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 230, height: 230, marginBottom: 20 }}>
-            <div className="jx-burst" style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, background: `radial-gradient(circle, ${shade(color, 52)} 0%, transparent 66%)` }} />
-            <div className="jx-ring" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(color, 44)}99` }} />
-            <div className="jx-ring-slow" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, border: `2px solid ${shade(color, 44)}99` }} />
-            <div key={stage} className="jx-pop" style={{ position: 'relative' }}><Mascot species={orig.species} stage={stage} color={color} size={170} context="detail" /></div>
-          </div>
-          <div className="game-font" style={{ color: '#fff', fontSize: 26, fontWeight: 500 }}>
-            {evolvedStage
-              ? (getLang() === 'ko' ? `스테이지 ${evolvedStage} 도달!` : `Reached Stage ${evolvedStage}!`)
-              : L('Evolving…')}
-          </div>
-          {evolvedStage && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 13.5, marginTop: 6 }}>{orig.name} · {L('grew stronger')}</div>}
-        </div>
-      )}
+      {/* The evolve moment used to live here, fired by an "Evolve now" button. It moved to
+          shared.jsx (StageUpMoment) and now plays wherever the level that earns it lands —
+          a battle win or a point exchange — because that is when the buddy actually grows. */}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 // JoanX — child app · VillainDex
 
 import React from 'react';
-import { VILLAINS } from '../core/data.jsx';
+import { activeVillains, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
 import { Badge, Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
@@ -16,6 +16,7 @@ function VillainDex({ ctx, layout = 'road' }) {
 }
 
 function VillainList({ ctx }) {
+  const VILLAINS = activeVillains();                            // seasonal villains ops hasn't turned on aren't here
   const firstOpen = VILLAINS.findIndex(v => !v.defeated);      // current challenger index
   const defeated = VILLAINS.filter(v => v.defeated).length;
   return (
@@ -24,21 +25,53 @@ function VillainList({ ctx }) {
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
+        {/* A-8.1 — chapters are earned by first clears, so this counter and the defeated
+            counter move together. It is here to make the story feel like a thing you are
+            collecting, not a paragraph that happens to appear. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: THEME.goldLight, borderRadius: 12, padding: '9px 12px', margin: '0 0 12px' }}>
+          <Icon name="book-open" size={14} color={THEME.gold} stroke={2.4} />
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: '#9e7300' }}>{L('Story chapters')}</span>
+          <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: '#9e7300' }}>{storyProgress().read}/{storyProgress().total}</span>
+        </div>
         {VILLAINS.map((v, i) => {
           const discovered = v.defeated || i === firstOpen;     // seen = beaten or the current one
           const current = i === firstOpen;
+          const role = roleOf(v);
           return (
-            <div key={v.lv} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, alignItems: 'center', border: current ? `1.5px solid ${THEME.danger}` : '1.5px solid transparent' }}>
+            <div key={v.id} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, alignItems: 'center', border: current ? `1.5px solid ${THEME.danger}` : '1.5px solid transparent' }}>
               <div style={{ width: 60, flexShrink: 0, display: 'flex', justifyContent: 'center', filter: discovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}>
                 <Mascot species={v.species} stage={2} color={v.color} mood="alert" size={56} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: THEME.fg3 }}>Lv{v.lv}</span>
                   <span style={{ fontSize: 15, fontWeight: 800 }}>{discovered ? L(v.name) : '???'}</span>
+                  {isBoss(v) && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '2px 7px', fontSize: 9.5, fontWeight: 800 }}>
+                      <Icon name={role.icon} size={10} color="#9e7300" stroke={2.6} />{L(role.label)}
+                    </span>
+                  )}
                 </div>
                 {discovered ? (
-                  <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 5 }}>{L(v.desc)}</div>
+                  <React.Fragment>
+                    {/* what this villain IS — the risk it personifies, not a monster stat */}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.danger, marginTop: 4 }}>{L(v.risk)}</div>
+                    <div style={{ fontSize: 12, color: THEME.fg2, lineHeight: 1.4, marginTop: 3 }}>{L(v.desc)}</div>
+                    {/* A-8.1 — the story is the FIRST-CLEAR prize. Reaching a villain reveals who
+                        it is; beating it earns the chapter. Until now this text was authored on
+                        every villain and rendered nowhere — the ladder told a story no one read. */}
+                    {storyUnlocked(v) ? (
+                      <div style={{ display: 'flex', gap: 7, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.border}` }}>
+                        <Icon name="book-open" size={13} color={THEME.gold} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ fontSize: 11.5, color: THEME.fg1, lineHeight: 1.5, fontStyle: 'italic' }}>{L(v.story)}</div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.border}`, color: THEME.fg3 }}>
+                        <Icon name="book-open" size={13} color={THEME.fg3} stroke={2.3} />
+                        <span style={{ fontSize: 11.5, fontWeight: 700 }}>{L('Beat it to unlock its story')}</span>
+                      </div>
+                    )}
+                  </React.Fragment>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, color: THEME.fg3 }}>
                     <Icon name="lock" size={13} color={THEME.fg3} stroke={2.3} />
@@ -60,8 +93,10 @@ function VillainList({ ctx }) {
 //    S-curved road, defeated stops behind you, the current challenger
 //    pulsing mid-trail, locked silhouettes ahead, boss at the end. ────
 function VillainRoad({ ctx }) {
+  const VILLAINS = activeVillains();
   const firstOpen = VILLAINS.findIndex(v => !v.defeated);
   const defeated = VILLAINS.filter(v => v.defeated).length;
+  const ending = endingUnlocked();
   const current = firstOpen === -1 ? VILLAINS.length - 1 : firstOpen;
   const [sel, setSel] = React.useState(current);
   const curRef = React.useRef(null);
@@ -119,6 +154,14 @@ function VillainRoad({ ctx }) {
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 242, background: screenBgActive() }}>
         <div style={{ padding: '0 16px' }}>
           <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
+        {/* A-8.1 — chapters are earned by first clears, so this counter and the defeated
+            counter move together. It is here to make the story feel like a thing you are
+            collecting, not a paragraph that happens to appear. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: THEME.goldLight, borderRadius: 12, padding: '9px 12px', margin: '0 0 12px' }}>
+          <Icon name="book-open" size={14} color={THEME.gold} stroke={2.4} />
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: '#9e7300' }}>{L('Story chapters')}</span>
+          <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: '#9e7300' }}>{storyProgress().read}/{storyProgress().total}</span>
+        </div>
         </div>
 
         <div style={{ position: 'relative', height: H }}>
@@ -169,11 +212,11 @@ function VillainRoad({ ctx }) {
           {VILLAINS.map((vi, i) => {
             const isCur = i === firstOpen;
             const discovered = vi.defeated || isCur;
-            const boss = i === VILLAINS.length - 1;
+            const boss = isBoss(vi);          // the ROLE says so — not "the last stop on the road"
             const isSel = i === sel;
             const size = isCur ? 80 : 64;
             return (
-              <div key={vi.lv} ref={isCur ? curRef : null} onClick={() => setSel(i)}
+              <div key={vi.id} ref={isCur ? curRef : null} onClick={() => setSel(i)}
                 style={{ position: 'absolute', left: `${(pts[i].x / W) * 100}%`, top: pts[i].y, transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', zIndex: 2 }}>
                 <div style={{ position: 'relative' }}>
                   {/* sonar ring on the current challenger */}
@@ -187,7 +230,7 @@ function VillainRoad({ ctx }) {
                   </div>
                   {/* level pill / boss crown */}
                   <span style={{ position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)', display: 'inline-flex', alignItems: 'center', gap: 3, background: boss ? THEME.gold : '#fff', color: boss ? '#fff' : THEME.fg2, fontSize: 9.5, fontWeight: 800, padding: '2px 8px', borderRadius: 999, boxShadow: THEME.shadowCard, whiteSpace: 'nowrap' }}>
-                    {boss && <Icon name="crown" size={10} color="#fff" stroke={2.6} />}{boss ? L('Boss') : `Lv${vi.lv}`}
+                    {boss && <Icon name={roleOf(vi).icon} size={10} color="#fff" stroke={2.6} />}{boss ? L(roleOf(vi).label) : `Lv${vi.lv}`}
                   </span>
                   {/* status chip */}
                   {vi.defeated ? (
@@ -232,9 +275,34 @@ function VillainRoad({ ctx }) {
           {v.defeated ? <Badge variant="success">{L('Defeated')}</Badge>
             : !selCurrent ? <Badge>{L('Locked')}</Badge> : null}
         </div>
-        <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.55, marginTop: 10 }}>
-          {selDiscovered ? L(v.desc) : L('Defeat the villain before to reveal')}
-        </div>
+
+        {/* A-9 — the character sheet, not a stat block: what this villain represents, its
+            story, and the trick it fights with. Hidden behind the same silhouette gate as
+            the name, so reading it is a reward for reaching the villain. */}
+        {selDiscovered ? (
+          <React.Fragment>
+            <div style={{ fontSize: 11, fontWeight: 700, color: THEME.danger, marginTop: 10 }}>{L(v.risk)}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.55, marginTop: 4 }}>{L(v.story)}</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 10, background: THEME.surface2, borderRadius: 12, padding: '9px 11px' }}>
+              <Icon name="zap" size={14} color={THEME.danger} stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg1 }}>{L(v.ability.name)}</div>
+                <div style={{ fontSize: 11.5, color: THEME.fg2, lineHeight: 1.45, marginTop: 1 }}>{L(v.ability.effect)}</div>
+              </div>
+            </div>
+          </React.Fragment>
+        ) : (
+          <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.55, marginTop: 10 }}>{L('Defeat the villain before to reveal')}</div>
+        )}
+
+        {/* the ladder is finished — the ending, shown wherever the story is read */}
+        {ending && v.role === 'finalBoss' && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 10, background: THEME.goldLight, borderRadius: 12, padding: '9px 11px' }}>
+            <Icon name="sunrise" size={14} color="#9e7300" stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontSize: 11.5, color: '#9e7300', fontWeight: 700, lineHeight: 1.45 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
+          </div>
+        )}
+
         {selCurrent && (
           <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle')}>{L('Start battle')}</Button>
         )}
