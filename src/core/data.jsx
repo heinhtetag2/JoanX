@@ -1,5 +1,7 @@
 // JoanX — mock data for the prototype (stand-ins for API responses).
 
+import { shade } from './characters.jsx';   // room themes tint their walls from the chosen wallpaper
+
 // ── Feature flags ─────────────────────────────────────────────────────
 // `dangerZones` gates the location / danger-zone family (F-05 danger-zone
 // algorithm, F-06 GNSS) — EXCLUDED in the 2026.06.18 revision. Off = the
@@ -181,18 +183,51 @@ const HOUSE_BGS = [
 ];
 
 // ── Room decoration items (A-7 / A-5.1) — placed inside a room ───────
-//   slot — furniture · object … the taxonomy the shop groups by
+//   rooms — the room themes an item belongs to. Each theme has its OWN set, so a
+//           bird feeder is a Green Room thing and a bus stop is a Town Room thing.
+//           ['*'] = fits every room; a new theme inherits those without editing a
+//           single row here, which is what makes adding a theme a one-line job.
+//   slot  — furniture · object … the taxonomy the shop groups by
 const DECOR = [
-  { id: 'plant',   name: 'Plant',     category: 'room', slot: 'object',    icon: 'sprout',       owned: true,  price: 0 },
-  { id: 'lamp',    name: 'Lamp',      category: 'room', slot: 'furniture', icon: 'lamp',         owned: true,  price: 0 },
-  { id: 'rug',     name: 'Rug',       category: 'room', slot: 'furniture', icon: 'square',       owned: false, price: 80 },
-  { id: 'shelf',   name: 'Bookshelf', category: 'room', slot: 'furniture', icon: 'library',      owned: false, price: 120 },
-  { id: 'poster',  name: 'Poster',    category: 'room', slot: 'object',    icon: 'image',        owned: false, price: 90 },
-  { id: 'balloon', name: 'Balloons',  category: 'room', slot: 'object',    icon: 'party-popper', owned: false, price: 60 },
-  // earned as well as bought — the grant rules below hand these out (A-5.1)
-  { id: 'trophy',  name: 'Champion Trophy', category: 'room', slot: 'object', icon: 'trophy',   owned: false, price: 260 },
-  { id: 'lantern', name: 'Star Lantern',    category: 'room', slot: 'object', icon: 'lamp-ceiling', owned: false, price: 340, limited: true, set: 'winter-2026' },
+  // ── Green Room · nature & forest ──
+  { id: 'plant',     name: 'Plant',       rooms: ['green'], category: 'room', slot: 'object',    icon: 'sprout',    owned: true,  price: 0 },
+  { id: 'sapling',   name: 'Little Tree', rooms: ['green'], category: 'room', slot: 'object',    icon: 'tree-pine', owned: true,  price: 0 },
+  { id: 'canteen',   name: 'Watering Can',rooms: ['green'], category: 'room', slot: 'object',    icon: 'droplets',  owned: false, price: 70 },
+  { id: 'feeder',    name: 'Bird Feeder', rooms: ['green'], category: 'room', slot: 'object',    icon: 'bird',      owned: false, price: 110 },
+  { id: 'flowerbed', name: 'Flower Bed',  rooms: ['green'], category: 'room', slot: 'furniture', icon: 'flower-2',  owned: false, price: 130 },
+  { id: 'tent',      name: 'Camp Tent',   rooms: ['green'], category: 'room', slot: 'furniture', icon: 'tent',      owned: false, price: 220 },
+
+  // ── Town Room · school, park, city centre ──
+  { id: 'lamp',      name: 'Lamp',        rooms: ['town'], category: 'room', slot: 'furniture', icon: 'lamp',     owned: true,  price: 0 },
+  { id: 'mailbox',   name: 'Mailbox',     rooms: ['town'], category: 'room', slot: 'object',    icon: 'mailbox',  owned: true,  price: 0 },
+  { id: 'bench',     name: 'Park Bench',  rooms: ['town'], category: 'room', slot: 'furniture', icon: 'armchair', owned: false, price: 100 },
+  { id: 'signpost',  name: 'Street Sign', rooms: ['town'], category: 'room', slot: 'object',    icon: 'signpost', owned: false, price: 120 },
+  { id: 'busstop',   name: 'Bus Stop',    rooms: ['town'], category: 'room', slot: 'furniture', icon: 'bus',      owned: false, price: 200 },
+  // earned as well as bought — the grant rules below hand this one out (A-5.1)
+  { id: 'shelf',     name: 'Bookshelf',   rooms: ['town'], category: 'room', slot: 'furniture', icon: 'library',  owned: false, price: 120 },
+
+  // ── Dream Room · imagination & fantasy ──
+  { id: 'moonlamp',  name: 'Moon Lamp',     rooms: ['dream'], category: 'room', slot: 'furniture', icon: 'moon-star', owned: true,  price: 0 },
+  { id: 'cloud',     name: 'Cloud',         rooms: ['dream'], category: 'room', slot: 'object',    icon: 'cloud',     owned: true,  price: 0 },
+  { id: 'rocket',    name: 'Toy Rocket',    rooms: ['dream'], category: 'room', slot: 'object',    icon: 'rocket',    owned: false, price: 150 },
+  { id: 'crystal',   name: 'Dream Crystal', rooms: ['dream'], category: 'room', slot: 'object',    icon: 'gem',       owned: false, price: 180 },
+  { id: 'rainbow',   name: 'Rainbow',       rooms: ['dream'], category: 'room', slot: 'object',    icon: 'rainbow',   owned: false, price: 200 },
+  { id: 'telescope', name: 'Telescope',     rooms: ['dream'], category: 'room', slot: 'furniture', icon: 'telescope', owned: false, price: 240 },
+
+  // ── fits any room ──
+  { id: 'rug',     name: 'Rug',       rooms: ['*'], category: 'room', slot: 'furniture', icon: 'square',       owned: false, price: 80 },
+  { id: 'poster',  name: 'Poster',    rooms: ['*'], category: 'room', slot: 'object',    icon: 'image',        owned: false, price: 90 },
+  { id: 'balloon', name: 'Balloons',  rooms: ['*'], category: 'room', slot: 'object',    icon: 'party-popper', owned: false, price: 60 },
+  { id: 'trophy',  name: 'Champion Trophy', rooms: ['*'], category: 'room', slot: 'object', icon: 'trophy', owned: false, price: 260 },
+
+  // ── seasonal · dark until ops turns the set on (A-5.1) ──
+  { id: 'lantern', name: 'Star Lantern', rooms: ['dream', 'winter'], category: 'room', slot: 'object', icon: 'lamp-ceiling', owned: false, price: 340, limited: true, set: 'winter-2026' },
+  { id: 'wreath2', name: 'Snow Globe',   rooms: ['winter'],          category: 'room', slot: 'object', icon: 'snowflake',    owned: false, price: 280, limited: true, set: 'winter-2026' },
 ];
+
+// The catalogue a given room offers. Room-scoped items plus the universal ones —
+// so "what can I put in here?" is answered by the theme, not by a hand-kept list.
+const decorForRoom = (roomId) => DECOR.filter(d => d.rooms.includes('*') || d.rooms.includes(roomId));
 
 // messages friends have left on MY profile (F-32 guestbook, received side)
 // Every note in a guestbook — received or left — is one of the GUEST_STAMPS below. Nothing
@@ -217,11 +252,81 @@ const LINK = {
   connected: true,
   childId: 'k1',                    // → CHILDREN
   code: '482193',                   // the 6-digit code the parent app shows
-  parent: { name: 'Ji-won', relation: 'Mum', phone: '010-1234-5678' },
+  familyId: 'f1',                   // → FAMILY. The child pairs to the HOUSEHOLD, not to a person.
   since: '2026-03-14',
   // no `device` here on purpose — that lives on the CHILDREN row the parent app already
   // maintains (and re-writes on a device change). Read it via linkedChild().device.
+  // no `parent` here either, and that is the point: a link that named one adult could not
+  // survive a second one. Read the guardians via guardians().
 };
+
+// ── The family (household) ───────────────────────────────────────────
+// Two parents, one child, one set of numbers. The family owns the children — NOT the parent
+// who happened to do the setup — and the child's device pairs to the family. That is what
+// lets a second guardian be added, or removed, without ever touching the child's phone: no
+// re-scan, no re-pair, no chance of knocking the first parent offline (the pairing flow
+// unlinks the previously-paired device, so "just scan the child again" was never an option).
+//
+// Both guardians see identical data by construction rather than by syncing: reports, points
+// and settings are family-scoped, so there is nothing to reconcile between two devices.
+//
+// Every member signs in as THEMSELVES (own phone number). Sharing one login is the tempting
+// shortcut and it breaks three things at once: push reaches one device, no change can be
+// attributed, and no alert can show who already responded.
+const FAMILY = {
+  id: 'f1',
+  members: [
+    { id: 'm1', name: 'Ji-won',  relation: 'Mum', phone: '010-1234-5678', role: 'owner',    since: '2026-03-14', me: true },
+    { id: 'm2', name: 'Min-jun', relation: 'Dad', phone: '010-9876-5432', role: 'guardian', since: '2026-06-02' },
+  ],
+};
+
+// Both roles see everything and change everything — the difference is only over the family
+// itself (who may add or remove a guardian, and who holds billing). Two guardians shown
+// different numbers would be a support nightmare, and it would break the promise PARENT_SEES
+// makes to the child. So: no per-parent data restrictions, ever.
+// (the badge says 'Co-parent', not 'Guardian' — 'Guardian' is already the character STAGE name,
+// 수호자, and two things called the same word in one app is one thing too many)
+const FAMILY_ROLES = {
+  owner:    { label: 'Owner',     can: { settings: true, invite: true,  remove: true,  billing: true } },
+  guardian: { label: 'Co-parent', can: { settings: true, invite: false, remove: false, billing: false } },
+};
+
+// A guardian invite: single-use and expiring. Sent as a link (the realistic case — the other
+// parent is at work, not standing next to you), with the QR and the 6-digit code on the same
+// screen for when they ARE together. Joining still requires the invitee to verify their own
+// phone number, so a leaked link alone gets nobody in.
+const FAMILY_INVITE = { code: '735204', link: 'joanx.app/j/7c1f9a', expiresHours: 48 };
+
+const guardians = () => FAMILY.members;
+const guardianOwner = () => FAMILY.members.find(m => m.role === 'owner') || FAMILY.members[0];
+const guardianMe = () => FAMILY.members.find(m => m.me) || guardianOwner();
+const guardianCan = (member, action) => !!(FAMILY_ROLES[member?.role]?.can[action]);
+// "엄마와 아빠" — the child is told who is watching, by name, not just what is shared (A-13).
+const guardianNames = () => FAMILY.members.map(m => m.relation);
+
+const addGuardian = (member) => {
+  FAMILY.members.push({ id: `m${FAMILY.members.length + 1}`, role: 'guardian', ...member });
+  return FAMILY.members;
+};
+const removeGuardian = (id) => {
+  const i = FAMILY.members.findIndex(m => m.id === id && m.role !== 'owner');   // the owner cannot be removed, only transferred
+  if (i >= 0) FAMILY.members.splice(i, 1);
+  return FAMILY.members;
+};
+
+// Two adults with equal control WILL overwrite each other's settings. The fix is not to take
+// the control away — it is to make sure nobody acts invisibly. Every change is stamped with
+// who made it, and the pair of them can see it. Solve the conflict with visibility, not with
+// permissions: a parent locked out of a safety setting is a worse failure than a parent who
+// has to ask "why did you loosen this?".
+const FAMILY_LOG = [
+  { id: 'l1', by: 'Ji-won',  icon: 'sliders',      what: 'Raised sensitivity',   detail: 'Mina · Balanced → Strict', time: '2h' },
+  { id: 'l2', by: 'Min-jun', icon: 'bell',         what: 'Acknowledged an alert', detail: 'Mina · distraction warning', time: '4h' },
+  { id: 'l3', by: 'Min-jun', icon: 'calendar',     what: 'Edited a schedule',    detail: 'Mina · School commute', time: 'Yesterday' },
+  { id: 'l4', by: 'Ji-won',  icon: 'user-plus',    what: 'Added a guardian',     detail: 'Min-jun joined the family', time: '2026-06-02' },
+];
+const logFamilyChange = (entry) => { FAMILY_LOG.unshift({ id: `l${FAMILY_LOG.length + 1}`, by: guardianMe().name, time: 'now', ...entry }); return FAMILY_LOG; };
 
 // A-13 — a child old enough to earn points is old enough to be told what is being watched.
 // This is the honest answer, phrased for a 10-year-old, and it is DATA so the child app and
@@ -287,12 +392,16 @@ const INTERVENTION = {
   // Short enough to feel instant, long enough to outlast a blip. Pilot-tunable.
   safeConfirmSeconds: 1,
   maxRounds: 3,         // tone ladder length; further rounds repeat the strongest tier
-  // F-09 — character message: on screen for messageSeconds, and at least
-  // messageGapSeconds must pass before another one appears. Both are pilot-tunable, so
+  // F-09 — character message: a line holds for messageSeconds, and at least
+  // messageGapSeconds must pass before the next one appears. Both are pilot-tunable, so
   // they live here rather than in the component — remote settings can retune them without
   // an app release once field data comes back.
-  messageSeconds: 1.5,
-  messageGapSeconds: 3,
+  // The spec's 1.5s was written for a bare toast. The message step is a card the child has to
+  // read *and answer*, and at 1.5s a Korean line was gone before it could be finished — so a
+  // line now holds long enough to read at a walking glance, and the gap is just the beat it
+  // takes to swap the next one in.
+  messageSeconds: 4,
+  messageGapSeconds: 4.5,
   // F-08.3 — each ignored round comes back firmer. Tone only: never a screen block.
   tiers: [
     { key: 'gentle', title: 'Eyes up,',        body: "Let's put the phone away while we're walking." },
@@ -937,6 +1046,10 @@ const matchWhen = (w, ctx) => {
   }
   if (w.missions != null && ctx.missions !== w.missions) return false;
   if (w.achievement != null && ctx.achievement !== w.achievement) return false;
+  // `achievement` is the one that JUST completed (a trigger); `achievementDone` asks
+  // whether it is done at all (a state) — which is what a room unlock needs, since it
+  // is re-derived on every boot, not paid out once at the moment of completion.
+  if (w.achievementDone != null && !(ctx.achievementsDone || []).includes(w.achievementDone)) return false;
   if (w.event != null && ctx.event !== w.event) return false;
   if (w.streakDays != null && (ctx.streakDays ?? 0) < w.streakDays) return false;
   if (w.villainsDefeated != null && (ctx.villainsDefeated ?? 0) < w.villainsDefeated) return false;
@@ -1200,6 +1313,7 @@ const progress = (extra = {}, player = PLAYER) => ({
   level: player.level,
   phoneUseDrop: player.phoneUseDrop,
   villainsDefeated: villainsDefeated(),   // the ENABLED ladder only — a dark season pays nothing
+  achievementsDone: ACHIEVEMENTS.filter(a => a.done).map(a => a.id),   // state, not the one that just fired
   ...extra,
 });
 
@@ -1275,18 +1389,18 @@ const CHARACTERS = [
   // level 5, not 4: stage is derived (A-3.3) and Stage 2 starts at Lv.5, so a Lv.4 buddy
   // hand-marked Stage 2 was simply illegal. Levelled up rather than demoted — Mochi is
   // the starter buddy and is drawn at Stage 2 throughout.
-  { id: 'c2',  species: 'cat',  name: 'Mochi',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'r1', traits: { guard: 55, speed: 80, heart: 60 } },
-  { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 2, xp: 60,  owned: true,  room: 'r1', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c10', species: 'cat',  name: 'Bloo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'r2', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c2',  species: 'cat',  name: 'Mochi',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 2, xp: 60,  owned: true,  room: 'green', traits: { guard: 40, speed: 72, heart: 50 } },
+  { id: 'c10', species: 'cat',  name: 'Bloo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'town', traits: { guard: 55, speed: 80, heart: 60 } },
   { id: 'c11', species: 'cat',  name: 'Cocoa',   color: '#a9744f', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 45, speed: 70, heart: 62 } },
   { id: 'c12', species: 'bird', name: 'Sky',     color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 } },
   { id: 'c13', species: 'croc', name: 'Snap',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 } },
   { id: 'c14', species: 'owl',  name: 'Pebble',  color: '#8b8073', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 } },
   { id: 'c15', species: 'fox',  name: 'Biscuit', color: '#d8a657', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 52, speed: 64, heart: 70 } },
   // ── Rare ×5 ──
-  { id: 'c1',  species: 'fox',  name: 'Hammy',   color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'r1', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c6',  species: 'owl',  name: 'Sunny',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'r2', traits: { guard: 60, speed: 85, heart: 64 } },   // Lv.5 → Stage 2, one level short of the Stage 3 threshold (A-3.3)
-  { id: 'c9',  species: 'fox',  name: 'Toffee',  color: '#d99c5a', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'r2', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c1',  species: 'fox',  name: 'Hammy',   color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 } },
+  { id: 'c6',  species: 'owl',  name: 'Sunny',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'town', traits: { guard: 60, speed: 85, heart: 64 } },   // Lv.5 → Stage 2, one level short of the Stage 3 threshold (A-3.3)
+  { id: 'c9',  species: 'fox',  name: 'Toffee',  color: '#d99c5a', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'town', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c16', species: 'owl',  name: 'Luna',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 } },
   { id: 'c17', species: 'croc', name: 'Basil',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 } },
   // ── Epic ×2 — hidden until unlocked (F-15.2): no dex slot, no silhouette, no name ──
@@ -1305,12 +1419,151 @@ const charactersOfRarity = (key) => CHARACTERS.filter(c => c.rarity === key);
 // app calls setXpCurve() again once remote settings land, which re-runs this.
 applyXpCurve();
 
-const ROOMS = [
-  { id: 'r1', name: 'Cozy Den',   unlocked: true,  slots: 3, theme: '#ecf3fe' },
-  { id: 'r2', name: 'Sky Loft',   unlocked: true,  slots: 3, theme: '#ebf4f4' },
-  { id: 'r3', name: 'Star Studio', unlocked: false, slots: 4, theme: '#f5f1fd', req: 'Collect 8 characters' },
-  { id: 'r4', name: 'Garden',     unlocked: false, slots: 4, theme: '#f9f1ed', req: 'Reach a 30-day streak' },
+// ── Room themes (A-6 / A-7 / A-12) ───────────────────────────────────
+// A theme IS the environment: the wall treatment, the floor, the accent that ties
+// them together, and the wallpaper palette that suits it. Each theme also owns a
+// set of decoration items (see DECOR above, scoped by `rooms`), so switching room
+// changes both the place you are in and the things you can put in it.
+//
+// Adding a theme — a season, a partner tie-in, whatever the business asks for — is
+// one row here plus its decor rows above. No screen changes: every room surface
+// renders whatever is in this table.
+//   wall(t) — the wall, tinted by the chosen wallpaper `t`
+const ROOM_THEMES = [
+  { id: 'green', name: 'Green Room', icon: 'trees', blurb: 'Forest, leaves and quiet trails.',
+    wallpapers: ['#e7f3e4', '#dff0e6', '#eef5dd', '#e3efe8'],
+    wall: t => `radial-gradient(circle at 84% 14%, rgba(255,255,255,.5) 0 42px, transparent 43px), linear-gradient(180deg, ${t} 0%, ${shade(t, 8)} 100%)`,
+    floor: 'linear-gradient(180deg,#cfe3b7,#b9d49b)', accent: '#8bb46a' },
+
+  { id: 'town', name: 'Town Room', icon: 'building-2', blurb: 'School, park and the streets between.',
+    wallpapers: ['#eaf0f6', '#f1eee9', '#e7eef2', '#f4efe6'],
+    wall: t => `linear-gradient(180deg, ${shade(t, -6)} 0%, #fbfbfc 100%)`,
+    floor: 'linear-gradient(180deg,#dfe3e8,#c9cfd7)', accent: '#a7b0bc' },
+
+  { id: 'dream', name: 'Dream Room', icon: 'moon-star', blurb: 'Stars, clouds and soft impossible things.',
+    wallpapers: ['#efe8fb', '#e8e6fa', '#f7e9f5', '#e6effb'],
+    wall: t => `radial-gradient(circle at 20% 24%, rgba(255,255,255,.75) 0 2.5px, transparent 3.5px) 0 0/34px 34px, linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
+    floor: 'linear-gradient(180deg,#e4d8f7,#d0c0ee)', accent: '#b39ce0' },
+
+  // seasonal — authored ahead and locked until ops turns the set on, exactly like the
+  // limited items. This row is the proof the table above expands without a release.
+  { id: 'winter', name: 'Winter Room', icon: 'snowflake', blurb: 'Snow light and a quiet, frosted hush.',
+    set: 'winter-2026',
+    wallpapers: ['#e6eef7', '#eaf3f5', '#f0eef9'],
+    wall: t => `radial-gradient(circle at 30% 18%, rgba(255,255,255,.8) 0 2px, transparent 3px) 0 0/28px 28px, linear-gradient(180deg, ${t} 0%, ${shade(t, -4)} 100%)`,
+    floor: 'linear-gradient(180deg,#eef3f8,#dbe5ee)', accent: '#b6c6d6' },
 ];
+
+const themeById = (id) => ROOM_THEMES.find(t => t.id === id) || ROOM_THEMES[0];
+const themeOf = (room) => themeById(room?.theme);
+
+// The three MVP rooms — one per basic theme. `wallpaper` is the tint chosen inside the
+// theme's palette and `placed` is that room's own decor, so every room is decorated
+// independently (A-6 free placement: characters via CHARACTERS.room, items via this).
+//   home     — the default room, handed over at sign-up. Never locked, never earned.
+//   unlocked — DERIVED, never authored: applyRoomUnlocks() writes it from the rules
+//              below against the child's real progress. Seeded here only so the first
+//              render before that call is honest.
+const ROOMS = [
+  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: 3, wallpaper: '#e7f3e4', placed: { plant: true, sapling: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: 3, wallpaper: '#eaf0f6', placed: { lamp: true } },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: 4, wallpaper: '#efe8fb', placed: {} },
+  // expansion slot — a seasonal room, dark until the winter set goes live
+  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: 4, wallpaper: '#e6eef7', placed: {} },
+];
+
+// ── Room unlocks (A-6 · rooms are EARNED, never bought) ──────────────
+// Rooms are NOT sold for points. The Green Room is the child's home and is there from
+// the first walk; every other room opens by safe behaviour — an accident-free streak, a
+// cumulative safe-walking total, an achievement. Same rule shape as the egg / character
+// / item milestones, so it runs through the same matchWhen() against the same progress
+// snapshot: one vocabulary of conditions across every faucet in the app.
+//
+//   room  — the room this rule opens
+//   when  — the condition: streakDays · metric + reach · achievementDone · event
+//   after — the room that must already be open, which is what makes the ladder
+//           SEQUENTIAL: Town before Dream, however generous the numbers get retuned to.
+//
+// These are DEFAULTS. Ops retunes them from server settings via setRoomUnlocks() — the
+// bar, the metric, even which room comes first are policy, not code.
+const ROOM_UNLOCK_DEFAULTS = [
+  { id: 'ru-town', room: 'town', enabled: true, source: 'streak',
+    when: { streakDays: 5 },
+    label: 'Walk safely 5 days in a row' },
+
+  { id: 'ru-dream', room: 'dream', enabled: true, source: 'duration', after: 'town',
+    when: { metric: 'safeMinutes', reach: 1500 },
+    label: 'Walk safely for 25 hours' },
+
+  // seasonal — authored ahead, dark until ops flips the season on
+  { id: 'ru-winter', room: 'winter', enabled: false, set: 'winter-2026', source: 'event', after: 'dream',
+    when: { event: 'winter-2026' },
+    label: 'Winter event' },
+];
+
+const ROOM_UNLOCKS = ROOM_UNLOCK_DEFAULTS.map(r => ({ ...r }));
+const activeRoomUnlocks = () => ROOM_UNLOCKS.filter(r => r.enabled !== false);
+const roomRule = (roomId) => activeRoomUnlocks().find(r => r.room === roomId) || null;
+
+// Is this room open right now? A home room always is. Any other room needs an ACTIVE
+// rule that is both MET and preceded by its `after` room — so a room with no rule (or
+// one whose season is dark) stays shut rather than falling open by default.
+const roomOpen = (room, ctx = progress()) => {
+  if (!room) return false;
+  if (room.home) return true;
+  const rule = roomRule(room.id);
+  if (!rule) return false;
+  if (rule.after && !roomOpen(ROOMS.find(r => r.id === rule.after), ctx)) return false;
+  return matchWhen(rule.when, ctx);
+};
+
+// How close the child is to opening a locked room — the number the locked card shows,
+// so the goal reads as "3 of 5 days", not a closed door.
+const roomProgress = (room, ctx = progress()) => {
+  const rule = roomRule(room?.id);
+  if (!rule || room?.home) return null;
+  const w = rule.when;
+  const have = w.streakDays != null ? (ctx.streakDays ?? 0)
+             : w.metric != null     ? (ctx[w.metric] ?? 0)
+             : 0;
+  const need = w.streakDays ?? w.reach ?? 0;
+  const unit = w.streakDays != null ? 'days' : w.metric === 'safeKm' ? 'km' : w.metric === 'safeMinutes' ? 'min' : '';
+  // a room still waiting on its predecessor shows THAT as the blocker, not a bar it
+  // has already filled — otherwise a full bar sits next to a locked door
+  const blockedBy = rule.after && !roomOpen(ROOMS.find(r => r.id === rule.after), ctx)
+    ? ROOMS.find(r => r.id === rule.after) : null;
+  return {
+    rule, label: rule.label, have, need, unit, blockedBy,
+    pct: need > 0 ? Math.min(1, have / need) : 0,
+    measurable: need > 0,   // an event rule has nothing to count toward
+  };
+};
+
+// Derive every room's `unlocked` from the rules in force. Called at boot, after a walk
+// pays out, and again whenever server settings land — the same discipline as the XP
+// curve: derived state is recomputed, never left behind.
+const applyRoomUnlocks = (player = PLAYER) => {
+  const ctx = progress({}, player);
+  ROOMS.forEach(r => { r.unlocked = roomOpen(r, ctx); });
+  return ROOMS;
+};
+
+// Server settings (A-6). Ops hands over the unlock table; anything malformed is
+// dropped rather than trusted, and a payload that leaves NO valid rule falls back to
+// the defaults — a bad push must never strand a child with one room forever.
+const setRoomUnlocks = (rows) => {
+  const valid = Array.isArray(rows) ? rows.filter(r =>
+    r && typeof r.id === 'string'
+    && ROOMS.some(x => x.id === r.room)          // opens a room that exists
+    && !ROOMS.find(x => x.id === r.room).home    // …and not the home room
+    && r.when && typeof r.when === 'object'
+    && (r.after == null || ROOMS.some(x => x.id === r.after))
+  ) : [];
+  ROOM_UNLOCKS.length = 0;
+  ROOM_UNLOCKS.push(...(valid.length ? valid.map(r => ({ ...r })) : ROOM_UNLOCK_DEFAULTS.map(r => ({ ...r }))));
+  applyRoomUnlocks();
+  return ROOM_UNLOCKS;
+};
 
 const ACHIEVEMENTS = [
   { id: 'a1', icon: 'footprints', name: 'First Steps',    desc: 'Walk safely for 10 minutes',  done: true,  reward: 50 },
@@ -1320,6 +1573,7 @@ const ACHIEVEMENTS = [
   { id: 'a5', icon: 'gem',        name: 'Collector',      desc: 'Own 8 characters',             done: false, progress: 6, total: 8, reward: 200 },
   { id: 'a6', icon: 'sunrise',    name: 'Early Walker',   desc: 'Safe morning commute, 7 days', done: false, progress: 4, total: 7, reward: 130 },
 ];
+
 
 // child reaction log (feeds parent report)
 const REACTIONS_7D = [
@@ -1385,10 +1639,13 @@ const CHILD_REPORTS = {
 // Parent activity feed — recent safety moments across all children. `kind`
 // drives the icon + tone in ParentActivity; `child` is a CHILDREN id. Split by
 // `today` into the Today / Earlier sections. Newest first within each section.
+// `ack` — which guardian already handled this. Both parents' phones buzz for the same event,
+// so without it they both call the child about the same warning. The second parent should see
+// "Dad already checked this", not a fresh alarm.
 const PARENT_ALERTS = [
   { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true },
   { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true },
-  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true },
+  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun' },
   { id: 'n4', kind: 'device_off', child: 'k2', title: 'Device disconnected',  sub: 'Galaxy A14 went offline',    time: '2h',  today: true },
   { id: 'n4b', kind: 'limited',   child: 'k2', title: 'Protection limited',   sub: 'Display-over-apps was turned off', time: '3h', today: true },
   { id: 'n5', kind: 'streak',     child: 'k3', title: '8-day safe streak!',   sub: 'New personal best',          time: 'Yesterday', today: false },
@@ -1987,15 +2244,17 @@ const react = (who, key) => {
 const FRIENDS = [
   { id: 'f1', name: 'Jisoo', avatar: 'cat',  color: '#e278a8', online: true,  streak: 9,  chars: 11, likes: 24, reactions: { like: 9, love: 7, wow: 4, fire: 3, clap: 1 }, myReaction: null,
     featured: { species: 'cat',  name: 'Cloud',  color: '#e278a8', stage: 3, rarity: 'epic' },
-    rooms: [{ name: 'Candy Room', theme: '#fdeef5' }, { name: 'Cloud Loft', theme: '#eef4fd' }],
+    // friends' rooms are the SAME themes, just decorated differently — a visit should
+    // feel like the same world, not a parallel one (A-10 · F-19)
+    rooms: [{ name: 'Green Room', theme: 'green', wallpaper: '#eef5dd' }, { name: 'Dream Room', theme: 'dream', wallpaper: '#f7e9f5' }],
     guest: [{ by: 'Tom', emoji: '😍', text: 'Your room is awesome!' }, { by: 'Aria', emoji: '🔥', text: 'Nice streak!' }] },
   { id: 'f2', name: 'Tom',   avatar: 'bird', color: '#67c7ce', online: false, streak: 4,  chars: 7,  likes: 12, reactions: { like: 5, love: 2, wow: 1, fire: 3, clap: 1 }, myReaction: 'fire',
     featured: { species: 'bird', name: 'Sky',    color: '#67c7ce', stage: 2, rarity: 'rare' },
-    rooms: [{ name: 'Ocean Nook', theme: '#e9f4f5' }],
+    rooms: [{ name: 'Town Room', theme: 'town', wallpaper: '#e7eef2' }],
     guest: [{ by: 'Mina', emoji: '⭐', text: 'Cool collection!' }] },
   { id: 'f3', name: 'Aria',  avatar: 'owl',  color: '#b9a3ef', online: true,  streak: 15, chars: 14, likes: 31, reactions: { like: 11, love: 8, wow: 6, fire: 4, clap: 2 }, myReaction: null,
     featured: { species: 'owl',  name: 'Nova',   color: '#b9a3ef', stage: 3, rarity: 'rare' },
-    rooms: [{ name: 'Star Studio', theme: '#f5f1fd' }, { name: 'Moon Deck', theme: '#eef0fb' }],
+    rooms: [{ name: 'Dream Room', theme: 'dream', wallpaper: '#e8e6fa' }, { name: 'Town Room', theme: 'town', wallpaper: '#f4efe6' }],
     guest: [{ by: 'Jisoo', emoji: '🔥', text: 'Nice streak!' }, { by: 'Tom', emoji: '👋', text: 'I stopped by!' }] },
 ];
 
@@ -2047,5 +2306,13 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-export { ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
+// Seed which rooms are open from the rules in force (A-6). The shipped app calls
+// setRoomUnlocks() again once server settings land, which re-runs this. It sits at the
+// very bottom because the progress snapshot it reads reaches across the whole file —
+// run it any earlier and it trips over a table that has not been declared yet.
+applyRoomUnlocks();
+
+export { ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_THEMES, themeById, themeOf, decorForRoom,
+  ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

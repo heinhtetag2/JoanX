@@ -3,11 +3,11 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { CHARACTERS, ROOMS, STATS, statsFor, visibleCharacters } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, roomProgress, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { screenBgActive, ScreenHeader, LockedRoomCard } from './shared.jsx';
 
 const COLLECTION_LAYOUTS = [
   { id: 'shelf', label: 'Shelf' },
@@ -49,19 +49,8 @@ function RoomHead({ room, placed }) {
   );
 }
 
-function LockedRoom({ room }) {
-  return (
-    <div style={{ borderRadius: 22, padding: 22, background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div style={{ width: 46, height: 46, borderRadius: 14, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name="lock" size={22} color={THEME.fg3} stroke={2.2} />
-      </div>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 800 }}>{L(room.name)}</div>
-        <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 2 }}>{L(room.req)}</div>
-      </div>
-    </div>
-  );
-}
+// a locked room is the same goal card everywhere it appears (see child/shared.jsx)
+const LockedRoom = LockedRoomCard;
 
 const EmptySlot = ({ size = 56 }) => (
   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}>
@@ -99,7 +88,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       <div key={room.id} style={{ marginBottom: 16 }}>
         <RoomHead room={room} placed={placed} />
         {room.unlocked ? (
-          <div style={{ borderRadius: 22, padding: '20px 14px 14px', background: `linear-gradient(180deg, ${room.theme} 0%, #fff 100%)`, boxShadow: THEME.shadowCard }}>
+          <div style={{ borderRadius: 22, padding: '20px 14px 14px', background: themeOf(room).wall(room.wallpaper), boxShadow: THEME.shadowCard }}>
             <div style={{ display: 'flex', gap: 10 }}>{Array.from({ length: room.slots }).map((_, i) => bigTile(placed[i], i))}</div>
             <div style={{ height: 8, borderRadius: 999, background: 'rgba(0,0,0,.05)', marginTop: 6 }} />
           </div>
@@ -285,7 +274,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
                     <button key={c.id} onClick={() => openC(c)} style={{ width: 52, height: 52, borderRadius: 999, background: shade(c.color, 70), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={50} /></button>
                   ) : <div key={'e' + i} style={{ width: 52, height: 52, borderRadius: 999, border: `2px dashed ${THEME.border}`, flexShrink: 0 }} />; })}
                 </div>
-              ) : <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 4 }}>{L(room.req)}</div>}
+              ) : <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 4 }}>{L(roomProgress(room)?.label || 'Coming soon')}</div>}
             </div>
           </div>
         );

@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentDetail
 
 import React from 'react';
-import { CHILDREN } from '../core/data.jsx';
+import { CHILDREN, FAMILY_ROLES, guardians } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -135,10 +135,14 @@ function ParentDetail({ ctx }) {
           {toggleRow(1, 'shield-check', L('Two-factor authentication'), twoFA, setTwoFA)}
           {toggleRow(2, 'scan-face', L('Face ID unlock'), faceId, setFaceId)}
         </React.Fragment>)}
+        {/* The household, read from FAMILY rather than hardcoded — this card used to name a
+            co-parent who existed nowhere in the data and offered an invite row that did nothing. */}
         {label(L('Guardians'))}
         {card(<React.Fragment>
-          {navRow(0, 'user', 'Min-jun Kim', chev, L('Co-parent'))}
-          <div style={{ ...rowStyle(1, true), color: BRAND.primary }}><Icon name="user-plus" size={18} color={BRAND.primary} stroke={2.3} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: BRAND.primary }}>{L('Invite a guardian')}</div></div>
+          {guardians().filter(m => !m.me).map((m, i) => (
+            <React.Fragment key={m.id}>{navRow(i, 'user', `${m.name} · ${L(m.relation)}`, chev, L(FAMILY_ROLES[m.role].label), () => ctx.nav('p_family'))}</React.Fragment>
+          ))}
+          <div onClick={() => ctx.nav('p_invite')} style={{ ...rowStyle(guardians().length - 1, true), color: BRAND.primary }}><Icon name="user-plus" size={18} color={BRAND.primary} stroke={2.3} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: BRAND.primary }}>{L('Invite a guardian')}</div></div>
         </React.Fragment>)}
       </React.Fragment>
     ) },

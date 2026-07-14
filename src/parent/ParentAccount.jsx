@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentAccount
 
 import React from 'react';
-import { FEATURES } from '../core/data.jsx';
+import { FEATURES, guardians } from '../core/data.jsx';
 import { Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -29,6 +29,22 @@ function ParentAccount({ ctx }) {
           </div>
           {chev}
         </div>
+
+        {/* The household. Sits above Notifications because "who else can see my child" is a
+            bigger question than "does my phone buzz", and a parent looking for it looks here. */}
+        {label(L('Family'))}
+        {card(
+          <div onClick={() => ctx.nav('p_family')} style={rowStyle(0)}>
+            <Icon name="users" size={18} color={THEME.fg2} stroke={2.2} />
+            <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Parents')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: -6, marginRight: 6 }}>
+              {guardians().map((m, i) => (
+                <span key={m.id} style={{ width: 24, height: 24, borderRadius: 999, background: BRAND.primaryLight, color: BRAND.primaryDark, border: '2px solid #fff', marginLeft: i ? -8 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10.5, fontWeight: 800 }}>{m.name[0]}</span>
+              ))}
+            </div>
+            {chev}
+          </div>
+        )}
 
         {label(L('Notifications'))}
         {card(<React.Fragment>

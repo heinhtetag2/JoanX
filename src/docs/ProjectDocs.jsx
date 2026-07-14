@@ -850,6 +850,7 @@ function ProjectDocs() {
                   ['Intervention', '10s grace · 2s buzz hold · 5s cooldown · 3 tone tiers', 'INTERVENTION'],
                   ['Battle rewards', '120/60 first · 40/20 repeat · 10 loss · 500/200 + Epic Egg finale', 'BATTLE_REWARDS'],
                   ['Egg odds (C/R/E)', 'Common 8/2/0 · Rare 3/6/0 · Epic 0/4/6', 'EGGS'],
+                  ['Room unlocks', 'Green free · Town at a 5-day accident-free streak · Dream at 25h safe walking (Town first)', 'setRoomUnlocks()'],
                 ].map(([k, v, s]) => (
                   <tr key={k}><td><b>{k}</b></td><td>{v}</td><td><code>{s}</code></td></tr>
                 ))}

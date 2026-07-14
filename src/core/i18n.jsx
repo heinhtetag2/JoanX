@@ -197,7 +197,7 @@ const KO = {
   'A grown-up updated your settings': '보호자가 설정을 변경했어요', 'Warning style is now set to “gentle”.': '알림 스타일이 “부드럽게”로 설정됐어요.',
 
   // ── collection ──
-  'Collection House': '컬렉션 하우스', 'Cozy Den': '아늑한 둥지', 'Sky Loft': '하늘 다락', 'Star Studio': '별 스튜디오', 'Garden': '정원',
+  'Collection House': '컬렉션 하우스',   // room names live with the room themes, further down
   'Locked': '잠김', 'Empty': '비어 있음', 'All buddies': '모든 친구', 'collected': '수집', 'Featured': '대표',
   // first-run empty states (collection / friends)
   'No buddies yet': '아직 친구가 없어요',
@@ -260,6 +260,35 @@ const KO = {
   // reuses those rather than re-declaring them, so the two sides cannot drift apart.
   'Mum': '엄마', 'Dad': '아빠',
   'Connected since': '연결일',
+
+  // ── the family: two parents, one household ──────────────────────────
+  // NB: no 'Parent' / 'Remove' / 'Expires in' / 'Guardian' keys here — all four already exist
+  // below, and a duplicate silently wins. 'Guardian' in particular is the character STAGE name
+  // (수호자), so the role badge says 'Co-parent' rather than fighting it.
+  'Family': '가족', 'Parents': '보호자', 'My parents': '우리 부모님',
+  'Owner': '관리자', 'you': '나',   // 'Co-parent' already exists in the account-detail block
+  'Everyone here sees the same reports and can change the same settings. Adding or removing a parent never touches your child’s phone.':
+    '여기 있는 모든 보호자가 같은 리포트를 보고 같은 설정을 바꿀 수 있어요. 보호자를 추가하거나 삭제해도 아이 휴대폰은 건드리지 않아요.',
+  'Invite a parent': '보호자 초대하기',
+  'They lose access to every child in this family.': '이 가족의 모든 아이 정보를 볼 수 없게 돼요.',
+  'can add or remove parents.': '님만 보호자를 추가하거나 삭제할 수 있어요.',
+  'Recent changes': '최근 변경 내역',
+  'Raised sensitivity': '민감도를 높였어요', 'Acknowledged an alert': '알림을 확인했어요',
+  'Edited a schedule': '일정을 수정했어요', 'Added a guardian': '보호자를 추가했어요',
+  'Mina · Balanced → Strict': '미나 · 보통 → 엄격', 'Mina · distraction warning': '미나 · 주의 알림',
+  'Mina · School commute': '미나 · 등하굣길', 'Min-jun joined the family': '민준님이 가족에 참여했어요',
+  'Send this to the other parent. They install JoanX, open the link, and verify their own phone number.':
+    '다른 보호자에게 보내세요. JoanX를 설치하고 링크를 열어 본인 번호로 인증하면 돼요.',
+  'If you are together, let them scan this from their own phone.': '함께 계시다면 상대방 휴대폰으로 스캔하게 하세요.',
+  'Joins automatically once scanned.': '스캔하면 자동으로 참여돼요.',
+  'Share the invite link': '초대 링크 공유하기', 'Invite sent': '초대를 보냈어요',
+  'Send a link instead': '링크로 보내기', 'Show a QR instead': 'QR로 보여주기',
+  'one use only': '1회만 사용 가능',
+  'They verify their own phone number — never share your login': '상대방이 본인 번호로 인증해요 — 계정을 공유하지 마세요',
+  'Your child is told when a new parent is added': '새 보호자가 추가되면 아이에게 알려줘요',
+  'already checked this': '님이 이미 확인했어요',
+  'What my parents can see': '부모님이 볼 수 있는 것',
+
   'What my parent can see': '보호자가 볼 수 있는 것', 'Shared': '공유됨', 'Private': '비공개', 'Set by': '설정한 사람:',
   'How long you walked safely': '안전하게 걸은 시간',
   'Warnings you got while walking': '걷는 중 받은 경고',
@@ -860,10 +889,33 @@ const KO = {
   'When a friend visits your room, the note they leave shows up here.': '친구가 내 방에 놀러 와서 남긴 메모가 여기에 모여요.',
   'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
   'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
-  // room styles (A-12)
-  'Room style': '방 스타일', 'Cozy': '아늑한', 'Modern': '모던', 'Playful': '발랄한',
-  'Add some decorations below': '아래에서 장식을 추가해요', 'Placed': '배치됨', 'Owned': '보유',
-  'Plant': '화분', 'Lamp': '램프', 'Rug': '러그', 'Bookshelf': '책장', 'Poster': '포스터', 'Balloons': '풍선',
+  // room themes (A-6 / A-12) — three environments, each with its own decor set
+  'Green Room': '그린 룸', 'Town Room': '타운 룸', 'Dream Room': '드림 룸', 'Winter Room': '윈터 룸',
+  'Forest, leaves and quiet trails.': '숲과 나뭇잎, 조용한 오솔길.',
+  'School, park and the streets between.': '학교와 공원, 그 사이의 거리.',
+  'Stars, clouds and soft impossible things.': '별과 구름, 그리고 꿈같은 것들.',
+  'Snow light and a quiet, frosted hush.': '눈빛과 서리 내린 고요함.',
+  // room unlocks (A-6) — earned by safe walking, never bought
+  'Rooms to unlock': '잠긴 방', 'Rooms are earned by walking safely — never bought.': '방은 안전하게 걸어서 얻어요 — 포인트로 살 수 없어요.',
+  'Walk safely 5 days in a row': '5일 연속 안전하게 걷기',
+  'Walk safely for 25 hours': '안전하게 25시간 걷기',
+  'must be unlocked first': '먼저 열어야 해요', 'Coming soon': '곧 만나요',
+  'km': 'km',   // 'days' / 'min' are already above, with the streak + goal copy
+  'Add a buddy and some decorations below': '아래에서 친구와 장식을 추가해요',
+  'Buddies in this room': '이 방의 친구들', 'Tap to move a buddy in or out.': '눌러서 친구를 넣거나 빼요.',
+  'Not placed': '배치 안 함', 'Room is full': '방이 가득 찼어요', 'items': '개',
+  'Placed': '배치됨', 'Owned': '보유',
+  // green room decor
+  'Plant': '화분', 'Little Tree': '작은 나무', 'Watering Can': '물뿌리개', 'Bird Feeder': '새 모이통',
+  'Flower Bed': '꽃밭', 'Camp Tent': '캠핑 텐트',
+  // town room decor
+  'Lamp': '램프', 'Mailbox': '우편함', 'Park Bench': '공원 벤치', 'Street Sign': '거리 표지판',
+  'Bus Stop': '버스 정류장', 'Bookshelf': '책장',
+  // dream room decor
+  'Moon Lamp': '달 조명', 'Cloud': '구름', 'Toy Rocket': '장난감 로켓', 'Dream Crystal': '드림 크리스털',
+  'Rainbow': '무지개', 'Telescope': '망원경', 'Snow Globe': '스노볼',
+  // fits any room
+  'Rug': '러그', 'Poster': '포스터', 'Balloons': '풍선',
   'Edit your buddy, background & rooms': '친구·배경·방을 꾸며요', 'Your friends': '내 친구',
   'Friend ranking': '친구 랭킹', 'd streak': '일 연속',
   'Top streak': '최고 연속', 'Online now': '지금 접속 중', 'Last seen recently': '최근에 접속했어요', 'Visit house': '집 방문',

@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentActivity (Alerts feed)
 
 import React from 'react';
-import { CHILDREN, PARENT_ALERTS } from '../core/data.jsx';
+import { CHILDREN, PARENT_ALERTS, guardianMe } from '../core/data.jsx';
 import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
@@ -45,6 +45,14 @@ function ParentActivity({ ctx }) {
           <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {child ? `${child.name} · ` : ''}{L(a.sub)}
           </div>
+          {/* Both parents' phones buzz for the same event. Without this they both ring the
+              child about one warning — so the second one to look sees that it is handled. */}
+          {a.ack && a.ack !== guardianMe().name && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 5, padding: '3px 8px', borderRadius: 999, background: THEME.successLight, color: THEME.success, fontSize: 11, fontWeight: 800 }}>
+              <Icon name="check" size={11} color={THEME.success} stroke={3} />
+              {a.ack} {L('already checked this')}
+            </div>
+          )}
         </div>
         <span style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600, flexShrink: 0 }}>{L(a.time)}</span>
       </div>

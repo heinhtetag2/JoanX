@@ -3,7 +3,7 @@ import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, Char
 import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
@@ -32,6 +32,10 @@ function App() {
   const [pScreen, setPScreen] = React.useState('p_reports');
   const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
+  // Tweaks → Hold: freeze the intervention on whatever stage is showing. Prototype-only — the
+  // escalation is time-driven, so without it no stage stays up long enough to be looked at.
+  const [hold, setHold] = React.useState(false);
+  const [run, setRun] = React.useState(0);   // keys the overlay: bumping it replays from the grace window
   const [story, setStory] = React.useState(false);   // Tweaks → the "How JoanX works" scroll-story, over any screen
   // prototype "state" toggles (Tweaks): drive the edge states screens usually skip
   //   limited  · a permission is off → running-app limited-protection state (F-26)
@@ -133,9 +137,9 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold },
     openOverlay: () => setOverlay(true),
-    closeOverlay: () => setOverlay(false),
+    closeOverlay: () => { setOverlay(false); setHold(false); },
     setBuddy, lang, setLang: changeLang,
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
     finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child intro
@@ -161,6 +165,8 @@ function App() {
       p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
+      // the household — a second parent joins the FAMILY, never the child's device
+      p_family: <ParentFamily ctx={ctx} />, p_invite: <ParentInvite ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
       // Profile tab — the parent account/profile page (identity + security), shown as a tab root
       p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} />,
@@ -211,7 +217,7 @@ function App() {
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
           {role === 'parent' && parentOnboarded && !['p_addchild', 'p_connect'].includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
-          {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay ctx={ctx} />)}
+          {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>
@@ -251,9 +257,24 @@ function App() {
               </div>
 
               <div className="tw-label">Preview the safety moment</div>
-              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => { setOnboarded(true); setOverlay(true); }}>
-                ▶ Trigger a {mode === 'lite' ? 'block' : 'warning'}
+              {/* Once it is running the escalation moves on its own, so the panel offers the two
+                  things you actually need to look at it: hold it where it is, or end it. */}
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => { setOnboarded(true); setHold(false); setRun(n => n + 1); setOverlay(true); }}>
+                ▶ {overlay ? 'Replay from the start' : `Trigger a ${mode === 'lite' ? 'block' : 'warning'}`}
               </button>
+              {overlay && (
+                <React.Fragment>
+                  <div className="tw-row" style={{ marginTop: 8 }}>
+                    <button className={'tw-chip' + (hold ? ' on' : '')} style={{ flex: 1, justifyContent: 'center', padding: '10px' }} onClick={() => setHold(h => !h)}>
+                      {hold ? '▶ Resume' : '❚❚ Hold this step'}
+                    </button>
+                    <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', padding: '10px' }} onClick={() => { setOverlay(false); setHold(false); }}>■ Stop</button>
+                  </div>
+                  <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 6, lineHeight: 1.4 }}>
+                    {hold ? 'Frozen — the stage on screen stays put. Resume restarts its clock.' : 'Hold freezes the escalation where it is, so a stage can be read. Stop closes it.'}
+                  </div>
+                </React.Fragment>
+              )}
 
               <div className="tw-label">Story</div>
               <div className="tw-row">

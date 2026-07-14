@@ -7,14 +7,17 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
 
-// Timings. Everything the spec pins down (the 2s hold, the 1.5s message, the 3s gap, the 5s
-// cooldown) runs at full length and comes straight from INTERVENTION, which is where the pilot
-// will retune them. Only the 10s grace window is demo-compressed, to keep the flow watchable.
+// Timings. Everything the spec pins down (the 2s hold, the message dwell, the gap between
+// lines, the 5s cooldown) runs at full length and comes straight from INTERVENTION, which is
+// where the pilot will retune them. Only the 10s grace window is demo-compressed, to keep the
+// flow watchable.
 const BUZZ_HOLD_MS = INTERVENTION.buzzHoldSeconds * 1000;   // F-08.1 — risk must persist 2s past the buzz
-const MESSAGE_MS = INTERVENTION.messageSeconds * 1000;      // F-09 — how long one message stays up
-const MESSAGE_GAP_MS = INTERVENTION.messageGapSeconds * 1000; // F-09 — minimum gap between messages
+const MESSAGE_MS = INTERVENTION.messageSeconds * 1000;      // F-09 — how long one line stays up
+const MESSAGE_GAP_MS = INTERVENTION.messageGapSeconds * 1000; // F-09 — minimum gap between lines
+const SWAP_MS = Math.max(220, MESSAGE_GAP_MS - MESSAGE_MS);   // the beat it takes to swap one line for the next
 const RECHECK_MS = INTERVENTION.recheckSeconds * 1000; // F-08.2 — 5s quiet cooldown, then re-assess
 const SAFE_CONFIRM_MS = INTERVENTION.safeConfirmSeconds * 1000; // F-08.4 — safe must hold this long to remove the overlay
+const REWARD_MS = 2800;   // the "Nice save!" payoff, before the overlay hands the screen back
 const GRACE_MS = 2600;    // spec: INTERVENTION.graceSeconds (10s)
 const IGNORE_MS = MESSAGE_GAP_MS * 2 + MESSAGE_MS;  // two unanswered messages = ignored
 
@@ -97,10 +100,13 @@ function RoundBadge({ round, tier, inline }) {
   );
 }
 
-// F-09 — timed character message: a bottom toast (~20% height). Each message is on screen
-// for MESSAGE_MS, and at least MESSAGE_GAP_MS separates one from the next, so the same line
-// can never be redisplayed inside the minimum interval. The toast lives only while the risk
-// does — a stop or a dismiss unmounts it, and nothing further is shown.
+// F-09 — timed character message: a bottom toast (~20% height). The toast itself HOLDS for as
+// long as the risk does — it is the surface carrying "I looked up", and a safety CTA that blinks
+// out from under a child's thumb is worse than no CTA. What is timed is the *copy*: each line
+// reads for MESSAGE_MS, then cross-fades to the next, with MESSAGE_GAP_MS between one line and
+// the next so the same line can never return inside the minimum interval.
+// (Fading the whole card on that cycle — mascot, copy and both buttons — is what made the step
+// unreadable: a line was gone before it could be finished, and the buttons went with it.)
 // Lines rotate through the tier's pool (never twice in a row) to blunt message fatigue,
 // and each round starts at a different point in the pool so a repeat offender doesn't hear
 // the same opening nudge every time.
@@ -152,25 +158,39 @@ function DismissBtn({ onClick }) {
   );
 }
 
-function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismiss }) {
+function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, onDismiss }) {
   const pool = interventionMessages(round);
   const [i, setI] = React.useState((round - 1) % pool.length);
-  const [show, setShow] = React.useState(true);
+  const [show, setShow] = React.useState(true);   // the LINE's opacity — the card behind it never leaves
   React.useEffect(() => {
-    const hides = [setTimeout(() => setShow(false), MESSAGE_MS)];
+    if (hold) return;              // Tweaks → Hold: the line on screen is the one being inspected
+    if (pool.length < 2) return;   // nothing to rotate to: the one line simply stays
+    const swaps = [];
     const iv = setInterval(() => {
-      setI(x => (x + 1) % pool.length);   // advance — never the line just shown
-      setShow(true);
-      hides.push(setTimeout(() => setShow(false), MESSAGE_MS));
+      setShow(false);              // the line has had its read; fade it out...
+      swaps.push(setTimeout(() => {
+        setI(x => (x + 1) % pool.length);   // ...advance — never the line just shown...
+        setShow(true);                      // ...and fade the next one in
+      }, SWAP_MS));
     }, MESSAGE_GAP_MS);
-    return () => { hides.forEach(clearTimeout); clearInterval(iv); };
-  }, [pool.length]);
+    return () => { swaps.forEach(clearTimeout); clearInterval(iv); };
+  }, [pool.length, hold]);
 
   const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
   const urgent = tier.key === 'urgent';
-  const line = L(pool[i]);
   const sub = urgent ? L(tier.body) : `${c.name} · ${L('still walking')}`;
   const ink = urgent ? THEME.danger : THEME.fg1;
+
+  // The one thing that changes between lines. It carries the fade, so the card, the buddy and
+  // the buttons under it stay put while the copy swaps — the child never loses the CTA mid-read.
+  // Called, not mounted as <Line/>: a component declared in here is a new type on every render,
+  // so React would remount the node and the opacity would jump instead of easing.
+  const line = (size, subSize, gap) => (
+    <div style={{ opacity: show ? 1 : 0, transform: show ? 'none' : 'translateY(3px)', transition: `opacity ${SWAP_MS}ms ease, transform ${SWAP_MS}ms ease` }}>
+      <div className="game-font" style={{ fontSize: size, fontWeight: 500, lineHeight: 1.25, color: ink }}>{L(pool[i])}</div>
+      <div style={{ fontSize: subSize, color: THEME.fg2, marginTop: gap, lineHeight: 1.4 }}>{sub}</div>
+    </div>
+  );
 
   const Rail = () => <div style={{ height: RAIL_H, background: tone.rail }} />;
   const Badge_ = () => round > 1 ? (
@@ -201,8 +221,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
           <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}>
-            <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
-            <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
+            {line(19, 13, 4)}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
@@ -224,8 +243,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
             <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={74} /></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="game-font" style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
-            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 5, lineHeight: 1.4 }}>{sub}</div>
+            {line(22, 12.5, 5)}
           </div>
         </div>
         <Actions />
@@ -239,8 +257,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
           <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={84} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '16px 16px 16px 4px', padding: '12px 14px', marginBottom: 6 }}>
-            <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
-            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 3, lineHeight: 1.4 }}>{sub}</div>
+            {line(19, 12.5, 3)}
           </div>
         </div>
         <Actions />
@@ -255,8 +272,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
           <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} />
         </div>
         {round > 1 && <div style={{ marginBottom: 8 }}><Badge_ /></div>}
-        <div className="game-font" style={{ fontSize: 21, fontWeight: 500, lineHeight: 1.2, color: ink }}>{line}</div>
-        <div style={{ fontSize: 13, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{sub}</div>
+        {line(21, 13, 4)}
         <Actions stacked />
       </div>
     ),
@@ -269,8 +285,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <MascotChip species={c.species} stage={c.stage} color={c.color} size={56} bg={tone.chip} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="game-font" style={{ fontSize: 18, fontWeight: 500, lineHeight: 1.25, color: ink }}>{line}</div>
-            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
+            {line(18, 12.5, 2)}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
@@ -284,12 +299,13 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
   const hero = layout === 'hero';
   const sheet = layout === 'sheet';
 
-  // SHEET — anchored to the bottom edge, no gutter, rounded on top only. It rises with the
-  // same jx-overlay-up motion the warning sheet uses, so the two stages feel like one surface.
+  // SHEET — anchored to the bottom edge, no gutter, rounded on top only. It rises once with the
+  // same jx-overlay-up motion the warning sheet uses, so the two stages feel like one surface —
+  // and then it stays: it only leaves when the risk does (a stop, or a dismiss).
   if (sheet) {
     return (
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
-        <div className="jx-overlay-up" style={{ opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', background: THEME.surface, borderRadius: '32px 32px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -10px 30px rgba(0,0,0,.16)' }}>
+        <div className="jx-overlay-up" style={{ pointerEvents: 'auto', background: THEME.surface, borderRadius: '32px 32px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -10px 30px rgba(0,0,0,.16)' }}>
           {bodies.sheet}
         </div>
       </div>
@@ -302,7 +318,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: '20%', display: 'flex', alignItems: 'flex-end', padding: `0 18px calc(env(safe-area-inset-bottom) + 18px)`, pointerEvents: 'none' }}>
       {/* overflow is hidden so the rail is cut to the card's radius — except on hero, where the
           buddy is *meant* to break the top edge, so there the rail gets its own clipping sleeve. */}
-      <div style={{ ...MSG_CARD, opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(14px)', transition: 'opacity .3s ease, transform .3s ease', pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0, overflow: hero ? 'visible' : 'hidden' }}>
+      <div className="jx-rise" style={{ ...MSG_CARD, pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0, overflow: hero ? 'visible' : 'hidden' }}>
         {/* tone rail — reads before any copy is parsed (gentle → firm → urgent) */}
         {hero
           ? <div style={{ borderRadius: '20px 20px 0 0', overflow: 'hidden' }}><Rail /></div>
@@ -315,6 +331,11 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', onRespond, onDismi
 
 function WarningOverlay({ ctx }) {
   const variant = ctx.tweaks.overlay || 'spotlight';
+  // Tweaks → Hold. A prototype-only freeze: the escalation is time-driven, so every stage is
+  // gone in a few seconds and none of them can be looked at properly. Hold stops the clock on
+  // whatever is on screen — phase timers, the line rotation, the countdown bars, the reward's
+  // self-close — without changing any of the timings the pilot will tune.
+  const hold = !!ctx.tweaks.hold;
   const [phase, setPhase] = React.useState('grace'); // grace -> buzz -> warn -> message -> (cooldown ->) buzz... -> reward
   const [round, setRound] = React.useState(1);       // intervention rounds run so far for this one risk event
   const [confirming, setConfirming] = React.useState(false); // F-08.4 — safe state seen; holding to be sure
@@ -335,16 +356,23 @@ function WarningOverlay({ ctx }) {
   };
 
   React.useEffect(() => {
-    if (!confirming) return;
+    if (!confirming || hold) return;
     const t = setTimeout(() => {
       const from = stoppedAt.current;
       logRiskEvent({ outcome: from === 'grace' || from === 'buzz' ? 'immediate' : 'delayed', rounds: round, tier: tier.key });
       setConfirming(false);
       setPhase('reward');
-      setTimeout(() => ctx.closeOverlay(), 1800);
     }, SAFE_CONFIRM_MS);
     return () => clearTimeout(t);
-  }, [confirming]);
+  }, [confirming, hold]);
+
+  // The payoff dismisses itself — long enough to actually land: the child should read the stop
+  // time and see the points before the screen is taken back. (1.8s closed on top of the confetti.)
+  React.useEffect(() => {
+    if (phase !== 'reward' || hold) return;
+    const t = setTimeout(() => ctx.closeOverlay(), REWARD_MS);
+    return () => clearTimeout(t);
+  }, [phase, hold]);
   // F-08.2 — "Got it!" (and simply ignoring the message) clears the UI, not the risk. The overlay
   // leaves the screen immediately and RECHECK_MS of quiet follows: no warning of any kind for this
   // same hazardous situation. Only when the cooldown lapses is the risk re-assessed — and only if
@@ -361,12 +389,16 @@ function WarningOverlay({ ctx }) {
   // still going BUZZ_HOLD_MS later. Stopping inside that window ends the escalation here.
   React.useEffect(() => {
     if (confirming) return;   // the risk looks over — hold everything until the safe state is confirmed
+    if (hold) return;         // Tweaks → Hold: freeze on this stage. Resuming restarts its clock.
     if (phase === 'grace') { const t = setTimeout(() => setPhase('buzz'), GRACE_MS); return () => clearTimeout(t); }
     if (phase === 'buzz') { const t = setTimeout(() => setPhase('warn'), BUZZ_HOLD_MS); return () => clearTimeout(t); }
     if (phase === 'warn') { const t = setTimeout(() => setPhase('message'), 5000); return () => clearTimeout(t); }
     if (phase === 'message') { const t = setTimeout(() => standDown('ignored'), IGNORE_MS); return () => clearTimeout(t); }
     if (phase === 'cooldown') { const t = setTimeout(() => { setRound(n => n + 1); setPhase('buzz'); }, RECHECK_MS); return () => clearTimeout(t); }
-  }, [phase, confirming]);
+  }, [phase, confirming, hold]);
+
+  // the depleting bars are CSS animations, so the freeze has to reach them too
+  const paused = { animationPlayState: hold ? 'paused' : 'running' };
   const stage = { buzz: 0, warn: 1, message: 2 }[phase];
   const grace = phase === 'grace';
   const lightBg = variant === 'spotlight' && phase === 'warn';
@@ -414,7 +446,7 @@ function WarningOverlay({ ctx }) {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: '#fff', borderRadius: 999, padding: '9px 16px 8px', boxShadow: THEME.shadowCard }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{L('Looks safe — making sure…')}</span>
             <span style={{ display: 'block', width: 96, height: 3, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
-              <span className="jx-countdown" style={{ display: 'block', height: '100%', borderRadius: 999, background: THEME.success, animationDuration: `${SAFE_CONFIRM_MS}ms` }} />
+              <span className="jx-countdown" style={{ display: 'block', height: '100%', borderRadius: 999, background: THEME.success, animationDuration: `${SAFE_CONFIRM_MS}ms`, ...paused }} />
             </span>
           </div>
         </div>
@@ -435,7 +467,7 @@ function WarningOverlay({ ctx }) {
             </div>
             {/* depleting bar = the remaining grace before the gentle buzz */}
             <div style={{ marginTop: 11, height: 4, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
-              <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: THEME.warning, animationDuration: `${GRACE_MS}ms` }} />
+              <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: THEME.warning, animationDuration: `${GRACE_MS}ms`, ...paused }} />
             </div>
           </div>
         </div>
@@ -468,7 +500,7 @@ function WarningOverlay({ ctx }) {
               </div>
               <div style={{ width: 200 }}>
                 <div style={{ height: 4, borderRadius: 999, background: 'rgba(255,255,255,.28)', overflow: 'hidden' }}>
-                  <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: '#fff', animationDuration: `${BUZZ_HOLD_MS}ms` }} />
+                  <div className="jx-countdown" style={{ height: '100%', borderRadius: 999, background: '#fff', animationDuration: `${BUZZ_HOLD_MS}ms`, ...paused }} />
                 </div>
               </div>
             </div>
@@ -476,7 +508,7 @@ function WarningOverlay({ ctx }) {
 
           {/* ── STAGE 3: repeating character message — ignoring it for IGNORE_MS logs
               an "ignored" event and starts the next, firmer round ── */}
-          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} onRespond={respond} onDismiss={() => standDown('dismissed')} />}
+          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} hold={hold} onRespond={respond} onDismiss={() => standDown('dismissed')} />}
 
           {/* ── STAGE 2: the on-screen warning (chosen variant) ── */}
           {phase === 'warn' && (<React.Fragment>

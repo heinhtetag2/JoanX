@@ -1,7 +1,7 @@
 // JoanX — child app · FriendHouse
 
 import React from 'react';
-import { FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal } from '../core/data.jsx';
+import { FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal, themeOf } from '../core/data.jsx';
 import { Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -89,13 +89,20 @@ function FriendHouse({ ctx }) {
         {/* rooms */}
         <SectionHead title={L('Rooms')} />
         <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 10 }} className="no-sb">
-          {f.rooms.map((r, i) => (
-            <div key={i} style={{ flexShrink: 0, width: 132, borderRadius: 18, padding: '14px 12px', background: `linear-gradient(180deg, ${r.theme} 0%, #fff 100%)`, boxShadow: THEME.shadowCard, textAlign: 'center' }}>
-              <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={fc.species} stage={fc.stage} color={fc.color} size={54} /></div>
-              <div style={{ height: 6, borderRadius: 999, background: 'rgba(0,0,0,.05)', margin: '8px 0 8px' }} />
-              <div style={{ fontSize: 12.5, fontWeight: 700 }}>{L(r.name)}</div>
-            </div>
-          ))}
+          {f.rooms.map((r, i) => {
+            const t = themeOf(r);
+            return (
+              <div key={i} style={{ flexShrink: 0, width: 132, borderRadius: 18, overflow: 'hidden', boxShadow: THEME.shadowCard, textAlign: 'center' }}>
+                <div style={{ padding: '14px 12px 8px', background: t.wall(r.wallpaper) }}>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={fc.species} stage={fc.stage} color={fc.color} size={54} /></div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, fontWeight: 700, marginTop: 6 }}>
+                    <Icon name={t.icon} size={12} color={THEME.fg2} stroke={2.3} />{L(r.name)}
+                  </div>
+                </div>
+                <div style={{ height: 10, background: t.floor, borderTop: `2px solid ${t.accent}` }} />
+              </div>
+            );
+          })}
         </div>
 
         {/* guestbook — a stamp is picked, never typed (see GUEST_STAMPS) */}

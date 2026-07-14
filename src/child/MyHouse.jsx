@@ -1,13 +1,12 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { buyItem, CHARACTERS, HOUSE_BGS, MY_GUESTBOOK, PLAYER, ROOMS } from '../core/data.jsx';
+import { buyItem, CHARACTERS, decorForRoom, HOUSE_BGS, MY_GUESTBOOK, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
 import { Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
-import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
+import { ScreenHeader, PointsChip, screenBgActive, LockedRoomCard } from './shared.jsx';
 import { GuestbookNote } from './Guestbook.jsx';
-import { ROOM_STYLES } from './DecorateRoom.jsx';
 
 const PREVIEW_NOTES = 2;   // My Profile shows a taste; the Guestbook screen holds the rest
 
@@ -15,6 +14,7 @@ const PREVIEW_NOTES = 2;   // My Profile shows a taste; the Guestbook screen hol
 function MyHouse({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const rooms = ROOMS.filter(r => r.unlocked);
+  const locked = ROOMS.filter(r => !r.unlocked);
   const owned = CHARACTERS.filter(x => x.owned);
   const [bg, setBg] = React.useState(PLAYER.houseBg);
   const [pts, setPts] = React.useState(PLAYER.points);
@@ -87,12 +87,15 @@ function MyHouse({ ctx }) {
         <SectionHead title={L('My rooms')} />
         {rooms.map(room => {
           const placed = owned.filter(x => x.room === room.id);
-          const rs = ROOM_STYLES.find(s => s.id === (room.style || 'cozy')) || ROOM_STYLES[0];
+          const t = themeOf(room);
+          const items = decorForRoom(room.id).filter(d => room.placed[d.id]);
           return (
             <div key={room.id} style={{ borderRadius: 20, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 12 }}>
-             <div style={{ padding: '16px 14px 12px', background: rs.wall(room.theme) }}>
+             <div style={{ padding: '16px 14px 12px', background: t.wall(room.wallpaper) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 800 }}>{L(room.name)}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 800 }}>
+                  <Icon name={t.icon} size={15} color={THEME.fg2} stroke={2.3} />{L(room.name)}
+                </span>
                 <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: 'none', borderRadius: 999, padding: '6px 12px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: THEME.primary }}>
                   <Icon name="paintbrush" size={13} color={THEME.primary} stroke={2.3} />{L('Decorate')}
                 </button>
@@ -104,12 +107,26 @@ function MyHouse({ ctx }) {
                   <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 78 }}><div style={{ width: 42, height: 42, borderRadius: 14, border: `2px dashed ${THEME.border}` }} /></div>
                 ))}
               </div>
+              {/* the items placed in THIS room — its own set, kept per room */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12, minHeight: 20, marginTop: 6 }}>
+                {items.map(d => <Icon key={d.id} name={d.icon} size={17} color={THEME.fg2} stroke={2.1} />)}
+              </div>
              </div>
-             {/* floor band — reflects the saved room style */}
-             <div style={{ height: 16, background: rs.floor, borderTop: `2px solid ${rs.accent}` }} />
+             {/* floor band — part of the room theme */}
+             <div style={{ height: 16, background: t.floor, borderTop: `2px solid ${t.accent}` }} />
             </div>
           );
         })}
+
+        {/* the rooms still to come (A-6) — shown, not hidden: a room the child is 4 hours
+            of safe walking away from is a reason to walk, and hiding it wastes that */}
+        {locked.length > 0 && (
+          <>
+            <SectionHead title={L('Rooms to unlock')} />
+            <div style={{ fontSize: 12, color: THEME.fg2, margin: '-6px 4px 10px' }}>{L('Rooms are earned by walking safely — never bought.')}</div>
+            {locked.map(room => <div key={room.id} style={{ marginBottom: 12 }}><LockedRoomCard room={room} /></div>)}
+          </>
+        )}
 
         {/* Guestbook — a preview only. The full list is its own screen now (reached from the
             "me" card on Friends); rendering the rows from the shared GuestbookNote keeps the
