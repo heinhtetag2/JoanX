@@ -129,6 +129,41 @@ function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none',
     style={{ display: 'inline-flex', flexShrink: 0, ...style }} />;
 }
 
+// Pairing QR — a deterministic dot matrix with the three finder squares, so it reads as a
+// real QR without a QR library. It lives here, not in a screen, because there is now more
+// than one thing to pair: the child linking to a family, and a family inviting its second
+// parent. Both must show the SAME object — a lucide qr-code glyph next to this one reads as
+// two different products.
+function PairQR({ size = 190, color = THEME.fg1 }) {
+  const N = 25;
+  const finder = (r, c, br, bc) => {
+    const rr = r - br, cc = c - bc;
+    if (rr < 0 || rr > 6 || cc < 0 || cc > 6) return null;
+    const ring = rr === 0 || rr === 6 || cc === 0 || cc === 6;
+    const core = rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4;
+    return ring || core;
+  };
+  const cells = [];
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      let v = finder(r, c, 0, 0);
+      if (v === null) v = finder(r, c, 0, N - 7);
+      if (v === null) v = finder(r, c, N - 7, 0);
+      if (v === null) {
+        const nearFinder = (r <= 7 && c <= 7) || (r <= 7 && c >= N - 8) || (r >= N - 8 && c <= 7);
+        if (nearFinder) v = false;
+        else { const h = (r * 73856093) ^ (c * 19349663); v = ((h >>> 3) & 3) === 0 || ((h >>> 7) & 7) === 1; }
+      }
+      if (v) cells.push(<rect key={r + '-' + c} x={c} y={r} width="1.04" height="1.04" />);
+    }
+  }
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${N} ${N}`} shapeRendering="crispEdges" style={{ display: 'block' }}>
+      <g fill={color}>{cells}</g>
+    </svg>
+  );
+}
+
 function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth, style, icon, disabled }) {
   const variants = {
     primary:   { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },          // ocean brand CTA
@@ -259,4 +294,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, Button, Icon, Input, RARITY, SectionHead, StatusBar, THEME, Toggle, isNeon, mixHue, pastelHue, screenBgFor };
+export { Badge, Bar, Button, Icon, Input, PairQR, RARITY, SectionHead, StatusBar, THEME, Toggle, isNeon, mixHue, pastelHue, screenBgFor };

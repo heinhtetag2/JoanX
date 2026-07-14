@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, PERMISSIONS, PLAYER } from '../core/data.jsx';
-import { Badge, Button, Icon, THEME } from '../core/primitives.jsx';
+import { Badge, Button, Icon, PairQR, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
@@ -22,37 +22,8 @@ const P_BRAND = {
 
 const pBrandBtn = { background: P_BRAND.primary, boxShadow: 'none' };
 
-// Decorative pairing QR — a deterministic dot matrix with the three finder
-// squares, so it reads as a real QR without needing a QR library offline.
-function PairQR({ size = 190 }) {
-  const N = 25;
-  const finder = (r, c, br, bc) => {
-    const rr = r - br, cc = c - bc;
-    if (rr < 0 || rr > 6 || cc < 0 || cc > 6) return null;
-    const ring = rr === 0 || rr === 6 || cc === 0 || cc === 6;
-    const core = rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4;
-    return ring || core;
-  };
-  const cells = [];
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
-      let v = finder(r, c, 0, 0);
-      if (v === null) v = finder(r, c, 0, N - 7);
-      if (v === null) v = finder(r, c, N - 7, 0);
-      if (v === null) {
-        const nearFinder = (r <= 7 && c <= 7) || (r <= 7 && c >= N - 8) || (r >= N - 8 && c <= 7);
-        if (nearFinder) v = false;
-        else { const h = (r * 73856093) ^ (c * 19349663); v = ((h >>> 3) & 3) === 0 || ((h >>> 7) & 7) === 1; }
-      }
-      if (v) cells.push(<rect key={r + '-' + c} x={c} y={r} width="1.04" height="1.04" />);
-    }
-  }
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${N} ${N}`} shapeRendering="crispEdges" style={{ display: 'block' }}>
-      <g fill={THEME.fg1}>{cells}</g>
-    </svg>
-  );
-}
+// PairQR now lives in the design system (core/primitives) — the parent app's guardian invite
+// shows the same object, and two hand-rolled QRs would drift.
 
 // ── Onboarding / permissions ─────────────────────────────────────────
 // Smart mode is the only mode now. The flow is:

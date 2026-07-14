@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { FAMILY_INVITE, FAMILY_LOG, FAMILY_ROLES, guardianCan, guardianMe, guardianOwner, guardians, removeGuardian } from '../core/data.jsx';
-import { Button, Icon, THEME, screenBgFor } from '../core/primitives.jsx';
+import { Button, Icon, PairQR, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
@@ -127,13 +127,16 @@ function ParentInvite({ ctx }) {
         </p>
 
         {scanMode ? (
-          /* QR — the in-person path. Same visual language as the child pairing step. */
-          <div style={{ ...card, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 176, height: 176, borderRadius: 16, background: THEME.fg1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="qr-code" size={120} color="#fff" stroke={1.6} />
+          /* QR — the in-person path. The SAME PairQR the child's connect screen shows, in the
+             same white card, so a parent who has already seen one pairing screen recognises
+             this one. (It used to be a lucide qr-code glyph on a black tile — a different
+             object entirely, and it looked like a different app.) */
+          <React.Fragment>
+            <div style={{ ...card, alignSelf: 'center', width: 250, margin: '0 auto 0', padding: 22, display: 'flex', justifyContent: 'center' }}>
+              <PairQR size={206} />
             </div>
-            <div style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 700 }}>{L('Joins automatically once scanned.')}</div>
-          </div>
+            <div style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 700, marginTop: 14 }}>{L('Joins automatically once scanned.')}</div>
+          </React.Fragment>
         ) : (
           <React.Fragment>
             {/* the code, in the same grouped band the child pairing step uses */}
