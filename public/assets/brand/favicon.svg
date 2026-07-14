@@ -1,7 +1,7 @@
 <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
   <!-- Tab mark: a J lettermark on the brand green. Drawn as a thick stroked hook rather
        than set type, so it stays legible when the browser scales it down to 16px. -->
-  <rect width="96" height="96" rx="22" fill="#4B814F"/>
+  <circle cx="48" cy="48" r="48" fill="#4B814F"/>
   <path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18"
         fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round"/>
 </svg>

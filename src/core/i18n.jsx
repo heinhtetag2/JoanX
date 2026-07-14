@@ -614,6 +614,19 @@ const KO = {
   'Notes your friends left when they visited.': '친구들이 방문하며 남긴 메모예요.', 'Like': '좋아요',
   'See all': '전체 보기', 'No notes yet': '아직 메모가 없어요',
 
+  // ── dex · species labels, blurbs, and lock hints (SPECIES_INFO / CHARACTERS.locked) ──
+  'Fox': '여우', 'Cat': '고양이', 'Bird': '새', 'Owl': '부엉이', 'Croc': '악어',
+  'FAQ': '자주 묻는 질문',
+  'Clever and brave — always the first to look up and check the road.': '영리하고 용감해요 — 언제나 가장 먼저 고개를 들고 길을 살펴요.',
+  'Quick on its feet. Loves a fast, safe dash across a quiet street.': '발이 빨라요. 한적한 길을 안전하게 쏙 건너는 걸 좋아해요.',
+  'Eyes in the sky — spots busy crossings from far away.': '하늘의 눈 — 복잡한 횡단보도를 멀리서도 알아봐요.',
+  'A calm, watchful night-walker who never rushes.': '차분하고 조심스러운 밤길 산책가, 절대 서두르지 않아요.',
+  'Tough and steady. Nothing rattles this careful walker.': '단단하고 침착해요. 어떤 일에도 흔들리지 않는 신중한 보행자예요.',
+  'Hatch a Common Egg': '일반 알에서 부화시키세요',
+  'Hatch a Rare Egg': '레어 알에서 부화시키세요',
+  'Walk safely 30 days in a row': '30일 연속 안전하게 걷기',
+  'Win a special event mission': '스페셜 이벤트 미션 달성',
+
   // ── parent · How JoanX works (scroll-story) ──
   'How does JoanX work?': 'JoanX는 어떻게 작동하나요?',
   'Risky moments drop by': '위험한 순간이 줄어듭니다',
