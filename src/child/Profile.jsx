@@ -51,7 +51,7 @@ function Profile({ ctx }) {
             <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Language')}</div>
             <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 999, padding: 3 }}>
               {[['en', 'EN'], ['ko', '한국어']].map(([v, l]) => (
-                <button key={v} onClick={() => ctx.setLang(v)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, padding: '6px 14px', borderRadius: 999, background: ctx.lang === v ? '#fff' : 'transparent', color: ctx.lang === v ? THEME.brand : THEME.fg2, boxShadow: ctx.lang === v ? THEME.shadowCard : 'none' }}>{l}</button>
+                <button key={v} onClick={() => ctx.setLang(v)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, padding: '4px 13px', borderRadius: 999, background: ctx.lang === v ? '#fff' : 'transparent', color: ctx.lang === v ? THEME.brand : THEME.fg2, boxShadow: ctx.lang === v ? THEME.shadowCard : 'none' }}>{l}</button>
               ))}
             </div>
           </div>
@@ -100,6 +100,8 @@ function Profile({ ctx }) {
         {/* account */}
         <div style={sectionLabel}>{L('Account')}</div>
         <div style={groupCard}>
+          <Row icon="circle-play" label={L('App intro')} onClick={() => ctx.openAppIntro && ctx.openAppIntro()}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
+          <Sep />
           <Row icon="circle-help" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
           <Sep />
           <Row icon="info" label={L('About JoanX')} onClick={() => ctx.nav('about')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>

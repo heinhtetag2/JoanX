@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { APP_CATEGORIES, CHILDREN, MAX_CHILDREN } from '../core/data.jsx';
-import { Button, Icon, Input, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Button, DateField, Icon, Input, SelectField, THEME, Toggle, formatPhone, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip, shade } from '../core/characters.jsx';
-import { BRAND, brandBtn, ChoiceGroup } from './shared.jsx';
+import { BRAND, brandBtn } from './shared.jsx';
 
 // Multi-step add-child wizard, aligned with the child app's onboarding:
 // 1 Details → 2 Pair (code) → 3 Connected celebration → 4 Configure protection.
@@ -13,7 +13,8 @@ function ParentAddChild({ ctx }) {
   // Onboarding shows intro (0); "+" opens details (1); "Connect device" opens pairing (2);
   // the Children tab's global "Connect a device" entry reuses the pair screen (2),
   // then asks whose device it was on the child picker (5) before celebrating.
-  const [wiz, setWiz] = React.useState(ctx.params?.connect ? 2 : ctx.params?.pair ? 2 : ctx.params?.direct ? 1 : 0);   // 0 intro · 1 details · 2 pair · 3 connected · 5 pick child
+  // First-run and the "+" both open straight on the details form — the old intro page is gone.
+  const [wiz, setWiz] = React.useState(ctx.params?.connect ? 2 : ctx.params?.pair ? 2 : 1);   // 1 details · 2 pair · 3 connected · 5 pick child
   const ko = typeof getLang === 'function' && getLang() === 'ko';
   const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a >= 0 ? a : null; };
   // multiple children can be added; each is a collapsible card
@@ -44,6 +45,7 @@ function ParentAddChild({ ctx }) {
   const direct = !!ctx.params?.direct;   // opened via the "+" button (no intro)
   const pairMode = !!ctx.params?.pair;   // opened via a child's "Connect device" action
   const connectMode = !!ctx.params?.connect;   // opened via the Children tab's global connect entry
+  const firstRun = !direct && !pairMode && !connectMode;   // reached from onboarding — the skippable entry
   const [pickedId, setPickedId] = React.useState(null);   // child chosen on the picker step
   const [swapId, setSwapId] = React.useState(null);   // connected child tapped on the picker → confirm device change
   const swapChild = swapId ? CHILDREN.find(x => x.id === swapId) : null;
@@ -53,7 +55,7 @@ function ParentAddChild({ ctx }) {
   const back = () => {
     if (wiz === 5) return setWiz(2);
     if (wiz === 2) return (connectMode || pairMode) ? ctx.nav('p_children') : setWiz(1);
-    if (wiz === 1) return connectMode ? setWiz(5) : direct ? ctx.nav('p_children') : setWiz(0);
+    if (wiz === 1) return connectMode ? setWiz(5) : ctx.nav('p_children');
     return setWiz(wiz - 1);
   };
   const skip = () => ctx.nav('p_children');   // from the intro: add a child later from the Children tab
@@ -102,25 +104,6 @@ function ParentAddChild({ ctx }) {
             <Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} />
           </button>
         </div>
-      )}
-
-      {/* 0 · intro — invite the parent to add/connect a child (or skip) */}
-      {wiz === 0 && (
-        <>
-          {/* aligned background image — same as the onboarding intro */}
-          <img src="/assets/onboarding/add-child.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 240, background: 'linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,0) 100%)', zIndex: 0 }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 260, background: 'linear-gradient(0deg, #fff 16%, rgba(255,255,255,0) 100%)', zIndex: 0 }} />
-
-          <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 32px' }}>
-            <h1 className="game-font" style={{ fontSize: 27, fontWeight: 500, margin: '0 0 10px', lineHeight: 1.22 }}>{L('Add your child')}</h1>
-            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.55, margin: 0, maxWidth: 300 }}>{L('Connect your child’s phone to start keeping them safe — it only takes a minute.')}</p>
-          </div>
-          <div style={{ position: 'relative', zIndex: 1, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={() => setWiz(1)}>{L('Add a child')}</Button>
-            <button onClick={skip} style={{ width: '100%', marginTop: 12, padding: 8, background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: THEME.fg2, cursor: 'pointer' }}>{L('Skip for now')}</button>
-          </div>
-        </>
       )}
 
       {/* 5 · pick child — connect mode, after the scan/code: whose device was that? */}
@@ -195,7 +178,14 @@ function ParentAddChild({ ctx }) {
       {wiz === 1 && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '22px 24px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Add a child')}</h1>
+            {/* skip rides the title's top-right, matching the child onboarding's 건너뛰기 —
+                first-run only (adding via "+" or the connect flow isn't skippable) */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <h1 className="game-font" style={{ flex: 1, fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Add a child')}</h1>
+              {firstRun && (
+                <button onClick={skip} style={{ flexShrink: 0, marginTop: 4, padding: '4px 2px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: BRAND.primary, cursor: 'pointer' }}>{L('Skip')}</button>
+              )}
+            </div>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 20px' }}>{L('Tell us a little about your child to set up their device. You can add more than one.')}</p>
 
             {/* collapsible card per child — keeps many kids compact */}
@@ -217,16 +207,19 @@ function ParentAddChild({ ctx }) {
                       <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 14, borderTop: `1px solid ${THEME.border}` }}>
                         <Input label={L("Child's name")} value={kid.name} onChange={e => updateKid(i, { name: e.target.value })} placeholder={L('e.g. Mina')} icon="user" accent={BRAND.ink} />
                         <div>
-                          <Input label={L("Child's date of birth")} value={kid.dob} onChange={e => updateKid(i, { dob: e.target.value })} icon="cake" type="date" accent={BRAND.ink} />
+                          <DateField label={L("Child's date of birth")} value={kid.dob ? new Date(kid.dob + 'T00:00') : null}
+                            onChange={d => updateKid(i, { dob: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` })} accent={BRAND.ink} />
                           {kid.dob && kAge != null && (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '4px 11px', borderRadius: 999, background: THEME.surface2, color: THEME.fg2, fontSize: 12.5, fontWeight: 800 }}>
                               <Icon name="cake" size={13} color={THEME.fg3} stroke={2.3} />{ko ? `만 ${kAge}세` : `${kAge} ${kAge === 1 ? 'year' : 'years'} old`}
                             </div>
                           )}
                         </div>
-                        <ChoiceGroup label={L('Relationship to you')} value={kid.relation} setter={v => updateKid(i, { relation: v })} opts={[['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']]} />
-                        <ChoiceGroup label={L('Position among siblings')} value={kid.sibling} setter={v => updateKid(i, { sibling: v })} opts={[['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']]} />
-                        <Input label={L("Child's phone number")} value={kid.phone} onChange={e => updateKid(i, { phone: e.target.value.replace(/[^0-9-]/g, '') })} placeholder="010-1234-5678" icon="phone" type="tel" accent={BRAND.ink} />
+                        <SelectField label={L('Relationship to you')} title={L('Relationship to you')} value={kid.relation} onChange={v => updateKid(i, { relation: v })} accent={BRAND.ink}
+                          options={[['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']].map(([v, l]) => ({ value: v, label: L(l) }))} />
+                        <SelectField label={L('Position among siblings')} title={L('Position among siblings')} value={kid.sibling} onChange={v => updateKid(i, { sibling: v })} accent={BRAND.ink}
+                          options={[['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']].map(([v, l]) => ({ value: v, label: L(l) }))} />
+                        <Input label={L("Child's phone number")} value={kid.phone} onChange={e => updateKid(i, { phone: formatPhone(e.target.value) })} placeholder="010-1234-5678" type="tel" accent={BRAND.ink} />
                       </div>
                     )}
                   </div>

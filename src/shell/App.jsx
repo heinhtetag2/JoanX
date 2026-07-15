@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -43,6 +43,7 @@ function App() {
   const [hold, setHold] = React.useState(false);
   const [run, setRun] = React.useState(0);   // keys the overlay: bumping it replays from the grace window
   const [story, setStory] = React.useState(false);   // Tweaks → the "How JoanX works" scroll-story, over any screen
+  const [appIntro, setAppIntro] = React.useState(false);   // replayable app introduction, over any child screen
   // prototype "state" toggles (Tweaks): drive the edge states screens usually skip
   //   limited  · a permission is off → running-app limited-protection state (F-26)
   //   offline  · device disconnected → protection paused
@@ -146,6 +147,7 @@ function App() {
     tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
+    openAppIntro: () => setAppIntro(true),
     setBuddy, lang, setLang: changeLang,
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
     finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child intro
@@ -225,6 +227,7 @@ function App() {
           {role === 'parent' && parentOnboarded && !['p_addchild', 'p_connect'].includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
+          {role === 'child' && appIntro && <AppIntro onClose={() => setAppIntro(false)} />}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>
       </div>
@@ -271,6 +274,7 @@ function App() {
 
               <div className="tw-label">Flow</div>
               <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6 }} onClick={() => { setOnboarded(true); setScreen('home'); setStack([]); setAppIntro(true); }}>▶ App intro</button>
 
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two

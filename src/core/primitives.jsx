@@ -1,5 +1,6 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
+import { getLang } from './i18n.jsx';
 
 // JoanX — shared primitives. Built on the TripMe design system tokens,
 // extended with a kid-facing "game" layer (XP gold, rarity, mascot palettes).
@@ -228,21 +229,179 @@ function Card({ children, style, onClick }) {
   );
 }
 
-function Input({ label, value, onChange, placeholder, type = 'text', icon, error, trailing, accent = THEME.primary }) {
-  const [focused, setFocused] = React.useState(false);
+// Korean mobile formatter — chunks digits as they're typed: 010-1234-5678 (3-4-4).
+// e.g. "12134" → "121-34". Feed an <input onChange> value straight through it.
+function formatPhone(v) {
+  const d = (v || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
+
+// ── Field family ─────────────────────────────────────────────────────
+// KakaoPay-style bordered field with a FLOATING label: the label rests in the middle
+// like a placeholder, then rises to a small caption at the top once the field is focused
+// or filled. Flat (border only — no shadow). Shared by Input, SelectField and DateField
+// so a typed field, a picker and a date all read — and animate — as one family.
+function FieldShell({ label, floated, focused, error, accent = THEME.primary, onClick, trailing, children }) {
   const borderColor = error ? THEME.danger : focused ? accent : THEME.border;
-  const iconColor = error ? THEME.danger : focused ? accent : THEME.fg3;
+  const floatColor = error ? THEME.danger : focused ? accent : THEME.fg3;
+  const up = floated || !label;
+  const box = { position: 'relative', width: '100%', height: 60, background: '#fff', border: `1.5px solid ${borderColor}`, borderRadius: 16, transition: 'border-color .15s', padding: 0 };
+  const inner = (
+    <>
+      {label && (
+        <span aria-hidden="true" style={{
+          position: 'absolute', left: 16, pointerEvents: 'none', zIndex: 1,
+          transition: 'top .16s ease, font-size .16s ease, color .16s ease, transform .16s ease',
+          ...(up
+            ? { top: 11, fontSize: 11.5, fontWeight: 700, color: floatColor, transform: 'none' }
+            : { top: '50%', fontSize: 16, fontWeight: 600, color: THEME.fg3, transform: 'translateY(-50%)' }),
+        }}>{label}</span>
+      )}
+      <div style={{ position: 'absolute', left: 16, right: trailing ? 42 : 16, top: 0, bottom: 0 }}>{children}</div>
+      {trailing && <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>{trailing}</div>}
+    </>
+  );
+  return onClick
+    ? <button type="button" onClick={onClick} style={{ ...box, textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', display: 'block' }}>{inner}</button>
+    : <div style={box}>{inner}</div>;
+}
+
+function Input({ label, value, onChange, placeholder, type = 'text', error, trailing, accent = THEME.primary }) {
+  const [focused, setFocused] = React.useState(false);
+  const up = focused || (value != null && value !== '');
   return (
     <div style={{ width: '100%' }}>
-      {label && <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg1, marginBottom: 6 }}>{label}</div>}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1.5px solid ${borderColor}`, borderRadius: 16, padding: '13px 14px' }}>
-        {icon && <Icon name={icon} size={18} color={iconColor} stroke={2} />}
-        <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+      <FieldShell label={label} floated={up} focused={focused} error={error} accent={accent} trailing={trailing}>
+        <input type={type} value={value} onChange={onChange} placeholder={focused ? placeholder : ''}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={{ flex: 1, minWidth: 0, width: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: THEME.fg1, fontFamily: 'inherit', padding: 0 }} />
-        {trailing}
+          style={{ width: '100%', height: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 600, color: THEME.fg1, fontFamily: 'inherit', padding: 0, paddingTop: up && label ? 15 : 0, transition: 'padding-top .16s ease' }} />
+      </FieldShell>
+      {error && <div style={{ fontSize: 12, color: THEME.danger, marginTop: 5, marginLeft: 4 }}>{error}</div>}
+    </div>
+  );
+}
+
+// Bottom sheet — the same slide-up + rounded-top surface used across the app, packaged
+// so pickers (select, calendar) all present the same way: dim scrim, drag handle, title, X.
+function BottomSheet({ title, onClose, children }) {
+  return (
+    <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(20,18,16,0.42)' }}>
+      <div className="jx-sheet-up" onClick={e => e.stopPropagation()} style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 12px' }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
+          <div style={{ flex: 1, fontSize: 17, fontWeight: 800, color: THEME.fg1, lineHeight: 1.3 }}>{title}</div>
+          <button type="button" onClick={onClose} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <Icon name="x" size={17} color={THEME.fg2} stroke={2.4} />
+          </button>
+        </div>
+        <div className="no-sb" style={{ overflowY: 'auto' }}>{children}</div>
       </div>
-      {error && <div style={{ fontSize: 12, color: THEME.danger, marginTop: 4 }}>{error}</div>}
+    </div>
+  );
+}
+
+// Select — a field that opens a bottom sheet of options. Options: [{value,label}] or plain strings.
+function SelectField({ label, value, placeholder, options = [], onChange, accent = THEME.primary, title }) {
+  const [open, setOpen] = React.useState(false);
+  const norm = options.map(o => (typeof o === 'object' ? o : { value: o, label: o }));
+  const selected = norm.find(o => o.value === value);
+  const up = open || !!selected;
+  return (
+    <div style={{ width: '100%' }}>
+      <FieldShell label={label} floated={up} focused={open} accent={accent} onClick={() => setOpen(true)}
+        trailing={<Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.3} />}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', paddingTop: up && label ? 15 : 0, transition: 'padding-top .16s ease' }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 600, color: selected ? THEME.fg1 : THEME.fg3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected ? selected.label : (label ? '' : placeholder)}</span>
+        </div>
+      </FieldShell>
+      {open && (
+        <BottomSheet title={title || label} onClose={() => setOpen(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {norm.map((o, i) => {
+              const on = o.value === value;
+              return (
+                <button type="button" key={o.value} onClick={() => { onChange(o.value); setOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '15px 4px', background: 'none', border: 'none', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <span style={{ flex: 1, fontSize: 15.5, fontWeight: on ? 800 : 600, color: on ? accent : THEME.fg1 }}>{o.label}</span>
+                  {on && <Icon name="check" size={19} color={accent} stroke={2.6} />}
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
+      )}
+    </div>
+  );
+}
+
+const _MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const _sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+// Calendar — a single-month grid; brand-accent fill on the picked day, faint ring on today.
+function Calendar({ value, onPick, accent = THEME.primary }) {
+  const ko = getLang() === 'ko';
+  const today = new Date();
+  const base = value || today;
+  const [view, setView] = React.useState({ y: base.getFullYear(), m: base.getMonth() });
+  const step = (d) => setView(v => { const t = v.y * 12 + v.m + d; return { y: Math.floor(t / 12), m: ((t % 12) + 12) % 12 }; });
+  const startDow = new Date(view.y, view.m, 1).getDay();
+  const daysIn = new Date(view.y, view.m + 1, 0).getDate();
+  const weekdays = ko ? ['일', '월', '화', '수', '목', '금', '토'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const monthLabel = ko ? `${view.y}년 ${String(view.m + 1).padStart(2, '0')}월` : `${_MONTHS_EN[view.m]} ${view.y}`;
+  const cells = [...Array(startDow).fill(null), ...Array.from({ length: daysIn }, (_, i) => i + 1)];
+  const nav = (name, onClick) => (
+    <button type="button" onClick={onClick} style={{ width: 30, height: 30, borderRadius: 10, border: 'none', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <Icon name={name} size={18} color={THEME.fg2} stroke={2.3} />
+    </button>
+  );
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px 14px' }}>
+        <div style={{ display: 'flex', gap: 2 }}>{nav('chevrons-left', () => step(-12))}{nav('chevron-left', () => step(-1))}</div>
+        <div className="game-font" style={{ fontSize: 15.5, fontWeight: 500, color: THEME.fg1 }}>{monthLabel}</div>
+        <div style={{ display: 'flex', gap: 2 }}>{nav('chevron-right', () => step(1))}{nav('chevrons-right', () => step(12))}</div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 4 }}>
+        {weekdays.map((w, i) => <div key={i} style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: THEME.fg3, padding: '2px 0' }}>{w}</div>)}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', rowGap: 2 }}>
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} />;
+          const day = new Date(view.y, view.m, d);
+          const sel = _sameDay(day, value), isToday = _sameDay(day, today);
+          return (
+            <button type="button" key={i} onClick={() => onPick(day)}
+              style={{ aspectRatio: '1', maxHeight: 42, border: 'none', borderRadius: 999, background: sel ? accent : 'transparent', color: sel ? '#fff' : THEME.fg1, fontFamily: 'inherit', fontSize: 14.5, fontWeight: sel ? 800 : 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: !sel && isToday ? `inset 0 0 0 1.5px ${accent}` : 'none' }}>{d}</button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Date field — a field that opens the calendar in a bottom sheet. `value` is a Date (or null).
+function DateField({ label, value, placeholder, onChange, accent = THEME.primary, title }) {
+  const [open, setOpen] = React.useState(false);
+  const ko = getLang() === 'ko';
+  const display = value ? (ko
+    ? `${value.getFullYear()}년 ${String(value.getMonth() + 1).padStart(2, '0')}월 ${String(value.getDate()).padStart(2, '0')}일`
+    : `${_MONTHS_EN[value.getMonth()].slice(0, 3)} ${value.getDate()}, ${value.getFullYear()}`) : null;
+  const up = open || !!display;
+  return (
+    <div style={{ width: '100%' }}>
+      <FieldShell label={label} floated={up} focused={open} accent={accent} onClick={() => setOpen(true)}
+        trailing={<Icon name="chevron-down" size={18} color={THEME.fg3} stroke={2.3} />}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', paddingTop: up && label ? 15 : 0, transition: 'padding-top .16s ease' }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 600, color: display ? THEME.fg1 : THEME.fg3 }}>{display || (label ? '' : placeholder)}</span>
+        </div>
+      </FieldShell>
+      {open && (
+        <BottomSheet title={title || label} onClose={() => setOpen(false)}>
+          <Calendar value={value} accent={accent} onPick={(d) => { onChange(d); setOpen(false); }} />
+        </BottomSheet>
+      )}
     </div>
   );
 }
@@ -294,4 +453,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, Button, Icon, Input, PairQR, RARITY, SectionHead, StatusBar, THEME, Toggle, isNeon, mixHue, pastelHue, screenBgFor };
+export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, PairQR, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

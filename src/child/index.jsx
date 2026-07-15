@@ -8,6 +8,7 @@ export { Profile } from './Profile.jsx';
 export { PROFILE_LAYOUTS, ProfileVariant } from './ProfileVariants.jsx';
 export { HelpSupport } from './HelpSupport.jsx';
 export { AboutJoanX } from './AboutJoanX.jsx';
+export { AppIntro } from './AppIntro.jsx';
 export { Collection } from './Collection.jsx';
 export { CollectionVariant, COLLECTION_LAYOUTS } from './CollectionVariants.jsx';
 export { CharacterDetail } from './CharacterDetail.jsx';

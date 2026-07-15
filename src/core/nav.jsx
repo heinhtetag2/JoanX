@@ -28,7 +28,7 @@ function TabBar({ tabs, active, onTab, accent }) {
   const renderTab = t => {
     const on = active === t.id || (t.alt && t.alt.includes(active));
     return (
-      <button key={t.id} disabled={t.disabled} onClick={t.disabled ? undefined : () => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: t.disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: t.disabled ? .4 : 1, pointerEvents: t.disabled ? 'none' : undefined }}>
+      <button key={t.id} data-tour={'tab-' + t.id} disabled={t.disabled} onClick={t.disabled ? undefined : () => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: t.disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: t.disabled ? .4 : 1, pointerEvents: t.disabled ? 'none' : undefined }}>
         <Icon name={t.icon} size={23} color={on ? ac : THEME.fg3} stroke={on ? 2.5 : 1.9} />
         <span style={{ fontSize: 10.5, fontWeight: 700, color: on ? ac : THEME.fg3 }}>{L(t.label)}</span>
       </button>
@@ -41,7 +41,7 @@ function TabBar({ tabs, active, onTab, accent }) {
   // overflow — the hairline arc has to stay outside it or it would be cropped away.
   const grad = `linear-gradient(90deg, ${shade(ac, -26)} 0%, ${ac} 25%, ${shade(ac, 34)} 50%, ${ac} 75%, ${shade(ac, -26)} 100%)`;
   const renderCenter = t => (
-    <button key={t.id} onClick={() => onTab && onTab(t.root)} style={{ width: 76, flexShrink: 0, display: 'flex', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
+    <button key={t.id} data-tour={'tab-' + t.id} onClick={() => onTab && onTab(t.root)} style={{ width: 76, flexShrink: 0, display: 'flex', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}>
       <div style={{ marginTop: -26, width: 62, height: 62, borderRadius: 999, background: ac, border: '6px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <span className="jx-cta" style={{ position: 'absolute', inset: 0, borderRadius: 999, backgroundImage: grad, '--jx-cta-glow': `${ac}00`, '--jx-cta-glow-soft': `${ac}00` }} />
         <Icon name={t.icon} size={30} color="#fff" stroke={2.2} style={{ position: 'relative', zIndex: 1 }} />
