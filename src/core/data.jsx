@@ -138,11 +138,18 @@ const PLAYER = {
   itemGrants: {},                     // A-5.1 — item rules paid out so far
   // public profile / house (F-32 / A-6·A-7)
   friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
-  // Child device preferences — the game's own sound, vibration and notification feedback.
+  // Child device preferences — the game's own feedback plus accessibility.
   // Held on PLAYER (server-ownable like the rest of it) so a toggle in Profile actually
   // sticks across navigation instead of resetting. These are the child's own device feedback
   // only; warning sensitivity/frequency stay parent-controlled (F-22 · ParentSettings).
-  prefs: { sound: true, haptics: true, push: true },
+  //
+  // `sound` covers game sound effects only. There is deliberately NO child-facing haptics or
+  // push toggle: the safety intervention IS a buzz (F-08), so a switch that could silence it —
+  // without the child or parent knowing protection was muted — would break the core promise.
+  // The safety buzz is always on. Accessibility covers the cognitive/attention dimension:
+  // `calmMode` strips extra decoration for a child who is easily overwhelmed, `simpleMode`
+  // shows fewer things at once.
+  prefs: { sound: true, calmMode: false, simpleMode: false },
   // A-13 — which CHILDREN row this device IS. The parent app and the child app were two
   // separate models of the same kid with nothing joining them; this is the join.
   childId: 'k1',

@@ -428,7 +428,9 @@ function CharVariant({ ctx, variant }) {
       </div>
     </div>
   );
-  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, StagePanel, SetBtn].filter(Boolean);
+  // StagePanel (the growth-stage track) is intentionally left out of the page — the buddy's
+  // stage still drives its look/stats, we just don't surface the panel on the detail screen.
+  const body = [variant === 'showcase' ? PanelShowcase : variant === 'focus' ? PanelFocus : variant === 'wave' ? PanelWave : Panel, SetBtn].filter(Boolean);
 
   // ── mascot (centered) ──
   // A-3.3 — form, idle animation and face all come from the stage table, so a stage-up

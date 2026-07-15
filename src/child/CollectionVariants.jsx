@@ -517,7 +517,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="gem" size={15} color={THEME.gold} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{all.length}</span></div>} />
+      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="paw-print" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{all.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         {/* entry points — kept across every variant: the dex (every character) and
             My Room (the house those characters are placed in) */}

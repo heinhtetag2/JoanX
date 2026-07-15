@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AddFriends, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -55,7 +55,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -159,7 +159,7 @@ function App() {
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
-      profile: <Profile ctx={ctx} />, help: <HelpSupport ctx={ctx} />, about: <AboutJoanX ctx={ctx} />,
+      profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, about: <AboutJoanX ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
@@ -383,6 +383,14 @@ function App() {
                 {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold'], ['grid', 'Grid'], ['gradient', 'Gradient'], ['minimal', 'Minimal'], ['rounded', 'Rounded'], ['qr', 'QR'], ['tabs', 'Tabs'], ['spotlight', 'Spotlight'], ['outline', 'Outline'], ['split', 'Split'], ['panel', 'Panel'], ['bubbles', 'Bubbles'], ['carousel', 'Carousel'], ['ticket', 'Ticket'], ['dark', 'Dark'], ['chips', 'Chips'], ['numbered', 'Numbered'], ['gridMini', 'Grid mini'], ['cardStack', 'Card stack'], ['centered', 'Centered'], ['iconHeads', 'Icon heads']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.addFriendsLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, addFriendsLayout: v })); setStack([{ screen: 'friends', params: {} }]); setScreen('addfriend'); }}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Profile layout</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {PROFILE_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.profileLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, profileLayout: id })); setStack([]); setScreen('profile'); }}>{label}</button>
                 ))}
               </div>
 

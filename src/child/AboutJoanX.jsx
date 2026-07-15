@@ -25,11 +25,10 @@ function AboutJoanX({ ctx }) {
 
         {/* identity block */}
         <div style={{ background: '#fff', borderRadius: 20, padding: '22px 16px 18px', boxShadow: THEME.shadowCard, marginBottom: 18, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ width: 66, height: 66, borderRadius: 22, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="shield-check" size={32} color={THEME.primary} stroke={2.1} />
-          </div>
-          <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1, marginTop: 10 }}>JoanX</div>
-          <div className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg3, marginTop: 3 }}>{L('Version')} {APP_VERSION}</div>
+          {/* the onboarding wordmark — the real JoanX logo, not the bare "J" favicon; it already
+              carries the name, so no separate text wordmark below it */}
+          <img src="/assets/brand/logo-wordmark-dark.svg" alt="JoanX" style={{ width: 150, height: 'auto', display: 'block' }} />
+          <div className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg3, marginTop: 12 }}>{L('Version')} {APP_VERSION}</div>
           <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.5, marginTop: 10, textAlign: 'center', maxWidth: 250 }}>{L('Made for safer walks — points, buddies and streaks for keeping your head up near the road.')}</div>
         </div>
 

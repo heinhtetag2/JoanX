@@ -26,10 +26,13 @@ function HelpSupport({ ctx }) {
       <ScreenHeader title={L('Help & support')} onBack={() => ctx.back()} />
       <div style={{ padding: '0 16px' }}>
 
-        {/* hero — the buddy asks the question, so the screen feels answered-by-a-friend */}
-        <div style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={64} /></div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        {/* hero — no card: the buddy "speaks" the question through a chat bubble, so the
+            screen feels answered-by-a-friend rather than a form */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12, marginBottom: 18 }}>
+          <div style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={76} /></div>
+          <div style={{ position: 'relative', flex: 1, minWidth: 0, background: THEME.surface2, borderRadius: 16, padding: '13px 15px' }}>
+            {/* tail pointing back to the buddy */}
+            <div style={{ position: 'absolute', left: -5, top: '50%', transform: 'translateY(-50%) rotate(45deg)', width: 12, height: 12, background: THEME.surface2, borderRadius: 3 }} />
             <div style={{ fontSize: 16, fontWeight: 800, color: THEME.fg1 }}>{L('How can we help?')}</div>
             <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.45, marginTop: 3 }}>{L('Tap a question to see the answer.')}</div>
           </div>
@@ -52,34 +55,11 @@ function HelpSupport({ ctx }) {
           })}
         </div>
 
-        {/* the device is parent-managed, so the real escalation path is the parent */}
-        <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Still stuck?')}</div>
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden', marginBottom: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon name="hand-heart" size={19} color={THEME.primary} stroke={2.2} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: THEME.fg1 }}>{L('Ask a parent')}</div>
-              <div style={{ fontSize: 11.5, color: THEME.fg3, lineHeight: 1.4, marginTop: 1 }}>{L('They can change settings in the JoanX parent app.')}</div>
-            </div>
-          </div>
-          <div style={{ height: 1, background: THEME.border, margin: '0 14px' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon name="mail" size={19} color={THEME.fg2} stroke={2.2} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: THEME.fg1 }}>{L('Contact support')}</div>
-              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1 }}>help@joanx.app</div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: THEME.fg3 }}>
-          <Icon name="shield-check" size={13} color={THEME.fg3} stroke={2.2} />
-          <span style={{ fontSize: 11.5 }}>{L('We reply within 1–2 days.')}</span>
-        </div>
+        {/* parent-managed device: the escalation path is a quiet support link */}
+        <a href="mailto:help@joanx.app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', padding: '10px', color: THEME.fg2 }}>
+          <Icon name="mail" size={15} color={THEME.fg2} stroke={2.2} />
+          <span style={{ fontSize: 12.5, fontWeight: 700 }}>{L('Contact support')} · help@joanx.app</span>
+        </a>
       </div>
     </div>
   );

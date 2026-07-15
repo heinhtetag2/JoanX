@@ -5,6 +5,7 @@ export { ChildHome } from './ChildHome.jsx';
 export { SafetyStatus } from './SafetyStatus.jsx';
 export { Notifications } from './Notifications.jsx';
 export { Profile } from './Profile.jsx';
+export { PROFILE_LAYOUTS, ProfileVariant } from './ProfileVariants.jsx';
 export { HelpSupport } from './HelpSupport.jsx';
 export { AboutJoanX } from './AboutJoanX.jsx';
 export { Collection } from './Collection.jsx';

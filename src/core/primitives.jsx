@@ -31,7 +31,7 @@ const THEME = {
   svcAmber: '#b16120', svcAmberBg: '#f9f1ed',    // ember 50 / 10
   // Cards are defined by a crisp hairline border + a whisper of shadow
   // (system uses --color-cards-border-* tokens) — not a big floaty blur.
-  shadowCard: '0 0 0 1px var(--color-cards-border-default), 0 1px 2px var(--color-base-alpha-shadow-2)',
+  shadowCard: '0 0 0 1px var(--color-cards-border-default)',   // flat: hairline ring only, no drop shadow
   shadowSoft: '0 6px 18px rgba(46,43,41,0.09)',   // borderless soft elevation (no hairline ring)
   shadowButton: '0 4px 12px rgba(46,43,41,0.16)',
   shadowLg: '0 8px 20px rgba(46,43,41,0.12)',
@@ -261,10 +261,10 @@ function Bar({ value = 0, max = 100, color = THEME.primary, track = THEME.border
 function Toggle({ on, onChange }) {
   return (
     <button onClick={() => onChange(!on)} style={{
-      width: 44, height: 26, borderRadius: 999, border: 'none', cursor: 'pointer',
-      background: on ? THEME.primary : THEME.border, position: 'relative', transition: 'background .2s', padding: 0,
+      width: 40, height: 24, borderRadius: 999, border: 'none', cursor: 'pointer',
+      background: on ? THEME.brand : THEME.border, position: 'relative', transition: 'background .2s', padding: 0,
     }}>
-      <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left .2s' }} />
+      <span style={{ position: 'absolute', top: 3, left: on ? 19 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left .2s' }} />
     </button>
   );
 }

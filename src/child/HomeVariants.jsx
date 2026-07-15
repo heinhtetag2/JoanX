@@ -363,7 +363,7 @@ function HomeArcade({ ctx }) {
     { icon: 'award',      color: THEME.gold,    bg: THEME.goldLight,  value: PLAYER.points.toLocaleString(), label: L('Safe points') },
     { icon: 'flame',      color: THEME.joy,     bg: THEME.joyBg,      value: PLAYER.streak,                  label: L('Day streak') },
     { icon: 'footprints', color: THEME.primary, bg: THEME.primaryLight, value: PLAYER.safeMinutesToday,        label: L('Min safe') },
-    { icon: 'gem',        color: THEME.camping, bg: THEME.campingBg,  value: buddies.length,                 label: L('Buddies') },
+    { icon: 'paw-print',  color: THEME.camping, bg: THEME.campingBg,  value: buddies.length,                 label: L('Buddies') },
   ];
   const actions = [
     { icon: 'layout-grid', color: THEME.primary, bg: THEME.primaryLight, label: L('Collection'), go: 'collection' },

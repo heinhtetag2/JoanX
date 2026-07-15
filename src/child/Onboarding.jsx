@@ -498,6 +498,9 @@ function Onboarding({ ctx }) {
                 gold belonged to points, not to this buddy. It now wears the buddy's own colour:
                 the first thing the child sees is the colour their buddy will keep. */}
             <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: shade(b.color, 78), color: shade(b.color, -34), borderRadius: 999, padding: '6px 13px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 12 }}>
+              {/* paw-print, not an egg — the egg just cracked open on screen, so it would repeat
+                  itself; the paw is the product's "buddy" glyph and wears the buddy's own colour. */}
+              <Icon name="paw-print" size={14} color={shade(b.color, -34)} stroke={2.4} />
               {L('New buddy!')}
             </div>
             <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
