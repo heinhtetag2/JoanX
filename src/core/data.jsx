@@ -112,7 +112,7 @@ const setBattleRules = (settings = {}) => {
 };
 
 const PLAYER = {
-  name: 'Mina', age: 11, points: 1240,
+  name: 'Mina', age: 11, points: 1600,
   streak: 5, level: 7, xp: 320,   // xpMax / maxed are derived from XP_CURVE — see applyXpCurve()
   safeMinutesToday: 47, safeWalkGoal: 60,
   activeCharId: 'c2',

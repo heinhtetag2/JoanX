@@ -16,6 +16,12 @@ import ProjectDocs from '../docs/ProjectDocs.jsx';
 const DOC_ROLES = ['design', 'checklist', 'docs'];
 const isDocRole = (r) => DOC_ROLES.includes(r);
 
+// The child tab bar belongs to the tab ROOTS only (Home / Collection / Friends / Profile).
+// Any screen you drill into — a buddy's detail, a friend's house, the shop — is a pushed page
+// with its own back button, so it hides the bar, the way a native stack hides the tab bar on a
+// detail view. Center tabs (battle) are an action, not a root, so they hide it too.
+const CHILD_TAB_ROOTS = CHILD_TABS.filter(t => !t.center).map(t => t.root);
+
 // JoanX — app shell: iOS frame, router, app switcher, Tweaks panel.
 // Tab definitions + TabBar come from nav.jsx (window globals).
 
@@ -49,7 +55,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -137,7 +143,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     setBuddy, lang, setLang: changeLang,
@@ -179,7 +185,7 @@ function App() {
   const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
     : ['myhouse', 'decorate'].includes(screen) ? 'profile'   // the house/rooms are now a Profile detail
     : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
-  const showChildTabs = role === 'child' && onboarded && !['battle'].includes(screen);
+  const showChildTabs = role === 'child' && onboarded && CHILD_TAB_ROOTS.includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
 
   return (
@@ -253,6 +259,13 @@ function App() {
               <div className="tw-row">
                 {(STYLE_BUDDIES[tw.charStyle] || []).map(([v, l, c]) => (
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v, color: c }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Child avatar (before hatch)</div>
+              <div className="tw-row">
+                {[['silhouette', 'Silhouette'], ['emblem', 'Sprout'], ['backpack', 'Backpack'], ['sneaker', 'Sneaker'], ['star', 'Star']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.childAvatar === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, childAvatar: v }))}>{l}</button>
                 ))}
               </div>
 

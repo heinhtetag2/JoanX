@@ -25,6 +25,29 @@ html, body {
 @keyframes jxFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .jx-float { animation: jxFloat 3.2s ease-in-out infinite; }
 
+/* Waiting egg — a soft float, then every few seconds a rattle: a tiny wind-up, a burst of
+   quick rocks that build then settle, and a small hop at the peak, as if the buddy inside is
+   trying to get out. Rocks on its base (transform-origin low), loops. */
+@keyframes jxEggIdle {
+  0%   { transform: translateY(0)     rotate(0);     }
+  26%  { transform: translateY(-6px)  rotate(0);     }
+  52%  { transform: translateY(0)     rotate(0);     }
+  /* wind-up — leans back before the burst */
+  57%  { transform: translateY(0)     rotate(3deg);  }
+  /* rattle — quick oscillations, amplitude builds then decays */
+  61%  { transform: translateY(-2px)  rotate(-8deg); }
+  65%  { transform: translateY(-3px)  rotate(9deg);  }
+  69%  { transform: translateY(-5px)  rotate(-7deg); }
+  72%  { transform: translateY(-3px)  rotate(6deg);  }
+  76%  { transform: translateY(-1px)  rotate(-4deg); }
+  80%  { transform: translateY(0)     rotate(3deg);  }
+  84%  { transform: translateY(0)     rotate(-1.5deg); }
+  88%  { transform: translateY(0)     rotate(0);     }
+  100% { transform: translateY(0)     rotate(0);     }
+}
+.jx-egg-idle { animation: jxEggIdle 3.2s ease-in-out infinite; transform-origin: 50% 82%; }
+@media (prefers-reduced-motion: reduce) { .jx-egg-idle { animation: none; } }
+
 @keyframes jxPop { 0% { transform: scale(.72); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .jx-pop { animation: jxPop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
@@ -85,10 +108,6 @@ html, body {
 /* Twinkling sparkle — scale + fade loop; stagger with inline animation-delay */
 @keyframes jxTwinkle { 0%,100% { transform: scale(.55); opacity: .25; } 50% { transform: scale(1.1); opacity: 1; } }
 .jx-twinkle { animation: jxTwinkle 1.9s ease-in-out infinite; }
-
-/* QR scanner sweep line — travels top→bottom inside the viewfinder frame */
-@keyframes jxScan { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
-.jx-scan { animation: jxScan 2.4s cubic-bezier(.45,0,.55,1) infinite; }
 
 /* Eyebrow badge drops in just before the gift */
 @keyframes jxDropIn { 0% { transform: translateY(-10px) scale(.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }

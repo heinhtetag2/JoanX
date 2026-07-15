@@ -1,11 +1,16 @@
 // JoanX — core · AuthFlow (F-33)
 //
-// The guardian's sign-in, used by the parent app after its intro slides. The child device
-// has no account of its own — its identity comes from the parent it pairs with — so this
-// never appears there. Phone number + SMS verification is the primary and only credential:
-// no password, hence no reset flow. Google (Android) and Apple (iOS) are offered where
-// platform policy expects them; email is an MVP-disabled method in AUTH.methods, so
-// enabling it later means turning the flag on and adding its form here.
+// The guardian's sign-in and sign-up, used by the parent app after its intro slides. The
+// child device has no account of its own — its identity comes from the parent it pairs with —
+// so this never appears there.
+//
+// It opens on a choice: log in or create an account. Both run the SAME credential underneath
+// — phone number + SMS verification (no password, hence no reset flow) — so the mode is not a
+// second mechanism, only a statement of intent: it decides where a verified number lands and
+// what to say when it arrives on the wrong path (an unknown number under "log in", or a known
+// one under "sign up"). Google (Android) and Apple (iOS) are offered where platform policy
+// expects them; email is an MVP-disabled method in AUTH.methods, so enabling it later means
+// turning the flag on and adding its form here.
 
 import React from 'react';
 import { Button, Icon, Input, THEME, mixHue } from './primitives.jsx';
@@ -48,18 +53,28 @@ function ProviderMark({ provider }) {
 
 // accent  — brand colour of the host app
 // btnStyle— the host's primary-button style, so the CTA matches its app
+// hero    — full-bleed image behind the welcome screen, so the auth landing reads as the
+//           closing beat of onboarding, not a bare form. Falls back to a brand gradient.
 // onDone  — verification succeeded (existing account) or the new profile was completed
-function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
-  const [phase, setPhase] = React.useState('phone');   // 'phone' | 'code' | 'profile' | 'consent'
+function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
+  // The guardian first says what they are here to do — log in or create an account. Both
+  // credentials are the same phone + SMS; the mode only decides where a verified number lands
+  // and what to say when it knocks on the wrong door (see verifyCode).
+  const [phase, setPhase] = React.useState('choose');  // 'choose' | 'phone' | 'code' | 'profile' | 'consent'
+  const [mode, setMode] = React.useState('login');     // 'login' | 'signup'
   const [phone, setPhone] = React.useState('');
   const [code, setCode] = React.useState('');
   const [codeErr, setCodeErr] = React.useState(false);
+  const [notice, setNotice] = React.useState(null);    // 'no-account' | 'exists' — a wrong-door hint on the code screen
   const [resendLeft, setResendLeft] = React.useState(AUTH.smsResendSeconds);
   const [name, setName] = React.useState('');
   const [dob, setDob] = React.useState('');
   const [gender, setGender] = React.useState('');
+  const [photo, setPhoto] = React.useState(null);   // profile picture (data URL); optional — falls back to the name initial
   const codeRef = React.useRef(null);
+  const photoRef = React.useRef(null);
   const socials = authMethods().filter(m => m.key === 'google' || m.key === 'apple');
+  const signup = mode === 'signup';
 
   // resend cooldown — a fresh SMS can only be requested once this reaches 0
   React.useEffect(() => {
@@ -72,24 +87,87 @@ function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
   const profileOk = name.trim() && dob && gender;
   const resendLabel = `${Math.floor(resendLeft / 60)}:${String(resendLeft % 60).padStart(2, '0')}`;
 
-  const sendCode = () => { setCode(''); setCodeErr(false); setResendLeft(AUTH.smsResendSeconds); setPhase('code'); };
-  // Any complete code is accepted in the prototype. A number we already know signs straight
-  // in; a new one goes on to create its profile — the same verification either way.
+  // Profile picture is optional. A chosen image previews immediately; skipping it leaves the
+  // avatar as the name's initial — the same monogram the child app shows the guardian by.
+  const initial = name.trim().charAt(0).toUpperCase();
+  const pickPhoto = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => setPhoto(r.result);
+    r.readAsDataURL(f);
+  };
+  // Clearing the photo drops back to the initial. Reset the input value too, so re-picking the
+  // very same file still fires onChange.
+  const removePhoto = () => { setPhoto(null); if (photoRef.current) photoRef.current.value = ''; };
+
+  // Enter a mode from the landing screen and go straight to the phone step.
+  const start = (m) => { setMode(m); setNotice(null); setPhase('phone'); };
+  const sendCode = () => { setCode(''); setCodeErr(false); setNotice(null); setResendLeft(AUTH.smsResendSeconds); setPhase('code'); };
+
+  // Any complete code is accepted in the prototype; the verification is the same either way.
+  // Where it lands depends on the mode and whether the number already has an account:
+  //   log in  + known   → straight into the app
+  //   log in  + unknown → offer to create an account (they picked the wrong door)
+  //   sign up + unknown → on to create the profile
+  //   sign up + known   → offer to log in instead
   const verifyCode = () => {
     if (code.length < AUTH.smsCodeLength) { setCodeErr(true); return; }
-    if (knownPhone(phone)) onDone(); else setPhase('profile');
+    const known = knownPhone(phone);
+    if (signup) { if (known) setNotice('exists'); else setPhase('profile'); }
+    else { if (known) onDone(); else setNotice('no-account'); }
   };
-  // Google / Apple hand back a verified identity, so they land where the SMS code does.
-  const socialSignIn = () => setPhase('profile');
+  // Resolve a wrong-door hint: the number is already verified, so switching is frictionless.
+  const switchToSignup = () => { setMode('signup'); setNotice(null); setPhase('profile'); };  // from log-in, no account found
+  const switchToLogin = () => { setMode('login'); setNotice(null); onDone(); };                // from sign-up, number already exists
+
+  // Google / Apple hand back a verified identity. Logging in lands in the app; signing up
+  // still needs the profile step (name / DOB / gender) the provider doesn't supply.
+  const socialSignIn = () => { if (signup) setPhase('profile'); else onDone(); };
 
   return (
     <React.Fragment>
+      {/* choose — the closing beat of onboarding: a full-bleed hero, brand and copy read over
+          it, and the two doors anchored at the foot. Same image treatment as the intro slides
+          so this lands as one flow, not a bare white fork. */}
+      {phase === 'choose' && (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {hero
+            ? <img src={hero} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '58% 34%' }} />
+            : <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${accent} 0%, #0c0e16 100%)` }} />}
+          {/* scrims: a light one so the wordmark reads up top, a tall dark foot for the copy + CTAs */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(180deg, rgba(12,14,22,.62) 0%, rgba(12,14,22,0) 100%)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 440, background: 'linear-gradient(0deg, rgba(9,11,18,.95) 30%, rgba(9,11,18,0) 100%)' }} />
+
+          <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 58px)' }}>
+            <img src="/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ height: 22, display: 'block', margin: '0 28px', opacity: .96 }} />
+
+            <div style={{ flex: 1 }} />
+
+            <div style={{ padding: '0 28px calc(env(safe-area-inset-bottom) + 22px)' }}>
+              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.16, margin: 0, color: '#fff', textShadow: '0 2px 18px rgba(0,0,0,.55)' }}>{L('Your child, safe on every walk')}</h1>
+              <p style={{ fontSize: 15, lineHeight: 1.5, margin: '12px 0 26px', color: 'rgba(255,255,255,.9)', textShadow: '0 1px 12px rgba(0,0,0,.5)', maxWidth: 320 }}>{L('Create a guardian account to get started, or log in to pick up where you left off.')}</p>
+
+              <Button variant="primary" size="lg" fullWidth style={btnStyle} onClick={() => start('signup')}>{L('Create account')}</Button>
+
+              <button onClick={() => start('login')} className="jx-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: '100%', marginTop: 6, padding: '15px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 800, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.5)' }}>
+                {L('I already have an account')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* phone — the primary method */}
       {phase === 'phone' && (
         <>
-          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '26px 28px 0' }}>
-            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Sign in with your phone')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{L("We'll text you a 6-digit code. New here? This creates your account.")}</p>
+          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
+            <button onClick={() => setPhase('choose')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
+            </button>
+
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{signup ? L('Create your account') : L('Log in')}</h1>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{signup ? L("Enter your phone to get started — we'll text you a 6-digit code.") : L("Enter your phone and we'll text you a 6-digit code.")}</p>
 
             <Input label={L('Phone number')} value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9-]/g, ''))} placeholder="010-1234-5678" icon="phone" type="tel" accent={accent} />
 
@@ -142,7 +220,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
 
             <div style={{ position: 'relative' }} onClick={() => codeRef.current && codeRef.current.focus()}>
               <input ref={codeRef} value={code} inputMode="numeric" autoComplete="one-time-code"
-                onChange={e => { setCode(digitsOf(e.target.value).slice(0, AUTH.smsCodeLength)); setCodeErr(false); }}
+                onChange={e => { setCode(digitsOf(e.target.value).slice(0, AUTH.smsCodeLength)); setCodeErr(false); setNotice(null); }}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
               <div className={codeErr ? 'jx-shake' : ''} style={{ display: 'flex', gap: 9 }}>
                 {Array.from({ length: AUTH.smsCodeLength }, (_, i) => {
@@ -161,6 +239,19 @@ function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12 }}>
                 <Icon name="alert-circle" size={15} color={THEME.danger} stroke={2.3} />
                 <span style={{ fontSize: 12.5, color: THEME.danger, fontWeight: 700 }}>{L('Enter all 6 digits of the code.')}</span>
+              </div>
+            )}
+
+            {/* wrong-door hint — verified, but this number belongs on the other path. One tap
+                switches without re-verifying, since the number is already confirmed. */}
+            {notice && (
+              <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 16, background: mixHue(accent, 0, 40, 0.1), border: `1.5px solid ${THEME.border}` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1, lineHeight: 1.45 }}>
+                  {notice === 'no-account' ? L('No account uses this number yet.') : L('This number already has an account.')}
+                </div>
+                <button onClick={notice === 'no-account' ? switchToSignup : switchToLogin} style={{ marginTop: 8, padding: 0, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, color: accent, cursor: 'pointer' }}>
+                  {notice === 'no-account' ? L('Create an account →') : L('Log in instead →')}
+                </button>
               </div>
             )}
 
@@ -187,7 +278,34 @@ function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '26px 28px 0' }}>
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Create account')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{L('Tell us a bit about you.')}</p>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('Tell us a bit about you.')}</p>
+
+            {/* profile picture — optional. Tap to add; skip it and the name's initial stands in. */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 22 }}>
+              <button type="button" onClick={() => photoRef.current && photoRef.current.click()} className="jx-press" aria-label={L('Add a photo')}
+                style={{ position: 'relative', width: 96, height: 96, borderRadius: 999, padding: 0, border: 'none', cursor: 'pointer', overflow: 'visible', background: photo ? 'transparent' : mixHue(accent, 0, 40, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ width: '100%', height: '100%', borderRadius: 999, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {photo
+                    ? <img src={photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : initial
+                      ? <span className="game-font" style={{ fontSize: 40, fontWeight: 500, color: accent, lineHeight: 1 }}>{initial}</span>
+                      : <Icon name="user" size={38} color={accent} stroke={2} />}
+                </span>
+                <span style={{ position: 'absolute', right: 0, bottom: 0, width: 32, height: 32, borderRadius: 999, background: accent, border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="camera" size={15} color="#fff" stroke={2.3} />
+                </span>
+              </button>
+              <input ref={photoRef} type="file" accept="image/*" onChange={pickPhoto} style={{ display: 'none' }} />
+              {photo ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                  <button type="button" onClick={() => photoRef.current && photoRef.current.click()} style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, color: accent }}>{L('Change photo')}</button>
+                  <span style={{ color: THEME.border }}>·</span>
+                  <button type="button" onClick={removePhoto} style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, color: THEME.fg3 }}>{L('Remove photo')}</button>
+                </div>
+              ) : (
+                <span style={{ fontSize: 12, color: THEME.fg3, fontWeight: 600, marginTop: 10 }}>{L('Optional — we’ll use your initial if you skip.')}</span>
+              )}
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <Input label={L('Name')} value={name} onChange={e => setName(e.target.value)} placeholder={L('e.g. Sora Kim')} icon="user" accent={accent} />

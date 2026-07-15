@@ -5,11 +5,9 @@ import { Button, Icon, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { AuthFlow } from '../core/auth.jsx';
 import { BRAND, brandBtn } from './shared.jsx';
-import { HowItWorks } from './HowItWorks.jsx';
 
 function ParentOnboarding({ ctx }) {
   const [step, setStep] = React.useState(0);           // 0 splash · 1–2 slides · 3 auth
-  const [how, setHow] = React.useState(false);         // the scroll-story: the parent's real decision screen
 
   // The splash had no way out — no timer, no tap target, no button — so "Replay onboarding"
   // stranded the parent on the logo. A splash is a beat, not a step: hold it, then move on.
@@ -82,12 +80,6 @@ function ParentOnboarding({ ctx }) {
 
             <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
               <Button variant="primary" size="lg" fullWidth style={brandBtn} onClick={() => setStep(step + 1)}>{L(step === 2 ? 'Get started' : 'Continue')}</Button>
-              {/* Two sentences is not enough to decide to put this on a child's phone. This
-                  opens the long-form case: does it work, why the child accepts it, what the
-                  parent sees, and what JoanX never does. */}
-              <button onClick={() => setHow(true)} style={{ display: 'block', width: '100%', marginTop: 12, padding: '10px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: onbStyle === 'image' ? '#fff' : BRAND.primary, textShadow: onbStyle === 'image' ? '0 1px 10px rgba(0,0,0,.5)' : 'none' }}>
-                {L('How does JoanX work?')}
-              </button>
             </div>
           </div>
         </div>
@@ -95,9 +87,7 @@ function ParentOnboarding({ ctx }) {
 
       {/* 3 · sign in (F-33) — phone + SMS, Google on Android / Apple on iOS. Parent app only:
           the child device has no account, it pairs to this one. */}
-      {step === 3 && <AuthFlow accent={BRAND.ink} btnStyle={brandBtn} onDone={finish} />}
-
-      {how && <HowItWorks onClose={() => setHow(false)} onStart={() => { setHow(false); setStep(3); }} />}
+      {step === 3 && <AuthFlow accent={BRAND.ink} btnStyle={brandBtn} hero="/assets/onboarding/intro.png" onDone={finish} />}
 
     </div>
   );

@@ -465,7 +465,14 @@ const KO = {
   'By continuing you agree to our Terms & Privacy Policy.': '계속하면 이용약관 및 개인정보 처리방침에 동의하게 됩니다.',
   'Create account': '계정 만들기', 'Sign in': '로그인',
   'Basic info': '기본 정보', 'Login details': '로그인 정보',
-  // parent sign-in: phone + SMS verification, with Google / Apple (F-33)
+  // parent sign-in: log-in / sign-up choice, then phone + SMS with Google / Apple (F-33)
+  'Welcome to JoanX': 'JoanX에 오신 걸 환영해요', 'Set up the guardian account that keeps your child safe on every walk.': '아이의 안전한 걸음을 지켜 줄 보호자 계정을 만들어요.',
+  'Your child, safe on every walk': '아이의 모든 걸음을 안전하게', 'Create a guardian account to get started, or log in to pick up where you left off.': '보호자 계정을 만들어 시작하거나, 로그인해서 이어서 진행하세요.',
+  'I already have an account': '이미 계정이 있어요', 'Create your account': '계정 만들기', 'Log in': '로그인',
+  "Enter your phone to get started — we'll text you a 6-digit code.": '휴대폰 번호를 입력하면 시작해요 — 인증번호 6자리를 문자로 보내드려요.',
+  "Enter your phone and we'll text you a 6-digit code.": '휴대폰 번호를 입력하면 인증번호 6자리를 문자로 보내드려요.',
+  'No account uses this number yet.': '이 번호로 만든 계정이 아직 없어요.', 'This number already has an account.': '이 번호로 만든 계정이 이미 있어요.',
+  'Create an account →': '계정 만들기 →', 'Log in instead →': '로그인하기 →',
   'Sign in with your phone': '휴대폰 번호로 로그인', "We'll text you a 6-digit code. New here? This creates your account.": '6자리 인증번호를 문자로 보내드려요. 처음이시면 계정이 함께 만들어져요.',
   'Send code': '인증번호 받기', 'Verify': '확인', 'Enter the code': '인증번호 입력',
   'We sent a 6-digit code to': '인증번호 6자리를 보냈어요:',
@@ -563,6 +570,9 @@ const KO = {
   'Documents provided by Joan Company.': '약관은 Joan Company가 제공합니다.',
   'We don’t collect resident registration numbers or other unnecessary ID.': '주민등록번호 등 서비스에 불필요한 개인정보는 수집하지 않아요.',
   'Agree & continue': '동의하고 계속',
+  // profile picture (optional) at parent account creation
+  'Add a photo': '사진 추가', 'Change photo': '사진 변경', 'Remove photo': '사진 제거',
+  'Optional — we’ll use your initial if you skip.': '선택 사항 — 건너뛰면 이름 첫 글자를 사용해요.',
   'Linked with your child': '자녀와 연결됨',
   'Device connected!': '기기가 연결됐어요!',
   'You can now set up protection for your child.': '이제 아이의 보호 설정을 시작할 수 있어요.',

@@ -263,12 +263,12 @@ function ParentAddChild({ ctx }) {
               <div onClick={afterPair} style={{ width: '100%', maxWidth: 300, aspectRatio: '0.92', borderRadius: 24, background: '#17191d', position: 'relative', overflow: 'hidden', cursor: 'pointer', boxShadow: 'inset 0 0 70px rgba(0,0,0,.55)' }}>
                 {/* faint center light — suggests a live camera without neon */}
                 <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(78% 62% at 50% 44%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 70%)' }} />
-                {/* thin white framing guides + a single subtle scan line */}
+                {/* thin white corner framing guides — no moving scan line: this is a QR
+                    viewfinder, not a barcode sweep */}
                 <div style={{ position: 'absolute', top: '24%', left: '22%', right: '22%', bottom: '24%' }}>
                   {[['top', 'left'], ['top', 'right'], ['bottom', 'left'], ['bottom', 'right']].map(([v, h], i) => (
                     <div key={i} style={{ position: 'absolute', [v]: 0, [h]: 0, width: 24, height: 24, [`border${v[0].toUpperCase() + v.slice(1)}`]: '3px solid rgba(255,255,255,.9)', [`border${h[0].toUpperCase() + h.slice(1)}`]: '3px solid rgba(255,255,255,.9)', [`border${v[0].toUpperCase() + v.slice(1)}${h[0].toUpperCase() + h.slice(1)}Radius`]: 9 }} />
                   ))}
-                  <div className="jx-scan" style={{ position: 'absolute', left: 0, right: 0, height: 2, borderRadius: 999, background: 'rgba(255,255,255,.55)', boxShadow: '0 0 10px rgba(255,255,255,.45)' }} />
                 </div>
                 <span style={{ position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,.7)' }}>{L('Point at your child’s QR code')}</span>
               </div>
