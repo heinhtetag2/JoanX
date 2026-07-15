@@ -207,7 +207,7 @@ html, body {
 
 /* Motion here is decoration, not feedback — honour the OS request and hold still. */
 @media (prefers-reduced-motion: reduce) {
-  .jx-cta { animation: none; background-position: 0 50%; box-shadow: 0 8px 26px rgba(167,139,245,.38); }
+  .jx-cta { animation: none; background-position: 0 50%; box-shadow: 0 8px 26px var(--jx-cta-glow-soft, rgba(167,139,245,.38)); }
   .jx-cta::after { animation: none; display: none; }
   .jx-cta:active { transform: none; }
 }

@@ -46,7 +46,7 @@ function CharacterDetail({ ctx }) {
             <Badge variant={orig.rarity === 'epic' ? 'epic' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
             <Badge variant="gold">{L('Stage')} {stage}</Badge>
           </div>
-          <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Mascot species={orig.species} stage={stage} color={color} size={172} />
           </div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: 4 }}>{orig.name}</div>

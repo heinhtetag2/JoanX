@@ -8,12 +8,24 @@
 // enabling it later means turning the flag on and adding its form here.
 
 import React from 'react';
-import { Button, Icon, Input, THEME } from './primitives.jsx';
+import { Button, Icon, Input, THEME, mixHue } from './primitives.jsx';
 import { AUTH, KNOWN_PHONES, authMethods } from './data.jsx';
 import { L } from './i18n.jsx';
 
 const digitsOf = (s) => s.replace(/\D/g, '');
 const knownPhone = (p) => KNOWN_PHONES.some(k => digitsOf(k) === digitsOf(p));
+
+// The three legal consents a guardian must give before the service can be used.
+// Each carries a short document body — provided by Joan Company — that expands in place,
+// so the parent can read what they are agreeing to without leaving the flow.
+const CONSENTS = [
+  { key: 'personal', label: 'Collection and use of personal information',
+    body: 'JoanX collects your and your child’s name, date of birth and phone number to create and protect the account — used only to run the safety service, never sold.' },
+  { key: 'tos', label: 'Agreement to the Terms of Service',
+    body: 'By using JoanX you agree to use it as a walking-safety companion under a guardian’s supervision.' },
+  { key: 'location', label: 'Consent to the use of location information',
+    body: 'Location is used only in Smart mode while your child is walking, to sense risky moments — never continuous tracking.' },
+];
 
 // Provider marks are drawn, not imported, so the prototype carries no external asset.
 // Swap for the official artwork before store submission — Google and Apple each mandate
@@ -38,7 +50,7 @@ function ProviderMark({ provider }) {
 // btnStyle— the host's primary-button style, so the CTA matches its app
 // onDone  — verification succeeded (existing account) or the new profile was completed
 function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
-  const [phase, setPhase] = React.useState('phone');   // 'phone' | 'code' | 'profile'
+  const [phase, setPhase] = React.useState('phone');   // 'phone' | 'code' | 'profile' | 'consent'
   const [phone, setPhone] = React.useState('');
   const [code, setCode] = React.useState('');
   const [codeErr, setCodeErr] = React.useState(false);
@@ -185,11 +197,93 @@ function AuthFlow({ accent = THEME.brand, btnStyle, onDone }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!profileOk} onClick={profileOk ? onDone : undefined}>{L('Create account')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!profileOk} onClick={profileOk ? () => setPhase('consent') : undefined}>{L('Next')}</Button>
           </div>
         </>
       )}
+
+      {/* guardian consent — required by law before the service can be used. New accounts
+          only: a known phone signs straight in, having consented at its own registration. */}
+      {phase === 'consent' && (
+        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase('profile')} onDone={onDone} />
+      )}
     </React.Fragment>
+  );
+}
+
+// The guardian, as the child's legal representative, gives consent here. All three legal
+// consents plus the guardian affirmation are required — the CTA stays disabled until every
+// box is checked, so the service cannot be entered without them. Documents expand in place.
+function ConsentStep({ accent, btnStyle, onBack, onDone }) {
+  const [agree, setAgree] = React.useState({ personal: false, tos: false, location: false, guardian: false });
+  const [openDoc, setOpenDoc] = React.useState(null);
+  const keys = ['personal', 'tos', 'location', 'guardian'];
+  const allOn = keys.every(k => agree[k]);
+  const set = (k) => setAgree(a => ({ ...a, [k]: !a[k] }));
+  const toggleAll = () => { const v = !allOn; setAgree({ personal: v, tos: v, location: v, guardian: v }); };
+
+  return (
+    <>
+      <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
+        <button onClick={onBack} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
+        </button>
+
+        <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('A few quick approvals')}</h1>
+        <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('As the legal guardian, please review and agree before you start.')}</p>
+
+        {/* agree-to-all — the familiar single-tap master row */}
+        <button onClick={toggleAll} className="jx-press" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px', borderRadius: 16, border: `1.5px solid ${allOn ? accent : THEME.border}`, background: allOn ? mixHue(accent, 0, 40, 0.1) : '#fff', cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>
+          <CheckBox on={allOn} accent={accent} />
+          <span style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L('Agree to all')}</span>
+        </button>
+
+        {/* the three legal consents — each viewable in place */}
+        <div style={{ background: '#fff', borderRadius: 16, border: `1.5px solid ${THEME.border}`, overflow: 'hidden' }}>
+          {CONSENTS.map((c, i) => {
+            const on = agree[c.key];
+            const open = openDoc === c.key;
+            return (
+              <div key={c.key} style={{ borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+                  <button onClick={() => set(c.key)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                    <CheckBox on={on} accent={accent} />
+                    <span style={{ fontSize: 11, fontWeight: 800, color: accent, flexShrink: 0 }}>[{L('Required')}]</span>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: THEME.fg1, lineHeight: 1.35 }}>{L(c.label)}</span>
+                  </button>
+                  <button onClick={() => setOpenDoc(open ? null : c.key)} style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '4px 2px 4px 6px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: THEME.fg3, flexShrink: 0 }}>
+                    {L('View')}<Icon name={open ? 'chevron-up' : 'chevron-down'} size={15} color={THEME.fg3} stroke={2.3} />
+                  </button>
+                </div>
+                {open && <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.55, padding: '0 14px 14px 40px' }}>{L(c.body)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* guardian affirmation — the legal-representative check */}
+        <button onClick={() => set('guardian')} className="jx-press" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 16, border: `1.5px solid ${THEME.border}`, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', marginTop: 14, textAlign: 'left' }}>
+          <CheckBox on={agree.guardian} accent={accent} />
+          <span style={{ fontSize: 11, fontWeight: 800, color: accent, flexShrink: 0 }}>[{L('Required')}]</span>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: THEME.fg1, lineHeight: 1.35 }}>{L("I'm the parent or legal guardian")} — {L('I have the right to consent to this service on the child’s behalf.')}</span>
+        </button>
+
+        <p style={{ fontSize: 12, color: THEME.fg3, lineHeight: 1.5, margin: '18px 2px 0', fontWeight: 600 }}>{L('We don’t collect resident registration numbers or other unnecessary ID.')}</p>
+      </div>
+
+      <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+        <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!allOn} onClick={allOn ? onDone : undefined}>{L('Agree & continue')}</Button>
+      </div>
+    </>
+  );
+}
+
+// A flat square check — no glow — that fills with the host accent when on.
+function CheckBox({ on, accent }) {
+  return (
+    <span style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? accent : '#fff', border: on ? 'none' : `2px solid ${THEME.border}`, transition: 'background .12s' }}>
+      {on && <Icon name="check" size={15} color="#fff" stroke={3} />}
+    </span>
   );
 }
 

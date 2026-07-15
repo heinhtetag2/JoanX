@@ -256,6 +256,9 @@ function App() {
                 ))}
               </div>
 
+              <div className="tw-label">Flow</div>
+              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
+
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two
                   things you actually need to look at it: hold it where it is, or end it. */}
@@ -394,9 +397,6 @@ function App() {
 
           {role === 'child' && (
             <React.Fragment>
-              <div className="tw-label">Flow</div>
-              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
-
               <div className="tw-label" style={{ opacity: .5 }}>Home layout (disabled)</div>
               <div className="tw-row" style={{ opacity: .5, pointerEvents: 'none' }}>
                 {HOME_LAYOUTS.map(({ id, label }) => (

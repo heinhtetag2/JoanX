@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { CHILDREN, FEATURES } from '../core/data.jsx';
+import { CHILDREN, FEATURES, MAX_CHILDREN } from '../core/data.jsx';
 import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
@@ -51,10 +51,11 @@ function ReconnectSheet({ child, onClose }) {
 function ParentChildren({ ctx }) {
   const ko = getLang() === 'ko';
   const [reconnect, setReconnect] = React.useState(null);   // offline child whose reconnect sheet is open
+  const atCap = CHILDREN.length >= MAX_CHILDREN;   // A-13 · account is full at MAX_CHILDREN
   return (
     <>
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead sub={ko ? `자녀 ${CHILDREN.length}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => ctx.nav('p_addchild', { direct: true })} style={{ width: 40, height: 40, borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
+      <ParentHead sub={ko ? `자녀 ${CHILDREN.length}/${MAX_CHILDREN}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length}/${MAX_CHILDREN} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => !atCap && ctx.nav('p_addchild', { direct: true })} disabled={atCap} aria-disabled={atCap} title={atCap ? L('Child limit reached') : undefined} style={{ width: 40, height: 40, borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: atCap ? 'default' : 'pointer', opacity: atCap ? 0.4 : 1 }}><Icon name="plus" size={20} color="#fff" stroke={2.6} /></button>} />
       <div style={{ padding: '8px 16px 0' }}>
         {CHILDREN.map((k, ki) => {
           const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
@@ -92,6 +93,8 @@ function ParentChildren({ ctx }) {
             )}
           </div>
           );})}
+
+        {atCap && <div style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg2, textAlign: 'center', margin: '2px 0 14px' }}>{ko ? `한 계정당 최대 ${MAX_CHILDREN}명까지 관리할 수 있어요.` : `You can manage up to ${MAX_CHILDREN} children per account.`}</div>}
 
         <div style={{ display: 'flex', gap: 12, background: THEME.primaryLight, borderRadius: 18, padding: 16, marginTop: 4 }}>
           <Icon name="shield-check" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />

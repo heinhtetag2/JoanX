@@ -1,7 +1,7 @@
 // JoanX — child app · AddFriends
 
 import React from 'react';
-import { FRIEND_REQUESTS, FRIEND_SUGGESTIONS, PLAYER } from '../core/data.jsx';
+import { FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, PLAYER, searchUsers } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
@@ -17,6 +17,12 @@ function AddFriends({ ctx, layout = 'list' }) {
   const [requests, setRequests] = React.useState(FRIEND_REQUESTS);
   const [toast, setToast] = React.useState(null);
   const [tab, setTab] = React.useState('requests');   // segmented "tabs" variant
+  // method-driven add (F-32) — which methods exist, and which one is active, both come from
+  // the FRIEND_METHODS registry so business can enable/reorder/extend without touching this
+  const methods = FRIEND_METHODS.filter(m => m.enabled);
+  const [method, setMethod] = React.useState(methods[0]?.id || 'code');
+  const [query, setQuery] = React.useState('');
+  const results = React.useMemo(() => searchUsers(query), [query]);
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1500); };
 
   const accept = (id) => { setRequests(rs => rs.filter(r => r.id !== id)); setAdded(a => ({ ...a, [id]: true })); say(L('Friend added!')); };
@@ -53,6 +59,70 @@ function AddFriends({ ctx, layout = 'list' }) {
     </div>
   );
 
+  // ── method-driven add section (F-32) ────────────────────────────────
+  // A segmented switcher over the enabled methods; the active method decides which panel
+  // shows below. All three spec methods (friend code, nickname search, QR) route through
+  // this one place, and a request always goes to the recipient to accept per FRIEND_POLICY.
+  const activeMethod = methods.find(m => m.id === method) || methods[0];
+  const methodTabs = methods.length > 1 && (
+    <div style={{ display: 'flex', gap: 6, background: THEME.surface2, borderRadius: 12, padding: 4, marginBottom: 12 }}>
+      {methods.map(m => {
+        const on = method === m.id;
+        return (
+          <button key={m.id} onClick={() => setMethod(m.id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 9, padding: '9px 6px', fontSize: 12.5, fontWeight: 800, background: on ? '#fff' : 'transparent', color: on ? BRAND.main : THEME.fg2, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+            <Icon name={m.icon} size={14} color={on ? BRAND.main : THEME.fg2} stroke={2.3} />{L(m.label)}
+          </button>
+        );
+      })}
+    </div>
+  );
+  // one search result — nickname on top, the system friend code beneath. Because nicknames
+  // are not unique, the code is what lets a child pick the right "Yuna".
+  const searchRow = (u, i) => (
+    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+      <MascotChip species={u.avatar} color={u.color} size={44} bg={BRAND.light} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 800 }}>{u.name}</div>
+        <div className="game-font" style={{ fontSize: 12, color: THEME.fg2, marginTop: 2, letterSpacing: .5 }}>{u.friendCode}</div>
+      </div>
+      {softAdd(u)}
+    </div>
+  );
+  const searchPanel = (
+    <React.Fragment>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1.5px solid ${THEME.border}`, borderRadius: 14, padding: '11px 14px', background: '#fff' }}>
+        <Icon name="search" size={17} color={THEME.fg3} stroke={2.2} />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder={L('Search by nickname')} style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, background: 'transparent', color: THEME.fg1 }} />
+        {query && <button onClick={() => setQuery('')} aria-label={L('Clear')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}><Icon name="x" size={16} color={THEME.fg3} stroke={2.4} /></button>}
+      </div>
+      {query.trim() && (
+        <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${THEME.border}`, overflow: 'hidden', marginTop: 10 }}>
+          {results.length ? results.map(searchRow) : <div style={{ padding: 18, textAlign: 'center', fontSize: 13, color: THEME.fg3, fontWeight: 600 }}>{L('No one found')}</div>}
+        </div>
+      )}
+    </React.Fragment>
+  );
+  const qrPanel = (
+    <div style={{ borderRadius: 18, padding: '18px 16px', textAlign: 'center', background: '#fff', border: `1px solid ${THEME.border}` }}>
+      <div style={{ width: 120, height: 120, margin: '0 auto', borderRadius: 16, background: BRAND.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="qr-code" size={86} color={BRAND.dark} stroke={1.6} /></div>
+      <div style={{ fontSize: 13, color: THEME.fg2, margin: '12px 0 4px', fontWeight: 600 }}>{L('Scan to add a friend')}</div>
+      <div className="game-font" style={{ fontSize: 20, fontWeight: 500, letterSpacing: 1.5 }}>{PLAYER.friendCode}</div>
+    </div>
+  );
+  const addPanel = () => (activeMethod?.id === 'search' ? searchPanel : activeMethod?.id === 'qr' ? qrPanel : codeInput(false));
+  // reflects FRIEND_POLICY so the child knows a request is not an instant friendship
+  const approvalHint = FRIEND_POLICY.requiresApproval && activeMethod?.id !== 'qr' && (
+    <div style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600, margin: '8px 4px 0' }}>{L('They’ll get a request to accept.')}</div>
+  );
+  // the whole method block: switcher + active panel + approval note. Used by the default list.
+  const addSection = (
+    <React.Fragment>
+      {methodTabs}
+      {addPanel()}
+      {approvalHint}
+    </React.Fragment>
+  );
+
   // reusable soft friend-code card (gradient tint) used by several layouts
   const softCodeCard = (
     <div style={{ borderRadius: 20, padding: 16, background: 'linear-gradient(150deg,#f3eefb,#fff 80%)', border: `1px solid ${THEME.border}`, marginBottom: 16 }}>
@@ -76,8 +146,8 @@ function AddFriends({ ctx, layout = 'list' }) {
             <button onClick={() => say(L('Copied!'))} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit', color: BRAND.main, fontSize: 13, fontWeight: 700 }}><Icon name="copy" size={15} color={BRAND.main} stroke={2.3} />{L('Copy')}</button>
           </div>
         </div>
-        {label(L('Add by code'))}
-        <div style={{ marginBottom: 18 }}>{codeInput(false)}</div>
+        {label(L('Add a friend'))}
+        <div style={{ marginBottom: 18 }}>{addSection}</div>
         {requests.length > 0 && <React.Fragment>
           {label(L('Friend requests'))}
           <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, marginBottom: 18, overflow: 'hidden' }}>

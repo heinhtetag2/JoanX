@@ -434,7 +434,7 @@ function CharVariant({ ctx, variant }) {
   // A-3.3 — form, idle animation and face all come from the stage table, so a stage-up
   // changes how the buddy looks AND how it moves, not just a number on a badge.
   const Buddy = ({ size }) => (
-    <div className={info.anim} style={{ display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
       <Mascot species={orig.species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" />
     </div>
   );

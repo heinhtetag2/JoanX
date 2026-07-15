@@ -4,6 +4,7 @@ import React from 'react';
 import { FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal, themeOf } from '../core/data.jsx';
 import { Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { moderate, REASON_TEXT } from '../core/moderation.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { ScreenHeader, RarityPill } from './shared.jsx';
 
@@ -22,6 +23,8 @@ function FriendHouse({ ctx }) {
   const [entries, setEntries] = React.useState(() => [...f.guest]);
   const [picked, setPicked] = React.useState(null);   // the stamp mid-tap, held briefly so the press reads as "sent"
   const [signed, setSigned] = React.useState(false);
+  const [draft, setDraft] = React.useState('');       // the typed note, before it's sent
+  const [blocked, setBlocked] = React.useState(null); // moderation reason to show, or null
 
   // react() owns the switch/take-back rules and the counting — this only mirrors the result
   // into state so the row repaints.
@@ -29,21 +32,33 @@ function FriendHouse({ ctx }) {
     setMine(react(f, key));
     setCounts({ ...f.reactions });
   };
-  // One tap leaves the note. The stamp stays lit for a beat before the picker swaps to the
+  // Both paths — a tapped stamp and a typed message — end here. `mine` drives the one-shot pop
+  // and lives only in this render's copy, so the stored note stays clean and re-opening the
+  // house doesn't re-animate a note that's just sitting there. One note per visit either way.
+  const post = (e) => {
+    setEntries(list => [{ ...e, mine: true }, ...list]); f.guest.unshift(e);
+    setSigned(true);
+  };
+  // One tap leaves the stamp. It stays lit for a beat before the picker swaps to the
   // confirmation, so the child sees which one they sent rather than the row just vanishing.
   const timer = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timer.current), []);
   const leave = (s) => {
     if (signed || picked) return;
     setPicked(s);
-    timer.current = setTimeout(() => {
-      const e = { by: PLAYER.name, emoji: s.emoji, text: s.text };
-      // `mine` drives the one-shot pop and lives only in this render's copy — the stored note
-      // stays clean so re-opening the house doesn't re-animate a note that's just sitting there.
-      setEntries(list => [{ ...e, mine: true }, ...list]); f.guest.unshift(e);
-      setSigned(true);
-    }, 320);
+    timer.current = setTimeout(() => post({ by: PLAYER.name, emoji: s.emoji, text: s.text }), 320);
   };
+  // A typed note is screened before it can be posted (see moderation.jsx): profanity, abuse,
+  // sexual language, phone numbers, e-mails, social handles and links are turned away with a
+  // reason, never posted. The server re-screens on write — this is the fast first gate.
+  const leaveText = () => {
+    if (signed || picked) return;
+    const verdict = moderate(draft);
+    if (!verdict.ok) { setBlocked(verdict.reason || 'language'); return; }
+    post({ by: PLAYER.name, emoji: '', text: draft.trim() });
+    setDraft('');
+  };
+  const onDraft = (v) => { setDraft(v); if (blocked) setBlocked(null); };   // clear the warning as they edit
   const fc = f.featured;
 
   return (
@@ -115,7 +130,28 @@ function FriendHouse({ ctx }) {
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '0 2px 10px' }}>{L('Tap a note to leave it.')}</div>
+            {/* free-text note (F-32) — screened by moderation.jsx before it can be posted */}
+            <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '0 2px 10px' }}>{L('Write a short note, or tap one below.')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1.5px solid ${blocked ? THEME.danger : THEME.border}`, borderRadius: 16, padding: '8px 8px 8px 14px', marginBottom: blocked ? 8 : 12 }}>
+              <input
+                value={draft}
+                onChange={(e) => onDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && draft.trim()) leaveText(); }}
+                maxLength={80}
+                placeholder={L('Say something kind…')}
+                style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, color: THEME.fg1, fontFamily: 'inherit', padding: 0 }} />
+              <span style={{ fontSize: 11, color: THEME.fg3, flexShrink: 0 }}>{draft.length}/80</span>
+              <button onClick={leaveText} disabled={!draft.trim()} aria-label={L('Leave note')}
+                style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 999, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: draft.trim() ? 'pointer' : 'default', background: draft.trim() ? THEME.primary : THEME.surface2 }}>
+                <Icon name="send" size={16} color={draft.trim() ? '#fff' : THEME.fg3} stroke={2.4} />
+              </button>
+            </div>
+            {blocked && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: THEME.dangerLight, borderRadius: 12, padding: '10px 12px', marginBottom: 12 }}>
+                <Icon name="shield-alert" size={16} color={THEME.danger} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span style={{ fontSize: 12.5, color: THEME.danger, lineHeight: 1.45 }}>{L(REASON_TEXT[blocked])}</span>
+              </div>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {GUEST_STAMPS.map((s, i) => (
                 <button key={i} className="jx-press" onClick={() => leave(s)}

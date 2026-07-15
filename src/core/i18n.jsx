@@ -250,7 +250,7 @@ const KO = {
 
   // ── profile ──
   'Profile': '프로필', 'My profile': '내 프로필', 'Age': '나이',
-  'Buddies': '친구', 'Best streak': '최고 연속', 'days': '일',
+  'Buddies': '버디', 'Best streak': '최고 연속', 'days': '일',
   'Preferences': '환경설정', 'Language': '언어', 'Sound effects': '효과음', 'Haptics': '진동',
   'Push notifications': '푸시 알림', 'Account': '계정', 'Protection mode': '보호 모드',
   'Managed by your parent': '부모님이 관리해요', 'Help & support': '도움말 및 지원', 'About JoanX': '조안X 정보',
@@ -485,6 +485,7 @@ const KO = {
   'Tell us a little about your child to set up their device.': '아이의 기기를 설정할 수 있도록 아이에 대해 알려주세요.',
   'Tell us a little about your child to set up their device. You can add more than one.': '아이의 기기를 설정할 수 있도록 아이에 대해 알려주세요. 여러 명을 추가할 수 있어요.',
   'Add another child': '자녀 추가하기', 'Child': '자녀',
+  'You can manage up to': '최대', 'children.': '명까지 관리할 수 있어요.', 'Child limit reached': '자녀 등록 한도에 도달했어요',
   'Add children': '자녀 추가', 'Done': '완료', 'Connect device': '기기 연결하기',
   'Connected': '연결됨', 'Not connected': '연결 안 됨', 'Reconnect device': '기기 재연결', 'Open to connect': '눌러서 연결',
   // reconnect help sheet (device offline)
@@ -549,6 +550,19 @@ const KO = {
   'Data processing consent': '개인정보 처리 동의', "I agree JoanX may process my child's on-device motion to keep them safe.": '아이의 안전을 위해 기기 내 모션 정보를 처리하는 데 동의해요.',
   "I'm the parent or legal guardian": '저는 보호자 또는 법적 대리인입니다', 'I have the right to set up protection for this child.': '이 아이의 보호 설정을 할 권한이 있어요.',
   'Private & secure — only used to keep your child safe': '비공개로 안전하게 — 아이를 지키는 데만 써요',
+  // guardian consent gate (legal) — shown once at account registration
+  'As the legal guardian, please review and agree before you start.': '법적 보호자로서 아래 항목을 확인하고 동의해 주세요.',
+  'Agree to all': '전체 동의', 'Required': '필수', 'View': '보기',
+  'Collection and use of personal information': '개인정보 수집 및 이용 동의',
+  'JoanX collects your and your child’s name, date of birth and phone number to create and protect the account — used only to run the safety service, never sold.': 'JoanX는 계정 생성과 보호를 위해 보호자와 아이의 이름, 생년월일, 전화번호를 수집합니다. 안전 서비스 운영에만 사용하며 절대 판매하지 않습니다.',
+  'Agreement to the Terms of Service': '서비스 이용약관 동의',
+  'By using JoanX you agree to use it as a walking-safety companion under a guardian’s supervision.': 'JoanX를 보호자의 관리 아래 걷기 안전 도우미로 사용하는 데 동의합니다.',
+  'Consent to the use of location information': '위치정보 이용 동의',
+  'Location is used only in Smart mode while your child is walking, to sense risky moments — never continuous tracking.': '위치정보는 아이가 걸을 때 스마트 모드에서 위험한 순간을 감지하는 데만 사용하며, 계속 추적하지 않습니다.',
+  'I have the right to consent to this service on the child’s behalf.': '아이를 대신하여 본 서비스에 동의할 권한이 있습니다.',
+  'Documents provided by Joan Company.': '약관은 Joan Company가 제공합니다.',
+  'We don’t collect resident registration numbers or other unnecessary ID.': '주민등록번호 등 서비스에 불필요한 개인정보는 수집하지 않아요.',
+  'Agree & continue': '동의하고 계속',
   'Linked with your child': '자녀와 연결됨',
   'Device connected!': '기기가 연결됐어요!',
   'You can now set up protection for your child.': '이제 아이의 보호 설정을 시작할 수 있어요.',
@@ -775,6 +789,12 @@ const KO = {
   'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
   'Rooms': '방', 'Guestbook': '방명록',
   'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '방문당 한 개',
+  // guestbook free-text note (F-32) + moderation reasons (moderation.jsx)
+  'Write a short note, or tap one below.': '짧은 메모를 쓰거나, 아래에서 골라요.', 'Say something kind…': '따뜻한 말을 남겨요…', 'Leave note': '메모 남기기',
+  'Let’s keep it kind — that message can’t be posted.': '고운 말로 써 주세요 — 이 메모는 남길 수 없어요.',
+  'For safety, notes can’t include phone numbers, e-mails, or social handles.': '안전을 위해 전화번호, 이메일, SNS 아이디는 남길 수 없어요.',
+  'For safety, notes can’t include links.': '안전을 위해 링크는 남길 수 없어요.',
+  'That note is a little too long.': '메모가 조금 너무 길어요.',
   // guestbook stamps (GUEST_STAMPS) — the fixed set children pick from
   'I stopped by!': '놀러 왔어요!', 'Your room is awesome!': '방 진짜 멋져요!', 'Nice streak!': '연속 기록 대단해요!',
   'Cool collection!': '컬렉션 멋져요!', 'Strong buddy!': '친구가 정말 강해요!', 'Congrats on the new buddy!': '새 친구 축하해요!',
@@ -927,6 +947,9 @@ const KO = {
   'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copied!': '복사됐어요!',
   'Add by code': '코드로 추가', 'Friend requests': '친구 요청', 'Suggested friends': '추천 친구',
   'mutual friends': '함께 아는 친구', 'Added': '추가됨', 'Request sent!': '요청을 보냈어요!', 'Friend added!': '친구가 추가됐어요!',
+  'Add a friend': '친구 추가하기', 'Friend code': '친구 코드', 'Nickname': '닉네임', 'QR code': 'QR 코드',
+  'Search by nickname': '닉네임으로 검색', 'No one found': '검색 결과가 없어요', 'Scan to add a friend': '스캔해서 친구 추가',
+  'They’ll get a request to accept.': '상대가 요청을 수락해야 친구가 돼요.', 'Clear': '지우기',
 
   // ── in-scope build (danger zones / GNSS gated off) ──
   'Motion sensor': '모션 센서', 'You beat Rush': '러시를 물리쳤어요',

@@ -92,13 +92,18 @@ function DecorateRoom({ ctx }) {
             they stand on, and the items placed around them */}
         <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
           <div style={{ position: 'relative', padding: '18px 14px 0', background: theme.wall(draft.wallpaper), textAlign: 'center' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 4, minHeight: 118 }}>
-              {inRoom.length ? inRoom.map(c => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4, minHeight: 118 }}>
+              {inRoom.length ? inRoom.map(c => {
+                // a full room can hold ROOM_CAPACITY buddies — scale the mascot down as the
+                // room fills so ten still fit (wrapping to a second shelf) instead of overflowing
+                const size = inRoom.length <= 2 ? 104 : inRoom.length <= 4 ? 78 : inRoom.length <= 6 ? 58 : 46;
+                return (
                 <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Mascot species={c.species} stage={c.stage} color={c.color} size={inRoom.length > 2 ? 78 : 104} />
+                  <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />
                   <div style={{ fontSize: 11, fontWeight: 700 }}>{c.name}</div>
                 </div>
-              )) : (
+                );
+              }) : (
                 <span style={{ fontSize: 12, color: THEME.fg3, alignSelf: 'center' }}>{L('Add a buddy and some decorations below')}</span>
               )}
             </div>

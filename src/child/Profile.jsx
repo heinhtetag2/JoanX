@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, LINK, PARENT_SEES, PLAYER, guardianOwner, guardians } from '../core/data.jsx';
-import { Badge, Button, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, StatCard } from './shared.jsx';
@@ -12,9 +12,9 @@ function Profile({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const owned = CHARACTERS.filter(x => x.owned).length;
   const lite = ctx.mode === 'lite';
-  const [sound, setSound] = React.useState(true);
-  const [haptics, setHaptics] = React.useState(true);
-  const [push, setPush] = React.useState(true);
+  // device prefs are held on PLAYER so a toggle persists across navigation, not lost on unmount
+  const [prefs, setPrefs] = React.useState({ ...PLAYER.prefs });
+  const setPref = (k, v) => { PLAYER.prefs[k] = v; setPrefs(p => ({ ...p, [k]: v })); };
   const [seeOpen, setSeeOpen] = React.useState(false);   // A-13 — "what my parent can see" disclosure
 
   const Row = ({ icon, label, children, last, onClick }) => (
@@ -66,11 +66,11 @@ function Profile({ ctx }) {
             </div>
           </div>
           <Sep />
-          <Row icon="volume-2" label={L('Sound effects')}><Toggle on={sound} onChange={setSound} /></Row>
+          <Row icon="volume-2" label={L('Sound effects')}><Toggle on={prefs.sound} onChange={v => setPref('sound', v)} /></Row>
           <Sep />
-          <Row icon="vibrate" label={L('Haptics')}><Toggle on={haptics} onChange={setHaptics} /></Row>
+          <Row icon="vibrate" label={L('Haptics')}><Toggle on={prefs.haptics} onChange={v => setPref('haptics', v)} /></Row>
           <Sep />
-          <Row icon="bell" label={L('Push notifications')}><Toggle on={push} onChange={setPush} /></Row>
+          <Row icon="bell" label={L('Push notifications')}><Toggle on={prefs.push} onChange={v => setPref('push', v)} /></Row>
         </div>
 
         {/* A-13 — who this device is linked to. "Managed by your parent" told the child a
@@ -144,8 +144,11 @@ function Profile({ ctx }) {
           <Row icon="info" label={L('About JoanX')} onClick={() => ctx.nav('about')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
         </div>
 
-        <Button variant="outline" size="lg" fullWidth icon="log-out" onClick={() => {}}>{L('Sign out')}</Button>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14, color: THEME.fg3 }}>
+        {/* No child-side "Sign out": the child app has no separate login — the device is
+            provisioned and managed by a guardian, so a child sign-out would contradict the
+            model (and unlinking is the parent's action, A-13). The managed-device note carries
+            the only account statement the child screen should make. */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6, color: THEME.fg3 }}>
           <Icon name="shield-check" size={13} color={THEME.fg3} stroke={2.2} />
           <span style={{ fontSize: 11.5 }}>{L('This device is managed by a parent or guardian.')}</span>
         </div>

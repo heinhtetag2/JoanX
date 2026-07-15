@@ -97,24 +97,25 @@ function Collection({ ctx }) {
               {room.unlocked ? (
                 <div style={{ borderRadius: 22, padding: '20px 14px 14px', background: themeOf(room).wall(room.wallpaper), boxShadow: THEME.shadowCard, position: 'relative', overflow: 'hidden' }}>
                   {/* shelf */}
-                  <div style={{ display: 'flex', gap: 10, position: 'relative', zIndex: 1 }}>
-                    {Array.from({ length: room.slots }).map((_, i) => {
-                      const c = placed[i];
-                      return c ? (
-                        <button key={i} onClick={() => ctx.nav('character', { id: c.id })} style={{ flex: 1, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 }}>
-                          <Mascot species={c.species} stage={c.stage} color={c.color} size={74} />
-                          <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, position: 'relative', zIndex: 1 }}>
+                    {/* placed buddies wrap across rows; a room holds up to room.slots of them */}
+                    {placed.map(c => (
+                        <button key={c.id} onClick={() => ctx.nav('character', { id: c.id })} style={{ border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 }}>
+                          <Mascot species={c.species} stage={c.stage} color={c.color} size={56} />
+                          <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
                           <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 3, fontSize: 9.5, padding: '2px 7px' }}>Lv{c.level}</Badge>
                         </button>
-                      ) : (
-                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}>
-                          <div style={{ width: 56, height: 56, borderRadius: 18, border: `2px dashed ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Icon name="plus" size={22} color={THEME.fg3} stroke={2.2} />
-                          </div>
-                          <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 6 }}>{L('Empty')}</div>
+                    ))}
+                    {/* one add affordance while the room has space — the rest of the empty
+                        slots stay implied, not drawn ten-deep as dashed placeholders */}
+                    {placed.length < room.slots && (
+                      <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: 0 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 18, border: `2px dashed ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon name="plus" size={22} color={THEME.fg3} stroke={2.2} />
                         </div>
-                      );
-                    })}
+                        <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 6 }}>{L('Add')}</div>
+                      </button>
+                    )}
                   </div>
                   {/* shelf line */}
                   <div style={{ height: 8, borderRadius: 999, background: 'rgba(0,0,0,.05)', marginTop: 6 }} />

@@ -100,12 +100,17 @@ function MyHouse({ ctx }) {
                   <Icon name="paintbrush" size={13} color={THEME.primary} stroke={2.3} />{L('Decorate')}
                 </button>
               </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                {Array.from({ length: room.slots }).map((_, i) => placed[i] ? (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}><Mascot species={placed[i].species} stage={placed[i].stage} color={placed[i].color} size={56} /><div style={{ fontSize: 11, fontWeight: 700, marginTop: 2 }}>{placed[i].name}</div></div>
-                ) : (
-                  <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 78 }}><div style={{ width: 42, height: 42, borderRadius: 14, border: `2px dashed ${THEME.border}` }} /></div>
+              {/* buddies wrap across rows so a room filled to ROOM_CAPACITY still lays out
+                  cleanly; one add tile stands in for the remaining free space */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+                {placed.map(c => (
+                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={48} /><div style={{ fontSize: 11, fontWeight: 700, marginTop: 2 }}>{c.name}</div></div>
                 ))}
+                {placed.length < room.slots && (
+                  <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 70, padding: 0 }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 14, border: `2px dashed ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={18} color={THEME.fg3} stroke={2.2} /></div>
+                  </button>
+                )}
               </div>
               {/* the items placed in THIS room — its own set, kept per room */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: 12, minHeight: 20, marginTop: 6 }}>

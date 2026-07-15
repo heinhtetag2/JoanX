@@ -67,10 +67,28 @@ function Friends({ ctx, layout = 'list' }) {
   const me = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];   // your buddy = your avatar
   const visit = f => ctx.nav('friendhouse', { id: f.id });
 
+  // F-33 · the friend list is uncapped, so the default list pages in a window at a time
+  // instead of committing every friend to the DOM at once — a thousand-friend list stays
+  // smooth because only what you've scrolled to is mounted. A sentinel below the last row
+  // pulls the next page as it comes into view. With few friends the window already covers
+  // them, so nothing about the current screen changes.
+  const PAGE = 20;
+  const [shown, setShown] = React.useState(PAGE);
+  const moreRef = React.useRef(null);
+  React.useEffect(() => {
+    const el = moreRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) setShown(n => n + PAGE); });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown, friends.length]);
+
   // ── variant bodies ──────────────────────────────────────────────────
   const bodies = {
     // 1 · List — full-width rows, avatar + stats + Visit button (the default)
-    list: () => friends.map(f => (
+    list: () => (
+      <React.Fragment>
+        {friends.slice(0, shown).map(f => (
       <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: 14, border: `1px solid ${THEME.border}`, marginBottom: 10 }}>
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <MascotChip species={f.avatar} color={f.color} size={50} bg={PURPLE.light} />
@@ -85,7 +103,10 @@ function Friends({ ctx, layout = 'list' }) {
         </div>
         <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: PURPLE.light, color: PURPLE.main }}>{L('Visit')}<Icon name="arrow-right" size={16} color={PURPLE.main} stroke={2.4} /></Button>
       </div>
-    )),
+        ))}
+        {shown < friends.length && <div ref={moreRef} style={{ height: 1 }} aria-hidden="true" />}
+      </React.Fragment>
+    ),
 
     // 2 · Grid — two-column tap-to-visit cards, mascot forward
     grid: () => (

@@ -29,9 +29,11 @@ import { Mascot } from '../core/characters.jsx';
 // same visual beat, nothing made up.
 
 // ── palette ──
-// Two skins, both dark: `iris` (the original violet mood) and `forest`, which carries the
-// product's brand green onto the pitch surface so the story and the app read as one thing.
-// Everything violet in here is a token, not a literal, so a third skin is one more entry.
+// Three skins now: `iris` (the original violet mood) and `forest` are both dark; `meadow`
+// is the light one — white surface with the brand green carried onto the cards, chips and
+// selected states, for the parent who wants the pitch to read like a calm daytime page
+// rather than a glowing dark one. Everything is a token, not a literal, so a skin is one
+// entry — and the light skin overrides the shared white-on-dark tokens (card/fg/…) below.
 const STORY_THEMES = {
   iris: {
     ink: '#0f0b22',
@@ -60,19 +62,60 @@ const STORY_THEMES = {
     cta: 'linear-gradient(90deg, #3c7448 0%, #4f9a5f 25%, #86cf92 50%, #4f9a5f 75%, #3c7448 100%)',
     ctaGlow: 'rgba(134,207,146,.55)', ctaGlowSoft: 'rgba(134,207,146,.32)',
   },
+  // the light skin — white surface, brand green (THEME.brand #4B814F) deepened so it stays
+  // readable on white, and soft-green tints for cards, chips and selected states. It also
+  // carries its own copies of the shared surface tokens (card/fg/offBar/…) so the page reads
+  // dark-on-light instead of the white-on-dark the dark skins assume. Kept flat on purpose:
+  // no bright glows on white — the "glow" here is a faint green halo, not a shine.
+  meadow: {
+    ink: '#ffffff',
+    bg: 'radial-gradient(120% 80% at 50% 0%, #eaf5ec 0%, #f5faf6 46%, #ffffff 100%)',
+    planBg: 'radial-gradient(120% 70% at 50% 0%, #e4f2e7 0%, #f1f8f2 42%, #ffffff 100%)',
+    accent: '#3c7448',
+    accentDeep: '#2f5c39',
+    soft: 'rgba(75,129,79,.10)',
+    line: 'rgba(75,129,79,.22)',
+    glow: 'rgba(75,129,79,.24)',
+    grad: 'linear-gradient(180deg,#5fa26d,#3c7448)',
+    cta: 'linear-gradient(90deg, #3c7448 0%, #4f9a5f 50%, #3c7448 100%)',
+    ctaGlow: 'rgba(75,129,79,.30)', ctaGlowSoft: 'rgba(75,129,79,.16)',
+    // light-surface overrides of the shared tokens
+    card: 'rgba(75,129,79,.06)',
+    cardLine: 'rgba(75,129,79,.16)',
+    fg: '#12291a',
+    fg2: 'rgba(18,41,26,.64)',
+    fg3: 'rgba(18,41,26,.42)',
+    offBar: 'rgba(18,41,26,.10)',
+    ctrl: 'rgba(18,41,26,.05)',
+    ctrlLine: 'rgba(18,41,26,.14)',
+    ctrlIcon: '#12291a',
+    pick: 'rgba(75,129,79,.12)',
+    radioOff: 'rgba(18,41,26,.28)',
+  },
 };
-const STORY_THEMES_LIST = [{ id: 'iris', label: 'Iris' }, { id: 'forest', label: 'Forest' }];
+const STORY_THEMES_LIST = [{ id: 'iris', label: 'Iris' }, { id: 'forest', label: 'Forest' }, { id: 'meadow', label: 'Meadow' }];
 
-// The live palette. Sub-components read it at render, and HowItWorks stamps the active skin
-// into it before rendering — the same trick Mascot uses with the character style.
-const V = {
-  ...STORY_THEMES.iris,
+// Shared surface tokens — the white-on-dark defaults the two dark skins assume. Held apart
+// from the skin so a light skin can override any of them, and so switching skins re-stamps a
+// clean base every render (Object.assign in HowItWorks) instead of leaving a light skin's
+// dark-on-light tokens behind when you switch back to iris/forest.
+const BASE_V = {
   card: 'rgba(255,255,255,.055)',
   cardLine: 'rgba(255,255,255,.09)',
   fg: '#ffffff',
   fg2: 'rgba(255,255,255,.62)',
   fg3: 'rgba(255,255,255,.38)',
+  offBar: 'rgba(255,255,255,.12)',   // muted fills: empty compare bar, spent hand
+  ctrl: 'rgba(255,255,255,.09)',     // close-button fill
+  ctrlLine: 'rgba(255,255,255,.16)', // close-button / radio-off border
+  ctrlIcon: '#ffffff',               // close-button icon
+  pick: 'rgba(167,139,245,.14)',     // selected-plan tint (violet on the dark skins)
+  radioOff: 'rgba(255,255,255,.28)', // unselected plan radio ring
 };
+
+// The live palette. Sub-components read it at render, and HowItWorks stamps the active skin
+// into it before rendering — the same trick Mascot uses with the character style.
+const V = { ...BASE_V, ...STORY_THEMES.iris };
 const GUTTER = 22;
 
 const Card = ({ children, style }) => (
@@ -148,7 +191,7 @@ function CompareBars() {
           <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: 84 }}>
             <span className="game-font" style={{ fontSize: 20, fontWeight: 500, color: b.on ? V.fg : V.fg3 }}>{b.v}{L('x')}</span>
             <div style={{ width: '100%', height: `${(b.v / first) * 108}px`, borderRadius: 12,
-              background: b.on ? V.grad : 'rgba(255,255,255,.12)',
+              background: b.on ? V.grad : V.offBar,
               boxShadow: b.on ? `0 0 26px ${V.glow}` : 'none', transition: 'height .6s' }} />
             <span style={{ fontSize: 11.5, fontWeight: 700, color: b.on ? V.accent : V.fg3 }}>{b.l}</span>
           </div>
@@ -168,7 +211,7 @@ function OutOfTen() {
     <Card style={{ padding: '20px 16px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginBottom: 14 }}>
         {Array.from({ length: 10 }, (_, i) => (
-          <Icon key={i} name="hand" size={22} color={i < n ? V.accent : 'rgba(255,255,255,.16)'} stroke={2.2}
+          <Icon key={i} name="hand" size={22} color={i < n ? V.accent : V.offBar} stroke={2.2}
                 fill={i < n ? V.accent : 'transparent'} />
         ))}
       </div>
@@ -241,7 +284,7 @@ const NEVER = [
 ];
 
 function HowItWorks({ onClose, onStart, theme = 'iris' }) {
-  Object.assign(V, STORY_THEMES[theme] || STORY_THEMES.iris);   // stamp the active skin
+  Object.assign(V, BASE_V, STORY_THEMES[theme] || STORY_THEMES.iris);   // reset base, stamp skin
   const buddy = CHARACTERS.find(c => c.owned) || CHARACTERS[0];
   const roster = (visibleCharacters ? visibleCharacters() : CHARACTERS).length;
   const scroller = React.useRef(null);
@@ -307,8 +350,8 @@ function HowItWorks({ onClose, onStart, theme = 'iris' }) {
 
   return (
     <div className="jx-sheet-up" style={{ position: 'absolute', inset: 0, zIndex: 95, background: V.ink, display: 'flex', flexDirection: 'column' }}>
-      <button onClick={onClose} aria-label={L('Close')} style={{ position: 'absolute', top: 56, right: 16, zIndex: 3, width: 34, height: 34, borderRadius: 999, border: '1px solid rgba(255,255,255,.16)', background: 'rgba(255,255,255,.09)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <Icon name="x" size={18} color="#fff" stroke={2.4} />
+      <button onClick={onClose} aria-label={L('Close')} style={{ position: 'absolute', top: 56, right: 16, zIndex: 3, width: 34, height: 34, borderRadius: 999, border: `1px solid ${V.ctrlLine}`, background: V.ctrl, backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <Icon name="x" size={18} color={V.ctrlIcon} stroke={2.4} />
       </button>
 
       <div ref={scroller} className="no-sb jx-story" onScroll={onScroll} onWheel={onWheel} onTouchStart={onTouchStart} onTouchMove={onTouchMove}
@@ -455,8 +498,8 @@ function HowItWorks({ onClose, onStart, theme = 'iris' }) {
           close button, and does not reopen itself once dismissed. ── */}
       {showPlans && (
         <div className="jx-sheet-up" style={{ position: 'absolute', inset: 0, zIndex: 96, display: 'flex', flexDirection: 'column', background: V.planBg }}>
-          <button onClick={closePlans} aria-label={L('Close')} style={{ position: 'absolute', top: 56, right: 16, zIndex: 3, width: 34, height: 34, borderRadius: 999, border: '1px solid rgba(255,255,255,.16)', background: 'rgba(255,255,255,.09)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Icon name="x" size={18} color="#fff" stroke={2.4} />
+          <button onClick={closePlans} aria-label={L('Close')} style={{ position: 'absolute', top: 56, right: 16, zIndex: 3, width: 34, height: 34, borderRadius: 999, border: `1px solid ${V.ctrlLine}`, background: V.ctrl, backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Icon name="x" size={18} color={V.ctrlIcon} stroke={2.4} />
           </button>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', paddingTop: 54 }}>
           <div style={{ padding: `28px ${GUTTER}px 132px`, textAlign: 'center' }}>
@@ -476,11 +519,11 @@ function HowItWorks({ onClose, onStart, theme = 'iris' }) {
                 <button key={pl.id} onClick={() => setPlan(pl.id)} style={{
                   position: 'relative', width: '100%', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                   display: 'flex', alignItems: 'center', gap: 12, padding: '14px 15px', borderRadius: 18,
-                  background: on ? 'rgba(167,139,245,.14)' : V.card,
+                  background: on ? V.pick : V.card,
                   border: `1.5px solid ${on ? V.accent : V.cardLine}`,
                   transition: 'background .2s, border-color .2s',
                 }}>
-                  <span style={{ width: 22, height: 22, borderRadius: 999, flexShrink: 0, border: `2px solid ${on ? V.accent : 'rgba(255,255,255,.28)'}`, background: on ? V.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ width: 22, height: 22, borderRadius: 999, flexShrink: 0, border: `2px solid ${on ? V.accent : V.radioOff}`, background: on ? V.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {on && <Icon name="check" size={13} color="#fff" stroke={3} />}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>

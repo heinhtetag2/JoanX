@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentAddChild
 
 import React from 'react';
-import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
+import { APP_CATEGORIES, CHILDREN, MAX_CHILDREN } from '../core/data.jsx';
 import { Button, Icon, Input, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip, shade } from '../core/characters.jsx';
@@ -21,7 +21,9 @@ function ParentAddChild({ ctx }) {
   const [kids, setKids] = React.useState([newKid()]);
   const [openKid, setOpenKid] = React.useState(0);   // which card is expanded (-1 = all collapsed)
   const updateKid = (i, patch) => setKids(ks => ks.map((k, j) => (j === i ? { ...k, ...patch } : k)));
-  const addKid = () => { setOpenKid(kids.length); setKids(ks => [...ks, newKid()]); };
+  // capacity left on this guardian account (A-13) — you can't stage or register past MAX_CHILDREN
+  const spaceLeft = () => MAX_CHILDREN - CHILDREN.length - kids.length;
+  const addKid = () => { if (spaceLeft() <= 0) return; setOpenKid(kids.length); setKids(ks => [...ks, newKid()]); };
   const removeKid = i => { setKids(ks => ks.filter((_, j) => j !== i)); setOpenKid(Math.max(0, i - 1)); };
   const [cats, setCats] = React.useState(() => Object.fromEntries(APP_CATEGORIES.map(c => [c.id, c.blocked])));
   const [sens, setSens] = React.useState(2);
@@ -67,7 +69,8 @@ function ParentAddChild({ ctx }) {
   };
 
   const addChild = () => {
-    kids.forEach(kid => {
+    // never register past the cap, even if more forms were somehow staged (A-13)
+    kids.slice(0, Math.max(0, MAX_CHILDREN - CHILDREN.length)).forEach(kid => {
       const i = CHILDREN.length;
       CHILDREN.push({
         id: 'k' + (i + 1), name: kid.name.trim() || 'New child', age: ageFromDob(kid.dob) || 8, dob: kid.dob, mode, phone: kid.phone.trim(), relation: kid.relation, sibling: kid.sibling,
@@ -231,10 +234,14 @@ function ParentAddChild({ ctx }) {
               })}
             </div>
 
-            {/* add another child */}
+            {/* add another child — hidden once the account is at its child cap (A-13) */}
+            {spaceLeft() > 0 ? (
             <button onClick={addKid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 12, padding: 13, background: 'transparent', color: THEME.fg2, border: '1.5px dashed rgba(43,41,38,.28)', borderRadius: 16, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
               <Icon name="plus" size={17} color={THEME.fg2} stroke={2.6} />{L('Add another child')}
             </button>
+            ) : (
+            <div style={{ marginTop: 12, padding: '11px 13px', fontSize: 12.5, fontWeight: 700, color: THEME.fg2, textAlign: 'center' }}>{L('You can manage up to')} {MAX_CHILDREN} {L('children.')}</div>
+            )}
           </div>
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             <Button variant="primary" size="lg" fullWidth style={brandBtn} disabled={!allNamed} onClick={allNamed ? addChild : undefined}>{L(kids.length > 1 ? 'Add children' : 'Add child')}</Button>

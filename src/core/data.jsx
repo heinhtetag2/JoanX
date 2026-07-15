@@ -138,6 +138,11 @@ const PLAYER = {
   itemGrants: {},                     // A-5.1 — item rules paid out so far
   // public profile / house (F-32 / A-6·A-7)
   friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
+  // Child device preferences — the game's own sound, vibration and notification feedback.
+  // Held on PLAYER (server-ownable like the rest of it) so a toggle in Profile actually
+  // sticks across navigation instead of resetting. These are the child's own device feedback
+  // only; warning sensitivity/frequency stay parent-controlled (F-22 · ParentSettings).
+  prefs: { sound: true, haptics: true, push: true },
   // A-13 — which CHILDREN row this device IS. The parent app and the child app were two
   // separate models of the same kid with nothing joining them; this is the join.
   childId: 'k1',
@@ -361,6 +366,52 @@ const FRIEND_SUGGESTIONS = [
   { id: 's2', name: 'Kai',  avatar: 'fox',  color: '#e1874a', mutual: 1 },
   { id: 's3', name: 'Yuna', avatar: 'bird', color: '#67c7ce', mutual: 3 },
 ];
+
+// ── Friend-adding methods & approval policy (F-32) ───────────────────
+// The ways a child can find and add a friend live here as a registry, not as hardcoded
+// branches in the screen, so a future business policy can turn a method off, reorder them,
+// or add a new one (e.g. a class code) by editing this list alone. `enabled: false` hides a
+// method everywhere without deleting its UI. Order is display order.
+const FRIEND_METHODS = [
+  { id: 'code',   enabled: true, label: 'Friend code', icon: 'hash',    hint: 'Enter a friend’s code' },
+  { id: 'search', enabled: true, label: 'Nickname',    icon: 'search',  hint: 'Search by nickname' },
+  { id: 'qr',     enabled: true, label: 'QR code',     icon: 'qr-code', hint: 'Scan a friend’s QR' },
+];
+
+// How a friend request becomes a friendship. `approver: 'recipient'` — the person who
+// receives the request must accept it (today's rule, F-32). One knob so policy can move to
+// 'auto' (instant), 'mutual', or 'parent' (guardian-approved) without reworking the flow.
+const FRIEND_POLICY = { requiresApproval: true, approver: 'recipient' };
+
+// ── Friend-graph limits (F-33) — there are none, by design ───────────
+// Friends, pending requests, likes and gifts are all uncapped: a child may add as many
+// friends and send as many of each interaction as they like. `null` = unlimited. This is
+// written down as explicit policy — rather than left as an unwritten "we just never added a
+// cap" — so no later change quietly introduces a ceiling, and so there is one place to set
+// one should business ever need to. NB: likes remain one-reaction-per-friend (see react())
+// — that is a rule about a single friend, not a quota on how many friends you may like.
+// Scale is handled at the render layer, not by capping: long lists page in incrementally
+// (see Friends' windowed list) and every interaction is O(1) on its own record.
+const FRIEND_LIMITS = { friends: null, requests: null, likes: null, gifts: null };
+
+// Nickname search pool (F-32). Nicknames are NOT unique — the two "Yuna"s below share a
+// nickname but each carries a distinct, system-generated friend code, which is exactly how
+// the search results tell same-named users apart.
+const DISCOVERABLE_USERS = [
+  { id: 'u1', name: 'Yuna', avatar: 'bird', color: '#67c7ce', friendCode: 'JNX-YUNA-08', mutual: 3 },
+  { id: 'u2', name: 'Yuna', avatar: 'cat',  color: '#f0a6c0', friendCode: 'JNX-YUNA-42', mutual: 0 },
+  { id: 'u3', name: 'Kai',  avatar: 'fox',  color: '#e1874a', friendCode: 'JNX-KAI0-15', mutual: 1 },
+  { id: 'u4', name: 'Emma', avatar: 'cat',  color: '#f0a6c0', friendCode: 'JNX-EMMA-91', mutual: 2 },
+  { id: 'u5', name: 'Haru', avatar: 'owl',  color: '#b9a3ef', friendCode: 'JNX-HARU-33', mutual: 0 },
+];
+
+// Find users by nickname — case-insensitive, matches any part of the name. Never returns
+// yourself. A blank query returns nothing (the search UI shows results only once you type).
+function searchUsers(q) {
+  const s = (q || '').trim().toLowerCase();
+  if (!s) return [];
+  return DISCOVERABLE_USERS.filter(u => u.friendCode !== PLAYER.friendCode && u.name.toLowerCase().includes(s));
+}
 
 // ── Point & reward criteria (F-13 / F-14 · spec A-1.1) ───────────────
 // Server-configurable: these values are business policy, not app logic, and are
@@ -1470,12 +1521,19 @@ const themeOf = (room) => themeById(room?.theme);
 //   unlocked — DERIVED, never authored: applyRoomUnlocks() writes it from the rules
 //              below against the child's real progress. Seeded here only so the first
 //              render before that call is honest.
+// ROOM_CAPACITY (A-6) — how many characters may live in one Room at once. One knob,
+// not a literal sprinkled across the rooms table, so a future business policy can retune
+// it in a single place. It is capped rather than open-ended on purpose: every placed
+// character renders a live mascot, so the ceiling is what keeps a full room cheap to draw
+// on the target reference devices. A room may still pin its own `slots` to override this.
+const ROOM_CAPACITY = 10;
+
 const ROOMS = [
-  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: 3, wallpaper: '#e7f3e4', placed: { plant: true, sapling: true } },
-  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: 3, wallpaper: '#eaf0f6', placed: { lamp: true } },
-  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: 4, wallpaper: '#efe8fb', placed: {} },
+  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', placed: { plant: true, sapling: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', placed: { lamp: true } },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', placed: {} },
   // expansion slot — a seasonal room, dark until the winter set goes live
-  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: 4, wallpaper: '#e6eef7', placed: {} },
+  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#e6eef7', placed: {} },
 ];
 
 // ── Room unlocks (A-6 · rooms are EARNED, never bought) ──────────────
@@ -1658,6 +1716,13 @@ const PARENT_ALERTS = [
   { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false },
   { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false },
 ];
+
+// MAX_CHILDREN (A-13) — how many children one guardian account may register and manage.
+// "Managed" is about authority, not blood: any child the guardian pairs counts, related or
+// not. Kept as one knob (not a literal buried in the add-child flow) so a future business
+// policy — a family plan, a school account — can raise it in a single place. Enforced at the
+// registration mutation, so no screen can push past it.
+const MAX_CHILDREN = 5;
 
 const CHILDREN = [
   { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
@@ -2264,11 +2329,12 @@ const FRIENDS = [
     guest: [{ by: 'Jisoo', emoji: '🔥', text: 'Nice streak!' }, { by: 'Tom', emoji: '👋', text: 'I stopped by!' }] },
 ];
 
-// A-10.1: guestbook notes are picked from this fixed set, never typed. A free text box
-// between two children is an unmoderated message channel — the one thing the product
-// promises parents it does not have — so the whole surface is a tap: pick a stamp, it's
-// sent. Nothing to moderate, nothing to misspell, and a 7-year-old can leave a note
-// without a keyboard.
+// A-10.1: the quick-tap notes. A child can now also TYPE a short note, but these stamps
+// stay the always-safe fast path — one tap, nothing to moderate or misspell, and a 7-year-old
+// can leave a note without a keyboard. A typed note is instead screened before it posts (see
+// core/moderation.jsx): profanity, abuse, sexual language, phone numbers, social handles and
+// links are turned away, so the free-text box is never the unmoderated channel the product
+// promises parents it does not have.
 const GUEST_STAMPS = [
   { emoji: '👋', text: 'I stopped by!' },
   { emoji: '😍', text: 'Your room is awesome!' },
@@ -2318,7 +2384,7 @@ const PERMISSIONS = [
 // run it any earlier and it trips over a table that has not been declared yet.
 applyRoomUnlocks();
 
-export { ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_THEMES, themeById, themeOf, decorForRoom,
+export { ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, decorForRoom,
   ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

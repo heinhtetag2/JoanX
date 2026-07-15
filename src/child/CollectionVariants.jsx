@@ -269,10 +269,15 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
                 <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{room.unlocked ? `${placed.length}/${room.slots}` : L('Locked')}</span>
               </div>
               {room.unlocked ? (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  {Array.from({ length: room.slots }).map((_, i) => { const c = placed[i]; return c ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                  {placed.map(c => (
                     <button key={c.id} onClick={() => openC(c)} style={{ width: 52, height: 52, borderRadius: 999, background: shade(c.color, 70), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={50} /></button>
-                  ) : <div key={'e' + i} style={{ width: 52, height: 52, borderRadius: 999, border: `2px dashed ${THEME.border}`, flexShrink: 0 }} />; })}
+                  ))}
+                  {/* one add circle while there's room (up to room.slots); the rest of the
+                      empty slots stay implied rather than drawn ten-deep off the card edge */}
+                  {placed.length < room.slots && (
+                    <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ width: 52, height: 52, borderRadius: 999, border: `2px dashed ${THEME.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="plus" size={20} color={THEME.fg3} stroke={2.2} /></button>
+                  )}
                 </div>
               ) : <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 4 }}>{L(roomProgress(room)?.label || 'Coming soon')}</div>}
             </div>
