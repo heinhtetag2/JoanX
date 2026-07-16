@@ -60,7 +60,12 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   // The guardian first says what they are here to do — log in or create an account. Both
   // credentials are the same phone + SMS; the mode only decides where a verified number lands
   // and what to say when it knocks on the wrong door (see verifyCode).
-  const [phase, setPhase] = React.useState('choose');  // 'choose' | 'phone' | 'code' | 'profile' | 'consent'
+  const [phase, setPhase] = React.useState('choose');  // 'choose' | 'consent' | 'phone' | 'code' | 'profile'
+  // Where the consent gate continues to once agreed. Normally it is the first step of sign-up
+  // (choose → consent → phone), so it lands on 'phone'; when a log-in turns out to have no
+  // account and switches to sign-up mid-flow, the number is already verified, so it lands on
+  // 'profile' instead.
+  const [afterConsent, setAfterConsent] = React.useState('phone');
   const [mode, setMode] = React.useState('login');     // 'login' | 'signup'
   const [phone, setPhone] = React.useState('');
   const [code, setCode] = React.useState('');
@@ -102,7 +107,9 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   const removePhoto = () => { setPhoto(null); if (photoRef.current) photoRef.current.value = ''; };
 
   // Enter a mode from the landing screen and go straight to the phone step.
-  const start = (m) => { setMode(m); setNotice(null); setPhase('phone'); };
+  // Sign-up must agree to the guardian consents BEFORE anything else; log-in has already
+  // consented at its own registration, so it goes straight to the phone step.
+  const start = (m) => { setMode(m); setNotice(null); if (m === 'signup') { setAfterConsent('phone'); setPhase('consent'); } else setPhase('phone'); };
   const sendCode = () => { setCode(''); setCodeErr(false); setNotice(null); setResendLeft(AUTH.smsResendSeconds); setPhase('code'); };
 
   // Any complete code is accepted in the prototype; the verification is the same either way.
@@ -118,7 +125,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
     else { if (known) onDone(); else setNotice('no-account'); }
   };
   // Resolve a wrong-door hint: the number is already verified, so switching is frictionless.
-  const switchToSignup = () => { setMode('signup'); setNotice(null); setPhase('profile'); };  // from log-in, no account found
+  const switchToSignup = () => { setMode('signup'); setNotice(null); setAfterConsent('profile'); setPhase('consent'); };  // from log-in, no account found → consent, then profile (phone already verified)
   const switchToLogin = () => { setMode('login'); setNotice(null); onDone(); };                // from sign-up, number already exists
 
   // Google / Apple hand back a verified identity. Logging in lands in the app; signing up
@@ -162,7 +169,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
       {phase === 'phone' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
-            <button onClick={() => setPhase('choose')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => setPhase(signup ? 'consent' : 'choose')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
             </button>
 
@@ -320,15 +327,16 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!profileOk} onClick={profileOk ? () => setPhase('consent') : undefined}>{L('Next')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!profileOk} onClick={profileOk ? () => onDone() : undefined}>{L('Create account')}</Button>
           </div>
         </>
       )}
 
-      {/* guardian consent — required by law before the service can be used. New accounts
-          only: a known phone signs straight in, having consented at its own registration. */}
+      {/* guardian consent — required by law, now the FIRST step of sign-up (choose → consent →
+          phone). Agreeing continues to `afterConsent` (phone on a fresh sign-up; profile when a
+          log-in with no account switched to sign-up after the number was already verified). */}
       {phase === 'consent' && (
-        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase('profile')} onDone={onDone} />
+        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase(afterConsent === 'profile' ? 'code' : 'choose')} onDone={() => setPhase(afterConsent)} />
       )}
     </React.Fragment>
   );

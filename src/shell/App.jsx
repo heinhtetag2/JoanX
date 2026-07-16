@@ -10,6 +10,7 @@ import { setLang } from '../core/i18n.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
 import ProjectDocs from '../docs/ProjectDocs.jsx';
+import { HandoffBadge } from './HandoffBadge.jsx';
 
 // The roles that replace the phone with a full-page document. One list, because four
 // separate `.includes(...)` checks is how a fifth doc page gets half-added.
@@ -53,6 +54,7 @@ function App() {
   //              product must not let them stare at mid-stride
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false, walking: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
+  const [devBadge, setDevBadge] = React.useState(!__q.has('nodev'));   // per-screen handoff status badge — on by default; hide with ?nodev or the Tweaks toggle
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
@@ -234,6 +236,14 @@ function App() {
       </div>
       )}
 
+      {/* dev handoff status — fixed to the left of the phone, vertically centered, outside the mockup.
+          Onboarding / login aren't router screens, so they map to their own handoff keys. */}
+      {devBadge && !isDocRole(role) && (
+        <div style={{ position: 'fixed', top: '50%', left: 24, transform: 'translateY(-50%)', zIndex: 200 }}>
+          <HandoffBadge screenKey={role === 'child' ? (onboarded ? screen : 'onboarding') : (parentOnboarded ? pScreen : 'parent_onboarding')} />
+        </div>
+      )}
+
       {/* tweaks panel */}
       {tweaksOpen && !isDocRole(role) && (
         <div className="tweaks">
@@ -246,6 +256,13 @@ function App() {
           <div className="tw-row">
             {[['en', 'English'], ['ko', '한국어']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (lang === v ? ' on' : '')} onClick={() => changeLang(v)}>{l}</button>
+            ))}
+          </div>
+
+          <div className="tw-label">Dev handoff status</div>
+          <div className="tw-row">
+            {[[true, 'Show'], [false, 'Hide']].map(([v, l]) => (
+              <button key={String(v)} className={'tw-chip' + (devBadge === v ? ' on' : '')} onClick={() => setDevBadge(v)}>{l}</button>
             ))}
           </div>
 
