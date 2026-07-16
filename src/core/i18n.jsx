@@ -600,7 +600,7 @@ const KO = {
   'Guardians': '보호자', 'Co-parent': '공동 양육자', 'Invite a guardian': '보호자 초대',
   'Edit': '수정', 'Save': '저장', 'Profile photo': '프로필 사진', 'Take photo': '사진 촬영', 'Choose from library': '앨범에서 선택',
   'Linked to your Google account': 'Google 계정에 연결됨',
-  'Sign-in': '로그인', 'Delete account': '계정 삭제', 'Delete your account?': '계정을 삭제할까요?',
+  'OK': '확인', 'Sign-in': '로그인', 'Delete account': '계정 삭제', 'Delete your account?': '계정을 삭제할까요?',
   'This permanently deletes your account and unlinks every child device. This can’t be undone.': '계정이 영구히 삭제되고 모든 자녀 기기의 연결이 해제돼요. 되돌릴 수 없어요.',
   'Changes saved': '저장됐어요', 'Profile photo updated': '프로필 사진이 변경됐어요', 'Profile photo removed': '프로필 사진이 삭제됐어요',
   'Remove profile photo?': '프로필 사진을 삭제할까요?', 'This removes your current photo. You can add a new one anytime.': '현재 사진이 삭제돼요. 언제든 새로 추가할 수 있어요.',
@@ -893,7 +893,10 @@ const KO = {
   // ── my profile / house + decoration (A-6 / A-7) ──
   'My Profile': '내 프로필', 'Friends see this': '친구에게 보여요', 'My rooms': '내 방',
   'Change buddy': '친구 바꾸기', 'Decorate rooms': '방 꾸미기', 'Decorate': '꾸미기',
-  'House background': '집 배경', 'Not enough points yet': '포인트가 부족해요',
+  'Change room': '방 바꾸기', 'Choose a room': '방 선택', 'Not enough points yet': '포인트가 부족해요',
+  'Forest': '숲', 'Beach': '해변', 'City': '도시',
+  'Choose your buddy': '버디 선택', 'Your buddies': '내 버디', 'See all in Collection': '컬렉션에서 모두 보기',
+  'Items': '아이템', 'Get more in Decorate': '꾸미기에서 더 담기', 'Decorate your profile': '프로필 꾸미기',
   'Notes your friends left when they visited.': '친구들이 방문하며 남긴 메모예요.', 'Like': '좋아요',
   'See all': '전체 보기', 'No notes yet': '아직 메모가 없어요',
 

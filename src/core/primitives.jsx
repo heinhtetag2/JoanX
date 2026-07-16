@@ -284,6 +284,20 @@ function Input({ label, value, onChange, placeholder, type = 'text', error, trai
   );
 }
 
+// Centered modal dialog — for short yes/no confirmations (sign out, delete). A
+// dialog is a decision, so it sits in the middle of the screen; BottomSheet is
+// for pickers/forms/options that slide up from the edge.
+function Modal({ title, onClose, children }) {
+  return (
+    <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(20,18,16,0.42)' }}>
+      <div className="jx-fade" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 330, background: '#fff', borderRadius: 24, padding: '24px 20px 18px', maxHeight: '82%', display: 'flex', flexDirection: 'column' }}>
+        {title && <div style={{ fontSize: 18, fontWeight: 800, color: THEME.fg1, textAlign: 'center', marginBottom: 10 }}>{title}</div>}
+        <div className="no-sb" style={{ overflowY: 'auto' }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
 // Bottom sheet — the same slide-up + rounded-top surface used across the app, packaged
 // so pickers (select, calendar) all present the same way: dim scrim, drag handle, title, X.
 function BottomSheet({ title, onClose, children }) {
@@ -454,4 +468,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, PairQR, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

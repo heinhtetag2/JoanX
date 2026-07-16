@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, NOTICES, LEGAL_DOCS, PARENT_PROFILE } from '../core/data.jsx';
-import { Badge, Bar, BottomSheet, Button, Icon, Input, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Badge, Bar, BottomSheet, Button, Icon, Input, Modal, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
@@ -425,7 +425,7 @@ function ParentDetail({ ctx }) {
           <div style={{ width: 64, height: 64, borderRadius: 999, background: BRAND.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="check" size={30} color={BRAND.primary} stroke={2.6} /></div>
           <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{L('Thanks — we’ve got your message')}</div>
           <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L('We’ll reply to your email as soon as we can.')}</div>
-          <Button variant="primary" fullWidth style={brandBtn} onClick={() => ctx.nav('p_account')}>{L('Done')}</Button>
+          <Button variant="primary" fullWidth style={brandBtn} onClick={() => { setInqSent(false); setInqMsg(''); setInqAgree(false); ctx.nav('p_account'); }}>{L('Done')}</Button>
         </div>
       ) : (
       <React.Fragment>
@@ -558,20 +558,20 @@ function ParentDetail({ ctx }) {
 
       {/* delete account — permanent, so it double-confirms */}
       {confirmDelete && (
-        <BottomSheet title={L('Delete your account?')} onClose={() => setConfirmDelete(false)}>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('This permanently deletes your account and unlinks every child device. This can’t be undone.')}</div>
+        <Modal title={L('Delete your account?')} onClose={() => setConfirmDelete(false)}>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>{L('This permanently deletes your account and unlinks every child device. This can’t be undone.')}</div>
           <Button variant="danger" fullWidth icon="trash-2" style={{ marginBottom: 10 }} onClick={() => { setConfirmDelete(false); ctx.nav('p_reports'); }}>{L('Delete account')}</Button>
           <Button variant="outline" fullWidth onClick={() => setConfirmDelete(false)}>{L('Cancel')}</Button>
-        </BottomSheet>
+        </Modal>
       )}
 
       {/* confirm before the one destructive action */}
       {confirmRemovePhoto && (
-        <BottomSheet title={L('Remove profile photo?')} onClose={() => setConfirmRemovePhoto(false)}>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('This removes your current photo. You can add a new one anytime.')}</div>
+        <Modal title={L('Remove profile photo?')} onClose={() => setConfirmRemovePhoto(false)}>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>{L('This removes your current photo. You can add a new one anytime.')}</div>
           <Button variant="danger" fullWidth icon="trash-2" style={{ marginBottom: 10 }} onClick={() => { setConfirmRemovePhoto(false); say(L('Profile photo removed')); }}>{L('Remove')}</Button>
           <Button variant="outline" fullWidth onClick={() => setConfirmRemovePhoto(false)}>{L('Cancel')}</Button>
-        </BottomSheet>
+        </Modal>
       )}
 
       {/* confirmation toast — pinned to the phone frame, auto-dismisses */}

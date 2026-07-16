@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FEATURES, guardians, PARENT_PROFILE } from '../core/data.jsx';
-import { BottomSheet, Button, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Button, Icon, Modal, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -88,13 +88,13 @@ function ParentAccount({ ctx }) {
         <div style={{ textAlign: 'center', fontSize: 11, color: THEME.fg3, marginTop: 4 }}>JoanX · v1.0.0</div>
       </div>
 
-      {/* sign-out confirmation — a modal, not a full page */}
+      {/* sign-out confirmation — centered dialog */}
       {signOut && (
-        <BottomSheet title={L('Sign out?')} onClose={() => setSignOut(false)}>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
-          <Button variant="danger" fullWidth icon="log-out" style={{ marginBottom: 10 }} onClick={() => { setSignOut(false); ctx.nav('p_reports'); }}>{L('Sign out')}</Button>
-          <Button variant="outline" fullWidth onClick={() => setSignOut(false)}>{L('Cancel')}</Button>
-        </BottomSheet>
+        <Modal title={L('Sign out?')} onClose={() => setSignOut(false)}>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.55, marginBottom: 20, textAlign: 'center' }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
+          <Button variant="danger" fullWidth onClick={() => { setSignOut(false); ctx.nav('p_reports'); }}>{L('Sign out')}</Button>
+          <button onClick={() => setSignOut(false)} style={{ width: '100%', marginTop: 4, padding: '12px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: THEME.fg2 }}>{L('Cancel')}</button>
+        </Modal>
       )}
     </div>
   );

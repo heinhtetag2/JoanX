@@ -137,7 +137,9 @@ const PLAYER = {
   charUnlocks: { 'u-streak-7': 1 },   // the 7-day streak already paid out a Rare
   itemGrants: {},                     // A-5.1 — item rules paid out so far
   // public profile / house (F-32 / A-6·A-7)
-  friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky',
+  friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky', scene: 'forest',
+  // items placed in the public profile scene (around the buddy) — F-32
+  profileDecor: { plant: true },
   // Child device preferences — the game's own feedback plus accessibility.
   // Held on PLAYER (server-ownable like the rest of it) so a toggle in Profile actually
   // sticks across navigation instead of resetting. These are the child's own device feedback
@@ -198,6 +200,18 @@ const HOUSE_BGS = [
   // limited edition — still buyable with points while its season is live (A-5.1),
   // it just stops being offered once the set is retired
   { id: 'aurora', name: 'Aurora',  category: 'room', slot: 'wallpaper', grad: 'linear-gradient(180deg,#d9f2ee,#efe0fb 82%)', owned: false, price: 400, limited: true, set: 'winter-2026' },
+];
+
+// ── Profile scenes (F-32) — the full-bleed photo backdrop the buddy stands in
+//   front of on the public profile. Unlike HOUSE_BGS (flat wallpaper gradients),
+//   a scene is a real illustrated environment. `img` is layered over `fallback`
+//   so a missing asset still shows a solid backdrop. To add a 4th scene, drop the
+//   art in public/assets/backgrounds/ and add one row here — no screen changes.
+//   (Beach/City point at placeholder art until their scenes are drawn.)
+const SCENES = [
+  { id: 'forest', name: 'Forest', img: '/assets/backgrounds/forestbg.svg',    fallback: '/assets/backgrounds/page-bg-green.jpg', tint: '#4f6b45' },
+  { id: 'beach',  name: 'Beach',  img: '/assets/backgrounds/page-bg.jpg',      fallback: '/assets/backgrounds/page-bg.jpg',       tint: '#4f6b45' },
+  { id: 'city',   name: 'City',   img: '/assets/backgrounds/page-bg-green.jpg', fallback: '/assets/backgrounds/page-bg-green.jpg', tint: '#4f6b45' },
 ];
 
 // ── Room decoration items (A-7 / A-5.1) — placed inside a room ───────
@@ -2448,6 +2462,6 @@ const LEGAL_DOCS = [
 const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
 
 export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, decorForRoom,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, decorForRoom,
   ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };
