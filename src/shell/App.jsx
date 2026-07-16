@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, Notices, LegalDetail, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -22,6 +22,10 @@ const isDocRole = (r) => DOC_ROLES.includes(r);
 // with its own back button, so it hides the bar, the way a native stack hides the tab bar on a
 // detail view. Center tabs (battle) are an action, not a root, so they hide it too.
 const CHILD_TAB_ROOTS = CHILD_TABS.filter(t => !t.center).map(t => t.root);
+// Same rule for the parent: the tab bar belongs to the tab roots only. Detail /
+// sub screens (p_detail, p_family, p_schedule, p_aireport, setup flows…) carry a
+// back button instead, so the bar hides while you're one level in.
+const PARENT_TAB_ROOTS = PARENT_TABS.filter(t => !t.center).map(t => t.root);
 
 // JoanX — app shell: iOS frame, router, app switcher, Tweaks panel.
 // Tab definitions + TabBar come from nav.jsx (window globals).
@@ -152,7 +156,7 @@ function App() {
     openAppIntro: () => setAppIntro(true),
     setBuddy, lang, setLang: changeLang,
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
-    finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child intro
+    finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child form
   };
 
   // render active child/parent screen
@@ -163,7 +167,7 @@ function App() {
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
-      profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, about: <AboutJoanX ctx={ctx} />,
+      profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
       shop: <Shop ctx={ctx} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
@@ -226,7 +230,7 @@ function App() {
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
-          {role === 'parent' && parentOnboarded && !['p_addchild', 'p_connect'].includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
+          {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           {role === 'child' && appIntro && <AppIntro onClose={() => setAppIntro(false)} />}

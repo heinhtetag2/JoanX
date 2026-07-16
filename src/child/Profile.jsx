@@ -100,9 +100,9 @@ function Profile({ ctx }) {
         {/* account */}
         <div style={sectionLabel}>{L('Account')}</div>
         <div style={groupCard}>
-          <Row icon="circle-play" label={L('App intro')} onClick={() => ctx.openAppIntro && ctx.openAppIntro()}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
+          <Row icon="megaphone" label={L('Notices')} onClick={() => ctx.nav('notices')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
           <Sep />
-          <Row icon="circle-help" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
+          <Row icon="help-circle" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
           <Sep />
           <Row icon="info" label={L('About JoanX')} onClick={() => ctx.nav('about')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
         </div>

@@ -2391,7 +2391,63 @@ const PERMISSIONS = [
 // run it any earlier and it trips over a table that has not been declared yet.
 applyRoomUnlocks();
 
-export { ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+// ── NOTICES (공지사항) — product announcements, newest first ──────────
+// Shared by both apps: the parent Profile › Notices list and the child
+// Profile › Notices list read the same source. `tag` drives a small pill
+// (update / policy / notice); `body` is an array of paragraphs so the detail
+// screen can space them out. Kept JoanX-appropriate: safety, buddies, privacy.
+const NOTICES = [
+  { id: 'n1', tag: 'update', title: 'Weekly reports are now per-child', date: '2026-07-09',
+    body: [
+      'Hi there — the JoanX team here.',
+      'Thanks to the feedback so many of you shared, the weekly safety report now reads the child you pick in Reports, and adapts its tone and summary to each child instead of showing one combined view.',
+      'Open Reports, tap a child at the top, and the whole report — trends, highlights, and the AI summary — follows your choice. Nothing else about how safety data is stored has changed.',
+    ] },
+  { id: 'n2', tag: 'notice', title: 'Say hi to Hammy, your new walking buddy', date: '2026-06-24',
+    body: [
+      'A new buddy has joined the collection: Hammy the hamster.',
+      'Children can hatch Hammy from an egg and grow it by walking safely, just like every other buddy. Hammy is available to everyone at no extra cost.',
+      'As always, buddies only ever appear while your child is stopped — never while walking.',
+    ] },
+  { id: 'n3', tag: 'policy', title: 'Privacy Policy update (effective 2026-06-24)', date: '2026-06-24',
+    body: [
+      'We have refreshed our Privacy Policy to describe how safety events are stored separately from your child’s identity, and to make our data-retention windows clearer.',
+      'JoanX still never reads messages, never listens in, and never sells data. Location is used only in Smart mode while walking.',
+      'You can review the full policy any time from Settings → Data & privacy, or export and delete your data from the same place.',
+    ] },
+  { id: 'n4', tag: 'update', title: 'Warning sensitivity: gentler on vehicles', date: '2026-05-18',
+    body: [
+      'We’ve improved how JoanX tells walking apart from riding in a bus or car, so warnings should trigger less often when your child isn’t actually walking.',
+      'You can still fine-tune this per child under Rules & settings → Warning sensitivity (Gentle, Balanced, or Strict).',
+    ] },
+  { id: 'n5', tag: 'notice', title: 'Support for older phones is changing', date: '2026-04-09',
+    body: [
+      'To keep JoanX safe and reliable, upcoming versions will require iOS 16 or Android 10 and above.',
+      'Devices on older systems will keep working for now but won’t receive new features. We’ll give plenty of notice before anything changes for your family.',
+    ] },
+];
+
+// ── LEGAL_DOCS — About JoanX › Legal, shared by both apps ────────────
+// Each opens its own detail page (title = label, body = the text). Kept in one
+// place so the parent and child About screens read identical content.
+const LEGAL_DOCS = [
+  { id: 'terms', icon: 'file-text', label: 'Terms of service',
+    body: 'JoanX is a walking-safety companion. Use it with a parent or guardian who manages your device. Play fair, be kind to friends, and never use the app while crossing a road.' },
+  { id: 'privacy', icon: 'lock', label: 'Privacy policy',
+    body: 'JoanX records how safely you walk — not where you walk. Raw locations and messages are never shared with friends, and never leave your device.' },
+  { id: 'licenses', icon: 'code', label: 'Open-source licenses',
+    body: 'Built with React and lucide-react, both under the ISC and MIT licenses. Mascot art is original to JoanX.' },
+];
+
+// ── PARENT_PROFILE — the signed-in parent's editable account details ──
+// One mutable source so the Profile card and the Account detail page stay in
+// sync: editing a field here updates both (screens re-read it when they mount).
+// `provider` is the social identity the email belongs to (sign-up/login is phone
+// SMS + Google/Apple). The email is therefore read-only here — it's managed by
+// that account — while the phone is verified with a code when changed.
+const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
+
+export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, decorForRoom,
   ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

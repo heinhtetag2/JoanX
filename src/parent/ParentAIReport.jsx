@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, CHILD_REPORTS, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
-import { Badge, Icon, THEME } from '../core/primitives.jsx';
+import { Badge, Icon, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -59,7 +59,7 @@ function ParentAIReport({ ctx }) {
   const tHead = { improving: ko ? '나아지고 있어요' : "What's improving", tryAtHome: ko ? '집에서 해보세요' : 'Try this at home', nutshell: ko ? '한마디로' : 'In a nutshell' };
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: THEME.screenBg }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={ko ? `이번 주 · ${nm}` : `This week · ${nm}`} title={L('AI Safety Report')} onBack={() => ctx.nav('p_reports')} />
       <div style={{ padding: '8px 16px 0' }}>
 

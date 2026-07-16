@@ -1,8 +1,8 @@
 // JoanX — parent app · ParentAccount
 
 import React from 'react';
-import { FEATURES, guardians } from '../core/data.jsx';
-import { Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { FEATURES, guardians, PARENT_PROFILE } from '../core/data.jsx';
+import { BottomSheet, Button, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -10,6 +10,7 @@ import { BRAND, ParentHead } from './shared.jsx';
 function ParentAccount({ ctx }) {
   const [push, setPush] = React.useState(true);
   const [weekly, setWeekly] = React.useState(true);
+  const [signOut, setSignOut] = React.useState(false);   // sign-out confirmation modal
   const chev = <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />;
   const rowStyle = i => ({ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' });
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
@@ -22,13 +23,26 @@ function ParentAccount({ ctx }) {
 
         {/* account identity */}
         <div onClick={() => ctx.nav('p_detail', { page: 'account' })} style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18, cursor: 'pointer' }}>
-          <div style={{ width: 52, height: 52, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 800 }}>S</div>
+          <div style={{ width: 52, height: 52, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 800 }}>{PARENT_PROFILE.name[0]}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>Sora Kim</div>
-            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 1 }}>sora.kim@email.com</div>
+            <div style={{ fontSize: 16, fontWeight: 800 }}>{PARENT_PROFILE.name}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 1 }}>{PARENT_PROFILE.email}</div>
           </div>
           {chev}
         </div>
+
+        {/* Language sits up top — it's the setting a parent is most likely to reach for, so it
+            shouldn't be buried under Support at the bottom of the screen. */}
+        {label(L('General'))}
+        {card(
+          <div style={{ ...rowStyle(0), cursor: 'default' }}><Icon name="languages" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Language')}</div>
+            <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 999, padding: 3 }}>
+              {[['en', 'EN'], ['ko', '한국어']].map(([v, l]) => (
+                <button key={v} onClick={() => ctx.setLang(v)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, padding: '4px 13px', borderRadius: 999, background: ctx.lang === v ? '#fff' : 'transparent', color: ctx.lang === v ? BRAND.primary : THEME.fg2, boxShadow: ctx.lang === v ? THEME.shadowCard : 'none' }}>{l}</button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* The household. Sits above Notifications because "who else can see my child" is a
             bigger question than "does my phone buzz", and a parent looking for it looks here. */}
@@ -59,20 +73,29 @@ function ParentAccount({ ctx }) {
           <div onClick={() => ctx.nav('p_detail', { page: 'export' })} style={rowStyle(FEATURES.dangerZones ? 2 : 1)}><Icon name="download" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Export my data')}</div>{chev}</div>
         </React.Fragment>)}
 
-        {label(L('General'))}
+        {label(L('Support'))}
         {card(<React.Fragment>
-          <div onClick={() => ctx.nav('p_detail', { page: 'language' })} style={rowStyle(0)}><Icon name="languages" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Language')}</div><span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginRight: 4 }}>{ctx.lang === 'ko' ? '한국어' : 'English'}</span>{chev}</div>
+          <div onClick={() => ctx.nav('p_detail', { page: 'notices' })} style={rowStyle(0)}><Icon name="megaphone" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Notices')}</div>{chev}</div>
           <div onClick={() => ctx.nav('p_detail', { page: 'help' })} style={rowStyle(1)}><Icon name="help-circle" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Help & support')}</div>{chev}</div>
-          <div onClick={() => ctx.nav('p_detail', { page: 'faq' })} style={rowStyle(2)}><Icon name="messages-square" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('FAQ')}</div>{chev}</div>
+          <div onClick={() => ctx.nav('p_detail', { page: 'inquiry' })} style={rowStyle(2)}><Icon name="headphones" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('1:1 Inquiry')}</div>{chev}</div>
           <div onClick={() => ctx.nav('p_detail', { page: 'about' })} style={rowStyle(3)}><Icon name="info" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('About JoanX')}</div>{chev}</div>
         </React.Fragment>)}
 
         {card(
-          <div onClick={() => ctx.nav('p_detail', { page: 'signout' })} style={{ ...rowStyle(0), justifyContent: 'center' }}><Icon name="log-out" size={18} color={THEME.danger} stroke={2.2} /><div style={{ fontSize: 14, fontWeight: 800, color: THEME.danger }}>{L('Sign out')}</div></div>
+          <div onClick={() => setSignOut(true)} style={{ ...rowStyle(0), justifyContent: 'center' }}><Icon name="log-out" size={18} color={THEME.danger} stroke={2.2} /><div style={{ fontSize: 14, fontWeight: 800, color: THEME.danger }}>{L('Sign out')}</div></div>
         )}
 
         <div style={{ textAlign: 'center', fontSize: 11, color: THEME.fg3, marginTop: 4 }}>JoanX · v1.0.0</div>
       </div>
+
+      {/* sign-out confirmation — a modal, not a full page */}
+      {signOut && (
+        <BottomSheet title={L('Sign out?')} onClose={() => setSignOut(false)}>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
+          <Button variant="danger" fullWidth icon="log-out" style={{ marginBottom: 10 }} onClick={() => { setSignOut(false); ctx.nav('p_reports'); }}>{L('Sign out')}</Button>
+          <Button variant="outline" fullWidth onClick={() => setSignOut(false)}>{L('Cancel')}</Button>
+        </BottomSheet>
+      )}
     </div>
   );
 }

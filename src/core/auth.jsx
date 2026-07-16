@@ -66,6 +66,10 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   // account and switches to sign-up mid-flow, the number is already verified, so it lands on
   // 'profile' instead.
   const [afterConsent, setAfterConsent] = React.useState('phone');
+  // Where the profile step's back button returns to — it depends on how profile was reached:
+  // SMS sign-up comes through the code screen ('code'); Google/Apple skip it, arriving straight
+  // from the phone/social screen ('phone'); the mid-flow log-in→sign-up switch comes via consent.
+  const [profileBack, setProfileBack] = React.useState('code');
   const [mode, setMode] = React.useState('login');     // 'login' | 'signup'
   const [phone, setPhone] = React.useState('');
   const [code, setCode] = React.useState('');
@@ -121,16 +125,17 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   const verifyCode = () => {
     if (code.length < AUTH.smsCodeLength) { setCodeErr(true); return; }
     const known = knownPhone(phone);
-    if (signup) { if (known) setNotice('exists'); else setPhase('profile'); }
+    if (signup) { if (known) setNotice('exists'); else { setProfileBack('code'); setPhase('profile'); } }
     else { if (known) onDone(); else setNotice('no-account'); }
   };
   // Resolve a wrong-door hint: the number is already verified, so switching is frictionless.
-  const switchToSignup = () => { setMode('signup'); setNotice(null); setAfterConsent('profile'); setPhase('consent'); };  // from log-in, no account found → consent, then profile (phone already verified)
+  const switchToSignup = () => { setMode('signup'); setNotice(null); setProfileBack('consent'); setAfterConsent('profile'); setPhase('consent'); };  // from log-in, no account found → consent, then profile (phone already verified)
   const switchToLogin = () => { setMode('login'); setNotice(null); onDone(); };                // from sign-up, number already exists
 
   // Google / Apple hand back a verified identity. Logging in lands in the app; signing up
-  // still needs the profile step (name / DOB / gender) the provider doesn't supply.
-  const socialSignIn = () => { if (signup) setPhase('profile'); else onDone(); };
+  // still needs the profile step (name / DOB / gender) the provider doesn't supply. Back from
+  // profile returns to the phone/social screen, since the code step was never shown.
+  const socialSignIn = () => { if (signup) { setProfileBack('phone'); setPhase('profile'); } else onDone(); };
 
   return (
     <React.Fragment>
@@ -284,7 +289,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
       {phase === 'profile' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
-            <button onClick={() => setPhase('code')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => setPhase(profileBack)} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
             </button>
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Create account')}</h1>

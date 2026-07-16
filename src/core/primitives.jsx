@@ -167,13 +167,14 @@ function PairQR({ size = 190, color = THEME.fg1 }) {
 
 function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth, style, icon, disabled }) {
   const variants = {
-    primary:   { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },          // ocean brand CTA
-    secondary: { background: THEME.primaryLight, color: THEME.primaryDark, border: 'none' },                          // soft ocean
+    // Flat UI — no drop-shadow/glow on any button (reads as "AI design").
+    primary:   { background: THEME.primary, color: '#fff', boxShadow: 'none', border: 'none' },          // ocean brand CTA
+    secondary: { background: THEME.primaryLight, color: THEME.primaryDark, border: 'none' },              // soft ocean
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
-    danger:    { background: THEME.danger, color: '#fff', boxShadow: THEME.shadowDanger, border: 'none' },
+    danger:    { background: THEME.danger, color: '#fff', boxShadow: 'none', border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: THEME.primary, color: '#fff', boxShadow: THEME.shadowPrimary, border: 'none' },          // brand ocean battle CTA
-    gold:      { background: THEME.gold, color: '#fff', boxShadow: '0 8px 18px rgba(209,153,0,0.34)', border: 'none' },
+    play:      { background: THEME.primary, color: '#fff', boxShadow: 'none', border: 'none' },           // brand ocean battle CTA
+    gold:      { background: THEME.gold, color: '#fff', boxShadow: 'none', border: 'none' },
   };
   const sizes = {
     sm: { padding: '9px 16px', fontSize: 13, borderRadius: 12 },

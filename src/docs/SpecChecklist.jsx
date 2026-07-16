@@ -228,7 +228,8 @@ const INVENTORY = [
   { app: 'Child', file: 'Friends.jsx · AddFriends.jsx', covers: 'F-32', state: 'ok', note: 'Friend list, requests, add, plus first-run empty state (0 friends → add CTA).' },
   { app: 'Child', file: 'FriendHouse.jsx', covers: 'F-32 · A-10', state: 'ok', note: 'Visit, likes, guestbook.' },
   { app: 'Child', file: 'Notifications.jsx', covers: '— (supporting)', state: 'extra', note: 'Not a spec item; supports the loop.' },
-  { app: 'Child', file: 'Profile.jsx', covers: '— (supporting)', state: 'extra', note: 'Child profile & settings.' },
+  { app: 'Child', file: 'Profile.jsx', covers: '— (supporting)', state: 'ok', note: '✅ Complete — profile hub: language toggle, sound, linked-parents, and Account rows (Notices, Help & support, About).' },
+  { app: 'Child', file: 'HelpSupport.jsx · Notices.jsx · AboutJoanX.jsx', covers: '— (supporting)', state: 'ok', note: '✅ Complete — Help (inline FAQ w/ help-circle), Notices (list + detail, shared NOTICES), About (wordmark + version + Legal rows → LegalDetail pages).' },
   { app: 'Parent', file: 'ParentOnboarding.jsx', covers: '— (supporting)', state: 'extra', note: 'Splash → intro → auth.' },
   { app: 'Parent', file: 'ParentAddChild.jsx', covers: '— (pairing)', state: 'extra', note: 'Add-child wizard + QR pairing.' },
   { app: 'Parent', file: 'ParentReports.jsx', covers: 'F-20', state: 'ok', note: 'KPIs + response-mix & activity charts; risky moments shown as a ↓% reduction rate (behavior change), not a raw count. Includes a loading skeleton.' },
@@ -236,7 +237,7 @@ const INVENTORY = [
   { app: 'Parent', file: 'ParentChildren.jsx', covers: '— (supporting)', state: 'extra', note: 'Children / devices list, with a reconnect flow (help sheet + reminder) for offline devices.' },
   { app: 'Parent', file: 'ParentSettings.jsx', covers: 'F-22', state: 'ok', note: 'Sensitivity, notifications, game toggle.' },
   { app: 'Parent', file: 'ParentSchedule.jsx', covers: 'F-21 (excluded)', state: 'parked', note: 'Built ahead of scope — keep parked.' },
-  { app: 'Parent', file: 'ParentDetail.jsx · ParentAccount.jsx', covers: 'F-23 · F-24 · F-27 · F-28 · F-29', state: 'ok', note: 'Account pages, Help / FAQ, and a Data & privacy page covering on-device storage, sync, always-on Android service, reboot-restore and the 7-day diagnostic log.' },
+  { app: 'Parent', file: 'ParentDetail.jsx · ParentAccount.jsx', covers: 'F-23 · F-24 · F-27 · F-28 · F-29', state: 'ok', note: '✅ Complete — Profile hub (centered title, language up top) + Account: editable name, phone (SMS-code verify), read-only Google-linked email, change password, sign-out & delete-account modals, photo edit w/ confirm+toast. Support: Notices, Help (inline FAQ), 1:1 Inquiry, About (matches child + legal). Data & privacy + Export retained.' },
 ];
 
 const INV_STATE = {

@@ -29,9 +29,18 @@ const HANDOFF = {
   // ── child app ──
   home:        { status: 'done', note: 'Final. Hero + XP ring, protection card, points/streak, and today’s missions all done.' },
   onboarding:  { status: 'done', note: 'Confirmed. Splash → intro slides → connect-to-parent → permissions all done.' },
+  // child profile & its detail screens
+  profile:     { status: 'done', note: 'Confirmed. Profile hub: language + sound, linked parents, and Account rows (Notices / Help & support / About).' },
+  help:        { status: 'done', note: 'Confirmed. Help & support — inline FAQ accordion (help-circle icons), contact link.' },
+  notices:     { status: 'done', note: 'Confirmed. Notices — list + in-place detail, reads the shared NOTICES source.' },
+  about:       { status: 'done', note: 'Confirmed. About — wordmark + version + tagline, Legal rows open detail pages.' },
+  legal:       { status: 'done', note: 'Confirmed. Legal document detail (terms / privacy / licenses).' },
 
   // ── parent app ──
   parent_onboarding: { status: 'done', note: 'Confirmed. Intro → sign-up/log-in, guardian consent gate, and profile step all done.' },
+  // parent profile hub + every account/settings detail page (p_detail)
+  p_account:   { status: 'done', note: 'Confirmed. Profile hub: centered title, language up top, family, notifications, privacy, support, sign-out modal.' },
+  p_detail:    { status: 'done', note: 'Confirmed. All account/settings detail pages: editable name & SMS-verified phone, read-only Google-linked email, change password, delete-account modal, Notices, Help (inline FAQ), 1:1 Inquiry, About + Legal, Data & privacy, Export.' },
   // e.g. p_reports: { status: 'partial', note: 'Charts done; weekly-activity data still mocked — wire real API.' },
 };
 

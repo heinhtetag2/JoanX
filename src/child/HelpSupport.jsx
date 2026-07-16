@@ -46,10 +46,11 @@ function HelpSupport({ ctx }) {
             return (
               <div key={t.q} style={{ borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
                 <button onClick={() => setOpen(on ? null : i)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <Icon name="help-circle" size={18} color={c.color} stroke={2.2} style={{ flexShrink: 0 }} />
                   <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{L(t.q)}</span>
                   <Icon name={on ? 'chevron-up' : 'chevron-down'} size={17} color={THEME.fg3} stroke={2.3} />
                 </button>
-                {on && <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.5, padding: '0 14px 13px' }}>{L(t.a)}</div>}
+                {on && <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.5, padding: '0 14px 13px 44px' }}>{L(t.a)}</div>}
               </div>
             );
           })}
