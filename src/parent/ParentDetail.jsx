@@ -42,6 +42,23 @@ const FAQ_GROUPS = [
   ] },
 ];
 
+// ── The privacy consent gating the 1:1 inquiry form ──────────────────
+// Scope is deliberately narrower than the sign-up consents (core/auth.jsx CONSENTS):
+// an inquiry sends only the reply address, the message and any screenshots — not the
+// child's profile or motion data — so reusing that document here would over-disclose.
+// PIPA requires the three rows below (what · why · how long) plus the right to decline.
+// Retention follows 전자상거래법, which holds consumer complaint and dispute records
+// for three years. Document text provided by Joan Company.
+const INQUIRY_CONSENT = {
+  label: 'Consent to collection & use of personal information',
+  rows: [
+    ['Items collected', 'Your email address, the content of your inquiry, and any images you attach.'],
+    ['Purpose of use', 'To receive your inquiry, reply to it by email, and keep a record of how it was handled.'],
+    ['Retention period', 'Three years after your inquiry is answered, as required by the Act on Consumer Protection in Electronic Commerce for records of consumer complaints and disputes.'],
+  ],
+  note: 'You may decline this consent, but we cannot receive or reply to your inquiry without it.',
+};
+
 // The four questions surfaced on the Help landing — pulled straight from the
 // groups above so the answers never drift out of sync.
 const POPULAR_FAQS = [FAQ_GROUPS[0].items[0], FAQ_GROUPS[3].items[0], FAQ_GROUPS[0].items[1], FAQ_GROUPS[2].items[0]];
@@ -84,6 +101,7 @@ function ParentDetail({ ctx }) {
   const [logCleared, setLogCleared] = React.useState(false);   // Data & privacy → diagnostic log (F-29)
   const [inqMsg, setInqMsg] = React.useState('');              // 1:1 inquiry — message body
   const [inqAgree, setInqAgree] = React.useState(false);       // 1:1 inquiry — privacy consent
+  const [inqDoc, setInqDoc] = React.useState(false);           // 1:1 inquiry — consent document sheet
   const [inqSent, setInqSent] = React.useState(false);         // 1:1 inquiry — submitted state
   const activeNotice = NOTICES.find(n => n.id === ctx.params?.noticeId) || NOTICES[0];
   const activeLegal = LEGAL_DOCS.find(d => d.id === ctx.params?.legalId) || LEGAL_DOCS[0];
@@ -454,10 +472,18 @@ function ParentDetail({ ctx }) {
           </div>
         , 8)}
         <div style={{ fontSize: 12, color: THEME.fg3, padding: '0 4px', lineHeight: 1.45, marginBottom: 18 }}>{L('Attach a screenshot of the screen where the problem happened — up to 5 images.')}</div>
+        {/* consent — the box agrees, the › opens the document (Korean 약관 pattern, same as
+            the sign-up consents): a parent can read what they're agreeing to before ticking it */}
         {card(
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', cursor: 'pointer' }} onClick={() => setInqAgree(!inqAgree)}>
-            <div style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${inqAgree ? BRAND.primary : THEME.border}`, background: inqAgree ? BRAND.primary : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{inqAgree && <Icon name="check" size={14} color="#fff" stroke={3} />}</div>
-            <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700 }}>{L('Consent to collection & use of personal information')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+            <button onClick={() => setInqAgree(!inqAgree)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              <div style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${inqAgree ? BRAND.primary : THEME.border}`, background: inqAgree ? BRAND.primary : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{inqAgree && <Icon name="check" size={14} color="#fff" stroke={3} />}</div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: BRAND.primary, flexShrink: 0 }}>[{L('Required')}]</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{L(INQUIRY_CONSENT.label)}</span>
+            </button>
+            <button onClick={() => setInqDoc(true)} aria-label={L('View')} className="jx-press" style={{ padding: 4, border: 'none', background: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex' }}>
+              <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.4} />
+            </button>
           </div>
         )}
         <Button variant="primary" fullWidth style={brandBtn} disabled={!inqMsg.trim() || !inqAgree} onClick={inqMsg.trim() && inqAgree ? () => setInqSent(true) : undefined}>{L('Submit inquiry')}</Button>
@@ -510,6 +536,23 @@ function ParentDetail({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={p.sub} title={p.title} onBack={ctx.params?.asTab ? undefined : () => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')} />
       <div style={{ padding: '8px 16px 0' }}>{p.body}</div>
+
+      {/* the inquiry consent document — a sheet, not a page, so the message already typed
+          survives reading it. Agreeing from here ticks the box and closes. */}
+      {inqDoc && (
+        <BottomSheet title={L(INQUIRY_CONSENT.label)} onClose={() => setInqDoc(false)}>
+          <div style={{ background: THEME.surface2, borderRadius: 14, padding: '4px 14px', marginBottom: 14 }}>
+            {INQUIRY_CONSENT.rows.map(([k, v], i) => (
+              <div key={k} style={{ padding: '12px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: BRAND.primary, marginBottom: 4 }}>{L(k)}</div>
+                <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.55 }}>{L(v)}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: THEME.fg3, lineHeight: 1.55, fontWeight: 600 }}>{L(INQUIRY_CONSENT.note)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>
+          <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} onClick={() => { setInqAgree(true); setInqDoc(false); }}>{L('Agree')}</Button>
+        </BottomSheet>
+      )}
 
       {/* edit one account field — email/phone confirm with a 6-digit code */}
       {editField && (

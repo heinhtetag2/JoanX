@@ -63,7 +63,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', roomStyle: 'scene', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [, setBump] = React.useState(0);
@@ -172,7 +172,7 @@ function App() {
       shop: <Shop ctx={ctx} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
+      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -289,8 +289,15 @@ function App() {
 
               <div className="tw-label">Room style</div>
               <div className="tw-row">
-                {[['theme', 'Theme'], ['scene', 'Photo scene']].map(([v, l]) => (
+                {[['theme', 'Theme'], ['scene', 'Photo scene'], ['hotspot', 'Tappable room']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.roomStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Room switch (profile · Tappable room)</div>
+              <div className="tw-row">
+                {[['arrows', 'Arrows + dots'], ['chips', 'Room tabs'], ['sheet', 'Name → sheet']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.roomSwitch === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomSwitch: v }))}>{l}</button>
                 ))}
               </div>
 
@@ -305,6 +312,13 @@ function App() {
               <div className="tw-row">
                 {[['tray', 'Item tray'], ['sheet', 'Item sheet'], ['editor', 'Decorate only']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.roomDecor === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomDecor: v }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Decorate editor</div>
+              <div className="tw-row">
+                {[['grid', 'Lists below'], ['hotspot', 'Tap the room']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.decorEditor === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, decorEditor: v }))}>{l}</button>
                 ))}
               </div>
 

@@ -678,7 +678,16 @@ const KO = {
   'You can change this in Settings → Account.': '이메일 주소는 설정 → 계정 관리에서 변경할 수 있어요.',
   'Screenshots': '스크린샷', 'Add file': '파일 추가',
   'Attach a screenshot of the screen where the problem happened — up to 5 images.': '문제가 발생한 화면의 스크린샷을 첨부할 수 있어요 — 이미지는 최대 5장까지 선택할 수 있어요.',
-  'Consent to collection & use of personal information': '개인정보 수집 및 이용 안내',
+  // 동의, not 안내 — this one gates the submit button, so it is a consent and not a notice
+  'Consent to collection & use of personal information': '개인정보 수집 및 이용 동의',
+  // the inquiry consent document (PIPA: what · why · how long, plus the right to decline)
+  'Items collected': '수집 항목',
+  'Your email address, the content of your inquiry, and any images you attach.': '이메일 주소, 문의 내용, 첨부한 이미지.',
+  'Purpose of use': '이용 목적',
+  'To receive your inquiry, reply to it by email, and keep a record of how it was handled.': '문의 접수, 이메일 답변, 처리 결과 기록.',
+  'Retention period': '보유 기간',
+  'Three years after your inquiry is answered, as required by the Act on Consumer Protection in Electronic Commerce for records of consumer complaints and disputes.': '답변 완료 후 3년 — 전자상거래법에 따라 소비자 불만 및 분쟁 처리 기록을 3년간 보관해요.',
+  'You may decline this consent, but we cannot receive or reply to your inquiry without it.': '동의를 거부할 수 있어요. 다만 동의하지 않으면 문의를 접수하거나 답변드릴 수 없어요.',
   'Submit inquiry': '문의하기', 'Send': '보내기',
   'Thanks — we’ve got your message': '접수됐어요 — 문의가 전달됐어요',
   'We’ll reply to your email as soon as we can.': '가능한 한 빨리 이메일로 답변드릴게요.',
@@ -879,6 +888,11 @@ const KO = {
   '’s house': '님의 집', 'Featured buddy': '대표 친구',
   'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
   'Rooms': '방', 'Guestbook': '방명록',
+  // profile room switcher — the locked rooms are on the profile to advertise the next walk
+  'Your rooms': '내 방', 'Showing': '보여주는 중', 'Tap to show': '눌러서 보여주기',
+  'Rooms open as you keep walking safely.': '안전하게 걸을수록 새로운 방이 열려요.',
+  'Keep walking': '계속 걸어보세요', 'Keep walking to open this': '계속 걸으면 열려요',
+  'Open the room before this one first': '앞의 방을 먼저 열어야 해요',
   'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '방문당 한 개',
   // guestbook free-text note (F-32) + moderation reasons (moderation.jsx)
   'Write a short note, or tap one below.': '짧은 메모를 쓰거나, 아래에서 골라요.', 'Say something kind…': '따뜻한 말을 남겨요…', 'Leave note': '메모 남기기',
@@ -1003,6 +1017,10 @@ const KO = {
   'When a friend visits your room, the note they leave shows up here.': '친구가 내 방에 놀러 와서 남긴 메모가 여기에 모여요.',
   'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
   'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
+  // hotspot editor — one label per tappable surface (A-7)
+  'Flooring': '바닥', 'Furniture': '가구', 'Ornaments': '소품',
+  'Tap anything in the room to change it.': '방 안의 아무거나 눌러서 바꿔보세요.',
+  'Nothing for this spot in this room yet.': '이 방에는 아직 여기에 놓을 게 없어요.',
   // room themes (A-6 / A-12) — three environments, each with its own decor set
   'Green Room': '그린 룸', 'Town Room': '타운 룸', 'Dream Room': '드림 룸', 'Winter Room': '윈터 룸',
   'Forest, leaves and quiet trails.': '숲과 나뭇잎, 조용한 오솔길.',

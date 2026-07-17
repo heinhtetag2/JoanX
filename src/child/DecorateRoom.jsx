@@ -1,73 +1,37 @@
 // JoanX — child app · DecorateRoom
 
 import React from 'react';
-import { buyItem, CHARACTERS, DECOR, decorForRoom, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, themeOf } from '../core/data.jsx';
 import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
+import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 
 // ── Room decoration (A-6 / A-7 / A-12) ───────────────────────────────
 // One screen, three rooms. Picking a room switches the whole environment — wall,
 // floor, wallpaper palette AND the decor catalogue — because a room theme owns its
 // own set of items (ROOM_THEMES / DECOR.rooms in core/data).
 //
-// Edits are held per room in `drafts` so you can dress the Green Room, hop to the
-// Dream Room, dress that too, and Save once: each room keeps its own wallpaper, its
-// own placed items and its own characters. Nothing bleeds across.
-function DecorateRoom({ ctx }) {
+// The editing state lives in useRoomEditing (see RoomStage.jsx), shared with the
+// profile hero so both surfaces edit one room the same way.
+//
+// `editor` is the way IN, not the thing being edited — both variants read and write
+// the same drafts, so switching one in Tweaks never changes what a saved room is:
+//   'grid'    — the preview is a picture; you edit from lists below it
+//   'hotspot' — the preview IS the editor; every surface is its own tap target
+function DecorateRoom({ ctx, editor = 'grid' }) {
+  const hot = editor === 'hotspot';
+  const [sheet, setSheet] = React.useState(null);   // which hotspot's picker is open
   const rooms = ROOMS.filter(r => r.unlocked);
   const [roomId, setRoomId] = React.useState(
     rooms.some(r => r.id === ctx.params?.roomId) ? ctx.params.roomId : rooms[0].id);
-  const room = rooms.find(r => r.id === roomId) || rooms[0];
-  const theme = themeOf(room);
 
-  // per-room draft: { [roomId]: { wallpaper, placed } } — seeded from what is saved
-  const [drafts, setDrafts] = React.useState(() => Object.fromEntries(
-    rooms.map(r => [r.id, { wallpaper: r.wallpaper, placed: { ...r.placed } }])));
-  const draft = drafts[roomId];
-  const editDraft = (patch) => setDrafts(d => ({ ...d, [roomId]: { ...d[roomId], ...patch } }));
+  const ed = useRoomEditing(rooms, roomId);
+  const { room, theme, draft, editDraft, pts, ownedDecor, homes, tapChar, tapDecor,
+          catalog, inRoom, placedDecor, toast } = ed;
 
-  const catalog = decorForRoom(roomId);
-  const [pts, setPts] = React.useState(PLAYER.points);
-  // ownership is global (you own the item, not "the item in this room"), so it is
-  // seeded from the whole table — not just the room you happen to be standing in
-  const [ownedDecor, setOwnedDecor] = React.useState(() =>
-    Object.fromEntries(DECOR.map(d => [d.id, d.owned])));
-  // characters live on the character row (c.room), so placement survives this screen
-  const [homes, setHomes] = React.useState(() =>
-    Object.fromEntries(CHARACTERS.filter(c => c.owned).map(c => [c.id, c.room])));
-  const [toast, setToast] = React.useState(null);
-  const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1600); };
-
-  const inRoom = CHARACTERS.filter(c => c.owned && homes[c.id] === roomId);
-  const placedDecor = catalog.filter(d => draft.placed[d.id]);
-
-  // A-5.1 — buying goes through buyItem() so the points check, the level gate and the
-  // ownership write are the same here as on every other item surface.
-  const tapDecor = (d) => {
-    if (!ownedDecor[d.id]) {
-      const verdict = buyItem(d, PLAYER);
-      if (!verdict.ok) { say(L(verdict.reason === 'level' ? 'Unlocks at Lv' : 'Not enough points yet')); return; }
-      setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
-      editDraft({ placed: { ...draft.placed, [d.id]: true } });
-      return;
-    }
-    editDraft({ placed: { ...draft.placed, [d.id]: !draft.placed[d.id] } });
-  };
-
-  // free placement (A-6) — a buddy lives in exactly one room, and a room holds `slots`
-  const tapChar = (c) => {
-    if (homes[c.id] === roomId) { setHomes(h => ({ ...h, [c.id]: null })); return; }
-    if (inRoom.length >= room.slots) { say(`${L(room.name)} · ${L('Room is full')}`); return; }
-    setHomes(h => ({ ...h, [c.id]: roomId }));
-  };
-
-  const save = () => {
-    rooms.forEach(r => { const d = drafts[r.id]; r.wallpaper = d.wallpaper; r.placed = d.placed; });
-    CHARACTERS.forEach(c => { if (c.owned) c.room = homes[c.id] ?? null; });
-    ctx.nav('myhouse');
-  };
+  const save = () => { ed.save(); ctx.nav('myhouse'); };
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
@@ -88,8 +52,23 @@ function DecorateRoom({ ctx }) {
         </div>
         <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center', margin: '0 0 12px' }}>{L(theme.blurb)}</div>
 
+        {/* ── hotspot editor — the room IS the interface ─────────────────
+            A tall room drawn from the same theme surfaces, with a puck parked next to
+            each thing it changes. Nothing to scroll to: what you can change is exactly
+            what you can see. */}
+        {hot && (
+          <React.Fragment>
+            <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 12 }}>
+              <RoomStage theme={theme} draft={draft} buddies={inRoom} placedDecor={placedDecor} onPuck={setSheet} />
+            </div>
+            <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center', margin: '0 0 16px' }}>{L('Tap anything in the room to change it.')}</div>
+            <Button variant="primary" fullWidth icon="check" onClick={save}>{L('Save room')}</Button>
+          </React.Fragment>
+        )}
+
         {/* live preview — the room itself: wall, the buddies who live here, the floor
             they stand on, and the items placed around them */}
+        {!hot && (<React.Fragment>
         <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
           <div style={{ position: 'relative', padding: '18px 14px 0', background: theme.wall(draft.wallpaper), textAlign: 'center' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4, minHeight: 118 }}>
@@ -114,7 +93,7 @@ function DecorateRoom({ ctx }) {
             </div>
           </div>
           {/* floor — part of the theme, so it changes with the room */}
-          <div style={{ height: 30, background: theme.floor, borderTop: `2px solid ${theme.accent}` }} />
+          <div style={{ height: 30, background: theme.floor(draft.flooring), borderTop: `2px solid ${theme.accent}` }} />
         </div>
 
         {/* wallpaper — the palette belongs to the theme, so a Town wallpaper can't
@@ -168,7 +147,10 @@ function DecorateRoom({ ctx }) {
         </div>
 
         <Button variant="primary" fullWidth icon="check" onClick={save}>{L('Save room')}</Button>
+        </React.Fragment>)}
       </div>
+
+      {sheet && <RoomSlotSheet slot={sheet} onClose={() => setSheet(null)} ed={ed} />}
 
       {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 20 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}
     </div>

@@ -1,7 +1,7 @@
 // JoanX — child app · FriendHouse
 
 import React from 'react';
-import { FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal, themeOf } from '../core/data.jsx';
+import { floorOf, FRIENDS, GUEST_STAMPS, PLAYER, react, REACTIONS, reactionOf, reactionTotal, themeOf } from '../core/data.jsx';
 import { Icon, SectionHead, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { moderate, REASON_TEXT } from '../core/moderation.jsx';
@@ -114,7 +114,7 @@ function FriendHouse({ ctx }) {
                     <Icon name={t.icon} size={12} color={THEME.fg2} stroke={2.3} />{L(r.name)}
                   </div>
                 </div>
-                <div style={{ height: 10, background: t.floor, borderTop: `2px solid ${t.accent}` }} />
+                <div style={{ height: 10, background: floorOf(r), borderTop: `2px solid ${t.accent}` }} />
               </div>
             );
           })}

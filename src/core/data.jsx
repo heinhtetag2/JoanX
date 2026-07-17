@@ -1506,22 +1506,38 @@ applyXpCurve();
 // Adding a theme — a season, a partner tie-in, whatever the business asks for — is
 // one row here plus its decor rows above. No screen changes: every room surface
 // renders whatever is in this table.
-//   wall(t) — the wall, tinted by the chosen wallpaper `t`
+//   wall(t)  — the wall, tinted by the chosen wallpaper `t`
+//   floor(f) — the floor, tinted by the chosen flooring `f`
+//   bg       — illustrated backdrop for the whole room. When a theme has one it covers
+//              the painted surfaces above, which stay as the fallback for a theme whose
+//              art isn't drawn yet. Only the Green Room has art today; the others render
+//              their gradients until someone draws them.
+// Wallpaper and flooring are the two surfaces A-7 names first, so each theme carries a
+// palette for both and the room stores which one it wears.
 const ROOM_THEMES = [
   { id: 'green', name: 'Green Room', icon: 'trees', blurb: 'Forest, leaves and quiet trails.',
+    // portrait art (421x691), drawn for the shape it lives in: on a phone page it crops a
+    // little off the sides and nothing off the top or bottom. The old forestbg was
+    // landscape, so filling a portrait page meant blowing it up and throwing most of it away.
+    // The HOTSPOTS in child/RoomStage.jsx aim at things drawn in HERE — the armchair, the
+    // framed picture — so swapping this art for a different composition means re-aiming them.
+    bg: '/assets/backgrounds/room3.png',
     wallpapers: ['#e7f3e4', '#dff0e6', '#eef5dd', '#e3efe8'],
     wall: t => `radial-gradient(circle at 84% 14%, rgba(255,255,255,.5) 0 42px, transparent 43px), linear-gradient(180deg, ${t} 0%, ${shade(t, 8)} 100%)`,
-    floor: 'linear-gradient(180deg,#cfe3b7,#b9d49b)', accent: '#8bb46a' },
+    floorings: ['#cfe3b7', '#d8cbb0', '#c3ddc9'],
+    floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#8bb46a' },
 
   { id: 'town', name: 'Town Room', icon: 'building-2', blurb: 'School, park and the streets between.',
     wallpapers: ['#eaf0f6', '#f1eee9', '#e7eef2', '#f4efe6'],
     wall: t => `linear-gradient(180deg, ${shade(t, -6)} 0%, #fbfbfc 100%)`,
-    floor: 'linear-gradient(180deg,#dfe3e8,#c9cfd7)', accent: '#a7b0bc' },
+    floorings: ['#dfe3e8', '#d9cfc2', '#cdd8dd'],
+    floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#a7b0bc' },
 
   { id: 'dream', name: 'Dream Room', icon: 'moon-star', blurb: 'Stars, clouds and soft impossible things.',
     wallpapers: ['#efe8fb', '#e8e6fa', '#f7e9f5', '#e6effb'],
     wall: t => `radial-gradient(circle at 20% 24%, rgba(255,255,255,.75) 0 2.5px, transparent 3.5px) 0 0/34px 34px, linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
-    floor: 'linear-gradient(180deg,#e4d8f7,#d0c0ee)', accent: '#b39ce0' },
+    floorings: ['#e4d8f7', '#d9dcf5', '#efd9ec'],
+    floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#b39ce0' },
 
   // seasonal — authored ahead and locked until ops turns the set on, exactly like the
   // limited items. This row is the proof the table above expands without a release.
@@ -1529,11 +1545,18 @@ const ROOM_THEMES = [
     set: 'winter-2026',
     wallpapers: ['#e6eef7', '#eaf3f5', '#f0eef9'],
     wall: t => `radial-gradient(circle at 30% 18%, rgba(255,255,255,.8) 0 2px, transparent 3px) 0 0/28px 28px, linear-gradient(180deg, ${t} 0%, ${shade(t, -4)} 100%)`,
-    floor: 'linear-gradient(180deg,#eef3f8,#dbe5ee)', accent: '#b6c6d6' },
+    floorings: ['#eef3f8', '#e3e9ee', '#e8f1f3'],
+    floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#b6c6d6' },
 ];
 
 const themeById = (id) => ROOM_THEMES.find(t => t.id === id) || ROOM_THEMES[0];
 const themeOf = (room) => themeById(room?.theme);
+
+// The two painted surfaces, resolved for a room. Both fall back to the theme's first
+// swatch, so a room row that predates the palette — a friend's room, which carries only
+// { name, theme, wallpaper } — still renders instead of painting `undefined`.
+const wallOf = (room) => { const t = themeOf(room); return t.wall(room?.wallpaper || t.wallpapers[0]); };
+const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.flooring || t.floorings[0]); };
 
 // The three MVP rooms — one per basic theme. `wallpaper` is the tint chosen inside the
 // theme's palette and `placed` is that room's own decor, so every room is decorated
@@ -1550,11 +1573,11 @@ const themeOf = (room) => themeById(room?.theme);
 const ROOM_CAPACITY = 10;
 
 const ROOMS = [
-  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', placed: { plant: true, sapling: true } },
-  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', placed: { lamp: true } },
-  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', placed: {} },
+  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
   // expansion slot — a seasonal room, dark until the winter set goes live
-  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#e6eef7', placed: {} },
+  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#e6eef7', flooring: '#eef3f8', placed: {} },
 ];
 
 // ── Room unlocks (A-6 · rooms are EARNED, never bought) ──────────────
@@ -2462,6 +2485,6 @@ const LEGAL_DOCS = [
 const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
 
 export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, decorForRoom,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
   ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };
