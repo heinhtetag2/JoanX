@@ -5,7 +5,7 @@ import { CHARACTERS, ROOMS, themeOf, visibleCharacters } from '../core/data.jsx'
 import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader, LockedRoomCard } from './shared.jsx';
+import { screenBgActive, ScreenHeader } from './shared.jsx';
 
 // A shimmering placeholder tile — reused across the loading skeleton.
 const Sk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
@@ -89,12 +89,11 @@ function Collection({ ctx }) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ fontSize: 16, fontWeight: 800 }}>{L(room.name)}</span>
-                  {!room.unlocked && <Icon name="lock" size={14} color={THEME.fg3} stroke={2.3} />}
                 </div>
-                <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{room.unlocked ? `${placed.length}/${room.slots}` : L('Locked')}</span>
+                <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{placed.length}/{room.slots}</span>
               </div>
 
-              {room.unlocked ? (
+              {(
                 <div style={{ borderRadius: 22, padding: '20px 14px 14px', background: themeOf(room).wall(room.wallpaper), boxShadow: THEME.shadowCard, position: 'relative', overflow: 'hidden' }}>
                   {/* shelf */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, position: 'relative', zIndex: 1 }}>
@@ -120,7 +119,7 @@ function Collection({ ctx }) {
                   {/* shelf line */}
                   <div style={{ height: 8, borderRadius: 999, background: 'rgba(0,0,0,.05)', marginTop: 6 }} />
                 </div>
-              ) : <LockedRoomCard room={room} />}
+              )}
             </div>
           );
         })}

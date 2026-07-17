@@ -1,7 +1,7 @@
 // JoanX — child app · shared
 
 import React from 'react';
-import { CHARACTERS, moodForStage, PLAYER, roomProgress, stageOf, themeOf } from '../core/data.jsx';
+import { CHARACTERS, moodForStage, PLAYER, stageOf } from '../core/data.jsx';
 import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -156,43 +156,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-// ── Locked room (A-6) — rooms are earned, so a locked one must read as a GOAL ──
-// Not a wall: the child sees which room is coming, what safe behaviour opens it, and
-// exactly how far along they are. One card, used by every surface that lists rooms, so
-// the promise made on the Collection screen is the promise kept in My Room.
-function LockedRoomCard({ room }) {
-  const t = themeOf(room);
-  const p = roomProgress(room);
-  const waiting = p?.blockedBy;   // an earlier room in the ladder has not opened yet
-  return (
-    <div style={{ borderRadius: 22, padding: 18, background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-      {/* the room's own environment, greyed back — you can see where you're going */}
-      <div style={{ width: 46, height: 46, borderRadius: 14, background: t.wall(room.wallpaper), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, filter: 'saturate(.35)' }}>
-        <Icon name="lock" size={20} color={THEME.fg3} stroke={2.2} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Icon name={t.icon} size={14} color={THEME.fg3} stroke={2.3} />
-          <span style={{ fontSize: 14, fontWeight: 800 }}>{L(room.name)}</span>
-        </div>
-        <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 3 }}>
-          {waiting ? `${L(waiting.name)} ${L('must be unlocked first')}` : p ? L(p.label) : L('Coming soon')}
-        </div>
-        {/* the bar only appears when there is something real to count toward — an event
-            room has no number, and a bar with nothing behind it would be a lie */}
-        {!waiting && p?.measurable && (
-          <div style={{ marginTop: 8 }}>
-            <div style={{ height: 7, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
-              <div style={{ width: `${Math.round(p.pct * 100)}%`, height: '100%', borderRadius: 999, background: THEME.primary }} />
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: THEME.fg3, marginTop: 5 }}>
-              {Math.round(p.have).toLocaleString()} / {p.need.toLocaleString()} {L(p.unit)}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, DexProgress, PointsChip, StatCard, LockedRoomCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, DexProgress, PointsChip, StatCard };

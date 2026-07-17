@@ -22,7 +22,20 @@ const brandBtn = { background: BRAND.primary, boxShadow: 'none' };
 // left slot, the title (with its small sub) centered, actions in a right slot.
 // The two side slots are equal-flex so the title stays truly centered whether or
 // not a back button / right action is present.
-function ParentHead({ title, sub, right, onBack }) {
+// `stacked` switches to a left-aligned two-line title (sub above, title below)
+// for tab roots, where there is no back button to balance a centered title.
+function ParentHead({ title, sub, right, onBack, stacked }) {
+  if (stacked) {
+    return (
+      <div style={{ padding: '10px 20px 6px', display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg3, letterSpacing: '-0.1px', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: THEME.fg1, margin: 0, letterSpacing: '-0.4px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
+        </div>
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{right}</div>
+      </div>
+    );
+  }
   return (
     <div style={{ padding: '8px 14px 6px', display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>

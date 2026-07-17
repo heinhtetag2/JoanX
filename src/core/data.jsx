@@ -253,8 +253,8 @@ const DECOR = [
   { id: 'trophy',  name: 'Champion Trophy', rooms: ['*'], category: 'room', slot: 'object', icon: 'trophy', owned: false, price: 260 },
 
   // ── seasonal · dark until ops turns the set on (A-5.1) ──
-  { id: 'lantern', name: 'Star Lantern', rooms: ['dream', 'winter'], category: 'room', slot: 'object', icon: 'lamp-ceiling', owned: false, price: 340, limited: true, set: 'winter-2026' },
-  { id: 'wreath2', name: 'Snow Globe',   rooms: ['winter'],          category: 'room', slot: 'object', icon: 'snowflake',    owned: false, price: 280, limited: true, set: 'winter-2026' },
+  { id: 'lantern', name: 'Star Lantern', rooms: ['dream'],           category: 'room', slot: 'object', icon: 'lamp-ceiling', owned: false, price: 340, limited: true, set: 'winter-2026' },
+  { id: 'wreath2', name: 'Snow Globe',   rooms: ['dream'],           category: 'room', slot: 'object', icon: 'snowflake',    owned: false, price: 280, limited: true, set: 'winter-2026' },
 ];
 
 // The catalogue a given room offers. Room-scoped items plus the universal ones —
@@ -1408,14 +1408,19 @@ const claimRewards = (extra = {}, player = PLAYER, rnd = Math.random) => {
 };
 
 // ── Parent account sign-in (F-33) ────────────────────────────────────
-// Phone number + SMS verification is the primary method. Social sign-in is there to
-// satisfy platform policy and save typing: Google on Android, Sign in with Apple on iOS.
-// Email/password is out of MVP scope — note it is *disabled* here, not deleted: the flow
-// renders whatever methods are enabled for the platform, so adding email later is this
-// flag plus its form, not a rebuild of the screen.
+// Phone number is the account's identity, and a password is its key. The SMS code proves
+// the number is really yours, so it is spent where that question is actually asked — at
+// sign-up, and at a password reset — not on every log-in. A returning guardian types their
+// number and password; nothing is texted. Social sign-in is there to satisfy platform
+// policy and save typing: Google on Android, Sign in with Apple on iOS. Those hand back an
+// identity the provider already verified, so they set no password of their own.
+// Email is out of MVP scope — note it is *disabled* here, not deleted: the flow renders
+// whatever methods are enabled for the platform, so adding it later is this flag plus its
+// form, not a rebuild of the screen.
 const AUTH = {
   smsCodeLength: 6,
   smsResendSeconds: 180,   // how long before "Resend code" becomes available again
+  passwordMinLength: 8,
   methods: [
     { key: 'phone',  label: 'Phone number',        enabled: true,  primary: true },
     { key: 'google', label: 'Continue with Google', enabled: true,  platforms: ['android'] },
@@ -1508,10 +1513,16 @@ applyXpCurve();
 // renders whatever is in this table.
 //   wall(t)  — the wall, tinted by the chosen wallpaper `t`
 //   floor(f) — the floor, tinted by the chosen flooring `f`
-//   bg       — illustrated backdrop for the whole room. When a theme has one it covers
-//              the painted surfaces above, which stay as the fallback for a theme whose
-//              art isn't drawn yet. Only the Green Room has art today; the others render
-//              their gradients until someone draws them.
+//   bg       — illustrated backdrop for the whole room. When a theme has one it covers the
+//              painted surfaces above, which stay as the fallback for a theme whose art
+//              isn't drawn yet. All three have art today; a new theme renders as gradients
+//              until someone paints it, rather than not rendering at all.
+//              Green, Town and Dream are drawn to ONE TEMPLATE — same 421x691 portrait, and
+//              the same furniture in the same places: armchair left, TV/shelf right, lamp
+//              hanging top-centre, picture top-right. That is what lets one set of HOTSPOTS
+//              (child/RoomStage.jsx) point correctly in all three. A room drawn off-template
+//              needs its own aims, which is the day those coordinates should move onto the
+//              theme rather than living in the screen.
 // Wallpaper and flooring are the two surfaces A-7 names first, so each theme carries a
 // palette for both and the room stores which one it wears.
 const ROOM_THEMES = [
@@ -1528,25 +1539,19 @@ const ROOM_THEMES = [
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#8bb46a' },
 
   { id: 'town', name: 'Town Room', icon: 'building-2', blurb: 'School, park and the streets between.',
+    bg: '/assets/backgrounds/townroom.png',
     wallpapers: ['#eaf0f6', '#f1eee9', '#e7eef2', '#f4efe6'],
     wall: t => `linear-gradient(180deg, ${shade(t, -6)} 0%, #fbfbfc 100%)`,
     floorings: ['#dfe3e8', '#d9cfc2', '#cdd8dd'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#a7b0bc' },
 
   { id: 'dream', name: 'Dream Room', icon: 'moon-star', blurb: 'Stars, clouds and soft impossible things.',
+    bg: '/assets/backgrounds/dreamroom.png',
     wallpapers: ['#efe8fb', '#e8e6fa', '#f7e9f5', '#e6effb'],
     wall: t => `radial-gradient(circle at 20% 24%, rgba(255,255,255,.75) 0 2.5px, transparent 3.5px) 0 0/34px 34px, linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
     floorings: ['#e4d8f7', '#d9dcf5', '#efd9ec'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#b39ce0' },
 
-  // seasonal — authored ahead and locked until ops turns the set on, exactly like the
-  // limited items. This row is the proof the table above expands without a release.
-  { id: 'winter', name: 'Winter Room', icon: 'snowflake', blurb: 'Snow light and a quiet, frosted hush.',
-    set: 'winter-2026',
-    wallpapers: ['#e6eef7', '#eaf3f5', '#f0eef9'],
-    wall: t => `radial-gradient(circle at 30% 18%, rgba(255,255,255,.8) 0 2px, transparent 3px) 0 0/28px 28px, linear-gradient(180deg, ${t} 0%, ${shade(t, -4)} 100%)`,
-    floorings: ['#eef3f8', '#e3e9ee', '#e8f1f3'],
-    floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#b6c6d6' },
 ];
 
 const themeById = (id) => ROOM_THEMES.find(t => t.id === id) || ROOM_THEMES[0];
@@ -1558,13 +1563,17 @@ const themeOf = (room) => themeById(room?.theme);
 const wallOf = (room) => { const t = themeOf(room); return t.wall(room?.wallpaper || t.wallpapers[0]); };
 const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.flooring || t.floorings[0]); };
 
-// The three MVP rooms — one per basic theme. `wallpaper` is the tint chosen inside the
-// theme's palette and `placed` is that room's own decor, so every room is decorated
-// independently (A-6 free placement: characters via CHARACTERS.room, items via this).
-//   home     — the default room, handed over at sign-up. Never locked, never earned.
-//   unlocked — DERIVED, never authored: applyRoomUnlocks() writes it from the rules
-//              below against the child's real progress. Seeded here only so the first
-//              render before that call is honest.
+// The three rooms — one per theme. `wallpaper` is the tint chosen inside the theme's
+// palette and `placed` is that room's own decor, so every room is decorated independently
+// (A-6 free placement: characters via CHARACTERS.room, items via this).
+//   home — the default room, the one a new child lands in and the one their profile shows
+//          until they pick another.
+//
+// All three are open from the first walk. They used to be EARNED — Town on a 5-day streak,
+// Dream on 25h of safe walking — which is what F-18 describes ("Some Rooms unlock upon
+// meeting conditions, expanding gradually"). That ladder was removed by product decision on
+// 2026-07-17: three rooms, all free. F-18 needs a signed deviation, and safe walking now
+// buys characters and items but no longer buys space.
 // ROOM_CAPACITY (A-6) — how many characters may live in one Room at once. One knob,
 // not a literal sprinkled across the rooms table, so a future business policy can retune
 // it in a single place. It is capped rather than open-ended on purpose: every placed
@@ -1573,105 +1582,10 @@ const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.floori
 const ROOM_CAPACITY = 10;
 
 const ROOMS = [
-  { id: 'green', name: 'Green Room', theme: 'green', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
-  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
-  { id: 'dream', name: 'Dream Room', theme: 'dream', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
-  // expansion slot — a seasonal room, dark until the winter set goes live
-  { id: 'winter', name: 'Winter Room', theme: 'winter', unlocked: false, slots: ROOM_CAPACITY, wallpaper: '#e6eef7', flooring: '#eef3f8', placed: {} },
+  { id: 'green', name: 'Green Room', theme: 'green', home: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
 ];
-
-// ── Room unlocks (A-6 · rooms are EARNED, never bought) ──────────────
-// Rooms are NOT sold for points. The Green Room is the child's home and is there from
-// the first walk; every other room opens by safe behaviour — an accident-free streak, a
-// cumulative safe-walking total, an achievement. Same rule shape as the egg / character
-// / item milestones, so it runs through the same matchWhen() against the same progress
-// snapshot: one vocabulary of conditions across every faucet in the app.
-//
-//   room  — the room this rule opens
-//   when  — the condition: streakDays · metric + reach · achievementDone · event
-//   after — the room that must already be open, which is what makes the ladder
-//           SEQUENTIAL: Town before Dream, however generous the numbers get retuned to.
-//
-// These are DEFAULTS. Ops retunes them from server settings via setRoomUnlocks() — the
-// bar, the metric, even which room comes first are policy, not code.
-const ROOM_UNLOCK_DEFAULTS = [
-  { id: 'ru-town', room: 'town', enabled: true, source: 'streak',
-    when: { streakDays: 5 },
-    label: 'Walk safely 5 days in a row' },
-
-  { id: 'ru-dream', room: 'dream', enabled: true, source: 'duration', after: 'town',
-    when: { metric: 'safeMinutes', reach: 1500 },
-    label: 'Walk safely for 25 hours' },
-
-  // seasonal — authored ahead, dark until ops flips the season on
-  { id: 'ru-winter', room: 'winter', enabled: false, set: 'winter-2026', source: 'event', after: 'dream',
-    when: { event: 'winter-2026' },
-    label: 'Winter event' },
-];
-
-const ROOM_UNLOCKS = ROOM_UNLOCK_DEFAULTS.map(r => ({ ...r }));
-const activeRoomUnlocks = () => ROOM_UNLOCKS.filter(r => r.enabled !== false);
-const roomRule = (roomId) => activeRoomUnlocks().find(r => r.room === roomId) || null;
-
-// Is this room open right now? A home room always is. Any other room needs an ACTIVE
-// rule that is both MET and preceded by its `after` room — so a room with no rule (or
-// one whose season is dark) stays shut rather than falling open by default.
-const roomOpen = (room, ctx = progress()) => {
-  if (!room) return false;
-  if (room.home) return true;
-  const rule = roomRule(room.id);
-  if (!rule) return false;
-  if (rule.after && !roomOpen(ROOMS.find(r => r.id === rule.after), ctx)) return false;
-  return matchWhen(rule.when, ctx);
-};
-
-// How close the child is to opening a locked room — the number the locked card shows,
-// so the goal reads as "3 of 5 days", not a closed door.
-const roomProgress = (room, ctx = progress()) => {
-  const rule = roomRule(room?.id);
-  if (!rule || room?.home) return null;
-  const w = rule.when;
-  const have = w.streakDays != null ? (ctx.streakDays ?? 0)
-             : w.metric != null     ? (ctx[w.metric] ?? 0)
-             : 0;
-  const need = w.streakDays ?? w.reach ?? 0;
-  const unit = w.streakDays != null ? 'days' : w.metric === 'safeKm' ? 'km' : w.metric === 'safeMinutes' ? 'min' : '';
-  // a room still waiting on its predecessor shows THAT as the blocker, not a bar it
-  // has already filled — otherwise a full bar sits next to a locked door
-  const blockedBy = rule.after && !roomOpen(ROOMS.find(r => r.id === rule.after), ctx)
-    ? ROOMS.find(r => r.id === rule.after) : null;
-  return {
-    rule, label: rule.label, have, need, unit, blockedBy,
-    pct: need > 0 ? Math.min(1, have / need) : 0,
-    measurable: need > 0,   // an event rule has nothing to count toward
-  };
-};
-
-// Derive every room's `unlocked` from the rules in force. Called at boot, after a walk
-// pays out, and again whenever server settings land — the same discipline as the XP
-// curve: derived state is recomputed, never left behind.
-const applyRoomUnlocks = (player = PLAYER) => {
-  const ctx = progress({}, player);
-  ROOMS.forEach(r => { r.unlocked = roomOpen(r, ctx); });
-  return ROOMS;
-};
-
-// Server settings (A-6). Ops hands over the unlock table; anything malformed is
-// dropped rather than trusted, and a payload that leaves NO valid rule falls back to
-// the defaults — a bad push must never strand a child with one room forever.
-const setRoomUnlocks = (rows) => {
-  const valid = Array.isArray(rows) ? rows.filter(r =>
-    r && typeof r.id === 'string'
-    && ROOMS.some(x => x.id === r.room)          // opens a room that exists
-    && !ROOMS.find(x => x.id === r.room).home    // …and not the home room
-    && r.when && typeof r.when === 'object'
-    && (r.after == null || ROOMS.some(x => x.id === r.after))
-  ) : [];
-  ROOM_UNLOCKS.length = 0;
-  ROOM_UNLOCKS.push(...(valid.length ? valid.map(r => ({ ...r })) : ROOM_UNLOCK_DEFAULTS.map(r => ({ ...r }))));
-  applyRoomUnlocks();
-  return ROOM_UNLOCKS;
-};
 
 const ACHIEVEMENTS = [
   { id: 'a1', icon: 'footprints', name: 'First Steps',    desc: 'Walk safely for 10 minutes',  done: true,  reward: 50 },
@@ -2422,11 +2336,15 @@ const PERMISSIONS = [
     warn: 'If denied, you won’t receive reward and guidance alerts.', required: true },
 ];
 
-// Seed which rooms are open from the rules in force (A-6). The shipped app calls
-// setRoomUnlocks() again once server settings land, which re-runs this. It sits at the
-// very bottom because the progress snapshot it reads reaches across the whole file —
-// run it any earlier and it trips over a table that has not been declared yet.
-applyRoomUnlocks();
+// What the child actually granted. Onboarding writes here when a permission is
+// skipped, so the home screen can name which protections stopped working instead
+// of only saying "limited" — the OS can also revoke one later, long after
+// onboarding is done. Everything is granted until something says otherwise.
+const PERM_GRANTS = {};
+PERMISSIONS.forEach(p => { PERM_GRANTS[p.id] = true; });
+const setPermGrant = (id, on) => { PERM_GRANTS[id] = !!on; };
+const grantAllPermissions = () => PERMISSIONS.forEach(p => { PERM_GRANTS[p.id] = true; });
+const missingPermissions = () => PERMISSIONS.filter(p => !PERM_GRANTS[p.id]);
 
 // ── NOTICES (공지사항) — product announcements, newest first ──────────
 // Shared by both apps: the parent Profile › Notices list and the child
@@ -2485,6 +2403,6 @@ const LEGAL_DOCS = [
 const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
 
 export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
-  ROOM_UNLOCKS, ROOM_UNLOCK_DEFAULTS, activeRoomUnlocks, roomRule, roomOpen, roomProgress, applyRoomUnlocks, setRoomUnlocks, SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
+  SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

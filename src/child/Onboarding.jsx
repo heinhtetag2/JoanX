@@ -1,7 +1,7 @@
 // JoanX — child app · Onboarding
 
 import React from 'react';
-import { CHARACTERS, PERMISSIONS, PLAYER, guardianOwner } from '../core/data.jsx';
+import { CHARACTERS, PERMISSIONS, PLAYER, guardianOwner, setPermGrant } from '../core/data.jsx';
 import { Badge, Button, Icon, PairQR, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -87,8 +87,10 @@ function Onboarding({ ctx }) {
   const stepIdx = perms.findIndex(p => !grants[p.id]);
   const finish = () => ctx.finishOnboarding('smart');
 
-  const grant = id => { setGrants(g => ({ ...g, [id]: true })); setDenied(d => { const n = { ...d }; delete n[id]; return n; }); }; // granting clears any "denied" fallback
-  const deny = id => setDenied(d => ({ ...d, [id]: true }));    // user skips a permission → its card drops to the limited state
+  // Both write PERM_GRANTS as well as local state: what the child skipped here is
+  // what home reports as switched off later, so the two read from one source.
+  const grant = id => { setPermGrant(id, true); setGrants(g => ({ ...g, [id]: true })); setDenied(d => { const n = { ...d }; delete n[id]; return n; }); }; // granting clears any "denied" fallback
+  const deny = id => { setPermGrant(id, false); setDenied(d => ({ ...d, [id]: true })); };   // user skips a permission → its card drops to the limited state
   const openOne = id => setModal(id);                           // "special" perm → open its sheet
   const dismiss = () => setModal(null);
   const grantActive = () => { grant(modal); setModal(null); };  // "Go to settings" in the sheet

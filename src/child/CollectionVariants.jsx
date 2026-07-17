@@ -3,11 +3,11 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { CHARACTERS, ROOMS, roomProgress, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
+import { CHARACTERS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader, LockedRoomCard } from './shared.jsx';
+import { screenBgActive, ScreenHeader } from './shared.jsx';
 
 const COLLECTION_LAYOUTS = [
   { id: 'shelf', label: 'Shelf' },
@@ -42,15 +42,13 @@ function RoomHead({ room, placed }) {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <span style={{ fontSize: 16, fontWeight: 800 }}>{L(room.name)}</span>
-        {!room.unlocked && <Icon name="lock" size={14} color={THEME.fg3} stroke={2.3} />}
       </div>
-      <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{room.unlocked ? `${placed.length}/${room.slots}` : L('Locked')}</span>
+      <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{placed.length}/{room.slots}</span>
     </div>
   );
 }
 
 // a locked room is the same goal card everywhere it appears (see child/shared.jsx)
-const LockedRoom = LockedRoomCard;
 
 const EmptySlot = ({ size = 56 }) => (
   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}>
@@ -87,12 +85,12 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
     return (
       <div key={room.id} style={{ marginBottom: 16 }}>
         <RoomHead room={room} placed={placed} />
-        {room.unlocked ? (
+        {(
           <div style={{ borderRadius: 22, padding: '20px 14px 14px', background: themeOf(room).wall(room.wallpaper), boxShadow: THEME.shadowCard }}>
             <div style={{ display: 'flex', gap: 10 }}>{Array.from({ length: room.slots }).map((_, i) => bigTile(placed[i], i))}</div>
             <div style={{ height: 8, borderRadius: 999, background: 'rgba(0,0,0,.05)', marginTop: 6 }} />
           </div>
-        ) : <LockedRoom room={room} />}
+        )}
       </div>
     );
   });
@@ -120,7 +118,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
     return (
       <div key={room.id} style={{ marginBottom: 18 }}>
         <RoomHead room={room} placed={placed} />
-        {room.unlocked ? (
+        {(
           <div className="no-sb" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '2px 2px 8px', margin: '0 -2px' }}>
             {(placed.length ? placed : [null]).map((c, i) => c ? (
               <button key={c.id} onClick={() => openC(c)} style={{ flexShrink: 0, width: 132, borderRadius: 20, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: `linear-gradient(180deg, ${shade(c.color, 74)}, #fff 90%)`, boxShadow: THEME.shadowCard, padding: '16px 10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -130,13 +128,13 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
               </button>
             ) : <div key="e" style={{ width: 132, height: 150, borderRadius: 20, border: `2px dashed ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="plus" size={24} color={THEME.fg3} stroke={2.2} /></div>)}
           </div>
-        ) : <LockedRoom room={room} />}
+        )}
       </div>
     );
   });
 
   // 4 · BOOKSHELF — skeuomorphic warm wood shelves the buddies stand on
-  else if (variant === 'bookshelf') body = rooms.filter(r => r.unlocked).map(room => {
+  else if (variant === 'bookshelf') body = rooms.map(room => {
     const placed = roomChars(room);
     const wood = '#a9744f';
     return (
@@ -162,7 +160,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   });
 
   // 5 · LIST — compact rows grouped by room: chip + name + rarity + XP bar
-  else if (variant === 'list') body = rooms.filter(r => r.unlocked).map(room => {
+  else if (variant === 'list') body = rooms.map(room => {
     const placed = roomChars(room);
     return (
       <div key={room.id} style={{ marginBottom: 18 }}>
@@ -260,15 +258,15 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         const placed = roomChars(room);
         return (
           <div key={room.id} style={{ position: 'relative', marginBottom: 16 }}>
-            <div style={{ position: 'absolute', left: -30, top: 4, width: 28, height: 28, borderRadius: 999, background: room.unlocked ? THEME.primary : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #fff', boxShadow: THEME.shadowCard }}>
-              <Icon name={room.unlocked ? 'check' : 'lock'} size={14} color={room.unlocked ? '#fff' : THEME.fg3} stroke={2.6} />
+            <div style={{ position: 'absolute', left: -30, top: 4, width: 28, height: 28, borderRadius: 999, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #fff', boxShadow: THEME.shadowCard }}>
+              <Icon name="check" size={14} color="#fff" stroke={2.6} />
             </div>
             <div style={{ background: '#fff', borderRadius: 18, padding: '13px 14px', boxShadow: THEME.shadowCard }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 14.5, fontWeight: 800 }}>{L(room.name)}</span>
-                <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{room.unlocked ? `${placed.length}/${room.slots}` : L('Locked')}</span>
+                <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{placed.length}/{room.slots}</span>
               </div>
-              {room.unlocked ? (
+              {(
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
                   {placed.map(c => (
                     <button key={c.id} onClick={() => openC(c)} style={{ width: 52, height: 52, borderRadius: 999, background: shade(c.color, 70), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={50} /></button>
@@ -279,7 +277,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
                     <button onClick={() => ctx.nav('decorate', { roomId: room.id })} style={{ width: 52, height: 52, borderRadius: 999, border: `2px dashed ${THEME.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="plus" size={20} color={THEME.fg3} stroke={2.2} /></button>
                   )}
                 </div>
-              ) : <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 4 }}>{L(roomProgress(room)?.label || 'Coming soon')}</div>}
+              )}
             </div>
           </div>
         );
@@ -344,7 +342,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   ));
 
   // 13 · BUBBLES — round avatar bubbles that wrap, grouped by room
-  else if (variant === 'bubbles') body = rooms.filter(r => r.unlocked).map(room => {
+  else if (variant === 'bubbles') body = rooms.map(room => {
     const placed = roomChars(room);
     return (
       <div key={room.id} style={{ marginBottom: 16 }}>
@@ -401,10 +399,10 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           return (
             <div key={room.id} style={{ background: '#fff', borderRadius: 16, boxShadow: THEME.shadowCard, padding: '13px 16px', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: room.unlocked ? THEME.fg1 : THEME.fg3 }}>{L(room.name)}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>{room.unlocked ? `${placed.length}/${room.slots}` : L('Locked')}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L(room.name)}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>{placed.length}/{room.slots}</span>
               </div>
-              <Bar value={room.unlocked ? placed.length : 0} max={room.slots} color={THEME.primary} height={7} />
+              <Bar value={placed.length} max={room.slots} color={THEME.primary} height={7} />
             </div>
           );
         })}
@@ -414,14 +412,13 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
   // 16 · TABS — room segmented control, one room shown big at a time
   else if (variant === 'tabs') {
-    const unlocked = rooms.filter(r => r.unlocked);
-    const room = unlocked[Math.min(tab, unlocked.length - 1)] || unlocked[0];
+    const room = rooms[Math.min(tab, rooms.length - 1)] || rooms[0];
     const placed = room ? roomChars(room) : [];
     body = (
       <React.Fragment>
         <div className="no-sb" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 12 }}>
-          {unlocked.map((r, i) => {
-            const on = i === Math.min(tab, unlocked.length - 1);
+          {rooms.map((r, i) => {
+            const on = i === Math.min(tab, rooms.length - 1);
             return <button key={r.id} onClick={() => setTab(i)} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '9px 16px', fontSize: 13, fontWeight: 800, background: on ? THEME.primary : '#fff', color: on ? '#fff' : THEME.fg2, boxShadow: THEME.shadowCard }}>{L(r.name)}</button>;
           })}
         </div>

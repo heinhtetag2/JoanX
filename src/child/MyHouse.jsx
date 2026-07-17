@@ -1,7 +1,7 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { CHARACTERS, DECOR, HOUSE_BGS, PLAYER, roomOpen, roomProgress, roomRule, ROOMS, SCENES, themeOf } from '../core/data.jsx';
+import { CHARACTERS, DECOR, HOUSE_BGS, PLAYER, ROOMS, SCENES, themeOf } from '../core/data.jsx';
 import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -54,27 +54,16 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   // 'hotspot' hero — one of your rooms, edited in place. autoSave because a profile has no
   // Save button: friends see this page, so a change to it IS the change.
   //
-  // Rooms are EARNED (F-18), so the switcher only ever moves between the ones you've opened
-  // — but it still shows the locked ones, because the profile is the best place in the app
-  // to advertise what the next walk buys. Tapping a locked room says what it costs.
+  // All three rooms are free, so the switcher is a plain picker: no locks, no goals, no
+  // ladder. (They used to be earned — see the note on ROOMS in core/data.jsx.)
   const homeRoom = ROOMS.find(r => r.home) || ROOMS[0];
-  const openRooms = ROOMS.filter(r => roomOpen(r));
   const [profRoomId, setProfRoomId] = React.useState(homeRoom.id);
-  const homeEd = useRoomEditing(openRooms, profRoomId, { autoSave: true });
+  const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
   const [homeSheet, setHomeSheet] = React.useState(null);
   const [roomPicker, setRoomPicker] = React.useState(false);
-  const profIdx = openRooms.findIndex(r => r.id === homeEd.room.id);
-  const cycleRoom = (dir) => setProfRoomId(openRooms[(profIdx + dir + openRooms.length) % openRooms.length].id);
-  const tapRoom = (r) => {
-    // a locked room says what it costs rather than doing nothing — that's the whole reason
-    // the locked ones are on this screen at all
-    if (!roomOpen(r)) {
-      const p = roomProgress(r);
-      say(p?.blockedBy ? L('Open the room before this one first') : L(roomRule(r.id)?.label || 'Keep walking to open this'));
-      return;
-    }
-    setProfRoomId(r.id); setRoomPicker(false);
-  };
+  const profIdx = ROOMS.findIndex(r => r.id === homeEd.room.id);
+  const cycleRoom = (dir) => setProfRoomId(ROOMS[(profIdx + dir + ROOMS.length) % ROOMS.length].id);
+  const tapRoom = (r) => { setProfRoomId(r.id); setRoomPicker(false); };
 
   const setScene = (s) => { setSceneId(s.id); PLAYER.scene = s.id; };
   const chooseScene = (s) => { setScene(s); setScenePicker(false); };
@@ -104,15 +93,14 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             literally the same object. */}
         {variant === 'hotspot' && (
           <div style={{ marginBottom: 14 }}>
-            {/* 'chips' — every room as a named tab across the top, the way Decorate does it.
-                Nothing hidden: you see the whole ladder, locked rungs included. */}
+            {/* 'chips' — every room as a named tab across the top, the way Decorate does it */}
             {roomSwitch === 'chips' && (
               <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8 }} className="no-sb">
                 {ROOMS.map(r => {
-                  const open = roomOpen(r), on = r.id === homeEd.room.id;
+                  const on = r.id === homeEd.room.id;
                   return (
-                    <button key={r.id} onClick={() => tapRoom(r)} className="jx-press" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 12px', fontSize: 12, fontWeight: 800, background: on ? '#fff' : 'rgba(0,0,0,.34)', color: on ? THEME.fg1 : '#fff', opacity: open ? 1 : .6 }}>
-                      <Icon name={open ? themeOf(r).icon : 'lock'} size={13} color={on ? THEME.fg1 : '#fff'} stroke={2.3} />{L(r.name)}
+                    <button key={r.id} onClick={() => tapRoom(r)} className="jx-press" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 12px', fontSize: 12, fontWeight: 800, background: on ? '#fff' : 'rgba(0,0,0,.34)', color: on ? THEME.fg1 : '#fff' }}>
+                      <Icon name={themeOf(r).icon} size={13} color={on ? THEME.fg1 : '#fff'} stroke={2.3} />{L(r.name)}
                     </button>
                   );
                 })}
@@ -159,16 +147,14 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
 
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)', textAlign: 'center', marginTop: 10 }}>{PLAYER.name}</div>
 
-            {/* the dots count every room, not just the ones you have — a dim dot is the next
-                room, and tapping it says what it costs. The profile is where the walking
-                loop gets advertised (F-18). */}
+            {/* one dot per room — which one you're in, and how many there are */}
             {roomSwitch === 'arrows' && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
                 {ROOMS.map(r => {
-                  const open = roomOpen(r), on = r.id === homeEd.room.id;
+                  const on = r.id === homeEd.room.id;
                   return (
                     <button key={r.id} onClick={() => tapRoom(r)} aria-label={L(r.name)}
-                      style={{ width: on ? 18 : 6, height: 6, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', background: on ? '#fff' : open ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.22)', transition: 'width .18s ease' }} />
+                      style={{ width: on ? 18 : 6, height: 6, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', background: on ? '#fff' : 'rgba(255,255,255,.55)', transition: 'width .18s ease' }} />
                   );
                 })}
               </div>
@@ -299,48 +285,32 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       {/* 'sheet' switcher — the whole ladder in one place, earned and unearned together */}
       {roomPicker && (
         <BottomSheet title={L('Your rooms')} onClose={() => setRoomPicker(false)}>
-          <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '-4px 2px 12px' }}>{L('Rooms open as you keep walking safely.')}</div>
-          {/* Four rooms, four cards, no scrolling — the whole ladder in one look. A vertical
-              list said the same thing but ran off the bottom of the sheet, and a ladder you
-              have to scroll to see the end of stops being a ladder. */}
+          <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '-4px 2px 12px' }}>{L('Pick the room your friends see.')}</div>
+          {/* Three rooms, three cards, no scrolling. Every one is free, so there is nothing
+              to rank, gate or count toward — the card is a picture of the room and its name,
+              and the only state worth showing is which one you're in. */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
-            {ROOMS.map((r, i) => {
-              const t = themeOf(r), open = roomOpen(r), on = r.id === homeEd.room.id;
-              const p = roomProgress(r);
+            {ROOMS.map(r => {
+              const t = themeOf(r), on = r.id === homeEd.room.id;
               return (
                 <button key={r.id} onClick={() => tapRoom(r)} style={{ textAlign: 'left', border: on ? `2px solid ${THEME.brand}` : `2px solid ${THEME.border}`, borderRadius: 18, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', padding: 0, overflow: 'hidden' }}>
                   {/* the room's own face — its art if it has any, its wallpaper if not. Big
                       enough to actually recognise the room by, which is the only reason a
                       thumbnail earns its space. */}
-                  <div style={{ height: 96, background: t.wall(r.wallpaper), backgroundImage: t.bg ? `url(${t.bg})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center 30%', position: 'relative', filter: open ? 'none' : 'grayscale(1)' }}>
-                    {/* the ladder number — rooms open in a fixed order (F-18), so saying
-                        WHICH rung this is turns four cards into one sequence */}
-                    <div style={{ position: 'absolute', top: 6, left: 6, minWidth: 20, height: 20, borderRadius: 7, background: on ? THEME.brand : 'rgba(255,255,255,.92)', color: on ? '#fff' : THEME.fg1, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>{i + 1}</div>
-                    {!open && (
-                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(43,41,38,.42)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 999, background: 'rgba(255,255,255,.94)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon name="lock" size={16} color={THEME.fg1} stroke={2.5} />
-                        </div>
+                  <div style={{ height: 96, background: t.wall(r.wallpaper), backgroundImage: t.bg ? `url(${t.bg})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center 30%', position: 'relative' }}>
+                    {on && (
+                      <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon name="check" size={14} color="#fff" stroke={3} />
                       </div>
                     )}
                   </div>
                   <div style={{ padding: '9px 10px 11px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: open ? THEME.fg1 : THEME.fg2 }}>
-                      <Icon name={t.icon} size={13} color={open ? THEME.fg2 : THEME.fg3} stroke={2.3} />{L(r.name)}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: THEME.fg1 }}>
+                      <Icon name={t.icon} size={13} color={THEME.fg2} stroke={2.3} />{L(r.name)}
                     </div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: on ? THEME.brand : THEME.fg3, marginTop: 3, lineHeight: 1.35 }}>
-                      {open ? (on ? L('Showing') : L('Tap to show')) : L(roomRule(r.id)?.label || 'Keep walking')}
+                      {on ? L('Showing') : L('Tap to show')}
                     </div>
-                    {/* a locked room with a measurable goal shows how close you are — the
-                        point of putting locked rooms in front of the child at all */}
-                    {!open && p?.measurable && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                        <div style={{ flex: 1, height: 4, borderRadius: 999, background: THEME.border, overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.round(p.pct * 100)}%`, height: '100%', background: THEME.brand }} />
-                        </div>
-                        <span style={{ fontSize: 10, fontWeight: 800, color: THEME.fg3 }}>{Math.round(p.pct * 100)}%</span>
-                      </div>
-                    )}
                   </div>
                 </button>
               );

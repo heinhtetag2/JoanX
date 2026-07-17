@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
-import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS } from '../core/data.jsx';
+import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
@@ -38,6 +38,49 @@ function HomeActionsS({ ctx, dark }) {
 function SafetyPillS({ ctx, lite, skin }) {
   const dark = skin === 'glass';
   const demo = ctx.demo || {};
+
+  // A child who skipped the permission screen still lands here, so the card owns
+  // the consequence: it names each permission that was skipped and what stopped
+  // working because of it, rather than only saying "limited". The reasons are the
+  // same `warn` lines the skip sheet showed during onboarding — one source, so the
+  // promise made at skip time and the state on home can't drift apart.
+  const missing = missingPermissions();
+  if (missing.length && !demo.offline) {
+    const allow = e => {
+      e.stopPropagation();
+      grantAllPermissions();
+      ctx.setDemo && ctx.setDemo(d => ({ ...d, permsOff: false }));
+    };
+    return (
+      <div onClick={() => ctx.nav('safety')} style={{ background: THEME.warningLight, borderRadius: 16, padding: '12px 14px', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.warning, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon name="shield-alert" size={20} color="#fff" stroke={2.3} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#602f0c' }}>{L('Some protection is off')}</div>
+            <div style={{ fontSize: 12, color: '#602f0c', opacity: .85, lineHeight: 1.35 }}>
+              {ctx.lang === 'ko' ? `켜지 않은 권한이 ${missing.length}개 있어요` : `${missing.length} permission${missing.length > 1 ? 's' : ''} still off`}
+            </div>
+          </div>
+          <button onClick={allow} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.warning, color: '#fff', fontWeight: 800, fontSize: 12.5, padding: '8px 13px', borderRadius: 999 }}>
+            <Icon name="shield-check" size={13} color="#fff" stroke={2.6} />{L('Turn on')}
+          </button>
+        </div>
+        <div style={{ marginTop: 11, paddingTop: 11, borderTop: '1px solid rgba(96,47,12,.13)', display: 'flex', flexDirection: 'column', gap: 9 }}>
+          {missing.map(p => (
+            <div key={p.id} style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+              <Icon name={p.icon} size={15} color={THEME.warning} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#602f0c' }}>{L(p.name)}</div>
+                <div style={{ fontSize: 11.5, color: '#602f0c', opacity: .8, lineHeight: 1.4 }}>{L(p.warn)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Offline / limited-protection states take over the protection card — the app
   // keeps running, but this is where the child sees (and can fix) reduced cover.

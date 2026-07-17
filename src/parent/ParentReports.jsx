@@ -152,7 +152,7 @@ function ParentReports({ ctx }) {
   if (ctx.demo?.loading) {
     return (
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-        <ParentHead sub={L("This week's progress")} title={L('Loading…')} right={<RSk w={110} h={40} r={999} />} />
+        <ParentHead stacked sub={L("This week's progress")} title={L('Loading…')} right={<RSk w={110} h={40} r={999} />} />
         <div style={{ padding: '8px 20px 0' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '4px 0 6px' }}>
             {Array.from({ length: 4 }).map((_, i) => (
@@ -244,7 +244,7 @@ function ParentReports({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead sub={L("This week's progress")} title={L(doingWell ? 'Getting better' : 'Needs attention')} right={<ChildChip selected={sel} onPick={setSel} />} />
+      <ParentHead stacked sub={L("This week's progress")} title={L(doingWell ? 'Getting better' : 'Needs attention')} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
 
         {/* KPI cards — 2×2 grid */}

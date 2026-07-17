@@ -35,6 +35,24 @@ const KO = {
   'Without these, JoanX keeps running — but some warnings won’t work. You can turn them on anytime in Settings.':
     '이 권한이 없어도 조안X는 계속 작동해요 — 하지만 일부 경고가 작동하지 않아요. 설정에서 언제든 켤 수 있어요.',
   'Go back & allow': '돌아가서 허용하기', 'Continue with limited protection': '제한된 보호로 계속하기',
+  // home protection card, when permissions were skipped during onboarding
+  'Some protection is off': '일부 보호가 꺼져 있어요',
+  // parent sign-in — phone + password (F-33)
+  'Log in with your phone number and password.': '휴대폰 번호와 비밀번호로 로그인하세요.',
+  'Password': '비밀번호', 'Confirm password': '비밀번호 확인',
+  'Show password': '비밀번호 표시', 'Hide password': '비밀번호 숨기기',
+  'Forgot password?': '비밀번호를 잊으셨나요?',
+  'Enter your password.': '비밀번호를 입력해 주세요.',
+  'Enter your phone number first.': '휴대폰 번호를 먼저 입력해 주세요.',
+  'That password is too short.': '비밀번호가 너무 짧아요.',
+  'Choose a password': '비밀번호 설정',
+  'Set a new password': '새 비밀번호 설정',
+  'Reset your password': '비밀번호 재설정',
+  "You'll use this with your phone number to log in.": '휴대폰 번호와 함께 로그인할 때 사용해요.',
+  "You'll use this the next time you log in.": '다음 로그인부터 이 비밀번호를 사용해요.',
+  'Passwords don’t match.': '비밀번호가 일치하지 않아요.',
+  'Both entries match': '두 번 입력한 비밀번호가 같아요',
+  'Save & log in': '저장하고 로그인',
   'To keep you safe,\nwe need a little help': '너를 지키려면\n도움이 조금 필요해요',
   'For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.':
     '걸을 때 조안X가 위험을 알아채려면 아래 권한이 필요해요. 부모님과 함께 켜 주세요.',
@@ -474,8 +492,10 @@ const KO = {
   'I already have an account': '이미 계정이 있어요', 'Create your account': '계정 만들기', 'Log in': '로그인',
   "Enter your phone to get started — we'll text you a 6-digit code.": '휴대폰 번호를 입력하면 시작해요 — 인증번호 6자리를 문자로 보내드려요.',
   "Enter your phone and we'll text you a 6-digit code.": '휴대폰 번호를 입력하면 인증번호 6자리를 문자로 보내드려요.',
-  'No account uses this number yet.': '이 번호로 만든 계정이 아직 없어요.', 'This number already has an account.': '이 번호로 만든 계정이 이미 있어요.',
-  'Create an account →': '계정 만들기 →', 'Log in instead →': '로그인하기 →',
+  'This number already has an account.': '이 번호로 만든 계정이 이미 있어요.', 'Log in instead →': '로그인하기 →',
+  // one answer for a wrong number and a wrong password — the login form must not tell a
+  // stranger which numbers are registered
+  'Phone number or password is incorrect.': '전화번호 또는 비밀번호가 올바르지 않아요.',
   'Sign in with your phone': '휴대폰 번호로 로그인', "We'll text you a 6-digit code. New here? This creates your account.": '6자리 인증번호를 문자로 보내드려요. 처음이시면 계정이 함께 만들어져요.',
   'Send code': '인증번호 받기', 'Verify': '확인', 'Enter the code': '인증번호 입력',
   'We sent a 6-digit code to': '인증번호 6자리를 보냈어요:',
@@ -888,11 +908,9 @@ const KO = {
   '’s house': '님의 집', 'Featured buddy': '대표 친구',
   'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
   'Rooms': '방', 'Guestbook': '방명록',
-  // profile room switcher — the locked rooms are on the profile to advertise the next walk
+  // profile room switcher — all three rooms are free, so this only names them
   'Your rooms': '내 방', 'Showing': '보여주는 중', 'Tap to show': '눌러서 보여주기',
-  'Rooms open as you keep walking safely.': '안전하게 걸을수록 새로운 방이 열려요.',
-  'Keep walking': '계속 걸어보세요', 'Keep walking to open this': '계속 걸으면 열려요',
-  'Open the room before this one first': '앞의 방을 먼저 열어야 해요',
+  'Pick the room your friends see.': '친구들에게 보여줄 방을 골라보세요.',
   'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '방문당 한 개',
   // guestbook free-text note (F-32) + moderation reasons (moderation.jsx)
   'Write a short note, or tap one below.': '짧은 메모를 쓰거나, 아래에서 골라요.', 'Say something kind…': '따뜻한 말을 남겨요…', 'Leave note': '메모 남기기',
@@ -1022,7 +1040,7 @@ const KO = {
   'Tap anything in the room to change it.': '방 안의 아무거나 눌러서 바꿔보세요.',
   'Nothing for this spot in this room yet.': '이 방에는 아직 여기에 놓을 게 없어요.',
   // room themes (A-6 / A-12) — three environments, each with its own decor set
-  'Green Room': '그린 룸', 'Town Room': '타운 룸', 'Dream Room': '드림 룸', 'Winter Room': '윈터 룸',
+  'Green Room': '그린 룸', 'Town Room': '타운 룸', 'Dream Room': '드림 룸',
   'Forest, leaves and quiet trails.': '숲과 나뭇잎, 조용한 오솔길.',
   'School, park and the streets between.': '학교와 공원, 그 사이의 거리.',
   'Stars, clouds and soft impossible things.': '별과 구름, 그리고 꿈같은 것들.',

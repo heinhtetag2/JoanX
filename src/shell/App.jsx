@@ -1,6 +1,6 @@
 import React from 'react';
 import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, Notices, LegalDetail, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
-import { applyXpCurve, CHARACTERS, PLAYER, STAGES } from '../core/data.jsx';
+import { applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
@@ -395,6 +395,19 @@ function App() {
                 <button className={'tw-chip' + (demo.walking ? ' on' : '')}
                   onClick={() => { const next = !demo.walking; PLAYER.walking = next; setDemo(d => ({ ...d, walking: next })); }}>
                   Walking
+                </button>
+                {/* F-26 — the child skipped the permission screen and carried on. Writes the
+                    real PERM_GRANTS the home card reads, so it reproduces the skipped-onboarding
+                    state rather than mocking a banner. Motion stays granted: that mirrors the
+                    common case, where the first ask is allowed and the rest are skipped. */}
+                <button className={'tw-chip' + (demo.permsOff ? ' on' : '')}
+                  onClick={() => {
+                    const next = !demo.permsOff;
+                    if (next) ['usage', 'overlay', 'notif'].forEach(id => setPermGrant(id, false));
+                    else grantAllPermissions();
+                    setDemo(d => ({ ...d, permsOff: next }));
+                  }}>
+                  Perms skipped
                 </button>
               </div>
 
