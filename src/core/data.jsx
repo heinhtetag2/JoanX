@@ -1527,26 +1527,27 @@ applyXpCurve();
 // palette for both and the room stores which one it wears.
 const ROOM_THEMES = [
   { id: 'green', name: 'Green Room', icon: 'trees', blurb: 'Forest, leaves and quiet trails.',
-    // portrait art (421x691), drawn for the shape it lives in: on a phone page it crops a
-    // little off the sides and nothing off the top or bottom. The old forestbg was
-    // landscape, so filling a portrait page meant blowing it up and throwing most of it away.
-    // The HOTSPOTS in child/RoomStage.jsx aim at things drawn in HERE — the armchair, the
-    // framed picture — so swapping this art for a different composition means re-aiming them.
-    bg: '/assets/backgrounds/room3.png',
+    // Portrait art (941x1672), drawn for the shape it lives in: on a phone page it crops ~9%
+    // off each side and nothing off the top or bottom. The three rooms are one SET — same
+    // canvas, same composition: shelf on the left, a seat on the right, window centred above,
+    // and an empty floor at the bottom for the buddy to stand on. The HOTSPOTS in
+    // child/RoomStage.jsx aim at that shared layout, once, for all three. Keep a replacement
+    // on the same grammar and nothing needs re-aiming; break it and every room needs its own.
+    bg: '/assets/backgrounds/greenroom.png',
     wallpapers: ['#e7f3e4', '#dff0e6', '#eef5dd', '#e3efe8'],
     wall: t => `radial-gradient(circle at 84% 14%, rgba(255,255,255,.5) 0 42px, transparent 43px), linear-gradient(180deg, ${t} 0%, ${shade(t, 8)} 100%)`,
     floorings: ['#cfe3b7', '#d8cbb0', '#c3ddc9'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#8bb46a' },
 
   { id: 'town', name: 'Town Room', icon: 'building-2', blurb: 'School, park and the streets between.',
-    bg: '/assets/backgrounds/townroom.png',
+    bg: '/assets/backgrounds/moderntownroom.png',
     wallpapers: ['#eaf0f6', '#f1eee9', '#e7eef2', '#f4efe6'],
     wall: t => `linear-gradient(180deg, ${shade(t, -6)} 0%, #fbfbfc 100%)`,
     floorings: ['#dfe3e8', '#d9cfc2', '#cdd8dd'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#a7b0bc' },
 
   { id: 'dream', name: 'Dream Room', icon: 'moon-star', blurb: 'Stars, clouds and soft impossible things.',
-    bg: '/assets/backgrounds/dreamroom.png',
+    bg: '/assets/backgrounds/magicroom.png',
     wallpapers: ['#efe8fb', '#e8e6fa', '#f7e9f5', '#e6effb'],
     wall: t => `radial-gradient(circle at 20% 24%, rgba(255,255,255,.75) 0 2.5px, transparent 3.5px) 0 0/34px 34px, linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
     floorings: ['#e4d8f7', '#d9dcf5', '#efd9ec'],
@@ -1582,6 +1583,7 @@ const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.floori
 const ROOM_CAPACITY = 10;
 
 const ROOMS = [
+  // `home: true` marks the room the profile/house opens on (MyHouse). Green Room for now.
   { id: 'green', name: 'Green Room', theme: 'green', home: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
   { id: 'town',  name: 'Town Room',  theme: 'town',  slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
   { id: 'dream', name: 'Dream Room', theme: 'dream', slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },

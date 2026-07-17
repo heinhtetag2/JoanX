@@ -1036,7 +1036,7 @@ const KO = {
   'Sky': '하늘', 'Sunset': '노을', 'Mint': '민트', 'Grape': '포도', 'Candy': '캔디', 'Night': '밤',
   'Wallpaper': '벽지', 'Decorations': '장식', 'Save room': '방 저장',
   // hotspot editor — one label per tappable surface (A-7)
-  'Flooring': '바닥', 'Furniture': '가구', 'Ornaments': '소품',
+  'Flooring': '바닥', 'Furniture': '가구', 'Ornaments': '소품', 'Shelf': '선반',
   'Tap anything in the room to change it.': '방 안의 아무거나 눌러서 바꿔보세요.',
   'Nothing for this spot in this room yet.': '이 방에는 아직 여기에 놓을 게 없어요.',
   // room themes (A-6 / A-12) — three environments, each with its own decor set

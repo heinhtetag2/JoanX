@@ -124,15 +124,18 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                   house-mates in and out. That's the Decorate screen's job.
                   backdrop — a room with art has it painted across the page already; a room
                   without art has to draw its own wall and floor here or the buddy floats.
-                  floorLine 0 — the stage ends at her feet, so the name below sits under her.
-                  To move her down, shorten the stage; pushing her past its edge only walks
-                  her into the name, which flows after the box.
+                  floorLine — how far up from the stage's foot she stands. It lifts her off the
+                  bottom edge for two reasons: the name flows after the box, so at 0 her feet
+                  and her name fight over the same pixels; and the rooms are drawn with their
+                  rug at the very bottom, so a buddy standing lower than this reads as parked
+                  behind the room rather than in it. To move her DOWN, shorten the stage —
+                  pushing her past its edge only walks her back into the name.
                   placedDecor is empty on purpose: the room's decor renders as lucide line
                   icons in little translucent boxes — fine on a flat gradient, but over painted
                   art they read as debug UI stuck to the screen. They come back when decor
                   ships as sprites that can sit in the room instead of floating over it. */}
               <RoomStage theme={homeEd.theme} draft={homeEd.draft} buddies={[c]} backdrop={!homeEd.theme.bg}
-                placedDecor={[]} height={535} radius={homeEd.theme.bg ? 0 : 22} buddySize={196} floorLine="0%"
+                placedDecor={[]} height={535} radius={homeEd.theme.bg ? 0 : 22} buddySize={196} floorLine="9%"
                 onPuck={(slot) => slot === 'buddy' ? setBuddyPicker(true) : setHomeSheet(slot)} />
 
               {/* 'arrows' — the carousel the photo-scene profile already used: step through

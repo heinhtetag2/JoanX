@@ -87,24 +87,26 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
 
 // `puck` is where the button sits, `aim` the point on the surface it points at —
 // both percentages of the canvas, so the room can be any height.
+// The three illustrated rooms are one set, drawn to a shared layout: a shelf standing on the
+// left, a seat on the right, a window centred above them, and an empty floor for the buddy.
+// So these aim at that layout once and hold for every room — Green's stump chair, Town's desk
+// and Magic's armchair all sit under the same dot. A phone crops ~9% off each side of the art,
+// which is why nothing aims past ~85%: the wall decor drawn at the far edges (the framed leaf,
+// the pinboard, the dreamcatcher) is only half there on a real screen, so it can't hold a dot.
 const HOTSPOTS = [
   { slot: 'wallpaper', icon: 'paint-roller', label: 'Wallpaper', puck: [14, 17], aim: [45, 8] },
-  // the hanging lamp. The framed picture used to take this puck, but cover crops the art
-  // ~13% off each side and the frame is drawn right at the edge, so half of it never
-  // survives onto a phone. The lamp hangs near the middle and always does.
-  { slot: 'lamp',      icon: 'lamp',         label: 'Lamp',      puck: [75, 14], aim: [49, 9] },
-  // the TV, pointed at its top edge like the sofa. NOTE: this puck can't yet do what it
-  // promises — the TV is painted into the room art, so nothing the picker offers can
-  // replace it. It stays a pointer until the room ships as a base plus object sprites.
-  { slot: 'tv',        icon: 'tv',           label: 'TV',        puck: [62, 37], aim: [85, 44] },
+  // The shelf, and the only way to the object catalogue — plants, lanterns, the small things
+  // that stand ON furniture rather than being it. Every room in the set puts a full-height
+  // shelf here: Green's tree-trunk bookcase, Town's toy shelf, Magic's crystal cabinet.
+  { slot: 'shelf',     icon: 'sprout',       label: 'Shelf',     puck: [27, 30], aim: [12, 45] },
+  // The seat, opposite it. Dot on the seat rather than its back: the line only has to reach
+  // the object, not travel the length of it — and a puck parked ON its own subject points at
+  // nothing, since both ends land on the same thing and the line says nothing.
+  { slot: 'furniture', icon: 'armchair',     label: 'Furniture', puck: [62, 32], aim: [80, 45] },
   // aim low on the buddy, not at her head — a dot on the face covers the one part of her
   // that carries any expression, and that face is what the page is for. The puck sits on
-  // bare floor to the right, clear of the TV it used to sit on top of.
+  // bare floor to the right, where every room in the set leaves it empty.
   { slot: 'buddy',     icon: 'paw-print',    label: 'Buddies',   puck: [89, 88], aim: [58, 82] },
-  // dot on the top of the sofa's backrest, puck on the bare wallpaper just above it: the
-  // line only has to reach the object, not travel the length of it. A puck parked ON its
-  // own subject points at nothing — both ends land on the same thing and the line says nothing.
-  { slot: 'furniture', icon: 'armchair',     label: 'Furniture', puck: [25, 27], aim: [14, 44] },
   { slot: 'flooring',  icon: 'grid-3x3',     label: 'Flooring',  puck: [17, 86], aim: [45, 91] },
 ];
 
@@ -248,13 +250,16 @@ function RoomSlotSheet({ slot, onClose, ed }) {
         </React.Fragment>
       )}
 
-      {/* Every object puck lands here. The room art paints a sofa, a TV and a lamp, but the
-          DECOR table owns plants, saplings and mailboxes — two disjoint sets — so all three
-          pucks can only offer the same generic catalogue, split by slot. Until each object
-          ships as its own sprite with its own items, 'tv' means "the furniture list, opened
-          from the TV", which is a pointer, not a swap. */}
-      {(slot === 'furniture' || slot === 'tv' || slot === 'lamp') && (() => {
-        const forSlot = catalog.filter(d => slot === 'lamp' ? d.slot === 'object' : d.slot !== 'object');
+      {/* Both object pucks land here. The room art paints its own shelf and seat, while the
+          DECOR table owns plants, saplings and mailboxes — two disjoint sets — so a puck can
+          only offer the generic catalogue, split by slot: the shelf takes the things that
+          stand on it, the seat takes the furniture. Until each object ships as its own sprite,
+          tapping the painted chair means "the furniture list, opened from the chair" — a
+          pointer, not a swap. (There used to be a third, 'tv', offering this same furniture
+          list from a second dot; the room it pointed at is gone and it was never a distinct
+          choice, so it went with the art.) */}
+      {(slot === 'furniture' || slot === 'shelf') && (() => {
+        const forSlot = catalog.filter(d => slot === 'shelf' ? d.slot === 'object' : d.slot !== 'object');
         if (!forSlot.length) return <div style={{ fontSize: 13, color: THEME.fg2, textAlign: 'center', padding: '18px 0' }}>{L('Nothing for this spot in this room yet.')}</div>;
         return (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
