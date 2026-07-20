@@ -226,12 +226,19 @@ function App() {
       <div className="bezel">
         <div className="island" />
         <div className="screen">
+          {/* The tab bars live INSIDE the play wrapper, not beside it. The wrapper carries a
+              saturate() filter, and a filter creates a stacking context — so a sheet or modal
+              rendered by a screen is sealed inside it and its z-index can never outrank a
+              sibling drawn afterwards. Kept outside, the tab bar painted over every BottomSheet
+              in the child app. Inside, sheet (90) and tab bar (40) compete in one context and
+              the sheet covers the nav the way it should. The filter now also applies to the tab
+              bar, which is correct: it is app chrome like everything else it sits on. */}
           <div className={playClass} style={{ position: 'absolute', inset: 0 }}>
             {body}
+            {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
+            {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
-          {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
-          {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           {role === 'child' && appIntro && <AppIntro onClose={() => setAppIntro(false)} />}

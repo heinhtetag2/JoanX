@@ -6,6 +6,8 @@ import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx'
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { BadgeGrid, badgesEarned } from './Badges.jsx';
+import { ACHIEVEMENTS } from '../core/data.jsx';
 
 // A shimmering placeholder tile — reused across the loading skeleton.
 const Sk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
@@ -15,6 +17,10 @@ function Collection({ ctx }) {
   const loading = ctx.demo?.loading;
   const empty = ctx.demo?.empty;   // first-run: no buddies hatched yet
   const owned = empty ? [] : CHARACTERS.filter(c => c.owned);
+  // Badges share this tab because they are the same errand: seeing what you have
+  // gathered. They are NOT a second data source — the grid reads ACHIEVEMENTS,
+  // the same rows the Rewards screen lists.
+  const [side, setSide] = React.useState('buddies');
 
   // loading — shelf + grid shimmer while the collection loads
   if (loading) {
@@ -69,8 +75,31 @@ function Collection({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="paw-print" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{visibleCharacters().length}</span></div>} />
+      <ScreenHeader title={L('Collection House')} right={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Icon name={side === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
+          <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>
+            {side === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}` : `${owned.length}/${visibleCharacters().length}`}
+          </span>
+        </div>} />
       <div style={{ padding: '0 16px' }}>
+        {/* Buddies / Badges — the Notifications well recipe: chips at --r-md 12
+            inside a --r-lg 16 track, white card on the well for the selected one. */}
+        <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 16, padding: 4, marginBottom: 16 }}>
+          {[['buddies', 'Buddies'], ['badges', 'Badges']].map(([id, lbl]) => {
+            const on = side === id;
+            return (
+              <button key={id} onClick={() => setSide(id)} aria-pressed={on}
+                style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '9px 16px', fontSize: 13, fontWeight: 800, background: on ? '#fff' : 'transparent', boxShadow: on ? THEME.shadowCard : 'none', color: on ? THEME.fg1 : THEME.fg2, transition: 'background .16s ease, color .16s ease', WebkitTapHighlightColor: 'transparent' }}>
+                {L(lbl)}
+              </button>
+            );
+          })}
+        </div>
+
+        {side === 'badges' && <BadgeGrid />}
+
+        {side === 'buddies' && (<>
         {/* entry points into the two things that live off the collection: the dex
             (every character) and My Room (the house those characters are placed in) */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -138,6 +167,7 @@ function Collection({ ctx }) {
             </button>
           ))}
         </div>
+        </>)}
       </div>
     </div>
   );

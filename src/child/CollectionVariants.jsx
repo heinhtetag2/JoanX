@@ -3,11 +3,12 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { CHARACTERS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
+import { ACHIEVEMENTS, CHARACTERS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { BadgeGrid, badgesEarned } from './Badges.jsx';
 
 const COLLECTION_LAYOUTS = [
   { id: 'shelf', label: 'Shelf' },
@@ -61,6 +62,7 @@ const EmptySlot = ({ size = 56 }) => (
 // ── the variant screen ───────────────────────────────────────────────
 function CollectionVariant({ variant = 'shelf', ctx }) {
   const [tab, setTab] = React.useState(0);   // used by the 'tabs' variant
+  const [side, setSide] = React.useState('buddies');   // Buddies | Badges
   const all = visibleCharacters();   // hidden Epics stay out of the collection until unlocked (F-15.2)
   const owned = all.filter(c => c.owned);
   const rooms = ROOMS;
@@ -514,20 +516,43 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="paw-print" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{owned.length}/{all.length}</span></div>} />
+      <ScreenHeader title={L('Collection House')} right={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Icon name={side === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
+          <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>
+            {side === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}` : `${owned.length}/${all.length}`}
+          </span>
+        </div>} />
       <div style={{ padding: '0 16px' }}>
-        {/* entry points — kept across every variant: the dex (every character) and
-            My Room (the house those characters are placed in) */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          {[['book-open', 'Encyclopedia', 'chardex', THEME.primary, THEME.primaryLight],
-            ['home', 'My Room', 'myhouse', THEME.success, THEME.successLight]].map(([ic, lbl, dest, col, bg]) => (
-            <button key={dest} onClick={() => ctx.nav(dest)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: 'none', borderRadius: 16, padding: '13px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <span style={{ width: 34, height: 34, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={ic} size={17} color={col} stroke={2.3} /></span>
-              <span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, textAlign: 'left', lineHeight: 1.15 }}>{L(lbl)}</span>
-            </button>
-          ))}
+        {/* Buddies / Badges — sits in the SHARED shell, above the variant body, so
+            every collection layout gets the badge case rather than only the one
+            that happens to be selected. */}
+        <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 16, padding: 4, marginBottom: 16 }}>
+          {[['buddies', 'Buddies'], ['badges', 'Badges']].map(([id, lbl]) => {
+            const on = side === id;
+            return (
+              <button key={id} onClick={() => setSide(id)} aria-pressed={on}
+                style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '9px 16px', fontSize: 13, fontWeight: 800, background: on ? '#fff' : 'transparent', boxShadow: on ? THEME.shadowCard : 'none', color: on ? THEME.fg1 : THEME.fg2, transition: 'background .16s ease, color .16s ease', WebkitTapHighlightColor: 'transparent' }}>
+                {L(lbl)}
+              </button>
+            );
+          })}
         </div>
-        {body}
+
+        {side === 'badges' ? <BadgeGrid /> : (<>
+          {/* entry points — kept across every variant: the dex (every character) and
+              My Room (the house those characters are placed in) */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+            {[['book-open', 'Encyclopedia', 'chardex', THEME.primary, THEME.primaryLight],
+              ['home', 'My Room', 'myhouse', THEME.success, THEME.successLight]].map(([ic, lbl, dest, col, bg]) => (
+              <button key={dest} onClick={() => ctx.nav(dest)} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, background: '#fff', border: 'none', borderRadius: 16, padding: '13px 14px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span style={{ width: 34, height: 34, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={ic} size={17} color={col} stroke={2.3} /></span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, textAlign: 'left', lineHeight: 1.15 }}>{L(lbl)}</span>
+              </button>
+            ))}
+          </div>
+          {body}
+        </>)}
       </div>
     </div>
   );

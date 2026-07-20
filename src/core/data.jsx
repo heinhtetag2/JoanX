@@ -1589,13 +1589,25 @@ const ROOMS = [
   { id: 'dream', name: 'Dream Room', theme: 'dream', slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
 ];
 
+/* ── Achievement badges ────────────────────────────────────────────────
+   `tier` borrows the RARITIES keys rather than inventing a second vocabulary:
+   a child already learns common/rare/epic from eggs and buddies, and a badge
+   that says "Rare" should mean the same kind of scarce it means everywhere
+   else. It drives the medallion's plate, ring and shine — see BADGE_TIERS in
+   Badges.jsx — and nothing else reads it, so re-tiering is a data edit.
+
+   Every row is still hand-seeded: no runtime evaluator flips `done` yet, so
+   `progress`/`total` are display values. The grant engine already treats
+   achievement ids as triggers (EGG_GRANTS g-ach-*, CHARACTER_UNLOCKS u-ach-*,
+   ITEM_GRANTS i-ach-*), so wiring one up later is claimRewards({ achievement:
+   id }) at the moment it completes — not a new data structure. */
 const ACHIEVEMENTS = [
-  { id: 'a1', icon: 'footprints', name: 'First Steps',    desc: 'Walk safely for 10 minutes',  done: true,  reward: 50 },
-  { id: 'a2', icon: 'flame',      name: '5-Day Streak',   desc: 'Be safe 5 days in a row',      done: true,  reward: 120 },
-  { id: 'a3', icon: 'timer',      name: 'Quick Reflex',   desc: 'Stop within 3s, 10 times',     done: true,  reward: 80 },
-  { id: 'a4', icon: 'shield-check', name: 'Zone Dodger',  desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150 },
-  { id: 'a5', icon: 'gem',        name: 'Collector',      desc: 'Own 8 characters',             done: false, progress: 6, total: 8, reward: 200 },
-  { id: 'a6', icon: 'sunrise',    name: 'Early Walker',   desc: 'Safe morning commute, 7 days', done: false, progress: 4, total: 7, reward: 130 },
+  { id: 'a1', icon: 'footprints', tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',  done: true,  reward: 50 },
+  { id: 'a2', icon: 'flame',      tier: 'common', name: '5-Day Streak',  desc: 'Be safe 5 days in a row',      done: true,  reward: 120 },
+  { id: 'a3', icon: 'timer',      tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  reward: 80 },
+  { id: 'a4', icon: 'shield-check', tier: 'common', name: 'Zone Dodger', desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150 },
+  { id: 'a5', icon: 'gem',        tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: false, progress: 6, total: 8, reward: 200 },
+  { id: 'a6', icon: 'sunrise',    tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: false, progress: 4, total: 7, reward: 130 },
 ];
 
 

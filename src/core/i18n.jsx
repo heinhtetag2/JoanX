@@ -263,7 +263,7 @@ const KO = {
   // ── rewards ──
   '5-day streak': '5일 연속', '-day streak': '일 연속',
   'Daily safe-walk reward': '매일 안전 걷기 보상', 'Ready to claim · +100 points': '받을 수 있어요 · +100 포인트',
-  'Achievements': '업적',
+  'Achievements': '업적', 'Achievement': '업적', 'Progress': '진행도', 'Earn to get': '달성하면',
   'First Steps': '첫 걸음', 'Walk safely for 10 minutes': '10분 안전하게 걷기',
   '5-Day Streak': '5일 연속', 'Be safe 5 days in a row': '5일 연속 안전하게',
   'Quick Reflex': '빠른 반응', 'Stop within 3s, 10 times': '3초 안에 멈추기 10회',
