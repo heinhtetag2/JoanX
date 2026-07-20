@@ -33,8 +33,18 @@ function ScreenHeader({ title, onBack, left, right, flush }) {
           </button>
         ) : left}
       </div>
-      <div style={{ flexShrink: 0, fontSize: 16, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', textAlign: 'center' }}>{title}</div>
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>{right}</div>
+      {/* On `flush` screens the header lies straight on full-bleed artwork, so the title and the
+          trailing slot take the same white chip the back button already wears — one row of
+          controls floating above the scene, rather than one button plus two bits of text lying
+          on it. Bare fg1 text only survives by luck of the current room: the switcher can put a
+          bright window or a pale wall behind it. A scrim would fix contrast too, but it dims the
+          top of the illustration and puts the document-toolbar feel back. */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', height: flush ? 38 : 'auto', padding: flush ? '0 14px' : 0, borderRadius: 999, background: flush ? '#fff' : 'transparent', boxShadow: flush ? THEME.shadowCard : 'none', fontSize: 16, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', textAlign: 'center' }}>{title}</div>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        {flush && right
+          ? <div style={{ display: 'flex', alignItems: 'center', height: 38, padding: '0 13px', borderRadius: 999, background: '#fff', boxShadow: THEME.shadowCard }}>{right}</div>
+          : right}
+      </div>
     </div>
   );
 }

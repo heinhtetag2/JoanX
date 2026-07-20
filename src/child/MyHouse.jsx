@@ -74,8 +74,13 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   // standing in the room from the status bar to the home indicator.
   const roomPage = variant === 'hotspot' && homeEd.theme.bg;
 
+  // The flush header's title is a floating chip, not bare text, so it ends lower in the 48px
+  // band than a text baseline did — the stock 102 left the room switcher crowding it. Give the
+  // chip its own air on these two variants; every other screen keeps 102.
+  const flushHdr = variant === 'scene' || variant === 'hotspot';
+
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110,
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: flushHdr ? 114 : 102, paddingBottom: 110,
       ...(roomPage
         ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
         : { background: screenBgActive() }) }}>
@@ -84,7 +89,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       {variant === 'scene' && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 470, backgroundImage: sceneBgImg(sceneObj), backgroundSize: '140%', backgroundPosition: '38% top', backgroundRepeat: 'no-repeat', backgroundColor: sceneObj.tint, WebkitMaskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', maskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', zIndex: 0, pointerEvents: 'none' }} />
       )}
-      <ScreenHeader title={L('My Profile')} onBack={() => ctx.back()} flush={variant === 'scene' || variant === 'hotspot'}
+      <ScreenHeader title={L('My Profile')} onBack={() => ctx.back()} flush={flushHdr}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="heart" size={15} color={THEME.joy} fill={THEME.joy} stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{PLAYER.likes}</span></div>} />
       <div style={{ padding: '0 16px', position: 'relative', zIndex: 1 }}>
 
