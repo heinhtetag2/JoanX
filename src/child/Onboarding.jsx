@@ -35,7 +35,10 @@ const STARTER_EGG_C = eggColorFor('common');
 //   splash → 2 intro slides → connect-to-parent (code / QR) → permissions.
 // The child device carries no account of its own: identity comes from the parent it pairs
 // with, so there is no sign-in here (F-33 is the parent app only).
-function Onboarding({ ctx }) {
+// `eggShake` matches the Shop's: it gates the gesture and the copy that teaches it, and is off
+// by default. The first egg is the worst place to offer a second way to hatch — the child has
+// not done it once yet.
+function Onboarding({ ctx, eggShake = false }) {
   const perms = PERMISSIONS;
   const [step, setStep] = React.useState(0);     // 0 splash · 1-2 slides · 3 connect · 4 permissions
   const [grants, setGrants] = React.useState({});
@@ -65,7 +68,7 @@ function Onboarding({ ctx }) {
     const starters = CHARACTERS.filter(x => x.owned);
     setPrize(CHARACTERS.find(x => x.id === STARTER_ID) || starters[0] || CHARACTERS[0]);
     setEggPhase('egg');
-    requestMotionPermission();   // iOS 13+: must be asked from a user gesture
+    if (eggShake) requestMotionPermission();   // iOS 13+: must be asked from a user gesture
     setCharReveal(true);
   };
   const crackEgg = () => {
@@ -75,7 +78,7 @@ function Onboarding({ ctx }) {
       setPrize(p => { if (p) ctx.setBuddy(p.id, {}); return p; });   // adopt the hatched buddy app-wide
     }, HATCH_MS);
   };
-  useShakeToHatch(charReveal && eggPhase === 'egg', crackEgg);
+  useShakeToHatch(eggShake && charReveal && eggPhase === 'egg', crackEgg);
 
   const [modal, setModal] = React.useState(null); // permission id of the active request sheet
   const [denied, setDenied] = React.useState({}); // permissions the user skipped → fallback / limited state
@@ -468,7 +471,7 @@ function Onboarding({ ctx }) {
             </div>
 
             {/* shake affordance — parked at the bottom, same as the Shop's */}
-            {eggPhase !== 'cracking' && (
+            {eggShake && eggPhase !== 'cracking' && (
               <div style={{ position: 'absolute', left: 0, right: 0, bottom: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                 <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(STARTER_EGG_C, 74), alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name="vibrate" size={28} color={shade(STARTER_EGG_C, -18)} stroke={2.3} />

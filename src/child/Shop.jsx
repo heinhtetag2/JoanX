@@ -16,7 +16,10 @@ import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatc
 // (hatch them now) and the shop (buy another). Both funnel into the same hatch flow.
 // The tier roll and the buddy draw live in data.jsx (hatchEgg) — probability is
 // business policy, not screen logic, and the missions beat hatches through it too.
-function Shop({ ctx }) {
+// `eggShake` gates the shake-to-hatch gesture and the affordance that teaches it. Off by
+// default: the tap is the whole interaction for now, and a block of copy explaining a second
+// way to do the thing you just did competes with the egg it sits under.
+function Shop({ ctx, eggShake = false }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const [pts, setPts] = React.useState(PLAYER.points);
   const [owned, setOwned] = React.useState(() => ({ ...PLAYER.eggs }));
@@ -58,7 +61,7 @@ function Shop({ ctx }) {
   // is only consumed, and the buddy only drawn, at the reveal (hatchFromInventory). Rolling
   // here would mean an abandoned animation had already decided the character and eaten the egg.
   const openHatch = (egg) => {
-    requestMotionPermission();   // iOS 13+: must be asked from this user gesture
+    if (eggShake) requestMotionPermission();   // iOS 13+: must be asked from this user gesture
     setHatch({ phase: 'egg', egg, eggRarity: egg.rarity });
   };
 
@@ -102,7 +105,7 @@ function Shop({ ctx }) {
   React.useEffect(() => { hatchEggRef.current = hatch?.egg || null; }, [hatch]);
 
   // shake-to-hatch: while the egg is waiting, a firm phone shake also cracks it
-  useShakeToHatch(hatch?.phase === 'egg', crackEgg);
+  useShakeToHatch(eggShake && hatch?.phase === 'egg', crackEgg);
 
   // A-2.3 — the reveal IS the hatch: one call spends the egg, rolls the rarity tier from the
   // egg's own odds, draws the buddy and grants it. Atomic, so there is never a moment where
@@ -373,7 +376,7 @@ function Shop({ ctx }) {
                   <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap to hatch')}
                 </div>
                 {/* shake affordance — parked at the far bottom, bigger + its own copy */}
-                {!cracking && (
+                {eggShake && !cracking && (
                   <div style={{ position: 'absolute', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 46px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                     <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(eggC, 64), alignItems: 'center', justifyContent: 'center' }}>
                       <Icon name="vibrate" size={28} color={shade(eggC, -28)} stroke={2.3} />
