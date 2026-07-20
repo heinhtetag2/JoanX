@@ -469,6 +469,7 @@ const NAV = [
   { id: 'balance',   label: 'Balance analysis', icon: 'scale-3d' },
   { id: 'rules',     label: 'Business rules',  icon: 'scale' },
   { id: 'engine',    label: 'Reward engine',   icon: 'git-merge' },
+  { id: 'badges',    label: 'Badges & goals',  icon: 'trophy' },
   { id: 'parent',    label: 'Parent report',   icon: 'line-chart' },
   { id: 'arch',      label: 'Architecture',    icon: 'git-branch' },
   { id: 'adr',       label: 'Decisions (ADR)', icon: 'gavel' },
@@ -993,6 +994,159 @@ function ProjectDocs() {
             owed <i>three</i> 25km eggs, not one — and because the ledger is subtracted, a one-shot rule
             settles forever the moment it is paid, so a milestone cannot re-award on every render.
             That one design choice is what makes the whole engine idempotent.
+          </div>
+        </section>
+
+        {/* ── BADGES & GOALS ── */}
+        <section id="badges" ref={set('badges')} className="doc-section">
+          <div className="doc-row-head" style={{ marginBottom: 4 }}>
+            <h2 className="doc-h2" style={{ margin: 0 }}>Badges, goals & the daily loop</h2>
+            <span className="doc-pill" style={{ background: '#ecf3fe', color: '#2b5782' }}>Partly built · design direction</span>
+          </div>
+          <p className="doc-lead">
+            A badge is the <b>artifact a goal leaves behind</b> — the permanent mark the daily game makes
+            on a child who keeps walking safely. It is a presentation layer over <code>ACHIEVEMENTS</code>,
+            never a second list: a badge with no achievement behind it cannot exist, which is the point —
+            everything on the shelf was <i>earned by doing something</i>, and the reward engine above
+            already knows how to pay for it.
+          </p>
+
+          <div className="doc-h3">Three horizons — and why they must not blur</div>
+          <p className="doc-lead" style={{ marginBottom: 12 }}>
+            The child app already rewards on three different clocks. The design mistake to avoid is
+            letting them feel like the same thing: missions are <b>renewable</b>, a streak is
+            <b> fragile</b>, and a badge is <b>forever</b>.
+          </p>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th>Layer</th><th>Resets?</th><th>Pays</th><th>The feeling</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><b>Daily / weekly missions</b><br /><span style={{ fontSize: 11, color: C.ink3 }}>Finish a phone-free walk · reach the safe-walk goal · say hi to your buddy</span></td>
+                  <td style={{ color: C.warn, fontWeight: 700 }}>Every day / week</td>
+                  <td>Points, then an <b>egg</b> once the whole set is cleared</td>
+                  <td><i>the rhythm</i> — come back tomorrow</td>
+                </tr>
+                <tr>
+                  <td><b>Streak</b><br /><span style={{ fontSize: 11, color: C.ink3 }}>Accident-free days in a row</span></td>
+                  <td style={{ color: C.bad, fontWeight: 700 }}>Breaks if you slip</td>
+                  <td>+300 at 7 days · a guaranteed Rare · an Epic Egg at 30</td>
+                  <td><i>consistency</i> — don't break the chain</td>
+                </tr>
+                <tr>
+                  <td><b>Achievements / badges</b><br /><span style={{ fontSize: 11, color: C.ink3 }}>First Steps · Quick Reflex · Zone Dodger · Collector · Early Walker</span></td>
+                  <td style={{ color: C.good, fontWeight: 700 }}>Never</td>
+                  <td>Points, and sometimes a character or item outright</td>
+                  <td><i>the permanent record</i> — firsts & mastery</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="doc-why">
+            <b>The daily loop is the engine that fills the trophy case.</b> A child clears "reach your
+            safe-walk goal" every single day — and doing it <i>enough times</i> is exactly what completes
+            the permanent "Zone Dodger" badge. Missions and achievements don't compete for attention;
+            the renewable one quietly advances the terminal one. That single connection is what turns a
+            daily chore into progress toward something a child keeps.
+          </div>
+
+          <div className="doc-h3">How a walk becomes a badge</div>
+          <Flow wrap>
+            <Node tone="hub">Safe walk</Node><Arrow label="mission" />
+            <Node tone="gold">Daily goal cleared</Node><Arrow label="advances" />
+            <Node tone="plain">Badge bar ticks up</Node><Arrow label="hits total" />
+            <Node tone="ocean">claimRewards()</Node><Arrow label="pays" />
+            <Node tone="plain">Medallion earned</Node>
+          </Flow>
+          <p className="doc-cap">
+            The grant engine already treats an achievement id as a trigger — <code>EGG_GRANTS</code>,{' '}
+            <code>CHARACTER_UNLOCKS</code> and <code>ITEM_GRANTS</code> all carry <code>g-ach-*</code>,{' '}
+            <code>u-ach-*</code>, <code>i-ach-*</code> rows. Wiring a completed badge to pay out is one
+            call, <code>claimRewards({'{'} achievement: id {'}'})</code>, not a new data structure.
+          </p>
+
+          <div className="doc-h3">The badge as an object · three tiers</div>
+          <p className="doc-lead" style={{ marginBottom: 12 }}>
+            Each badge is drawn — an eight-point rosette with the achievement's own icon at the centre,
+            keyed to the same <b>Common · Rare · Epic</b> vocabulary a buddy uses, so "Rare" means one
+            kind of scarce everywhere. A locked badge is the <i>same silhouette in greyscale</i>, never a
+            padlock in a box: a child should see the shape of the thing they haven't got yet — that is
+            what makes it worth walking for. No sparkle, no motion on the grid.
+          </p>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th>Badge</th><th>Tier</th><th>Earned by</th><th>State</th></tr></thead>
+              <tbody>
+                {[
+                  ['First Steps', 'Common', 'Walk safely for 10 minutes', 'Earned'],
+                  ['5-Day Streak', 'Common', 'Be safe 5 days in a row', 'Earned'],
+                  ['Quick Reflex', 'Rare', 'Stop within 3s, 10 times', 'Earned'],
+                  ['Zone Dodger', 'Common', 'Avoid 5 danger zones', '3 / 5'],
+                  ['Collector', 'Epic', 'Own 8 characters', '6 / 8'],
+                  ['Early Walker', 'Rare', 'Safe morning commute, 7 days', '4 / 7'],
+                ].map(([n, t, by, st]) => (
+                  <tr key={n}>
+                    <td><b>{n}</b></td>
+                    <td><span className="doc-pill" style={{ background: t === 'Epic' ? '#f2ecfb' : t === 'Rare' ? '#ecf3fe' : '#f3f2f1', color: RARITY_C[t] }}>{t}</span></td>
+                    <td>{by}</td>
+                    <td style={{ color: st.includes('/') ? C.ink3 : C.good, fontWeight: 700 }}>{st}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="doc-h3">Built vs. missing — the honest state</div>
+          <div className="doc-grid2">
+            <div className="doc-row" style={{ marginBottom: 0 }}>
+              <Icon name="circle-check" size={18} color={C.good} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ minWidth: 0 }}>
+                <div className="doc-title">Built</div>
+                <p className="doc-note">
+                  The achievement → badge model. <code>ACHIEVEMENTS</code> is the single source of truth;{' '}
+                  <code>Badges.jsx</code> draws each one as a tiered medallion, greys locked ones into a
+                  visible silhouette, sorts earned-first, and the grant engine already accepts an
+                  achievement id as a payout trigger.
+                </p>
+              </div>
+            </div>
+            <div className="doc-row" style={{ marginBottom: 0 }}>
+              <Icon name="circle-slash" size={18} color={C.bad} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ minWidth: 0 }}>
+                <div className="doc-title">Missing</div>
+                <p className="doc-note">
+                  No <b>runtime evaluator</b> — every <code>done</code> and every <code>3 / 5</code> is
+                  hand-seeded; nothing watches the missions and flips a badge. No <b>showcase</b> outside
+                  the one tab, no <b>earn moment</b>, and no repeatable <b>bronze / silver / gold</b> tier.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="doc-h3">Design direction · in dependency order</div>
+          <p className="doc-lead" style={{ marginBottom: 12 }}>
+            Not four features — one feature (<i>the daily walk leaving a permanent mark</i>) seen from
+            four angles. Each step makes the next one land, so the order is the plan.
+          </p>
+          {[
+            { t: 'The wire — a runtime evaluator', s: 'The foundation. A small function reads the same numbers the missions already track (safe minutes, days walked, zones dodged, characters owned) and recomputes each badge’s progress, flipping done when it hits total. After this, clearing today’s goal moves a real bar — the connection between the renewable loop and the permanent record.' },
+            { t: 'The moment — an earn / claim beat', s: 'The instant the evaluator completes a badge, the greyed medallion fills with its tier colour and flips, +points. It reuses the celebration language the egg-hatch and daily-claim already speak, so it feels native. Without it, step 1 is an invisible number change.' },
+            { t: 'The showcase — a trophy shelf', s: 'A row of the child’s three best medallions on the Profile, and later a shelf object in the decorated room. A badge you can’t display is only half-earned; the room is already the child’s identity space, and a medallion on the wall is the strongest reason to walk safely tomorrow.' },
+            { t: 'Tiering last — bronze / silver / gold', s: 'Repeatable, levelling badges (walk 10 / 50 / 100 safe km) that never "finish", giving a committed child an always-next rung. Last because it only makes sense on top of a working evaluator and a satisfying earn moment — then it is a small extension of the same model, not new machinery.' },
+          ].map((g, i) => (
+            <div key={g.t} className="doc-row">
+              <div className="doc-num">{i + 1}</div>
+              <div style={{ minWidth: 0 }}>
+                <div className="doc-title">{g.t}</div>
+                <p className="doc-note">{g.s}</p>
+              </div>
+            </div>
+          ))}
+          <div className="doc-why">
+            <b>One list, one engine — throughout.</b> Every step here is behaviour and display over the
+            achievements that already exist, never a parallel "badges" data structure. Building a second
+            list would duplicate the model and its payout rules; the reward engine was designed so a new
+            earning method is one registry entry plus rules, and this stays inside that discipline.
           </div>
         </section>
 

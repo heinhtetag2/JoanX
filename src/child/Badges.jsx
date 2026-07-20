@@ -141,4 +141,10 @@ function BadgeGrid() {
 
 const badgesEarned = () => ACHIEVEMENTS.filter(a => a.done).length;
 
-export { BadgeGrid, BadgeMedallion, BADGE_TIERS, badgesEarned, tierOf };
+/* Cross-screen intent: the Profile trophy shelf sets this before navigating to the
+   Collection tab so it opens on the Badges side, not Buddies. A one-shot flag —
+   Collection reads it once on mount and clears it, so a later manual visit to the
+   tab still lands on Buddies. Kept here beside the grid it targets. */
+const collectionIntent = { side: null };
+
+export { BadgeGrid, BadgeMedallion, BADGE_TIERS, badgesEarned, tierOf, collectionIntent };

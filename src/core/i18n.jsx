@@ -277,6 +277,8 @@ const KO = {
   'Preferences': '환경설정', 'Language': '언어', 'Sound effects': '효과음', 'Haptics': '진동',
   'Push notifications': '푸시 알림', 'Account': '계정', 'Protection mode': '보호 모드',
   'Protection': '보호', 'Always on': '항상 켜짐', 'Safe walker': '안전 보행자', 'Badges': '배지',
+  'My badges': '내 배지', 'Next up': '다음 목표',
+  'Walk safely to earn your first badge.': '안전하게 걸어서 첫 배지를 받아보세요.',
   'Accessibility': '접근성', 'Calm mode': '차분 모드', 'Simple mode': '간단 모드',
   'Location, messages & photos stay private': '위치, 메시지, 사진은 비공개예요',
   'Managed by your parent': '부모님이 관리해요', 'Help & support': '도움말 및 지원', 'About JoanX': '조안X 정보',

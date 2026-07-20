@@ -9,9 +9,21 @@ body { margin: 0; }
 
 /* Page backdrop behind the phone mock — the green gradient wash. Declared here
    (last stylesheet) so it wins over tripme-tokens' `html,body { background: var(--bg) }`,
-   whose `background` shorthand would otherwise reset this image to a flat white. */
+   whose `background` shorthand would otherwise reset this image to a flat white.
+
+   Two layers on purpose: the photo on top, a green gradient underneath. If the
+   photo ever fails to paint — a 404 on a bad deploy, or a browser that drops
+   `background-attachment: fixed` — the page still reads as an intentional green
+   wash rather than a flat dark rectangle. The gradient is the guarantee. */
 html, body {
-  background: #10502f url("/assets/backgrounds/page-bg-green.jpg") center center / cover no-repeat fixed;
+  background-color: #10502f;
+  background-image:
+    url("/assets/backgrounds/page-bg-green.jpg"),
+    linear-gradient(160deg, #3f8f5c 0%, #1c6b3f 46%, #10502f 100%);
+  background-position: center center, center center;
+  background-size: cover, cover;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
 }
 
 /* Fredoka covers Latin; Jua is a popular rounded Korean face for the kid headers. */

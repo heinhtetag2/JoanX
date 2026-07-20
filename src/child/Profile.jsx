@@ -1,11 +1,76 @@
 // JoanX — child app · Profile
 
 import React from 'react';
-import { CHARACTERS, LINK, PLAYER, guardians } from '../core/data.jsx';
-import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { ACHIEVEMENTS, CHARACTERS, LINK, PLAYER, guardians } from '../core/data.jsx';
+import { Badge, Bar, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { BadgeMedallion, collectionIntent, tierOf } from './Badges.jsx';
+
+// ── Trophy shelf (Profile) ───────────────────────────────────────────
+// The badge's home outside the Collection tab. A badge you can't show off is only
+// half a trophy — so the Profile leads with the medallions the child has earned,
+// and, when there's headroom, the locked one they're closest to: the reason to
+// walk safely tomorrow. It reads ACHIEVEMENTS directly — no second list — and taps
+// straight into the Badges grid via collectionIntent. Same medallion + centred icon
+// composition as a badge tile, so a trophy is the same object wherever it appears.
+function Medal({ a, size = 46 }) {
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <BadgeMedallion a={a} size={size} locked={!a.done} />
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={a.icon} size={Math.round(size * 0.34)} color={a.done ? '#fff' : '#8e8a86'} stroke={2.4} />
+      </span>
+    </div>
+  );
+}
+
+function TrophyShelf({ onOpen }) {
+  const earned = ACHIEVEMENTS.filter(a => a.done);
+  // The locked badge the child is furthest along on — highest fraction of its goal.
+  const nextUp = ACHIEVEMENTS
+    .filter(a => !a.done && a.total)
+    .sort((x, y) => (y.progress / y.total) - (x.progress / x.total))[0];
+  const t = nextUp && tierOf(nextUp);
+
+  return (
+    <button onClick={onOpen} className="jx-press"
+      style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '14px 15px 15px', marginBottom: 18, display: 'block' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <Icon name="trophy" size={16} color={THEME.gold} stroke={2.3} />
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('My badges')}</span>
+        <span style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{earned.length}/{ACHIEVEMENTS.length}</span>
+        <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+      </div>
+
+      {/* the shelf — earned medallions, the trophy case opening on what you have */}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        {earned.map(a => <Medal key={a.id} a={a} />)}
+        {earned.length === 0 && (
+          <span style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>{L('Walk safely to earn your first badge.')}</span>
+        )}
+      </div>
+
+      {/* next up — the closest locked badge, so the shelf points forward too */}
+      {nextUp && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginTop: 14, paddingTop: 13, borderTop: `1px solid ${THEME.border}` }}>
+          <Medal a={nextUp} size={38} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Next up')}</span>
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1 }}>{L(nextUp.name)}</span>
+              <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: t.ring, fontVariantNumeric: 'tabular-nums' }}>{nextUp.progress}/{nextUp.total}</span>
+            </div>
+            <Bar value={nextUp.progress} max={nextUp.total} color={t.ring} height={8} />
+          </div>
+        </div>
+      )}
+    </button>
+  );
+}
+
+
 
 // ── Profile / settings (child) ───────────────────────────────────────
 function Profile({ ctx }) {
@@ -42,6 +107,10 @@ function Profile({ ctx }) {
           </div>
           <Icon name="chevron-right" size={20} color={THEME.fg3} stroke={2.4} style={{ flexShrink: 0 }} />
         </button>
+
+        {/* trophy shelf — badges get a home outside the Collection tab, and tapping it
+            opens straight onto the Badges grid (collectionIntent). */}
+        <TrophyShelf onOpen={() => { collectionIntent.side = 'badges'; ctx.nav('collection'); }} />
 
         {/* preferences */}
         <div style={sectionLabel}>{L('Preferences')}</div>

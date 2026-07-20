@@ -6,13 +6,17 @@
 <title>JoanX — Prototype</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg?v=3">
 <style>
-  html, body { height: 100%; background: #10502f; }
+  html, body { height: 100%; background-color: #10502f; }
   body {
-    background-image: url("/assets/backgrounds/page-bg-green.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    /* Photo on top, green gradient underneath — so the backdrop is always green
+       even if the image 404s or fixed-attachment is dropped. See joanx.css. */
+    background-image:
+      url("/assets/backgrounds/page-bg-green.jpg"),
+      linear-gradient(160deg, #3f8f5c 0%, #1c6b3f 46%, #10502f 100%);
+    background-size: cover, cover;
+    background-position: center, center;
+    background-attachment: fixed, fixed;
+    background-repeat: no-repeat, no-repeat;
   }
   #root { height: 100%; }
   .stage { min-height: 100%; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 40px; gap: 18px; }

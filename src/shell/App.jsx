@@ -287,6 +287,10 @@ function App() {
 
           {role === 'child' && (
             <React.Fragment>
+              <div className="tw-label">Flow</div>
+              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
+              <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
+
               <div className="tw-label">Buddy</div>
               <div className="tw-row">
                 {(STYLE_BUDDIES[tw.charStyle] || []).map(([v, l, c]) => (
@@ -342,10 +346,6 @@ function App() {
                   <button key={v} className={'tw-chip' + (tw.childAvatar === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, childAvatar: v }))}>{l}</button>
                 ))}
               </div>
-
-              <div className="tw-label">Flow</div>
-              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
-              <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
 
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two

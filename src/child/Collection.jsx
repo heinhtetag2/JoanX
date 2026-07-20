@@ -6,7 +6,7 @@ import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx'
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-import { BadgeGrid, badgesEarned } from './Badges.jsx';
+import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
 import { ACHIEVEMENTS } from '../core/data.jsx';
 
 // A shimmering placeholder tile — reused across the loading skeleton.
@@ -20,7 +20,13 @@ function Collection({ ctx }) {
   // Badges share this tab because they are the same errand: seeing what you have
   // gathered. They are NOT a second data source — the grid reads ACHIEVEMENTS,
   // the same rows the Rewards screen lists.
-  const [side, setSide] = React.useState('buddies');
+  // Opens on Badges when the Profile trophy shelf routed here; a one-shot flag, so a
+  // plain tap on the Collect tab still lands on Buddies. Read once, then cleared.
+  const [side, setSide] = React.useState(() => {
+    const s = collectionIntent.side;
+    collectionIntent.side = null;
+    return s || 'buddies';
+  });
 
   // loading — shelf + grid shimmer while the collection loads
   if (loading) {
