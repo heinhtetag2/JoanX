@@ -113,7 +113,11 @@
 html, body {
   font-family: var(--font-sans);
   color: var(--fg1);
-  background: var(--bg);
+  /* background-COLOR, never the `background` shorthand: the shorthand resets
+     background-image to none, which wiped the green page backdrop (set in
+     joanx.css) whenever the production build happened to order this file last.
+     Setting only the colour leaves joanx.css's image/gradient untouched. */
+  background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
