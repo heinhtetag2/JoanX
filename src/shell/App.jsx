@@ -38,6 +38,18 @@ function App() {
   const __q = new URLSearchParams(window.location.search);
   const initialDetail = __q.get('detail');   // ?detail=char-cover opens the buddy detail screen
   const initialScreen = __q.get('screen');   // ?screen=myhouse jumps straight to any child screen
+
+  // Persist just the ACTIVE BUDDY across a browser refresh. This prototype otherwise keeps no
+  // state across reloads (ADR-003), which is why a refresh used to snap the child back to the
+  // seed default — the Tweaks buddy (Hammy) is re-stamped onto the active character on every
+  // load, so whatever buddy you switched to was lost. We remember which buddy you're on (its id
+  // + identity) so it sticks; points / levels / owned still reset by design. try/catch so a
+  // locked-down localStorage (private mode) simply falls back to no-persist. Clear it with
+  // localStorage.removeItem('jx.buddy') to return to the seed default.
+  const BUDDY_KEY = 'jx.buddy';
+  const savedBuddy = (() => { try { return JSON.parse(localStorage.getItem(BUDDY_KEY) || 'null'); } catch { return null; } })();
+  if (savedBuddy?.activeCharId && CHARACTERS.some(x => x.id === savedBuddy.activeCharId)) PLAYER.activeCharId = savedBuddy.activeCharId;
+
   const [screen, setScreen] = React.useState(initialScreen || (initialDetail ? 'character' : 'home'));
   const [params, setParams] = React.useState(initialDetail ? { id: PLAYER.activeCharId } : {});
   const [stack, setStack] = React.useState([]);
@@ -63,10 +75,10 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
-  const [, setBump] = React.useState(0);
+  const [bump, setBump] = React.useState(0);
   setLang(lang);  // make L() reflect the active language for this render
   const changeLang = (l) => setLangState(l);
   React.useEffect(() => {
@@ -92,6 +104,18 @@ function App() {
     if (tw.name) c.name = tw.name;
     setBump(b => b + 1);
   }, [tw.species, tw.color, tw.stage, tw.name]);
+
+  // Save the active buddy (id + identity) whenever it changes, so a refresh restores it rather
+  // than re-stamping the seed default. `bump` is bumped by setBuddy and the stamp effect above,
+  // so it catches an in-app buddy switch as well as a Tweaks change.
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(BUDDY_KEY, JSON.stringify({
+        activeCharId: PLAYER.activeCharId,
+        tw: { species: tw.species, color: tw.color, name: tw.name, stage: tw.stage, charStyle: tw.charStyle },
+      }));
+    } catch { /* storage unavailable — a refresh will just fall back to the seed buddy */ }
+  }, [tw.species, tw.color, tw.name, tw.stage, tw.charStyle, bump]);
 
   // switch the active character line (classic / korean) for every Mascot
   React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
@@ -135,6 +159,16 @@ function App() {
     setBump(b => b + 1);
   };
 
+  // Clear the saved buddy and return to the seed default (green Hammy). The escape hatch for
+  // getting "stuck" on a persisted buddy you no longer want — refresh no longer resets it, so
+  // this button does. Wipes jx.buddy AND the in-memory identity, so a later refresh stays clean.
+  const resetBuddy = () => {
+    try { localStorage.removeItem('jx.buddy'); } catch { /* storage unavailable */ }
+    PLAYER.activeCharId = 'c2';
+    setTw(s => ({ ...s, charStyle: 'comic', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3 }));
+    setBump(b => b + 1);
+  };
+
   const nav = (s, p = {}) => {
     if (role === 'parent') { setPScreen(s); setParams(p); return; }
     setStack(st => [...st, { screen, params }]);
@@ -163,13 +197,13 @@ function App() {
   // render active child/parent screen
   let body;
   if (role === 'child') {
-    if (!onboarded) body = <Onboarding ctx={ctx} eggShake={tw.eggShake === 'on'} />;
+    if (!onboarded) body = <Onboarding ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />;
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
-      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} />,
+      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
@@ -297,6 +331,7 @@ function App() {
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v, color: c }))}>{l}</button>
                 ))}
               </div>
+              <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Hammy (default)</button>
 
               <div className="tw-label">Room style</div>
               <div className="tw-row">
@@ -468,7 +503,7 @@ function App() {
 
               <div className="tw-label">Add-friends style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold'], ['grid', 'Grid'], ['gradient', 'Gradient'], ['minimal', 'Minimal'], ['rounded', 'Rounded'], ['qr', 'QR'], ['tabs', 'Tabs'], ['spotlight', 'Spotlight'], ['outline', 'Outline'], ['split', 'Split'], ['panel', 'Panel'], ['bubbles', 'Bubbles'], ['carousel', 'Carousel'], ['ticket', 'Ticket'], ['dark', 'Dark'], ['chips', 'Chips'], ['numbered', 'Numbered'], ['gridMini', 'Grid mini'], ['cardStack', 'Card stack'], ['centered', 'Centered'], ['iconHeads', 'Icon heads']].map(([v, l]) => (
+                {[['list', 'List'], ['hero', 'Hero'], ['cards', 'Cards'], ['compact', 'Compact'], ['bold', 'Bold'], ['grid', 'Grid'], ['gradient', 'Gradient'], ['minimal', 'Minimal'], ['rounded', 'Rounded'], ['tabs', 'Tabs'], ['spotlight', 'Spotlight'], ['outline', 'Outline'], ['split', 'Split'], ['panel', 'Panel'], ['bubbles', 'Bubbles'], ['carousel', 'Carousel'], ['ticket', 'Ticket'], ['dark', 'Dark'], ['chips', 'Chips'], ['numbered', 'Numbered'], ['gridMini', 'Grid mini'], ['cardStack', 'Card stack'], ['centered', 'Centered'], ['iconHeads', 'Icon heads']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.addFriendsLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, addFriendsLayout: v })); setStack([{ screen: 'friends', params: {} }]); setScreen('addfriend'); }}>{l}</button>
                 ))}
@@ -482,7 +517,14 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Egg hatch</div>
+              <div className="tw-label">Egg hatch animation</div>
+              <div className="tw-row">
+                {[['pop', 'Quick pop'], ['crack', 'Gradual crack']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.eggHatch === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggHatch: v }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Shake to hatch</div>
               <div className="tw-row">
                 {[['off', 'Tap only'], ['on', 'Tap + shake']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.eggShake === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggShake: v }))}>{l}</button>

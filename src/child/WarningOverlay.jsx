@@ -1,7 +1,7 @@
 // JoanX — child app · WarningOverlay
 
 import React from 'react';
-import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
+import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, evaluateSafeStop, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
@@ -21,14 +21,30 @@ const REWARD_MS = 2800;   // the "Nice save!" payoff, before the overlay hands t
 const GRACE_MS = 2600;    // spec: INTERVENTION.graceSeconds (10s)
 const IGNORE_MS = MESSAGE_GAP_MS * 2 + MESSAGE_MS;  // two unanswered messages = ignored
 
+// F-12 — the bonus is not a tap, it is a verified sequence. These are the four conditions
+// evaluateSafeStop() gates on, checked off in turn as detection confirms each (the prototype
+// steps them on a timer; the shipped app fills them from real signals). Only when all four are
+// green does the bonus land — so acknowledging the warning without actually stopping pays nothing.
+const SAFE_CONDITIONS = ['Warning shown', 'Phone put away', 'Screen off', 'Walking safely'];
+const VERIFY_STEP_MS = 560;   // each condition confirms in turn — the stand-in for detection
+
 // The payoff. The child just looked up — so the buddy leads, not a system checkmark: this is
 // the one beat in the whole intervention that belongs to the character. The check becomes a
 // small badge on the buddy's shoulder, the stop time is stated as the thing it earned
 // ("immediate stop"), and the points land as the headline number rather than a footnote pill.
-function RewardToast({ c, secs = 2.1, pts = 30 }) {
+// `result` comes from evaluateSafeStop(): { ok, reason, points }. A paid stop shows the buddy
+// and the points; a farm-blocked stop (reason 'cooldown') still praises the safe behaviour but
+// says plainly it was already counted — so the anti-farm guard is visible, not a silent nothing.
+function RewardToast({ c, secs = 2.1, result }) {
+  const paid = !!(result && result.ok);
+  const pts = result ? result.points : 0;
+  // spec #4 — a stop made BEFORE any warning ('immediate') is the behaviour we most want, so the
+  // payoff names it as such and leads with a warmer headline than a stop that came after a warning.
+  const early = result && result.outcome === 'immediate';
+  const capped = result && result.reason === 'capped';
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(43,41,38,.34)', zIndex: 5 }} className="jx-fade">
-      <Confetti />
+      {paid && <Confetti />}
       <div className="jx-pop" style={{ width: 268, background: '#fff', borderRadius: 26, padding: '22px 20px 20px', textAlign: 'center', boxShadow: THEME.shadowXl }}>
 
         {/* the buddy, with the check riding on it */}
@@ -42,20 +58,29 @@ function RewardToast({ c, secs = 2.1, pts = 30 }) {
           </span>
         </div>
 
-        <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{L('Nice save!')}</div>
+        <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{early ? L('Looked up in time!') : L('Nice save!')}</div>
 
-        {/* what the stop was worth, in the app's own words (F-12) */}
+        {/* what the stop was worth, in the app's own words (F-12) — named by how early it came (spec #4) */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '5px 11px', borderRadius: 999, background: THEME.successLight, color: THEME.success, fontSize: 11.5, fontWeight: 800 }}>
           <Icon name="hand" size={13} color={THEME.success} stroke={2.4} />
-          {secs}s · {L('Immediate stop')}
+          {secs}s · {early ? L('No warning needed') : L('Stopped after a warning')}
         </div>
 
-        {/* the points are the headline, not a footnote */}
-        <div style={{ marginTop: 14, borderRadius: 18, background: THEME.goldLight, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <Icon name="star" size={22} color={THEME.gold} stroke={2.2} fill={THEME.gold} />
-          <span className="game-font" style={{ fontSize: 26, fontWeight: 500, color: '#8a6600', lineHeight: 1 }}>+{pts}</span>
-          <span style={{ fontSize: 12.5, fontWeight: 800, color: '#9e7300' }}>{L('points')}</span>
-        </div>
+        {paid ? (
+          /* the points are the headline, not a footnote */
+          <div style={{ marginTop: 14, borderRadius: 18, background: THEME.goldLight, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Icon name="star" size={22} color={THEME.gold} stroke={2.2} fill={THEME.gold} />
+            <span className="game-font" style={{ fontSize: 26, fontWeight: 500, color: '#8a6600', lineHeight: 1 }}>+{pts}</span>
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: '#9e7300' }}>{L('points')}</span>
+          </div>
+        ) : (
+          /* not paid: the stop is real and welcome, but either it's too soon after the last paid
+             one (cooldown) or the day's reward is maxed (capped). Either way it still counts. */
+          <div style={{ marginTop: 14, borderRadius: 18, background: THEME.surface2, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Icon name="check-circle" size={18} color={THEME.fg2} stroke={2.3} />
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg2, lineHeight: 1.3 }}>{capped ? L('Daily reward maxed — still counts!') : L('Already counted — keep it up!')}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -318,7 +343,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, o
     <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: '20%', display: 'flex', alignItems: 'flex-end', padding: `0 18px calc(env(safe-area-inset-bottom) + 18px)`, pointerEvents: 'none' }}>
       {/* overflow is hidden so the rail is cut to the card's radius — except on hero, where the
           buddy is *meant* to break the top edge, so there the rail gets its own clipping sleeve. */}
-      <div className="jx-rise" style={{ ...MSG_CARD, pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0, overflow: hero ? 'visible' : 'hidden' }}>
+      <div className="jx-overlay-in" style={{ ...MSG_CARD, pointerEvents: 'auto', minHeight: hero ? 150 : 168, marginTop: hero ? 42 : 0, overflow: hero ? 'visible' : 'hidden' }}>
         {/* tone rail — reads before any copy is parsed (gentle → firm → urgent) */}
         {hero
           ? <div style={{ borderRadius: '20px 20px 0 0', overflow: 'hidden' }}><Rail /></div>
@@ -338,38 +363,48 @@ function WarningOverlay({ ctx }) {
   const hold = !!ctx.tweaks.hold;
   const [phase, setPhase] = React.useState('grace'); // grace -> buzz -> warn -> message -> (cooldown ->) buzz... -> reward
   const [round, setRound] = React.useState(1);       // intervention rounds run so far for this one risk event
-  const [confirming, setConfirming] = React.useState(false); // F-08.4 — safe state seen; holding to be sure
+  const [confirming, setConfirming] = React.useState(false); // F-08.4 — safe state seen; verifying it
+  const [verified, setVerified] = React.useState(0);         // F-12 — how many of the 4 safe conditions have confirmed
+  const [rewardResult, setRewardResult] = React.useState(null); // evaluateSafeStop() outcome for the toast
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const tier = interventionTier(round);              // F-08.3 — tone firms up with every ignored round
   const stoppedAt = React.useRef(null);              // phase the risk ended in → immediate vs delayed stop
 
-  // F-08.4 — detection reports the risk has ended (phone put away, or walking finished). We do NOT
-  // tear the overlay down on that first safe sample: accelerometer and usage signals flutter, and a
-  // single stray reading would flicker the overlay off and straight back on. Instead the escalation
-  // freezes and the safe state has to hold for SAFE_CONFIRM_MS; only then is the overlay removed.
-  // If the risk returns inside that window the timer is dropped and the escalation simply resumes.
-  // (In the prototype the "I looked up" / "I stopped" buttons stand in for that detection signal.)
+  // F-08.4 / F-12 — detection reports the risk may have ended (phone put away, or walking finished).
+  // We do NOT reward on that first signal, and we do NOT reward the tap itself: a single button
+  // press is not a safe stop, and paying for it let a child dismiss the warning and keep scrolling.
+  // Instead the response starts a VERIFICATION — the four safe conditions must each confirm (below)
+  // before the bonus is even considered. Sensors also flutter, so this doubles as the hold that
+  // stops a stray sample flickering the overlay off and back on. (In the prototype the buttons and
+  // the step timer stand in for real detection; the shipped app fills the conditions from signals.)
   const respond = () => {
     if (confirming) return;
     stoppedAt.current = phase;
+    setVerified(1);        // condition 1 — the intervention overlay was shown — is already true
     setConfirming(true);
   };
 
+  // Step the four conditions in turn; when all are green, run the reward policy. The bonus is
+  // paid ONLY if every condition held (never for a bare acknowledgement) AND the anti-farm
+  // cooldown allows it — evaluateSafeStop() owns both rules, so the screen cannot fake a reward.
   React.useEffect(() => {
     if (!confirming || hold) return;
-    const t = setTimeout(() => {
-      const from = stoppedAt.current;
-      // The points are earned HERE, whether or not anything is shown for them: the outcome
-      // classification is what feeds the reward system and the parent report (F-12 / F-20).
-      logRiskEvent({ outcome: from === 'grace' || from === 'buzz' ? 'immediate' : 'delayed', rounds: round, tier: tier.key });
-      setConfirming(false);
-      // FEATURES.rewardToast off → the child looked up, so give them the screen back. The
-      // celebration is banked silently rather than staged as a second interruption.
-      if (FEATURES.rewardToast) setPhase('reward');
-      else ctx.closeOverlay();
-    }, SAFE_CONFIRM_MS);
-    return () => clearTimeout(t);
-  }, [confirming, hold]);
+    if (verified < SAFE_CONDITIONS.length) {
+      const t = setTimeout(() => setVerified(v => v + 1), VERIFY_STEP_MS);
+      return () => clearTimeout(t);
+    }
+    const from = stoppedAt.current;
+    const outcome = from === 'grace' || from === 'buzz' ? 'immediate' : 'delayed';
+    // all four conditions verified → the phone is away, the screen is off, and walking continued
+    const res = evaluateSafeStop({ warned: true, phoneStopped: true, screenOff: true, stillWalking: true }, outcome, { rounds: round, tier: tier.key });
+    setRewardResult(res);
+    setConfirming(false);
+    setVerified(0);
+    // Show the toast when there's something to say (a payout, or the farm-blocked note). With the
+    // toast feature off, a genuine payout is banked silently; a blocked one just hands back the screen.
+    if (FEATURES.rewardToast && (res.ok || res.reason === 'cooldown' || res.reason === 'capped')) setPhase('reward');
+    else ctx.closeOverlay();
+  }, [confirming, verified, hold]);
 
   // The payoff dismisses itself — long enough to actually land: the child should read the stop
   // time and see the points before the screen is taken back. (1.8s closed on top of the confetti.)
@@ -441,18 +476,28 @@ function WarningOverlay({ ctx }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>
-      {/* dim — barely-there during grace, then deepens as the escalation advances */}
-      <div className="jx-fade" style={{ position: 'absolute', inset: 0, background: grace ? 'rgba(43,41,38,.16)' : lightBg ? 'rgba(248,247,247,.86)' : phase === 'message' ? 'rgba(43,41,38,.52)' : 'rgba(43,41,38,.34)', backdropFilter: lightBg ? 'blur(3px)' : 'none', transition: 'background .4s ease' }} />
+      {/* dim — grows in from transparent (spec #6), barely-there during grace, then deepens as the escalation advances */}
+      <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, background: grace ? 'rgba(43,41,38,.16)' : lightBg ? 'rgba(248,247,247,.86)' : phase === 'message' ? 'rgba(43,41,38,.52)' : 'rgba(43,41,38,.34)', backdropFilter: lightBg ? 'blur(3px)' : 'none', transition: 'background .4s ease' }} />
 
-      {/* F-08.4 — safe state seen: the escalation is frozen and the overlay is held for
-          SAFE_CONFIRM_MS so a sensor blip can't flicker it away and back. */}
+      {/* F-08.4 / F-12 — safe state seen: the escalation freezes and the four conditions are
+          verified one by one. The bonus is what's on the far side of a full green column — so the
+          child can see the points are earned by putting the phone away and walking on, not by the
+          tap that opened this card. A sensor blip can't flicker the overlay away mid-check either. */}
       {confirming && (
-        <div className="jx-fade" style={{ position: 'absolute', top: 96, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 6 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: '#fff', borderRadius: 999, padding: '9px 16px 8px', boxShadow: THEME.shadowCard }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{L('Looks safe — making sure…')}</span>
-            <span style={{ display: 'block', width: 96, height: 3, borderRadius: 999, background: THEME.surface2, overflow: 'hidden' }}>
-              <span className="jx-countdown" style={{ display: 'block', height: '100%', borderRadius: 999, background: THEME.success, animationDuration: `${SAFE_CONFIRM_MS}ms`, ...paused }} />
-            </span>
+        <div className="jx-fade" style={{ position: 'absolute', top: 92, left: 20, right: 20, display: 'flex', justifyContent: 'center', zIndex: 6 }}>
+          <div style={{ width: '100%', maxWidth: 300, background: '#fff', borderRadius: 18, padding: '14px 16px 12px', boxShadow: THEME.shadowCard }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg2, textAlign: 'center', marginBottom: 10 }}>{L('Checking you’re really safe…')}</div>
+            {SAFE_CONDITIONS.map((cond, i) => {
+              const done = verified > i;
+              return (
+                <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0' }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 999, flexShrink: 0, background: done ? THEME.success : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .2s ease' }}>
+                    {done ? <Icon name="check" size={12} color="#fff" stroke={3.2} /> : <span style={{ width: 6, height: 6, borderRadius: 999, background: THEME.fg3 }} />}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: done ? THEME.fg1 : THEME.fg3, transition: 'color .2s ease' }}>{L(cond)}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -460,10 +505,10 @@ function WarningOverlay({ ctx }) {
       {/* ── STAGE 0: grace period — a calm, self-correct window before any warning (F-07).
           Tapping "I've got it" here means you caught yourself → no warning, straight to the save. */}
       {grace && (
-        <div className="jx-rise" style={{ position: 'absolute', top: 92, left: 16, right: 16 }}>
+        <div className="jx-overlay-in" style={{ position: 'absolute', top: 92, left: 16, right: 16 }}>
           <div style={{ background: '#fff', borderRadius: 20, padding: '13px 15px', boxShadow: THEME.shadowXl }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={46} /></div>
+              <div className="jx-char-in" style={{ flexShrink: 0 }}><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={46} /></div></div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Walking — heads up in a sec')}</div>
                 <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Look up now and no warning is needed.')}</div>
@@ -478,7 +523,7 @@ function WarningOverlay({ ctx }) {
         </div>
       )}
 
-      {phase === 'reward' ? <RewardToast c={c} /> : (
+      {phase === 'reward' ? <RewardToast c={c} result={rewardResult} /> : (
         <React.Fragment>
           {/* escalation stepper — only once the grace window has passed */}
           {!grace && <StageSteps stage={stage} onLight={lightBg} />}
@@ -491,8 +536,8 @@ function WarningOverlay({ ctx }) {
               A button would be inventing an interaction the shipped app doesn't have. The layer
               itself stands in for that detection signal so the demo can still reach the save. */}
           {phase === 'buzz' && (
-            <div className="jx-fade" onClick={respond} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, cursor: 'pointer' }}>
-              <div style={{ position: 'relative', width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="jx-dim-in" onClick={respond} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, cursor: 'pointer' }}>
+              <div className="jx-char-in" style={{ position: 'relative', width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, border: '2px solid rgba(255,255,255,.55)' }} />
                 <div className="jx-ring-slow" style={{ position: 'absolute', inset: 0, borderRadius: 999, border: '2px solid rgba(255,255,255,.55)' }} />
                 <div className="jx-pulse" style={{ width: 78, height: 78, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -523,10 +568,10 @@ function WarningOverlay({ ctx }) {
             // A floating modal, not a docked sheet: inset from the phone's edges on all four
             // sides so it reads as a card the app is holding up, not a drawer welded to the
             // bottom bezel. Radius is even now that no edge is flush.
-            <div className="jx-overlay-up" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '18px 18px 20px', boxShadow: THEME.shadowXl }}>
+            <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '18px 18px 20px', boxShadow: THEME.shadowXl }}>
               {round > 1 && <RoundBadge round={round} tier={tier} />}
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                <div className="jx-pop"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
+                <div className="jx-char-in"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
@@ -540,26 +585,29 @@ function WarningOverlay({ ctx }) {
           {/* ── VARIANT: spotlight ── */}
           {variant === 'spotlight' && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center' }}>
-              <div className="jx-pop jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} /></div>
-              {round > 1 && <div style={{ marginTop: 10 }}><RoundBadge round={round} tier={tier} inline /></div>}
-              <div className="game-font" style={{ fontSize: 26, fontWeight: 500, marginTop: 10 }}>{L(tier.title)} {PLAYER.name}!</div>
-              <div style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45 }}>{L(tier.body)}</div>
+              {/* spec #6 — the character scales in first, then the copy and CTA cascade in behind it */}
+              <div className="jx-char-in"><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} /></div></div>
+              {round > 1 && <div className="jx-content-in" style={{ marginTop: 10, animationDelay: '.14s' }}><RoundBadge round={round} tier={tier} inline /></div>}
+              <div className="game-font jx-content-in" style={{ fontSize: 26, fontWeight: 500, marginTop: 10, animationDelay: '.18s' }}>{L(tier.title)} {PLAYER.name}!</div>
+              <div className="jx-content-in" style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45, animationDelay: '.26s' }}>{L(tier.body)}</div>
               {/* One thing on this screen looks like a button, and it is the safe action. The
                   dismiss is deliberately plain text: it acknowledges the warning, it does not end
                   the risk (F-08.2), so it should never compete with "I looked up". It cannot be a
                   filled pill here anyway — surface2 (#f8f7f7) is the spotlight backdrop's own
                   colour, so a filled secondary is invisible against it. */}
-              <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('I looked up')}</Button>
-              <button onClick={() => standDown('dismissed')} style={{ marginTop: 14, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, color: THEME.fg2, padding: '6px 16px' }}>{L('Got it!')}</button>
+              <div className="jx-content-in" style={{ width: '100%', display: 'flex', justifyContent: 'center', animationDelay: '.34s' }}>
+                <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('I looked up')}</Button>
+              </div>
+              <button className="jx-content-in" onClick={() => standDown('dismissed')} style={{ marginTop: 14, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, color: THEME.fg2, padding: '6px 16px', animationDelay: '.42s' }}>{L('Got it!')}</button>
             </div>
           )}
 
           {/* ── VARIANT: minimal banner ── */}
           {variant === 'banner' && (
-            <div className="jx-rise" style={{ position: 'absolute', top: 94, left: 14, right: 14 }}>
+            <div className="jx-overlay-in" style={{ position: 'absolute', top: 94, left: 14, right: 14 }}>
               <div style={{ background: '#fff', borderRadius: 20, padding: '12px 14px', boxShadow: THEME.shadowXl }}>
                 <div onClick={respond} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} />
+                  <div className="jx-char-in" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 800 }}>{round === 1 ? L('Eyes up while walking') : L(tier.title) + ' ' + PLAYER.name + '!'}</div>
                     <div style={{ fontSize: 12, color: THEME.fg2 }}>{round === 1 ? L("Tap when you've looked up") : L(tier.body)}</div>

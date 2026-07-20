@@ -464,6 +464,7 @@ const NAV = [
   { id: 'ia',        label: 'Screen map',      icon: 'layout-grid' },
   { id: 'features',  label: 'Features',        icon: 'layers' },
   { id: 'economy',   label: 'The economy',     icon: 'coins' },
+  { id: 'safestop',  label: 'Safe-stop reward', icon: 'hand' },
   { id: 'eggs',      label: 'Eggs & rarity',   icon: 'egg' },
   { id: 'villains',  label: 'Villain ladder',  icon: 'skull' },
   { id: 'balance',   label: 'Balance analysis', icon: 'scale-3d' },
@@ -862,6 +863,153 @@ function ProjectDocs() {
             <code>enabled: false</code> is invisible everywhere — the battle ladder, the dex, and even
             the completion denominator. Turning a season on is a server flag, not a release. Three
             winter items and two spring rules already ship dark, waiting for it.
+          </div>
+        </section>
+
+        {/* ── SAFE-STOP REWARD ── */}
+        <section id="safestop" ref={set('safestop')} className="doc-section">
+          <h2 className="doc-h2">The safe-stop reward — earned, not tapped</h2>
+          <p className="doc-lead">
+            The bonus for responding to a warning is the one point award a child could try to game, so
+            it is the one with teeth. The rule it replaces paid the moment a button was pressed — which
+            let a child <b>dismiss the warning, keep scrolling, and still bank points</b>. Now the tap
+            only <i>starts</i> a verification; the points are gated on the whole behaviour the
+            intervention exists to produce.
+          </p>
+
+          <div className="doc-h3">Four conditions — all must hold</div>
+          <div className="doc-grid2">
+            {[
+              ['shield-alert', 'Warning shown', 'An intervention overlay actually appeared'],
+              ['smartphone', 'Phone put away', 'Phone use while walking stopped'],
+              ['power', 'Screen off', 'The screen was turned off'],
+              ['footprints', 'Walking safely', 'Safe walking continued afterwards'],
+            ].map(([ic, t, s]) => (
+              <div key={t} className="doc-row" style={{ marginBottom: 0 }}>
+                <Icon name={ic} size={17} color={C.good} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div className="doc-title">{t}</div>
+                  <p className="doc-note" style={{ marginTop: 2 }}>{s}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="doc-cap" style={{ marginTop: 14 }}>
+            The overlay checks these off one at a time — the points sit on the far side of a full green
+            column, so the child can see the reward is earned by putting the phone away and walking on,
+            not by the tap that opened the card. A bare <b>“Got it!”</b> acknowledgement sets none of the
+            four and pays nothing. In the shipped app the signals come from detection (F-03 / F-08.4); in
+            the prototype the verification steps stand in for them, but <code>evaluateSafeStop()</code>{' '}
+            already owns the real gating logic.
+          </p>
+
+          <div className="doc-h3">Tiered by how early the child corrected</div>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th>Outcome</th><th>When</th><th>Pays</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><b>Immediate</b></td>
+                  <td>Looked up in the grace/buzz window — <i>before</i> any warning</td>
+                  <td style={{ fontWeight: 800, color: C.good }}>+50 pt</td>
+                </tr>
+                <tr>
+                  <td><b>Delayed</b></td>
+                  <td>Stopped only after the warning was shown</td>
+                  <td style={{ fontWeight: 800, color: C.warn }}>+20 pt</td>
+                </tr>
+                <tr>
+                  <td><b>Dismissed / ignored</b></td>
+                  <td>Acknowledged or ignored, still walking on the phone</td>
+                  <td style={{ fontWeight: 700, color: C.ink3 }}>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="doc-cap">
+            Never needing the warning is the behaviour the product is built to produce, so it pays more
+            than a stop the warning had to drag out — <code>selfCorrectBonus</code> 50 vs{' '}
+            <code>postWarningStopBonus</code> 20. Both are server settings.
+          </p>
+
+          <div className="doc-h3">Three layers of farm protection</div>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th>Layer</th><th>Guard</th><th>Blocks</th></tr></thead>
+              <tbody>
+                <tr><td><b>Conditions gate</b></td><td>All four signals must hold</td><td>Tapping a button without actually stopping</td></tr>
+                <tr><td><b>Per-stop cooldown</b></td><td><code>60s</code> since the last paid stop</td><td>The trigger → tap → points → trigger loop</td></tr>
+                <tr><td><b>Daily ceiling</b></td><td><code>300 pt</code> of bonus per day</td><td>Grinding warnings for points all day long</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="doc-why">
+            <b>A blocked stop still counts — it just doesn’t pay.</b> Whether the reward lands, is on
+            cooldown, or is past the daily cap, the event is logged to the parent report all the same, so
+            the safety record is complete even when the wallet stays shut. And the child is told which
+            happened (“<i>Already counted</i>”, “<i>Daily reward maxed</i>”) rather than met with a
+            silent nothing. Per-minute safe-walking points are <i>not</i> capped — they are rate-limited
+            by the clock and cannot be farmed, so only the per-event bonus needs the ceiling.
+          </div>
+
+          <div className="doc-h3">Behind the signals — how a real build detects each one</div>
+          <p className="doc-lead" style={{ marginBottom: 12 }}>
+            The prototype ticks the four boxes on a timer. A shipped build fills them from the <b>same
+            detection stack that fires the warning in the first place</b> (F-03 · motion + phone-usage) —
+            there is no new sensor subsystem to build; the reward just reads signals the intervention
+            already produces. The client streams these signal transitions; it does <b>not</b> decide the
+            payout.
+          </p>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th>Signal</th><th>Android</th><th>iOS</th><th>Confirmed when</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><b>warned</b></td>
+                  <td colSpan={2}>App state — an intervention overlay was shown</td>
+                  <td>the run reached the buzz/warning stage</td>
+                </tr>
+                <tr>
+                  <td><b>phoneStopped</b></td>
+                  <td><code>UsageStatsManager</code> foreground app + touch/interaction idle</td>
+                  <td><code>FamilyControls</code> / <code>DeviceActivity</code>, app <code>resignActive</code></td>
+                  <td>no interaction for the hold window</td>
+                </tr>
+                <tr>
+                  <td><b>screenOff</b></td>
+                  <td><code>ACTION_SCREEN_OFF</code> · <code>PowerManager.isInteractive()</code></td>
+                  <td>device lock · display-off / <code>protectedDataWillBecomeUnavailable</code></td>
+                  <td>display state reads off</td>
+                </tr>
+                <tr>
+                  <td><b>stillWalking</b></td>
+                  <td><code>ActivityRecognition</code> “walking” · step counter</td>
+                  <td><code>CMMotionActivityManager</code> <code>.walking</code> · <code>CMPedometer</code></td>
+                  <td>walking class persists past the stop</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="doc-why">
+            <b>Three rules make it trustworthy:</b>
+            <br /><br />
+            <b>1 · Debounce, don’t trust a single sample.</b> Accelerometer and usage signals flutter, so
+            each condition must <i>hold</i> for <code>safeConfirmSeconds</code> before it counts as met —
+            and if the risk returns inside that window the timer resets and the escalation resumes. This
+            is why the overlay verifies over a beat rather than reading one instant.
+            <br /><br />
+            <b>2 · The server owns the decision (RISK-1).</b> The device reports signal transitions; the
+            <i>server</i> runs the <code>evaluateSafeStop()</code> logic against a <b>trusted clock</b> and
+            owns the ledger — <code>lastAwardAt</code> (the 60s cooldown) and <code>bonusPointsToday</code>{' '}
+            (the daily cap). A client clock and a client wallet are both trivially cheatable, so the
+            payout, the cooldown and the cap must all be evaluated where the child cannot reach them. The
+            prototype runs it client-side purely because there is no backend yet — the function shape
+            does not change when it moves.
+            <br /><br />
+            <b>3 · A missing permission fails closed.</b> If usage-access or motion permission is denied,
+            the matching signal can never confirm, so the condition simply never goes green and the bonus
+            is not paid — the same conservative default the onboarding’s “limited protection” path takes.
+            No permission is ever assumed satisfied.
           </div>
         </section>
 

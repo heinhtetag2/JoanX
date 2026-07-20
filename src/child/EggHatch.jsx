@@ -114,5 +114,46 @@ function useShakeToHatch(active, onShake) {
 
 // how long the crack animation runs before the buddy pops out
 const HATCH_MS = 820;
+// the "Gradual crack" tweak runs longer — the anticipation IS the feature, so the
+// reveal is held back while the fissure spreads. Must match jxEggCrack in joanx.css.
+const HATCH_CRACK_MS = 2200;
 
-export { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS };
+// The gradual-crack egg (Tweaks: Egg hatch → "Gradual crack"). The shell trembles
+// and pops via .jx-egg-crack, a jagged fissure draws itself down the shell, and a
+// glow seeps brighter from the seam — so hatching becomes a moment that builds,
+// not an instant swap. Same EggShape underneath, so the shell art is unchanged;
+// this only layers the crack + light and swaps the animation timing.
+function CrackingEgg({ size = 132, rarity, color }) {
+  const c = color || eggColorFor(rarity);
+  const w = size, h = size * 1.28;
+  // a jagged seam down the shell, plus two short branches that spread off it
+  const seam = 'M50 6 L45 24 L55 40 L44 58 L57 76 L46 95 L52 116';
+  const branchL = 'M55 40 L64 48 L60 62';
+  const branchR = 'M44 58 L34 66 L38 80';
+  return (
+    <div style={{ position: 'relative', width: w, height: h }}>
+      {/* light leaking from the seam — sits behind the shell, brightening over time */}
+      <div className="jx-crack-glow" style={{ position: 'absolute', inset: '-12%', borderRadius: '50%',
+        background: `radial-gradient(circle, ${shade(c, 88)} 0%, ${shade(c, 58)} 32%, transparent 64%)`,
+        pointerEvents: 'none', zIndex: 0 }} />
+      {/* shell + fissure share one element so the crack shakes and pops WITH the egg */}
+      <div className="jx-egg-crack" style={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
+        <EggShape size={size} rarity={rarity} color={color} />
+        <svg viewBox="0 0 100 128" width={w} height={h} aria-hidden="true"
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {/* dark crack, then a bright inner line so light appears to spill out of it */}
+          {[seam, branchL, branchR].map((d, i) => (
+            <path key={'d' + i} className={'jx-crack-line' + (i ? ' jx-crack-branch' : '')} d={d}
+              fill="none" stroke="rgba(28,16,48,.5)" strokeWidth={i ? 2 : 3} strokeLinejoin="round" strokeLinecap="round" />
+          ))}
+          {[seam, branchL, branchR].map((d, i) => (
+            <path key={'l' + i} className={'jx-crack-line' + (i ? ' jx-crack-branch' : '')} d={d}
+              fill="none" stroke={shade(c, 92)} strokeWidth={i ? 0.9 : 1.4} strokeLinejoin="round" strokeLinecap="round" />
+          ))}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+export { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS };

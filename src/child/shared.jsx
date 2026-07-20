@@ -7,13 +7,14 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
 
-// Page background tinted by the *active* buddy's colour — keeps every screen's
-// top gradient aligned with the buddy (green for Hammy, etc.), like the home.
-// Child-app-specific (reads PLAYER's active buddy); screenBgFor/mixHue
-// themselves are brand-agnostic and live in core/primitives.jsx for both apps.
+// The child app's page background — a single brand-green wash on every screen.
+// It deliberately does NOT tint by the active buddy: the brand colour is green
+// (THEME.brand), so switching buddies must not repaint the whole app. This is the
+// one source of truth for the child wash — route new screens through it rather than
+// passing a character colour to screenBgFor. (screenBgFor itself stays brand-agnostic
+// in core/primitives.jsx — the parent app still washes it with its own ocean brand.)
 function screenBgActive() {
-  const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId) || CHARACTERS[0];
-  return screenBgFor(c && c.color);
+  return screenBgFor(THEME.brand);
 }
 
 // `left` fills the leading slot on screens with no back button — tab roots that still

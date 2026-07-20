@@ -9,7 +9,7 @@
 // who made it and shown to both of them (FAMILY_LOG).
 
 import React from 'react';
-import { FAMILY_INVITE, FAMILY_LOG, FAMILY_ROLES, guardianCan, guardianMe, guardianOwner, guardians, removeGuardian } from '../core/data.jsx';
+import { FAMILY_INVITE, FAMILY_LOG, FAMILY_ROLES, MAX_GUARDIANS, familyFull, guardianCan, guardianMe, guardianOwner, guardians, removeGuardian } from '../core/data.jsx';
 import { Button, Icon, PairQR, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
@@ -31,7 +31,8 @@ function ParentFamily({ ctx }) {
   const [, bump] = React.useState(0);
   const me = guardianMe();
   const list = guardians();
-  const mayInvite = guardianCan(me, 'invite');
+  const full = familyFull();
+  const mayInvite = guardianCan(me, 'invite') && !full;
 
   const drop = (m) => {
     if (!window.confirm(`${L('Remove')} ${m.name}? ${L('They lose access to every child in this family.')}`)) return;
@@ -54,7 +55,7 @@ function ParentFamily({ ctx }) {
           </div>
         </div>
 
-        {label(`${L('Parents')} · ${list.length}`)}
+        {label(`${L('Parents')} · ${list.length}/${MAX_GUARDIANS}`)}
         <div style={card}>
           {list.map((m, i) => (
             <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
@@ -80,9 +81,16 @@ function ParentFamily({ ctx }) {
           ))}
         </div>
 
-        {mayInvite
-          ? <Button variant="primary" fullWidth icon="user-plus" onClick={() => ctx.nav('p_invite')} style={{ ...brandBtn, marginBottom: 20 }}>{L('Invite a parent')}</Button>
-          : <div style={{ fontSize: 12, color: THEME.fg3, textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>{guardianOwner().name} {L('can add or remove parents.')}</div>}
+        {/* full → the family is at its two-parent cap; invite → the owner may add the second
+            parent; otherwise → a co-parent, who is told who can. */}
+        {full
+          ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12.5, color: THEME.fg3, textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+              <Icon name="check-circle" size={15} color={BRAND.primary} stroke={2.2} />
+              {L('This family is full — one child can have two parents.')}
+            </div>
+          : mayInvite
+            ? <Button variant="primary" fullWidth icon="user-plus" onClick={() => ctx.nav('p_invite')} style={{ ...brandBtn, marginBottom: 20 }}>{L('Invite a parent')}</Button>
+            : <div style={{ fontSize: 12, color: THEME.fg3, textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>{guardianOwner().name} {L('can add or remove parents.')}</div>}
 
         {/* F-attribution — nobody changes a safety setting invisibly */}
         {label(L('Recent changes'))}

@@ -62,7 +62,7 @@ function FriendHouse({ ctx }) {
   const fc = f.featured;
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgFor(f.color) }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgFor(THEME.brand) }}>
       <ScreenHeader title={`${f.name}${L("’s house")}`} onBack={() => ctx.nav('friends')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="heart" size={15} color={THEME.joy} fill={THEME.joy} stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{likes}</span></div>} />
       <div style={{ padding: '0 16px' }}>

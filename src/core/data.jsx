@@ -115,6 +115,7 @@ const PLAYER = {
   name: 'Mina', age: 11, points: 1600,
   streak: 5, level: 7, xp: 320,   // xpMax / maxed are derived from XP_CURVE — see applyXpCurve()
   safeMinutesToday: 47, safeWalkGoal: 60,
+  bonusPointsToday: 40,                    // spec #4 — safe-stop bonus points banked today (vs POINTS.dailyBonusCap); resets daily server-side
   activeCharId: 'c2',
   battlesToday: 0,                         // A-8: 0 … battlesPerDay()
   // F-19 — is the child walking right now? In the shipped app this comes from the same
@@ -313,6 +314,13 @@ const FAMILY = {
   ],
 };
 
+// One child, at most two guardians (the requirement, and the reason FAMILY_ROLES has exactly
+// an owner + a co-parent). The cap is enforced in addGuardian and surfaced in ParentFamily so
+// the owner is never offered an invite that could not be fulfilled — a mother and a father is
+// the shape the product is built for, not an open-ended household.
+const MAX_GUARDIANS = 2;
+const familyFull = () => FAMILY.members.length >= MAX_GUARDIANS;
+
 // Both roles see everything and change everything — the difference is only over the family
 // itself (who may add or remove a guardian, and who holds billing). Two guardians shown
 // different numbers would be a support nightmare, and it would break the promise PARENT_SEES
@@ -338,6 +346,7 @@ const guardianCan = (member, action) => !!(FAMILY_ROLES[member?.role]?.can[actio
 const guardianNames = () => FAMILY.members.map(m => m.relation);
 
 const addGuardian = (member) => {
+  if (familyFull()) return FAMILY.members;   // at most two guardians — never a silent third
   FAMILY.members.push({ id: `m${FAMILY.members.length + 1}`, role: 'guardian', ...member });
   return FAMILY.members;
 };
@@ -394,9 +403,14 @@ const FRIEND_SUGGESTIONS = [
 // or add a new one (e.g. a class code) by editing this list alone. `enabled: false` hides a
 // method everywhere without deleting its UI. Order is display order.
 const FRIEND_METHODS = [
-  { id: 'code',   enabled: true, label: 'Friend code', icon: 'hash',    hint: 'Enter a friend’s code' },
-  { id: 'search', enabled: true, label: 'Nickname',    icon: 'search',  hint: 'Search by nickname' },
-  { id: 'qr',     enabled: true, label: 'QR code',     icon: 'qr-code', hint: 'Scan a friend’s QR' },
+  { id: 'code',   enabled: true,  label: 'Friend code', icon: 'hash',    hint: 'Enter a friend’s code' },
+  { id: 'search', enabled: true,  label: 'Nickname',    icon: 'search',  hint: 'Search by nickname' },
+  // QR is disabled by policy. Scanning a friend's QR needs CAMERA permission, and on a
+  // children's app a camera request draws extra Play Store review scrutiny — for a job that
+  // friend code + nickname search already cover with no camera at all. This is exactly the
+  // "turn a method off by editing this list alone" the registry was built for: `enabled` is the
+  // whole switch, so the method's UI stays in the tree and the decision is one flag to reverse.
+  { id: 'qr',     enabled: false, label: 'QR code',     icon: 'qr-code', hint: 'Scan a friend’s QR' },
 ];
 
 // How a friend request becomes a friendship. `approver: 'recipient'` — the person who
@@ -441,11 +455,27 @@ function searchUsers(q) {
 const POINTS = {
   perSafeMinute: 10,           // 10 pt per completed minute of phone-free walking
   minSessionSeconds: 60,       // a session ending before 1 min awards nothing
-  immediateStopBonus: 20,      // +20 for stopping phone use right after a warning
+  // Safe-stop bonus, tiered by how EARLY the child corrected (spec #4 — reward safe behaviour
+  // from the beginning more than a stop that only came after a warning). The child who looks up
+  // in the grace/buzz window — before any warning is shown — did the thing the intervention
+  // exists to make happen, unprompted, so they earn the most. A stop that arrives only after the
+  // warning is still real and still pays, just less. Never reward the warning→stop loop as much
+  // as never needing the warning.
+  selfCorrectBonus: 50,        // +50 — 'immediate': stopped before a warning was needed
+  postWarningStopBonus: 20,    // +20 — 'delayed':  stopped after the warning was shown
   dailyAccidentFreeBonus: 100, // +100 for an accident-free day
   streak7Days: 7,   streak7Bonus: 300,        // +300 at 7 accident-free days
   streak30Days: 30, streak30Reward: 'epic-egg', // 30 days → Special Egg / event reward
+  // Anti-farm ceiling (spec #4 note): the most safe-stop BONUS points earnable in one day. The
+  // per-session cooldown (SAFE_STOP) stops rapid re-triggering; this caps the day's total so a
+  // child can't grind warnings for points across a whole day. Per-minute safe-walking points are
+  // NOT capped here — they're rate-limited by the clock and can't be farmed. Server-owned in prod.
+  dailyBonusCap: 300,
 };
+
+// The safe-stop bonus for an outcome — 'immediate' (self-corrected, no warning) pays the most.
+const safeStopBonus = (outcome) =>
+  outcome === 'immediate' ? POINTS.selfCorrectBonus : POINTS.postWarningStopBonus;
 
 // F-13: "10 pt per minute of non-use while walking." (alias — prefer POINTS)
 const SAFE_PT_PER_MIN = POINTS.perSafeMinute;
@@ -511,6 +541,63 @@ const RISK_EVENT_LOG = [];
 // outcome: 'immediate' (stopped in the grace/buzz window) · 'delayed' (stopped after a
 // warning) · 'ignored' (dismissed or ignored through every round and still walking).
 const logRiskEvent = (event) => { RISK_EVENT_LOG.push(event); return event; };
+
+// ── Safe-stop bonus — EARNED, not tapped (F-12 · spec A-1.1) ─────────
+// The bug this closes: the bonus used to land the moment the child pressed a button, so a
+// child could dismiss the warning, keep using the phone, and still bank points. The bonus is
+// now gated on the whole behaviour the intervention exists to produce, and protected against a
+// child re-triggering a warning to farm it.
+//
+// Four signals decide it. In the shipped app they come from detection (F-03 / F-08.4); in the
+// prototype the overlay's verification steps stand in for them. All four must hold — a bare
+// acknowledgement ("Got it!") sets none of them and pays nothing:
+//   warned        — an intervention overlay was actually shown
+//   phoneStopped  — phone use while walking stopped
+//   screenOff     — the screen was turned off
+//   stillWalking  — safe walking continued afterwards
+const SAFE_STOP = {
+  // No second stop-bonus inside this window — this is what stops the loop of
+  // trigger → tap → points → trigger → tap. Server-owned in production (a client clock is
+  // trivially cheatable; this is only the offline fallback). Matches minSessionSeconds.
+  cooldownSeconds: POINTS.minSessionSeconds,
+  lastAwardAt: 0,   // ms epoch of the last PAID safe-stop; 0 = never
+};
+
+// Are all four conditions met? A missing signal (e.g. a dismiss, which sets none) fails here.
+const safeStopVerified = (s) => !!(s && s.warned && s.phoneStopped && s.screenOff && s.stillWalking);
+
+// The gate the overlay calls once its verification completes. Logs the event either way (the
+// parent report still records the stop), banks the bonus to the wallet when it pays, and returns
+// the outcome so the UI can show the points, the farm-blocked state, or nothing — but never fake
+// a reward. The bonus is tiered by `outcome` (spec #4): 'immediate' (self-corrected, no warning
+// needed) pays selfCorrectBonus; 'delayed' pays the smaller postWarningStopBonus.
+//   { ok, reason: 'awarded'|'incomplete'|'cooldown'|'capped', outcome, points }
+const evaluateSafeStop = (signals, outcome, meta = {}, player = PLAYER) => {
+  if (!safeStopVerified(signals)) {
+    // acknowledged but the safe sequence never completed → not a stop, no bonus
+    logRiskEvent({ outcome: 'dismissed', ...meta });
+    return { ok: false, reason: 'incomplete', outcome, points: 0 };
+  }
+  const now = Date.now();
+  if (SAFE_STOP.lastAwardAt && now - SAFE_STOP.lastAwardAt < SAFE_STOP.cooldownSeconds * 1000) {
+    // a real stop, but too soon after the last paid one → count it, don't pay it
+    logRiskEvent({ outcome, farmed: true, ...meta });
+    return { ok: false, reason: 'cooldown', outcome, points: 0 };
+  }
+  // Anti-farm daily ceiling: pay only what's left under the cap. Once the day is maxed the stop
+  // still counts in the report, it just no longer pays — so grinding warnings hits a wall.
+  const remaining = POINTS.dailyBonusCap - (player.bonusPointsToday || 0);
+  if (remaining <= 0) {
+    logRiskEvent({ outcome, capped: true, ...meta });
+    return { ok: false, reason: 'capped', outcome, points: 0 };
+  }
+  const points = Math.min(safeStopBonus(outcome), remaining);
+  SAFE_STOP.lastAwardAt = now;
+  player.bonusPointsToday = (player.bonusPointsToday || 0) + points;
+  player.points += points;
+  logRiskEvent({ outcome, rewarded: true, points, ...meta });
+  return { ok: true, reason: 'awarded', outcome, points };
+};
 
 // ── XP curve & level cap (F-16 · spec A-3.1 / A-3.2) ─────────────────
 // EXP to reach the next level starts low and grows as the level rises:
@@ -2416,7 +2503,7 @@ const LEGAL_DOCS = [
 // that account — while the phone is verified with a code when changed.
 const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
 
-export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
-  SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
+  SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

@@ -7,7 +7,7 @@ import { Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment } from './shared.jsx';
-import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
+import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 
 // ── Points & Shop ────────────────────────────────────────────────────
 // Buying is only ONE of the ways an egg arrives (A-2.1) — missions, distance
@@ -19,7 +19,8 @@ import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatc
 // `eggShake` gates the shake-to-hatch gesture and the affordance that teaches it. Off by
 // default: the tap is the whole interaction for now, and a block of copy explaining a second
 // way to do the thing you just did competes with the egg it sits under.
-function Shop({ ctx, eggShake = false }) {
+function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
+  const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const [pts, setPts] = React.useState(PLAYER.points);
   const [owned, setOwned] = React.useState(() => ({ ...PLAYER.eggs }));
@@ -97,7 +98,9 @@ function Shop({ ctx, eggShake = false }) {
     if (cracking.current) return;
     cracking.current = true;
     setHatch(h => (h && h.phase === 'egg' ? { ...h, phase: 'cracking' } : h));
-    setTimeout(() => revealEgg(hatchEggRef.current), HATCH_MS);
+    // hold the reveal for the length of the chosen animation — the gradual crack
+    // runs longer on purpose, so the fissure has time to spread before the pop
+    setTimeout(() => revealEgg(hatchEggRef.current), gradualCrack ? HATCH_CRACK_MS : HATCH_MS);
   };
 
   // the egg being hatched, readable from the timer without depending on a stale closure
@@ -137,7 +140,7 @@ function Shop({ ctx, eggShake = false }) {
           {/* how points are actually earned (F-13 / A-1.1) — battles pay no points */}
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {[['footprints', L('Safe walking'), `+${POINTS.perSafeMinute} / ${L('min')}`],
-              ['hand', L('Immediate stop'), `+${POINTS.immediateStopBonus}`],
+              ['hand', L('Safe stop'), `+${POINTS.postWarningStopBonus}–${POINTS.selfCorrectBonus}`],
               ['shield-check', L('Accident-free day'), `+${POINTS.dailyAccidentFreeBonus}`]].map(([ic, t, v], i) => (
               <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 12, padding: '8px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                 <Icon name={ic} size={16} color={THEME.gold} stroke={2.3} />
@@ -365,10 +368,12 @@ function Shop({ ctx, eggShake = false }) {
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
                   <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
                   <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
-                  {/* glow that swells while the egg cracks */}
-                  {cracking && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
-                  <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? 'jx-egg-hatch' : 'jx-egg-idle'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
-                    <EggShape size={132} rarity={hatch.eggRarity} />
+                  {/* quick-pop glow — the gradual crack brings its own seam-light instead */}
+                  {cracking && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
+                  <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
+                    {cracking && gradualCrack
+                      ? <CrackingEgg size={132} rarity={hatch.eggRarity} />
+                      : <EggShape size={132} rarity={hatch.eggRarity} />}
                   </button>
                 </div>
                 <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Buddy Egg')}</h2>

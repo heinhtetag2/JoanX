@@ -6,7 +6,7 @@ import { Badge, Button, Icon, PairQR, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
-import { EggShape, EggHalf, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS } from './EggHatch.jsx';
+import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 
 // The first buddy every new child is given (for now): Hammy, the green one. Onboarding and
 // the hatch wear his colour, so the flow that hands you a green buddy is itself green —
@@ -38,7 +38,8 @@ const STARTER_EGG_C = eggColorFor('common');
 // `eggShake` matches the Shop's: it gates the gesture and the copy that teaches it, and is off
 // by default. The first egg is the worst place to offer a second way to hatch — the child has
 // not done it once yet.
-function Onboarding({ ctx, eggShake = false }) {
+function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
+  const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const perms = PERMISSIONS;
   const [step, setStep] = React.useState(0);     // 0 splash · 1-2 slides · 3 connect · 4 permissions
   const [grants, setGrants] = React.useState({});
@@ -76,7 +77,7 @@ function Onboarding({ ctx, eggShake = false }) {
     setTimeout(() => {
       setEggPhase('reveal');
       setPrize(p => { if (p) ctx.setBuddy(p.id, {}); return p; });   // adopt the hatched buddy app-wide
-    }, HATCH_MS);
+    }, gradualCrack ? HATCH_CRACK_MS : HATCH_MS);
   };
   useShakeToHatch(eggShake && charReveal && eggPhase === 'egg', crackEgg);
 
@@ -455,11 +456,13 @@ function Onboarding({ ctx, eggShake = false }) {
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
               <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${STARTER_EGG_C}55` }} />
               <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${STARTER_EGG_C}55` }} />
-              {eggPhase === 'cracking' && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(STARTER_EGG_C, 60)} 0%, transparent 68%)` }} />}
-              <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? 'jx-egg-hatch' : 'jx-egg-idle'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
+              {eggPhase === 'cracking' && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(STARTER_EGG_C, 60)} 0%, transparent 68%)` }} />}
+              <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
                 {/* the common starter egg — its own sand shell, not the buddy's colour (that
                     would give the surprise away), and matching the wash behind it */}
-                <EggShape size={132} rarity="common" />
+                {eggPhase === 'cracking' && gradualCrack
+                  ? <CrackingEgg size={132} rarity="common" color={STARTER_EGG_C} />
+                  : <EggShape size={132} rarity="common" />}
               </button>
             </div>
 

@@ -298,6 +298,7 @@ const KO = {
   'Everyone here sees the same reports and can change the same settings. Adding or removing a parent never touches your child’s phone.':
     '여기 있는 모든 보호자가 같은 리포트를 보고 같은 설정을 바꿀 수 있어요. 보호자를 추가하거나 삭제해도 아이 휴대폰은 건드리지 않아요.',
   'Invite a parent': '보호자 초대하기',
+  'This family is full — one child can have two parents.': '이 가족은 정원이 찼어요 — 아이 한 명당 보호자는 두 명까지예요.',
   'They lose access to every child in this family.': '이 가족의 모든 아이 정보를 볼 수 없게 돼요.',
   'can add or remove parents.': '님만 보호자를 추가하거나 삭제할 수 있어요.',
   'Recent changes': '최근 변경 내역',
@@ -772,6 +773,9 @@ const KO = {
   // dismiss → re-assess → buzz + warn again, one tone firmer (F-08.2 / F-08.3)
   'Got it!': '알겠어!', 'Still walking — I’ll check again in a moment': '아직 걷는 중 — 잠시 후 다시 확인할게요',
   'Looks safe — making sure…': '안전해 보여요 — 확인 중…',
+  'Checking you’re really safe…': '정말 안전한지 확인 중…',
+  'Warning shown': '경고 표시됨', 'Phone put away': '폰 치웠어요', 'Screen off': '화면 껐어요', 'Walking safely': '안전하게 걷는 중',
+  'Already counted — keep it up!': '이미 반영됐어요 — 계속 잘해요!',
   'Buzzing again — still walking': '다시 진동 — 아직 걷는 중', 'Reminder': '알림', 'recorded in your report': '리포트에 기록됨',
   'Still walking,': '아직 걷고 있어요,', 'Phone down until you stop — I mean it this time.': '멈출 때까지 폰은 내려둬요 — 이번엔 진심이에요.',
   'This is unsafe,': '위험해요,', 'Stop walking or put the phone away now. This is going in your report.': '지금 멈추거나 폰을 넣어요. 이 기록은 리포트에 남아요.',
@@ -1091,6 +1095,11 @@ const KO = {
   // ── in-scope build (danger zones / GNSS gated off) ──
   'Motion sensor': '모션 센서', 'You beat Rush': '러시를 물리쳤어요',
   "JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.": 'JoanX는 메시지를 읽거나 엿듣거나 위치를 추적하지 않아요. 걷기를 감지하는 기기 내 모션만 사용하며, 자녀의 신원과 분리해 저장해요.',
+
+  // ── safe-stop reward tiers (spec #4) ──
+  'Safe stop': '안전하게 멈춤', 'Looked up in time!': '제때 고개를 들었어요!',
+  'No warning needed': '경고 없이 성공', 'Stopped after a warning': '경고 후 멈춤',
+  'Daily reward maxed — still counts!': '오늘 보상은 다 받았어요 — 그래도 인정!',
 
   // ── AI parent report (F-31) ──
   'AI Safety Report': 'AI 안전 리포트', 'This week · Mina': '이번 주 · 미나',

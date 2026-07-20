@@ -81,6 +81,43 @@ html, body {
 @keyframes jxFade { from { opacity: .35; } to { opacity: 1; } }
 .jx-fade { animation: jxFade .3s ease both; }
 
+/* ── Trigger-warning overlay entrances (spec #6) ──────────────────────
+   The intervention used to snap onto the screen — the dim jumped straight to
+   35%, the cards slid a few px with no fade, and the spotlight copy just
+   appeared. These give each surface a natural entrance: the dim grows from
+   nothing, cards fade + rise + settle on a soft ease-out, the character scales
+   in with a gentle spring, and the copy cascades in behind it. All are `both`
+   (hold the end state) and every one is disabled under reduced-motion. */
+
+/* backdrop dim — grows in from transparent instead of snapping to 35% */
+@keyframes jxDimIn { from { opacity: 0; } to { opacity: 1; } }
+.jx-dim-in { animation: jxDimIn .42s cubic-bezier(.4,0,.2,1) both; }
+
+/* card / panel — fade + slide-up + a touch of scale, easing out smoothly */
+@keyframes jxOverlayIn {
+  0%   { opacity: 0; transform: translateY(26px) scale(.94); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.jx-overlay-in { animation: jxOverlayIn .5s cubic-bezier(.16,1,.3,1) both; }
+
+/* character — scales up from small with a soft overshoot, and fades in with it */
+@keyframes jxCharIn {
+  0%   { opacity: 0; transform: scale(.55) translateY(8px); }
+  70%  { opacity: 1; transform: scale(1.06) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.jx-char-in { animation: jxCharIn .55s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* copy lines that follow the character in — a small staggered fade-rise
+   (pair with an inline animation-delay to cascade headline → body → CTA) */
+@keyframes jxContentIn { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+.jx-content-in { animation: jxContentIn .44s cubic-bezier(.16,1,.3,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jx-dim-in, .jx-overlay-in, .jx-char-in, .jx-content-in { animation: none; }
+}
+
 @keyframes jxPulse {
   0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(209,69,50,.5); }
   50% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(209,69,50,0); }
@@ -164,6 +201,55 @@ html, body {
   100% { transform: rotate(0) scale(.6); opacity: 0; }
 }
 .jx-egg-hatch { animation: jxEggHatch .9s cubic-bezier(.36,.07,.55,.9) both; }
+
+/* Gradual egg crack (Tweaks: Egg hatch → "Gradual crack"). A longer, staged
+   hatch that builds anticipation: the shell trembles in rising bursts, a fissure
+   draws itself down the shell, light leaks brighter from the seam, and only at
+   the very end does it heave open and pop. Tuned to HATCH_CRACK_MS (1.7s). */
+@keyframes jxEggCrack {
+  0%, 8%   { transform: rotate(0) translateX(0) scale(1); }
+  /* first tremor — small */
+  13%      { transform: rotate(-3deg) translateX(-1px); }
+  17%      { transform: rotate(3deg)  translateX(1px); }
+  21%      { transform: rotate(0); }
+  /* second — a little harder */
+  38%      { transform: rotate(-5deg) translateX(-2px); }
+  43%      { transform: rotate(5deg)  translateX(2px); }
+  48%      { transform: rotate(0); }
+  /* third — the shell is straining */
+  64%      { transform: rotate(-7deg) translateX(-3px); }
+  69%      { transform: rotate(7deg)  translateX(3px); }
+  74%      { transform: rotate(0) scale(1.02); }
+  /* the final heave, then it pops away as the buddy appears */
+  85%      { transform: rotate(-5deg) scale(1.05); }
+  92%      { transform: rotate(4deg)  scale(1.12); }
+  100%     { transform: rotate(0) scale(.6); opacity: 0; }
+}
+.jx-egg-crack { animation: jxEggCrack 2.2s cubic-bezier(.36,.07,.35,.95) both; transform-origin: 50% 78%; }
+
+/* the fissure draws itself on over the shake — dash offset runs to 0 */
+@keyframes jxCrackDraw {
+  0%, 6% { stroke-dashoffset: 240; }
+  100%   { stroke-dashoffset: 0; }
+}
+.jx-crack-line { stroke-dasharray: 240; stroke-dashoffset: 240; animation: jxCrackDraw 2s ease-in both; }
+/* the branch cracks start a touch later, so the seam looks like it spreads */
+.jx-crack-line.jx-crack-branch { animation-delay: .65s; animation-duration: 1.35s; }
+
+/* light seeping from the seam, brightening as the crack spreads */
+@keyframes jxCrackGlow {
+  0%, 26% { opacity: 0;   transform: scale(.55); }
+  60%     { opacity: .45; transform: scale(.9); }
+  85%     { opacity: .8;  transform: scale(1.08); }
+  100%    { opacity: 1;   transform: scale(1.25); }
+}
+.jx-crack-glow { animation: jxCrackGlow 2.2s ease-in both; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* no tremor, but still show the crack + light so the moment reads */
+  .jx-egg-crack { animation: none; }
+  .jx-crack-line { animation-duration: 1.6s; }
+}
 
 /* Living gradient behind the egg before it hatches — two soft blobs slowly
    drift around a base tint, so the backdrop feels alive while you wait / tap.
