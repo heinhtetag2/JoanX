@@ -345,7 +345,7 @@ function App() {
 
               <div className="tw-label">Flow</div>
               <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
-              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6 }} onClick={() => { setOnboarded(true); setScreen('home'); setStack([]); setAppIntro(true); }}>▶ App intro</button>
+              <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
 
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two
