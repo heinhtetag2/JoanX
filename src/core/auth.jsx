@@ -105,8 +105,13 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   const [codeErr, setCodeErr] = React.useState(false);
   const [notice, setNotice] = React.useState(null);    // 'exists' | 'need-phone'
   // The password step is reached two ways and says different things on each: a new account is
-  // choosing a key ('set'), a locked-out guardian is replacing one ('reset').
+  // choosing a key ('set'), a locked-out guardian is replacing one ('reset'). Only 'reset' gets
+  // a screen of its own — a new account picks its password inside the Create account form,
+  // because one form for "who you are and how you get back in" is one decision, not two steps.
   const [pwMode, setPwMode] = React.useState('set');   // 'set' | 'reset'
+  // Whether the profile form must also collect a password. SMS sign-up owes one; Google/Apple
+  // hand back an identity that already carries its own key, so those accounts never ask.
+  const [needsPw, setNeedsPw] = React.useState(true);
   const [pw, setPw] = React.useState('');
   const [pw2, setPw2] = React.useState('');
   const [pwErr, setPwErr] = React.useState('');        // login: wrong/blank password
@@ -129,7 +134,6 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   }, [phase, resendLeft]);
 
   const phoneOk = digitsOf(phone).length >= 10;
-  const profileOk = name.trim() && dob && gender;
   // Password rules, checked as you type on the set/reset screen. The prototype persists
   // nothing, so on log-in any password of a legal length is accepted — the same latitude the
   // SMS code gets. What is real here is the shape of the flow and every state it can show.
@@ -137,6 +141,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   const pwMatch = pw2.length > 0 && pw === pw2;
   const pwMismatch = pw2.length > 0 && pw !== pw2;
   const pwSetOk = pwLongEnough && pwMatch;
+  const profileOk = name.trim() && dob && gender && (!needsPw || pwSetOk);
   const resendLabel = `${Math.floor(resendLeft / 60)}:${String(resendLeft % 60).padStart(2, '0')}`;
 
   // Profile picture is optional. A chosen image previews immediately; skipping it leaves the
@@ -173,37 +178,37 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
 
   // Log in — no code, just the two things the guardian knows.
   //
-  // An unknown number and a wrong password give the SAME answer, on purpose. Saying "no
-  // account uses this number" would let anyone type numbers until one came back known —
-  // and what they'd learn is which families have a child on JoanX. That is worth more to
-  // the wrong person than a password is. The cost is a guardian who mistyped their number
-  // reads "or password"; the alternative is a service that answers questions about its
-  // users to people who aren't them.
+  // The prototype has no accounts to check against, so any number and any password get in;
+  // what is real here is the shape of the flow, not the credentials. The one wrong answer it
+  // still shows is the empty field, because that state is part of the design.
+  //
+  // When this is wired to a real backend, an unknown number and a wrong password must give the
+  // SAME answer — the 'Phone number or password is incorrect.' string is kept below for that.
+  // Saying "no account uses this number" would let anyone type numbers until one came back
+  // known, and what they'd learn is which families have a child on JoanX. That is worth more
+  // to the wrong person than a password is. The cost is a guardian who mistyped their number
+  // reads "or password"; the alternative is a service that answers questions about its users
+  // to people who aren't them.
   const login = () => {
     if (!pw) { setPwErr('Enter your password.'); return; }
-    if (!knownPhone(phone) || pw.length < AUTH.passwordMinLength) { setPwErr('Phone number or password is incorrect.'); return; }
     onDone();
   };
 
   // Any complete code is accepted in the prototype; the verification is the same either way.
   // Where it lands depends on why the code was asked for:
   //   reset             → set a new password, then into the app
-  //   sign up + unknown → choose a password, then the profile
+  //   sign up + unknown → the Create account form, password included
   //   sign up + known   → offer to log in instead (they picked the wrong door)
   const verifyCode = () => {
     if (code.length < AUTH.smsCodeLength) { setCodeErr(true); return; }
     if (pwMode === 'reset') { setPhase('password'); return; }
     if (knownPhone(phone)) { setNotice('exists'); return; }
-    setPwMode('set'); setPhase('password');
+    setPwMode('set'); setNeedsPw(true); setProfileBack('code'); setPhase('profile');
   };
 
-  // Leaving the password step: a new account still owes us a profile; a reset is already an
-  // account in good standing, so a fresh key is the last thing it needed.
-  const submitPassword = () => {
-    if (!pwSetOk) return;
-    if (pwMode === 'reset') { onDone(); return; }
-    setProfileBack('password'); setPhase('profile');
-  };
+  // The standalone password screen is now the reset path only — a guardian in good standing
+  // replacing a key, with no profile left to fill in.
+  const submitPassword = () => { if (pwSetOk) onDone(); };
   // Resolve a wrong-door hint. From log-in, the number has NOT been verified — log-in never
   // texts anything — so the switch keeps the typed number but still owes the code step:
   // consent → code → password → profile, the full sign-up minus the retyping.
@@ -214,7 +219,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
   // Google / Apple hand back a verified identity. Logging in lands in the app; signing up
   // still needs the profile step (name / DOB / gender) the provider doesn't supply. Back from
   // profile returns to the phone/social screen, since the code step was never shown.
-  const socialSignIn = () => { if (signup) { setProfileBack('phone'); setPhase('profile'); } else onDone(); };
+  const socialSignIn = () => { if (signup) { setNeedsPw(false); setProfileBack('phone'); setPhase('profile'); } else onDone(); };
 
   return (
     <React.Fragment>
@@ -374,11 +379,9 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
         </>
       )}
 
-      {/* password — set once the number is verified (sign-up), or replaced after the same
-          verification (reset). The rule is shown as a live checklist rather than sprung as an
-          error on submit: a parent picking a key should be told the rule while they can still
-          act on it. Both fields share one show/hide toggle — they are meant to be equal, so
-          revealing one and masking the other would only hide the mismatch. */}
+      {/* password — the reset path only; a new account picks its password inside the Create
+          account form. Reached after the same code verification sign-up uses, because the number
+          is the account and proving it again is what earns a new key. */}
       {phase === 'password' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
@@ -386,9 +389,9 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
               <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
             </button>
 
-            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{pwMode === 'reset' ? L('Set a new password') : L('Choose a password')}</h1>
+            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Set a new password')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>
-              {pwMode === 'reset' ? L("You'll use this the next time you log in.") : L("You'll use this with your phone number to log in.")}
+              {L("You'll use this the next time you log in.")}
             </p>
 
             <Input label={L('Password')} value={pw} onChange={e => setPw(e.target.value)} type={showPw ? 'text' : 'password'} accent={accent}
@@ -413,7 +416,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
             <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!pwSetOk} onClick={pwSetOk ? submitPassword : undefined}>
-              {pwMode === 'reset' ? L('Save & log in') : L('Continue')}
+              {L('Save & log in')}
             </Button>
           </div>
         </>
@@ -427,7 +430,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
               <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
             </button>
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Create account')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{L('Tell us a bit about you.')}</p>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>{needsPw ? L('Tell us a bit about you and pick a password.') : L('Tell us a bit about you.')}</p>
 
             {/* profile picture — optional. Tap to add; skip it and the name's initial stands in. */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 22 }}>
@@ -462,6 +465,30 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, onDone }) {
                 onChange={d => setDob(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)} accent={accent} />
               <SelectField label={L('Gender')} title={L('Gender')} value={gender} onChange={setGender} accent={accent}
                 options={[{ value: 'male', label: L('Male') }, { value: 'female', label: L('Female') }, { value: 'other', label: L('Prefer not to say') }]} />
+
+              {/* The key that gets them back in, asked for alongside who they are rather than on
+                  a step of its own. Both fields share one show/hide toggle — they are meant to be
+                  equal, so revealing one and masking the other would only hide the mismatch. The
+                  rule sits under them as a live checklist, told while it can still be acted on. */}
+              {needsPw && (
+                <>
+                  <Input label={L('Password')} value={pw} onChange={e => setPw(e.target.value)} type={showPw ? 'text' : 'password'} accent={accent}
+                    trailing={<PwEye on={showPw} toggle={() => setShowPw(s => !s)} />} />
+                  <Input label={L('Confirm password')} value={pw2} onChange={e => setPw2(e.target.value)} type={showPw ? 'text' : 'password'} accent={accent}
+                    error={pwMismatch ? L('Passwords don’t match.') : undefined} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '-2px 2px 0' }}>
+                    {[
+                      { ok: pwLongEnough, label: getLang() === 'ko' ? `${AUTH.passwordMinLength}자 이상` : `At least ${AUTH.passwordMinLength} characters` },
+                      { ok: pwMatch, label: L('Both entries match') },
+                    ].map((r, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Icon name={r.ok ? 'check-circle-2' : 'circle'} size={15} color={r.ok ? THEME.success : THEME.fg3} stroke={2.3} />
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: r.ok ? THEME.success : THEME.fg3 }}>{r.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

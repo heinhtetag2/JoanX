@@ -46,6 +46,7 @@ const KO = {
   'Enter your phone number first.': '휴대폰 번호를 먼저 입력해 주세요.',
   'That password is too short.': '비밀번호가 너무 짧아요.',
   'Choose a password': '비밀번호 설정',
+  'Tell us a bit about you and pick a password.': '기본 정보와 비밀번호를 알려주세요.',
   'Set a new password': '새 비밀번호 설정',
   'Reset your password': '비밀번호 재설정',
   "You'll use this with your phone number to log in.": '휴대폰 번호와 함께 로그인할 때 사용해요.',
