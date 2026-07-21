@@ -150,7 +150,7 @@ function IntroSection() {
         JoanX is <b>two apps in one prototype</b> — a kid-facing game (child app) and a calm guardian
         dashboard (parent app). They share one token system but lead with <b>two different accents</b>:
         <span className="ds-pill" style={{ background: THEME.primaryLight, color: THEME.primaryDark }}>Child · ocean {THEME.primary}</span>
-        <span className="ds-pill" style={{ background: BRAND.primaryLight, color: BRAND.primaryDark }}>Parent · magenta {BRAND.primary}</span>
+        <span className="ds-pill" style={{ background: BRAND.primaryLight, color: BRAND.primaryDark }}>Parent · green {BRAND.primary}</span>
       </div>
       <SubHead>Layers</SubHead>
       <p className="ds-p">
@@ -163,6 +163,38 @@ function IntroSection() {
         <li><code>src/styles/joanx.css</code> — fonts (Pretendard + Fredoka/Jua) and the motion classes (<code>jx-*</code>)</li>
         <li><code>src/core/primitives.jsx</code> — <code>THEME</code> palette + Button, Badge, Input, Bar, Toggle, Icon…</li>
       </ol>
+      <SubHead>Token tiers — the naming standard</SubHead>
+      <p className="ds-p">
+        Every value flows through three tiers, and a token's name tells you which one it is.
+        The golden rule: <b>product code only consumes the semantic or component tier</b> — never a
+        raw <code>--color-base-*</code> primitive. Primitives are the paint; semantics are what the
+        paint is <i>for</i>.
+      </p>
+      <div className="ds-table-wrap">
+        <table className="ds-table">
+          <thead><tr><th>Tier</th><th>Naming pattern</th><th>Example</th><th>Lives in · consume?</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>Primitive</b><div className="ds-dim">raw palette step</div></td>
+              <td><code>--color-base-{'{palette}'}-{'{step}'}</code></td>
+              <td><code className="ds-dim">--color-base-ocean-50</code></td>
+              <td><code>color-system.css</code> · <b>never</b> in product code</td>
+            </tr>
+            <tr>
+              <td><b>Semantic</b><div className="ds-dim">role / component alias</div></td>
+              <td><code>--primary</code>, <code>--fg1</code>, <code>--space-md</code>,<br /><code>--color-{'{layer}'}-{'{component}'}-{'{variant}'}-{'{state}'}</code></td>
+              <td><code className="ds-dim">--color-cards-border-default</code></td>
+              <td><code>tripme-tokens.css</code> · yes — in CSS</td>
+            </tr>
+            <tr>
+              <td><b>Component</b><div className="ds-dim">JS mirror of the semantics</div></td>
+              <td><code>THEME.*</code> (both apps), <code>BRAND.*</code> (parent)</td>
+              <td><code className="ds-dim">THEME.primary</code></td>
+              <td><code>primitives.jsx</code> / <code>shared.jsx</code> · yes — inline in JSX</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <SubHead>Import cheat-sheet</SubHead>
       <CodeBlock code={`import { THEME, Icon, Button, Badge, Input, Bar, Toggle, SectionHead, StatusBar,
          RARITY, mixHue, screenBgFor } from '../core/primitives.jsx';             // both apps
@@ -200,7 +232,7 @@ function ColorsSection() {
     ['surface', THEME.surface, 'sand-0 · cards'],
   ];
   const brand = [
-    ['BRAND.primary', BRAND.primary, 'logo magenta · parent CTA'],
+    ['BRAND.primary', BRAND.primary, 'brand green · parent CTA'],
     ['BRAND.primaryDark', BRAND.primaryDark, 'pressed'],
     ['BRAND.primaryLight', BRAND.primaryLight, 'tint · badges, chips'],
     ['BRAND.ink', BRAND.ink, 'softened black · active/focus'],
@@ -401,7 +433,7 @@ function ButtonsSection() {
     <div>
       <p className="ds-p">
         One <code>Button</code> primitive, 7 variants. <b>primary</b> is the ocean brand CTA (parent app overrides the
-        fill with <code>brandBtn</code> magenta). Press feedback is a built-in <code>scale(0.97)</code>; disabled drops
+        fill with <code>brandBtn</code> green). Press feedback is a built-in <code>scale(0.97)</code>; disabled drops
         opacity to 0.45 and removes the handler.
       </p>
       <div className="ds-callout">
@@ -438,7 +470,7 @@ function ButtonsSection() {
       ]} />
       <SubHead>Parent-app CTA override</SubHead>
       <CodeBlock code={`import { BRAND, brandBtn } from '../parent/shared.jsx';
-<Button variant="primary" fullWidth style={brandBtn}>Continue</Button>  // magenta fill + brand glow`} />
+<Button variant="primary" fullWidth style={brandBtn}>Continue</Button>  // green fill + brand glow`} />
       <div style={{ marginTop: 10 }}>
         <Button variant="primary" style={{ background: BRAND.primary, boxShadow: `0 8px 20px ${BRAND.shadow}` }}>Parent CTA</Button>
       </div>
@@ -615,7 +647,7 @@ function ChildKitSection() {
       <SubHead>screenBgFor(color) — accent-tinted screen wash</SubHead>
       <p className="ds-p">
         Screens no longer use the static <code>THEME.screenBg</code> directly — <code>screenBgFor(color)</code>
-        derives the top wash from whatever hue is in play (green buddy → green wash, magenta brand → pink wash) via
+        derives the top wash from whatever hue is in play (green buddy → green wash, ember buddy → warm wash) via
         <code> mixHue</code> rotations. Both live in <b>core/primitives.jsx</b> and serve <b>both apps</b>;
         the child-only <code>screenBgActive()</code> (child/shared.jsx) reads the active buddy for you. Passing no
         color falls back to the static token.
@@ -703,7 +735,7 @@ function ParentKitSection() {
         ['title', 'string', null, '24/800 screen title'],
         ['sub', 'string', null, '12.5px eyebrow line above the title'],
         ['onBack', 'fn', null, 'when given, shows the 34px round white back button'],
-        ['right', 'node', null, 'right slot — e.g. the magenta add-child button'],
+        ['right', 'node', null, 'right slot — e.g. the green add-child button'],
       ]} />
 
       <SubHead>RULE_TAG_COLORS — schedule tag palette</SubHead>
