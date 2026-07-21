@@ -8,7 +8,7 @@ import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-import { BadgeGrid, badgesEarned } from './Badges.jsx';
+import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
 
 const COLLECTION_LAYOUTS = [
   { id: 'shelf', label: 'Shelf' },
@@ -62,7 +62,14 @@ const EmptySlot = ({ size = 56 }) => (
 // ── the variant screen ───────────────────────────────────────────────
 function CollectionVariant({ variant = 'shelf', ctx }) {
   const [tab, setTab] = React.useState(0);   // used by the 'tabs' variant
-  const [side, setSide] = React.useState('buddies');   // Buddies | Badges
+  // Open on Badges when the Profile trophy shelf routed here (collectionIntent), else
+  // Buddies. A one-shot flag: read once, then cleared so a plain Collect-tab tap still
+  // lands on Buddies.
+  const [side, setSide] = React.useState(() => {
+    const s = collectionIntent.side;
+    collectionIntent.side = null;
+    return s || 'buddies';
+  });   // Buddies | Badges
   const all = visibleCharacters();   // hidden Epics stay out of the collection until unlocked (F-15.2)
   const owned = all.filter(c => c.owned);
   const rooms = ROOMS;

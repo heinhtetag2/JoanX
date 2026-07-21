@@ -270,6 +270,11 @@ const KO = {
   'Zone Dodger': '위험 회피', 'Avoid 5 danger zones': '위험 구역 5번 피하기',
   'Collector': '수집가', 'Own 8 characters': '캐릭터 8마리 보유',
   'Early Walker': '아침 보행자', 'Safe morning commute, 7 days': '7일간 안전한 아침 등굣길',
+  'Crossing Pro': '횡단보도 달인', 'Cross at 10 crosswalks': '횡단보도 10번 건너기',
+  'Helmet Hero': '헬멧 영웅', 'Helmet on for 7 rides': '7번 헬멧 착용하고 타기',
+  'Eyes Up': '고개 들기', 'Finish 5 phone-free walks': '폰 없이 5번 걷기 완료',
+  'Buckle Up': '안전벨트', 'Buckle up on 10 car rides': '차 탈 때 10번 벨트 매기',
+  'Safe Route': '안전 경로', 'Take the safe route 5 times': '안전한 길로 5번 가기',
 
   // ── profile ──
   'Profile': '프로필', 'My profile': '내 프로필', 'Age': '나이',

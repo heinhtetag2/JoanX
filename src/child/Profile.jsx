@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { ACHIEVEMENTS, CHARACTERS, LINK, PLAYER, guardians } from '../core/data.jsx';
-import { Badge, Bar, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-import { BadgeArt, collectionIntent, tierOf } from './Badges.jsx';
+import { BadgeArt, collectionIntent } from './Badges.jsx';
 
 // ── Trophy shelf (Profile) ───────────────────────────────────────────
 // The badge's home outside the Collection tab. A badge you can't show off is only
@@ -21,11 +21,6 @@ function Medal({ a, size = 46 }) {
 
 function TrophyShelf({ onOpen }) {
   const earned = ACHIEVEMENTS.filter(a => a.done);
-  // The locked badge the child is furthest along on — highest fraction of its goal.
-  const nextUp = ACHIEVEMENTS
-    .filter(a => !a.done && a.total)
-    .sort((x, y) => (y.progress / y.total) - (x.progress / x.total))[0];
-  const t = nextUp && tierOf(nextUp);
 
   return (
     <button onClick={onOpen}
@@ -37,28 +32,16 @@ function TrophyShelf({ onOpen }) {
         <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
       </div>
 
-      {/* the shelf — earned medallions, the trophy case opening on what you have */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        {earned.map(a => <Medal key={a.id} a={a} />)}
+      {/* the shelf — earned medallions, the trophy case opening on what you have.
+          Wraps to a second row rather than spilling past the card once the shelf
+          fills up (up to 8 badges), and the medallions are sized so a full row of
+          them fits the card width. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+        {earned.map(a => <Medal key={a.id} a={a} size={40} />)}
         {earned.length === 0 && (
           <span style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>{L('Walk safely to earn your first badge.')}</span>
         )}
       </div>
-
-      {/* next up — the closest locked badge, so the shelf points forward too */}
-      {nextUp && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginTop: 14, paddingTop: 13, borderTop: `1px solid ${THEME.border}` }}>
-          <Medal a={nextUp} size={38} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Next up')}</span>
-              <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1 }}>{L(nextUp.name)}</span>
-              <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: t.ring, fontVariantNumeric: 'tabular-nums' }}>{nextUp.progress}/{nextUp.total}</span>
-            </div>
-            <Bar value={nextUp.progress} max={nextUp.total} color={t.ring} height={8} />
-          </div>
-        </div>
-      )}
     </button>
   );
 }

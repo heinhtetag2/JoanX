@@ -129,7 +129,7 @@ function BadgeSheet({ a, onClose }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontWeight: 700, color: THEME.fg2, marginBottom: 6 }}>
               <span>{L('Progress')}</span><span>{a.progress}/{a.total}</span>
             </div>
-            <Bar value={a.progress} max={a.total} />
+            <Bar value={a.progress} max={a.total} color={THEME.brand} />
           </div>
         )}
 
