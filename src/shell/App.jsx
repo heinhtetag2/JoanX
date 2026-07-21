@@ -269,7 +269,7 @@ function App() {
               bar, which is correct: it is app chrome like everything else it sits on. */}
           <div className={playClass} style={{ position: 'absolute', inset: 0 }}>
             {body}
-            {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={tw.color} />}
+            {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={THEME.brand} />}
             {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />

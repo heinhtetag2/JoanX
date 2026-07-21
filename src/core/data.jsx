@@ -1688,13 +1688,24 @@ const ROOMS = [
    achievement ids as triggers (EGG_GRANTS g-ach-*, CHARACTER_UNLOCKS u-ach-*,
    ITEM_GRANTS i-ach-*), so wiring one up later is claimRewards({ achievement:
    id }) at the moment it completes — not a new data structure. */
+/* `img` names a finished medallion in /assets/badges (art already carries the
+   plate, ring, ribbon and central icon). When present, Badges.jsx renders the
+   image and skips the drawn rosette + lucide `icon`; `icon` stays as the
+   fallback if the file is ever missing. The two abstract achievements (streak,
+   collector) now carry their own art too. Any future row without `img` simply
+   falls back to the drawn medallion + lucide `icon`. */
 const ACHIEVEMENTS = [
-  { id: 'a1', icon: 'footprints', tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',  done: true,  reward: 50 },
-  { id: 'a2', icon: 'flame',      tier: 'common', name: '5-Day Streak',  desc: 'Be safe 5 days in a row',      done: true,  reward: 120 },
-  { id: 'a3', icon: 'timer',      tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  reward: 80 },
-  { id: 'a4', icon: 'shield-check', tier: 'common', name: 'Zone Dodger', desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150 },
-  { id: 'a5', icon: 'gem',        tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: false, progress: 6, total: 8, reward: 200 },
-  { id: 'a6', icon: 'sunrise',    tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: false, progress: 4, total: 7, reward: 130 },
+  { id: 'a1', icon: 'footprints',   tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',   done: true,  reward: 50,  img: 'badge-first-steps.png' },
+  { id: 'a2', icon: 'flame',        tier: 'common', name: '5-Day Streak',  desc: 'Be safe 5 days in a row',      done: true,  reward: 120, img: 'badge-streak.png' },
+  { id: 'a3', icon: 'timer',        tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  reward: 80,  img: 'badge-quick-reflex.png' },
+  { id: 'a4', icon: 'shield-check', tier: 'common', name: 'Zone Dodger',   desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150, img: 'badge-zone-dodger.png' },
+  { id: 'a5', icon: 'gem',          tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: false, progress: 6, total: 8, reward: 200, img: 'badge-collector.png' },
+  { id: 'a6', icon: 'sunrise',      tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: false, progress: 4, total: 7, reward: 130, img: 'badge-early-walker.png' },
+  { id: 'a7', icon: 'signpost',     tier: 'rare',   name: 'Crossing Pro',  desc: 'Cross at 10 crosswalks',       done: true,  reward: 110, img: 'badge-crossing-pro.png' },
+  { id: 'a8', icon: 'smartphone',   tier: 'common', name: 'Eyes Up',       desc: 'Finish 5 phone-free walks',    done: false, progress: 3, total: 5, reward: 90,  img: 'badge-eyes-up.png' },
+  { id: 'a9', icon: 'hard-hat',     tier: 'common', name: 'Helmet Hero',   desc: 'Helmet on for 7 rides',        done: true,  reward: 100, img: 'badge-helmet-hero.png' },
+  { id: 'a10', icon: 'car-front',   tier: 'common', name: 'Buckle Up',     desc: 'Buckle up on 10 car rides',    done: false, progress: 6, total: 10, reward: 100, img: 'badge-buckle-up.png' },
+  { id: 'a11', icon: 'route',       tier: 'rare',   name: 'Safe Route',    desc: 'Take the safe route 5 times',  done: false, progress: 2, total: 5, reward: 120, img: 'badge-safe-route.png' },
 ];
 
 

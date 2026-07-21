@@ -391,8 +391,10 @@ function MascotToyCute({ species = 'fox', size = 160, style, float }) {
 
 // Styles whose whole line shares one brand colour. For these, the buddy is art and the
 // brand is fixed: hatching a new character changes who you see, never how the app looks.
-// (The comic/soft lines are the older behaviour — each buddy recolours the app.)
-const STYLE_BRAND = { cute: CUTE_BRAND };
+// The comic line is the app's product line, so it is brand-locked to the JoanX green —
+// switching buddy (Hammy → Pip → Sunny…) never repaints the app. Comic mascots are fixed
+// PNG art, so pinning the accent only affects chrome, never the character illustration.
+const STYLE_BRAND = { cute: CUTE_BRAND, comic: THEME.brand };
 
 // The locked brand colour of a character style, or null if the style recolours per buddy.
 const styleBrand = (style) => STYLE_BRAND[style || window.JX_CHAR_STYLE] || null;

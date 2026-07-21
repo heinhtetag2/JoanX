@@ -247,7 +247,7 @@ function HomeSimpleOriginal({ ctx }) {
         <div style={{ marginBottom: 14 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
 
         {/* character hero */}
-        <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', borderRadius: 24, padding: '18px 18px 20px', marginBottom: 14, cursor: 'pointer', overflow: 'hidden', background: `linear-gradient(160deg, ${shade(c.color, 78)} 0%, ${THEME.surface} 70%)`, boxShadow: THEME.shadowCard }}>
+        <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', borderRadius: 24, padding: '18px 18px 20px', marginBottom: 14, cursor: 'pointer', overflow: 'hidden', background: `linear-gradient(160deg, ${shade(THEME.brand, 78)} 0%, ${THEME.surface} 70%)`, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[c.rarity].label)}</Badge>
@@ -457,12 +457,11 @@ function HomeSimpleFocus({ ctx }) {
   const lite = ctx.mode === 'lite';
   const pct = Math.min(1, c.xp / c.xpMax);   // ring tracks the buddy's XP toward the next level
   const R = 94, SW = 9, ring = 2 * (R + SW), circ = 2 * Math.PI * R;
-  // mixed "aurora" wash — analogous tones derived from the buddy hue, fading to sand.
-  // A neon brand colour (the cute line's magenta) can't take these alphas straight:
-  // pastelise it and sweep pink → lavender → periwinkle instead. See primitives.jsx.
-  const [w1, w2, w3] = isNeon(c.color)
-    ? [pastelHue(c.color, 4, 0.86, 0.62), pastelHue(c.color, -46, 0.83, 0.54), pastelHue(c.color, -94, 0.81, 0.46)]
-    : [mixHue(c.color, -24, 0.06, 0.78), mixHue(c.color, 4, 0.10, 0.72), mixHue(c.color, 26, 0.14, 0.6)];
+  // Brand chrome (wash, ring, accents) is ALWAYS the JoanX green — it does not follow
+  // the equipped buddy's hue. Only the Mascot illustration keeps its own species colour.
+  const brand = THEME.brand;
+  // mixed "aurora" wash — analogous green tones from the brand hue, fading to sand.
+  const [w1, w2, w3] = [mixHue(brand, -24, 0.06, 0.78), mixHue(brand, 4, 0.10, 0.72), mixHue(brand, 26, 0.14, 0.6)];
   const bg = `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${w1} 0%, ${w2} 50%, ${w3} 100%), ${THEME.surface2}`;
 
   return (
@@ -470,7 +469,7 @@ function HomeSimpleFocus({ ctx }) {
       <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* the buddy's face leads the greeting, and doubles as the way into the profile */}
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-          <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(c.color, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(brand, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
             <Mascot species={c.species} stage={c.stage} color={c.color} size={42} />
           </div>
           <div>
@@ -482,22 +481,22 @@ function HomeSimpleFocus({ ctx }) {
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.5px', textTransform: 'uppercase', color: shade(c.color, -42) }}>{L('Next level')}</span>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.5px', textTransform: 'uppercase', color: shade(brand, -42) }}>{L('Next level')}</span>
       </div>
 
       {/* goal ring + buddy */}
       <div onClick={() => ctx.nav('character', { id: c.id })} style={{ position: 'relative', width: ring, height: ring, margin: '8px auto 0', cursor: 'pointer' }}>
         <svg width={ring} height={ring} viewBox={`0 0 ${ring} ${ring}`} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
           <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={c.color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)' }} />
+          <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={brand} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>
         </div>
         {/* XP pill on the ring — progress toward the buddy's next level */}
         <div style={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', background: '#fff', borderRadius: 999, padding: '6px 14px', boxShadow: THEME.shadowSoft, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-          <Icon name="zap" size={15} color={c.color} fill={c.color} stroke={2.4} />
-          <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: shade(c.color, -30) }}>{c.xp}/{c.xpMax} XP</span>
+          <Icon name="zap" size={15} color={brand} fill={brand} stroke={2.4} />
+          <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: shade(brand, -30) }}>{c.xp}/{c.xpMax} XP</span>
         </div>
       </div>
 
@@ -525,7 +524,7 @@ function HomeSimpleFocus({ ctx }) {
           ))}
         </div>
         {/* today's tasks — daily missions that pay a bonus */}
-        <TodayTasksS accent={c.color} />
+        <TodayTasksS accent={brand} />
       </div>
     </div>
   );

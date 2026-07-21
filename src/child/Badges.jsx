@@ -61,6 +61,32 @@ function BadgeMedallion({ a, size = 76, locked }) {
   );
 }
 
+/* The badge face at a given size. When the achievement carries `img`, that
+   finished medallion art is the badge — it already has the plate, ring, ribbon
+   and central icon, so we render it whole and skip the drawn rosette. Locked is
+   the same art in greyscale, matching the drawn-medallion behaviour below: a
+   child still sees the silhouette of what they haven't earned. Without `img`
+   (the abstract streak/collector badges), fall back to the drawn medallion with
+   the lucide icon at its centre. */
+function BadgeArt({ a, size = 76, locked }) {
+  const iconSize = size * 0.34;
+  if (a.img) {
+    return (
+      <img src={`/assets/badges/${a.img}`} alt="" draggable="false"
+        style={{ width: size, height: size, display: 'block', flexShrink: 0, objectFit: 'contain',
+          filter: locked ? 'grayscale(1) opacity(.5)' : 'none' }} />
+    );
+  }
+  return (
+    <div style={{ position: 'relative', lineHeight: 0 }}>
+      <BadgeMedallion a={a} size={size} locked={locked} />
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={a.icon} size={iconSize} color={locked ? '#8e8a86' : '#fff'} stroke={2.4} />
+      </span>
+    </div>
+  );
+}
+
 /* One badge in the grid: medallion, name, and either the tier or the progress
    toward it. The whole tile is the tap target — a badge is a thing you pick
    up, not a row with a chevron. */
@@ -70,12 +96,7 @@ function BadgeTile({ a, onPick }) {
   return (
     <button onClick={() => onPick(a)} className="jx-press"
       style={{ background: '#fff', border: 'none', borderRadius: 18, padding: '14px 8px 11px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'inherit' }}>
-      <div style={{ position: 'relative' }}>
-        <BadgeMedallion a={a} locked={locked} />
-        <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name={a.icon} size={26} color={locked ? '#8e8a86' : '#fff'} stroke={2.4} />
-        </span>
-      </div>
+      <BadgeArt a={a} locked={locked} />
       <span style={{ fontSize: 12, fontWeight: 800, color: locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2, textAlign: 'center' }}>{L(a.name)}</span>
       {locked && a.total
         ? <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg3 }}>{a.progress}/{a.total}</span>
@@ -93,11 +114,8 @@ function BadgeSheet({ a, onClose }) {
   return (
     <BottomSheet title={L('Achievement')} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '4px 4px 8px' }}>
-        <div style={{ position: 'relative', marginBottom: 12 }}>
-          <BadgeMedallion a={a} size={116} locked={locked} />
-          <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name={a.icon} size={40} color={locked ? '#8e8a86' : '#fff'} stroke={2.3} />
-          </span>
+        <div style={{ marginBottom: 12 }}>
+          <BadgeArt a={a} size={116} locked={locked} />
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: locked ? THEME.surface2 : shade(t.plate, 62), borderRadius: 999, padding: '5px 11px', marginBottom: 8 }}>
           <Icon name={locked ? 'lock' : 'check'} size={12} color={locked ? THEME.fg3 : t.ring} stroke={2.6} />
@@ -147,4 +165,4 @@ const badgesEarned = () => ACHIEVEMENTS.filter(a => a.done).length;
    tab still lands on Buddies. Kept here beside the grid it targets. */
 const collectionIntent = { side: null };
 
-export { BadgeGrid, BadgeMedallion, BADGE_TIERS, badgesEarned, tierOf, collectionIntent };
+export { BadgeGrid, BadgeMedallion, BadgeArt, BADGE_TIERS, badgesEarned, tierOf, collectionIntent };

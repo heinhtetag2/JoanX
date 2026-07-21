@@ -68,7 +68,7 @@ function FriendHouse({ ctx }) {
       <div style={{ padding: '0 16px' }}>
 
         {/* featured buddy */}
-        <div style={{ borderRadius: 24, padding: '18px 16px', background: `linear-gradient(165deg, ${shade(fc.color, 74)}, #fff 78%)`, boxShadow: THEME.shadowCard, textAlign: 'center', marginBottom: 14 }}>
+        <div style={{ borderRadius: 24, padding: '18px 16px', background: `linear-gradient(165deg, ${shade(THEME.brand, 74)}, #fff 78%)`, boxShadow: THEME.shadowCard, textAlign: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Featured buddy')}</div>
           <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={fc.species} stage={fc.stage} color={fc.color} size={140} /></div>
           <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{fc.name}</div>

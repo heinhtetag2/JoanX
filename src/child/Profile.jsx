@@ -6,7 +6,7 @@ import { Badge, Bar, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-import { BadgeMedallion, collectionIntent, tierOf } from './Badges.jsx';
+import { BadgeArt, collectionIntent, tierOf } from './Badges.jsx';
 
 // ── Trophy shelf (Profile) ───────────────────────────────────────────
 // The badge's home outside the Collection tab. A badge you can't show off is only
@@ -16,14 +16,7 @@ import { BadgeMedallion, collectionIntent, tierOf } from './Badges.jsx';
 // straight into the Badges grid via collectionIntent. Same medallion + centred icon
 // composition as a badge tile, so a trophy is the same object wherever it appears.
 function Medal({ a, size = 46 }) {
-  return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <BadgeMedallion a={a} size={size} locked={!a.done} />
-      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={a.icon} size={Math.round(size * 0.34)} color={a.done ? '#fff' : '#8e8a86'} stroke={2.4} />
-      </span>
-    </div>
-  );
+  return <BadgeArt a={a} size={size} locked={!a.done} />;
 }
 
 function TrophyShelf({ onOpen }) {
@@ -35,7 +28,7 @@ function TrophyShelf({ onOpen }) {
   const t = nextUp && tierOf(nextUp);
 
   return (
-    <button onClick={onOpen} className="jx-press"
+    <button onClick={onOpen}
       style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '14px 15px 15px', marginBottom: 18, display: 'block' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Icon name="trophy" size={16} color={THEME.gold} stroke={2.3} />
@@ -95,7 +88,7 @@ function Profile({ ctx }) {
       <ScreenHeader title={L('Profile')} />
       <div style={{ padding: '0 16px' }}>
         {/* hero — tapping the avatar opens the public house/rooms profile (F-32) */}
-        <button onClick={() => ctx.nav('myhouse')} style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', background: `linear-gradient(165deg, ${shade(c.color, 76)}, #fff 78%)`, borderRadius: 20, padding: '14px 16px', border: `1px solid ${THEME.border}`, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 13 }}>
+        <button onClick={() => ctx.nav('myhouse')} style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', background: `linear-gradient(165deg, ${shade(THEME.brand, 76)}, #fff 78%)`, borderRadius: 20, padding: '14px 16px', border: `1px solid ${THEME.border}`, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 13 }}>
           <div style={{ width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={60} /></div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500 }}>{PLAYER.name}</div>

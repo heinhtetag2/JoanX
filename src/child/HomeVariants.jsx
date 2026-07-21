@@ -297,7 +297,7 @@ function HomeTimeline({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(THEME.brand) }}>
       {/* compact buddy header card */}
       <div style={{ padding: '8px 16px 0' }}>
-        <div style={{ background: `linear-gradient(110deg, ${shade(c.color, 78)}, ${THEME.surface} 88%)`, borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ background: `linear-gradient(110deg, ${shade(THEME.brand, 78)}, ${THEME.surface} 88%)`, borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => ctx.nav('character', { id: c.id })} style={{ width: 56, height: 56, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', cursor: 'pointer', boxShadow: THEME.shadowCard }}><Mascot species={c.species} stage={c.stage} color={c.color} size={50} /></button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}, {PLAYER.name}</div>
