@@ -116,7 +116,7 @@ const PLAYER = {
   streak: 5, level: 7, xp: 320,   // xpMax / maxed are derived from XP_CURVE — see applyXpCurve()
   safeMinutesToday: 47, safeWalkGoal: 60,
   bonusPointsToday: 40,                    // spec #4 — safe-stop bonus points banked today (vs POINTS.dailyBonusCap); resets daily server-side
-  activeCharId: 'c2',
+  activeCharId: 'c1',   // Hammy — the seed buddy stamp targets the real Hammy, so it isn't duplicated onto another slot
   battlesToday: 0,                         // A-8: 0 … battlesPerDay()
   // F-19 — is the child walking right now? In the shipped app this comes from the same
   // motion detection that drives the safety warnings (F-03). While it is true, battles are
@@ -1570,7 +1570,6 @@ const CHARACTERS = [
   // ── Rare ×5 ──
   { id: 'c1',  species: 'fox',  name: 'Hammy',   color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c6',  species: 'owl',  name: 'Sunny',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'town', traits: { guard: 60, speed: 85, heart: 64 } },   // Lv.5 → Stage 2, one level short of the Stage 3 threshold (A-3.3)
-  { id: 'c9',  species: 'fox',  name: 'Toffee',  color: '#d99c5a', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'town', traits: { guard: 78, speed: 62, heart: 90 } },
   { id: 'c16', species: 'owl',  name: 'Luna',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 } },
   { id: 'c17', species: 'croc', name: 'Basil',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 } },
   // ── Epic ×2 — hidden until unlocked (F-15.2): no dex slot, no silhouette, no name ──

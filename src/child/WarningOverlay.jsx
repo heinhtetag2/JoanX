@@ -177,13 +177,7 @@ const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5
 // voice, not an in-game action, so the ocean primary would read as a stranger here.
 const ctaStyle = () => ({ ...FLAT, background: THEME.brand });
 
-function DismissBtn({ onClick }) {
-  return (
-    <button onClick={onClick} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '13px 20px', borderRadius: 14, background: THEME.surface2, color: THEME.fg2 }}>{L('Got it!')}</button>
-  );
-}
-
-function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, onDismiss }) {
+function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond }) {
   const pool = interventionMessages(round);
   const [i, setI] = React.useState((round - 1) % pool.length);
   const [show, setShow] = React.useState(true);   // the LINE's opacity — the card behind it never leaves
@@ -224,19 +218,18 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, o
       {L('Reminder')} {round} · {L('recorded in your report')}
     </span>
   ) : null;
-  const Actions = ({ stacked }) => (
-    <div style={{ display: 'flex', flexDirection: stacked ? 'column' : 'row', gap: stacked ? 8 : 10, marginTop: 16 }}>
+  // One button only: looking up is the child's single option, so the safe action stands
+  // alone as the primary brand CTA — no competing dismiss.
+  const Actions = () => (
+    <div style={{ marginTop: 16 }}>
       <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
-      {stacked
-        ? <button onClick={onDismiss} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13, padding: '10px', borderRadius: 14, background: 'transparent', color: THEME.fg2 }}>{L('Got it!')}</button>
-        : <DismissBtn onClick={onDismiss} />}
     </div>
   );
 
   const bodies = {
     // 0 · SHEET — the warning sheet's pattern, reused for the message stage: a bottom sheet
-    // that rises over the dim, buddy on the left speaking into a bubble on the right, the
-    // stop CTA paired with a quiet dismiss, and a countdown of the window before the next
+    // that rises over the dim, buddy on the left speaking into a bubble on the right, the lone
+    // stop CTA, and a countdown of the window before the next
     // nudge. The child already learned this shape at the warning step, so the message step
     // costs them no new reading — only the copy changes.
     sheet: (
@@ -249,9 +242,8 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, o
             {line(19, 13, 4)}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+        <div style={{ marginTop: 14 }}>
           <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
-          <DismissBtn onClick={onDismiss} />
         </div>
         <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
       </React.Fragment>
@@ -313,9 +305,8 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, o
             {line(18, 12.5, 2)}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+        <div style={{ marginTop: 14 }}>
           <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
-          <DismissBtn onClick={onDismiss} />
         </div>
       </div>
     ),
@@ -326,7 +317,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, o
 
   // SHEET — anchored to the bottom edge, no gutter, rounded on top only. It rises once with the
   // same jx-overlay-up motion the warning sheet uses, so the two stages feel like one surface —
-  // and then it stays: it only leaves when the risk does (a stop, or a dismiss).
+  // and then it stays: it only leaves when the risk does (a stop, or the ignore timeout).
   if (sheet) {
     return (
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
@@ -413,11 +404,12 @@ function WarningOverlay({ ctx }) {
     const t = setTimeout(() => ctx.closeOverlay(), REWARD_MS);
     return () => clearTimeout(t);
   }, [phase, hold]);
-  // F-08.2 — "Got it!" (and simply ignoring the message) clears the UI, not the risk. The overlay
-  // leaves the screen immediately and RECHECK_MS of quiet follows: no warning of any kind for this
-  // same hazardous situation. Only when the cooldown lapses is the risk re-assessed — and only if
-  // walking + phone use are still going do we buzz again and re-show the warning, one tone firmer.
-  // No screen block, ever.
+  // F-08.2 — the child's only button is "I looked up"; there is no dismiss. If they simply ignore
+  // the message, IGNORE_MS lapses and this fires with outcome 'ignored' — clearing the UI, not the
+  // risk. The overlay leaves the screen and RECHECK_MS of quiet follows: no warning of any kind for
+  // this same hazardous situation. Only when the cooldown lapses is the risk re-assessed — and only
+  // if walking + phone use are still going do we buzz again and re-show the warning, one tone
+  // firmer. No screen block, ever.
   const standDown = (outcome) => {
     logRiskEvent({ outcome, rounds: round, tier: tier.key });
     setPhase('cooldown');
@@ -443,7 +435,7 @@ function WarningOverlay({ ctx }) {
   const grace = phase === 'grace';
   const lightBg = variant === 'spotlight' && phase === 'warn';
 
-  // ── COOLDOWN: dismissed or ignored. The app is usable again — no dim, no block (F-10 is out of
+  // ── COOLDOWN: reached when the message is ignored. The app is usable again — no dim, no block (F-10 is out of
   // MVP scope) — while the system re-assesses the risk. A quiet, non-interactive pill is all that's left.
   if (phase === 'cooldown') {
     return (
@@ -463,15 +455,6 @@ function WarningOverlay({ ctx }) {
       <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25 }}>{L(tier.title)} {PLAYER.name}!</div>
       <div style={{ fontSize: 13.5, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{L(tier.body)}</div>
     </React.Fragment>
-  );
-
-  // Dismiss control — same label everywhere: it acknowledges the warning, it doesn't end the risk.
-  const GotIt = () => (
-    <button onClick={() => standDown('dismissed')} style={{
-      flexShrink: 0, whiteSpace: 'nowrap',   // the modal is inset now — without this the label wraps
-      border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800, fontSize: 13,
-      padding: '11px 18px', borderRadius: 999, background: THEME.surface2, color: THEME.fg2,
-    }}>{L('Got it!')}</button>
   );
 
   return (
@@ -558,7 +541,7 @@ function WarningOverlay({ ctx }) {
 
           {/* ── STAGE 3: repeating character message — ignoring it for IGNORE_MS logs
               an "ignored" event and starts the next, firmer round ── */}
-          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} hold={hold} onRespond={respond} onDismiss={() => standDown('dismissed')} />}
+          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} hold={hold} onRespond={respond} />}
 
           {/* ── STAGE 2: the on-screen warning (chosen variant) ── */}
           {phase === 'warn' && (<React.Fragment>
@@ -574,9 +557,8 @@ function WarningOverlay({ ctx }) {
                 <div className="jx-char-in"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <div style={{ marginTop: 14 }}>
                 <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle()}>{L('I looked up')}</Button>
-                <GotIt />
               </div>
               <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
             </div>
@@ -590,15 +572,11 @@ function WarningOverlay({ ctx }) {
               {round > 1 && <div className="jx-content-in" style={{ marginTop: 10, animationDelay: '.14s' }}><RoundBadge round={round} tier={tier} inline /></div>}
               <div className="game-font jx-content-in" style={{ fontSize: 26, fontWeight: 500, marginTop: 10, animationDelay: '.18s' }}>{L(tier.title)} {PLAYER.name}!</div>
               <div className="jx-content-in" style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45, animationDelay: '.26s' }}>{L(tier.body)}</div>
-              {/* One thing on this screen looks like a button, and it is the safe action. The
-                  dismiss is deliberately plain text: it acknowledges the warning, it does not end
-                  the risk (F-08.2), so it should never compete with "I looked up". It cannot be a
-                  filled pill here anyway — surface2 (#f8f7f7) is the spotlight backdrop's own
-                  colour, so a filled secondary is invisible against it. */}
+              {/* One thing on this screen, and it is the safe action: looking up is the child's
+                  only option, so the brand CTA stands alone with no competing dismiss. */}
               <div className="jx-content-in" style={{ width: '100%', display: 'flex', justifyContent: 'center', animationDelay: '.34s' }}>
                 <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('I looked up')}</Button>
               </div>
-              <button className="jx-content-in" onClick={() => standDown('dismissed')} style={{ marginTop: 14, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, color: THEME.fg2, padding: '6px 16px', animationDelay: '.42s' }}>{L('Got it!')}</button>
             </div>
           )}
 
@@ -616,7 +594,6 @@ function WarningOverlay({ ctx }) {
                     <Icon name="check" size={18} color={THEME.brand} stroke={2.6} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}><GotIt /></div>
               </div>
             </div>
           )}

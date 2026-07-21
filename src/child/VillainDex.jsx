@@ -151,7 +151,7 @@ function VillainRoad({ ctx }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 242, background: screenBgActive() }}>
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 300, background: screenBgActive() }}>
         <div style={{ padding: '0 16px' }}>
           <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
         {/* A-8.1 — chapters are earned by first clears, so this counter and the defeated
@@ -251,8 +251,10 @@ function VillainRoad({ ctx }) {
       <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.nav('battle')}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
 
-      {/* detail card for the selected stop */}
-      <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 118, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: THEME.shadowSoft, zIndex: 5 }}>
+      {/* detail card for the selected stop — anchored near the bottom edge. This
+          screen has no child tab bar (villaindex isn't a CHILD_TAB_ROOT), so the
+          card floats above just the home indicator, not a phantom nav bar. */}
+      <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: THEME.shadowSoft, zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 18, background: selDiscovered ? THEME.dangerLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><Mascot species={v.species} stage={2} color={v.color} mood="alert" size={46} /></div>

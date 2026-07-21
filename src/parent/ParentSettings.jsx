@@ -4,7 +4,6 @@ import React from 'react';
 import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
 import { Badge, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
 
 function ParentSettings({ ctx }) {
@@ -40,8 +39,7 @@ function ParentSettings({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')}
-        right={<MascotChip species={child.avatar} color={child.color} size={40} bg={BRAND.primaryLight} />} />
+      <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')} />
       <div style={{ padding: '8px 16px 0' }}>
         {/* device connection — start pairing (code / QR) from here */}
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Device')}</div>

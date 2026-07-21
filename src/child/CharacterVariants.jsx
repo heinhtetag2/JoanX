@@ -83,7 +83,11 @@ function CharVariant({ ctx, variant }) {
   // fixed /100 dial would peg every ring full and tell the child nothing.
   const statMax = Math.max(...STATS.map(s => statVals[s.key]), 1);
   const traits = STATS.map(s => ({ k: s.key, label: s.label, icon: s.icon, color: STAT_COLOR[s.key] }));
-  const accent = color;
+  // Detail chrome — background, hero, tabs, accents — is ALWAYS the product green, never the
+  // buddy's own colour. The buddy is art (the Mascot keeps its species colour); switching or
+  // previewing a buddy never repaints the screen. Only the stat rings keep their per-stat hues.
+  const brand = THEME.brand;
+  const accent = brand;
   // The "Set as my buddy" CTA is an *app* action, not part of this character's card, so it
   // wears the app accent (the active buddy's colour — the same one the tab bar's fight button
   // uses). Tinting it with the character you're merely previewing made the two disagree.
@@ -168,8 +172,8 @@ function CharVariant({ ctx, variant }) {
         {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           // on the colored variants, gray inactive icons go muddy — use a readable buddy-tint instead
-          const offText = onColorBg ? shade(color, -48) : THEME.fg2;
-          const offIcon = onColorBg ? shade(color, -34) : THEME.fg3;
+          const offText = onColorBg ? shade(brand, -48) : THEME.fg2;
+          const offIcon = onColorBg ? shade(brand, -34) : THEME.fg3;
           return (
             <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '9px 4px', background: on ? '#fff' : 'transparent', boxShadow: on ? THEME.shadowCard : 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, color: on ? accent : offText, fontWeight: 800, fontSize: 12.5 }}>
               <Icon name={icon} size={14} color={on ? accent : offIcon} stroke={2.4} />{label}
@@ -252,8 +256,8 @@ function CharVariant({ ctx, variant }) {
         {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           return (
-            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '10px 4px', background: on ? accent : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: on ? `0 8px 18px ${accent}55` : 'inset 0 0 0 1.5px rgba(255,255,255,0.75)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: on ? '#fff' : shade(color, -44), fontWeight: 800, fontSize: 12.5, transition: 'all .15s ease' }}>
-              <Icon name={icon} size={14} color={on ? '#fff' : shade(color, -30)} stroke={2.5} />{label}
+            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '10px 4px', background: on ? accent : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: on ? `0 8px 18px ${accent}55` : 'inset 0 0 0 1.5px rgba(255,255,255,0.75)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: on ? '#fff' : shade(brand, -44), fontWeight: 800, fontSize: 12.5, transition: 'all .15s ease' }}>
+              <Icon name={icon} size={14} color={on ? '#fff' : shade(brand, -30)} stroke={2.5} />{label}
             </button>
           );
         })}
@@ -273,8 +277,8 @@ function CharVariant({ ctx, variant }) {
         {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           return (
-            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '12px 4px 13px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, color: on ? accent : shade(color, -36), fontWeight: 800, fontSize: 12.5 }}>
-              <Icon name={icon} size={14} color={on ? accent : shade(color, -24)} stroke={2.4} />{label}
+            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '12px 4px 13px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, color: on ? accent : shade(brand, -36), fontWeight: 800, fontSize: 12.5 }}>
+              <Icon name={icon} size={14} color={on ? accent : shade(brand, -24)} stroke={2.4} />{label}
               <span style={{ position: 'absolute', bottom: -1, left: '22%', right: '22%', height: 3, borderRadius: 3, background: on ? accent : 'transparent', transition: 'background .15s ease' }} />
             </button>
           );
@@ -459,25 +463,25 @@ function CharVariant({ ctx, variant }) {
   // neon brand magenta shade(c, 74) clamps red to 255 and lands on #ff4ec1 — a
   // hotter, hue-shifted pink than the brand itself. Pastelise those instead, the
   // same pink → lavender family the home wash uses. See primitives.jsx.
-  const neon = isNeon(color);
-  const ink = shade(color, -52);
+  const neon = isNeon(brand);
+  const ink = shade(brand, -52);
   const bg = ({
     cover: THEME.surface2,
     wave: '#fff',
-    vivid: `linear-gradient(180deg, ${shade(color, 96)} 0%, ${shade(color, 38)} 60%, ${shade(color, 2)} 100%)`,
+    vivid: `linear-gradient(180deg, ${shade(brand, 96)} 0%, ${shade(brand, 38)} 60%, ${shade(brand, 2)} 100%)`,
     focus: neon
-      ? `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${pastelHue(color, 4, 0.86, 0.62)} 0%, ${pastelHue(color, -46, 0.83, 0.54)} 50%, ${pastelHue(color, -94, 0.81, 0.46)} 100%), ${THEME.surface2}`
-      : `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(color, -24, 0.06, 0.78)} 0%, ${mixHue(color, 4, 0.10, 0.72)} 50%, ${mixHue(color, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`,
+      ? `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${pastelHue(brand, 4, 0.86, 0.62)} 0%, ${pastelHue(brand, -46, 0.83, 0.54)} 50%, ${pastelHue(brand, -94, 0.81, 0.46)} 100%), ${THEME.surface2}`
+      : `linear-gradient(180deg, ${THEME.surface2}00 0%, ${THEME.surface2}00 210px, ${THEME.surface2} 540px), linear-gradient(125deg, ${mixHue(brand, -24, 0.06, 0.78)} 0%, ${mixHue(brand, 4, 0.10, 0.72)} 50%, ${mixHue(brand, 26, 0.14, 0.6)} 100%), ${THEME.surface2}`,
     showcase: neon
-      ? `linear-gradient(180deg, ${pastelHue(color, 4, 0.86, 1)} 0%, ${pastelHue(color, -34, 0.93, 1)} 32%, ${THEME.surface2} 60%)`
-      : `linear-gradient(180deg, ${shade(color, 74)} 0%, ${tint(color, .82)} 32%, ${THEME.surface2} 60%)`,
+      ? `linear-gradient(180deg, ${pastelHue(brand, 4, 0.86, 1)} 0%, ${pastelHue(brand, -34, 0.93, 1)} 32%, ${THEME.surface2} 60%)`
+      : `linear-gradient(180deg, ${shade(brand, 74)} 0%, ${tint(brand, .82)} 32%, ${THEME.surface2} 60%)`,
   })[variant] || THEME.screenBg;
 
   // ── hero per variant ──
   let hero;
   if (variant === 'cover') {
     hero = (
-      <div style={{ background: `linear-gradient(160deg, ${shade(color, 60)}, ${tint(color, .82)})`, borderRadius: '0 0 28px 28px', padding: '50px 18px 22px' }}>
+      <div style={{ background: `linear-gradient(160deg, ${shade(brand, 60)}, ${tint(brand, .82)})`, borderRadius: '0 0 28px 28px', padding: '50px 18px 22px' }}>
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ textAlign: 'center', marginTop: 6 }}>
           {Badges}
@@ -490,7 +494,7 @@ function CharVariant({ ctx, variant }) {
     );
   } else if (variant === 'wave') {
     hero = (
-      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(color, 70)}, ${tint(color, .82)})`, padding: '50px 18px 0' }}>
+      <div style={{ position: 'relative', background: `linear-gradient(160deg, ${shade(brand, 70)}, ${tint(brand, .82)})`, padding: '50px 18px 0' }}>
         <TopBar />
         <div style={{ textAlign: 'center', marginTop: 6, paddingBottom: 30 }}>
           {Badges}
@@ -512,7 +516,7 @@ function CharVariant({ ctx, variant }) {
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', width: ring, height: ring, margin: '12px auto 0', cursor: 'pointer' }}>
           <svg width={ring} height={ring} viewBox={`0 0 ${ring} ${ring}`} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
             <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
-            <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={color} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} />
+            <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={brand} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} />
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Buddy size={148} /></div>
         </div>
@@ -544,12 +548,12 @@ function CharVariant({ ctx, variant }) {
           <div style={{ position: 'relative' }}><Buddy size={162} /></div>
           {/* contact shadow. shade() clamps on a neon brand colour (shade(#E00477,62)
               → #ff42b5), so the "shadow" came out hotter than the buddy — pastelise it. */}
-          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${neon ? pastelHue(color, 0, 0.80, 1) : shade(color, 62)} 0%, ${tint(color, .82)} 58%, ${tint(color, .82)}00 78%)` }} />
+          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${neon ? pastelHue(brand, 0, 0.80, 1) : shade(brand, 62)} 0%, ${tint(brand, .82)} 58%, ${tint(brand, .82)}00 78%)` }} />
         </div>
         <div style={{ textAlign: 'center', marginTop: 10 }}>
           {Badges}
           <div className="game-font" style={{ fontSize: 26, fontWeight: 500, color: THEME.fg1, marginTop: 6 }}>{orig.name}</div>
-          <div style={{ fontSize: 12.5, color: shade(color, -34), fontWeight: 700 }}>{L('Level')} {level}</div>
+          <div style={{ fontSize: 12.5, color: shade(brand, -34), fontWeight: 700 }}>{L('Level')} {level}</div>
           {xpRow(THEME.fg2)}
         </div>
       </div>

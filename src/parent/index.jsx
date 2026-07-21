@@ -1,6 +1,7 @@
 // JoanX — parent app · public screen barrel
 
 export { ParentReports } from './ParentReports.jsx';
+export { REPORT_LAYOUTS, ParentReportsVariant } from './ParentReportsVariants.jsx';
 export { ParentSettings } from './ParentSettings.jsx';
 export { ParentChildren } from './ParentChildren.jsx';
 export { ParentActivity } from './ParentActivity.jsx';

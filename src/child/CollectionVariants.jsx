@@ -11,26 +11,8 @@ import { screenBgActive, ScreenHeader } from './shared.jsx';
 import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
 
 const COLLECTION_LAYOUTS = [
-  { id: 'shelf', label: 'Shelf' },
   { id: 'grid', label: 'Grid' },
-  { id: 'carousel', label: 'Carousel' },
-  { id: 'bookshelf', label: 'Bookshelf' },
-  { id: 'list', label: 'List' },
-  { id: 'rarity', label: 'By rarity' },
-  { id: 'gallery', label: 'Gallery' },
-  { id: 'spotlight', label: 'Spotlight' },
-  { id: 'journey', label: 'Journey' },
-  { id: 'cards', label: 'Cards' },
-  { id: 'bento', label: 'Bento' },
-  { id: 'stack', label: 'Stack' },
-  { id: 'bubbles', label: 'Bubbles' },
-  { id: 'dex', label: 'Dex' },
-  { id: 'progress', label: 'Progress' },
   { id: 'tabs', label: 'Tabs' },
-  { id: 'masonry', label: 'Masonry' },
-  { id: 'filmstrip', label: 'Filmstrip' },
-  { id: 'compact', label: 'Compact' },
-  { id: 'podium', label: 'Podium' },
 ];
 
 const rarBadge = (c, style) => (
@@ -61,7 +43,10 @@ const EmptySlot = ({ size = 56 }) => (
 
 // ── the variant screen ───────────────────────────────────────────────
 function CollectionVariant({ variant = 'shelf', ctx }) {
-  const [tab, setTab] = React.useState(0);   // used by the 'tabs' variant
+  // 'tabs' variant: which icon-tab is active. Opens on Badges (index 2) when the
+  // Profile trophy shelf routed here via collectionIntent — peeked without clearing,
+  // so the `side` initialiser below still consumes-and-clears the flag as before.
+  const [tab, setTab] = React.useState(() => collectionIntent.side === 'badges' ? 2 : 0);
   // Open on Badges when the Profile trophy shelf routed here (collectionIntent), else
   // Buddies. A one-shot flag: read once, then cleared so a plain Collect-tab tap still
   // lands on Buddies.
@@ -518,6 +503,65 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           ))}
         </div>
       </React.Fragment>
+    );
+  }
+
+  // ── TABS — a Clash-Royale-style icon tab strip across the sections of the
+  //    Collection House (buddies, rooms, badges, progress), switching content
+  //    inline. Its own shell: the icon strip replaces the Buddies/Badges toggle,
+  //    and Rooms/Progress absorb what were the Encyclopedia/My Room entry cards. ─
+  if (variant === 'tabs') {
+    const TABS = [
+      { id: 'buddies', icon: 'paw-print',   label: 'Buddies' },
+      { id: 'badges',  icon: 'award',       label: 'Badges' },
+    ];
+    const active = TABS[tab] ? TABS[tab].id : 'buddies';
+    const headCount = active === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}`
+      : `${owned.length}/${all.length}`;
+
+    // buddies — the same 3-up grid the 'grid' layout uses (owned + locked)
+    // owned buddies first, locked/undiscovered sink to the bottom (stable within each group)
+    const buddiesSorted = [...all].sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0));
+    const buddiesGrid = (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+        {buddiesSorted.map(c => (
+          <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+            {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
+            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
+            <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
+            <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
+          </button>
+        ))}
+      </div>
+    );
+
+    return (
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
+        <ScreenHeader title={L('Collection House')} right={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Icon name={active === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
+            <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{headCount}</span>
+          </div>} />
+        <div style={{ padding: '0 16px' }}>
+          {/* icon tab strip — flat, brand-green active tab (no glow), one row of
+              equal tabs like the reference game's secondary nav */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            {TABS.map((t, i) => {
+              const on = i === tab;
+              return (
+                <button key={t.id} onClick={() => setTab(i)} aria-pressed={on} className="jx-press"
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 16, padding: '11px 4px 9px', background: on ? THEME.brand : '#fff', boxShadow: THEME.shadowCard, transition: 'background .16s ease', WebkitTapHighlightColor: 'transparent' }}>
+                  <Icon name={t.icon} size={20} color={on ? '#fff' : THEME.fg2} stroke={2.3} />
+                  <span style={{ fontSize: 11, fontWeight: 800, color: on ? '#fff' : THEME.fg2 }}>{L(t.label)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {active === 'buddies' && buddiesGrid}
+          {active === 'badges' && <BadgeGrid />}
+        </div>
+      </div>
     );
   }
 

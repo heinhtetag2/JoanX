@@ -10,18 +10,11 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { ScreenHeader, RarityPill, DexProgress, screenBgActive } from './shared.jsx';
 
+// Only List and Grid are offered. The other variant renderers below still exist but
+// are intentionally not surfaced in the Tweaks picker.
 const DEX_LAYOUTS = [
   { id: 'list', label: 'List' },
   { id: 'grid', label: 'Grid' },
-  { id: 'cards', label: 'Cards' },
-  { id: 'gallery', label: 'Gallery' },
-  { id: 'compact', label: 'Compact' },
-  { id: 'stats', label: 'Stats' },
-  { id: 'rarity', label: 'By rarity' },
-  { id: 'species', label: 'By species' },
-  { id: 'carousel', label: 'Carousel' },
-  { id: 'tiles', label: 'Tiles' },
-  { id: 'codex', label: 'Codex' },
 ];
 
 // locked buddies read as a greyed silhouette everywhere

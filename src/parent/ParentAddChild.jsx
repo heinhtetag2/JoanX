@@ -125,7 +125,7 @@ function ParentAddChild({ ctx }) {
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{k.name}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: THEME.fg2, marginTop: 3 }}>
-                        <Icon name={linked ? 'wifi' : 'wifi-off'} size={13} color={linked ? THEME.success : THEME.fg3} stroke={2.3} />{L(linked ? 'Connected' : 'Not connected')} · {k.device}
+                        <Icon name={linked ? 'link-2' : 'link-2-off'} size={13} color={linked ? THEME.success : THEME.fg3} stroke={2.3} />{L(linked ? 'Connected' : 'Not connected')} · {k.device}
                       </span>
                     </span>
                     {linked && (

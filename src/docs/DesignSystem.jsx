@@ -275,7 +275,7 @@ function TypographySection() {
   const scale = [
     ['t-display', '28 / 800 / 1.15', '-0.5px', 'Hero numbers, onboarding titles'],
     ['t-h1', '24 / 700 / 1.25', '-0.3px', 'Screen titles (ParentHead)'],
-    ['t-h2', '20 / 700 / 1.3', '0', 'Section titles (SectionHead ≈ 19/800)'],
+    ['t-h2', '20 / 700 / 1.3', '0', 'Section titles (SectionHead = 18/700)'],
     ['t-h3', '17 / 600 / 1.35', '0', 'Card titles'],
     ['t-h4', '15 / 600 / 1.4', '0', 'Emphasized body'],
     ['t-body', '15 / 400 / 1.45', '0', 'Body copy'],

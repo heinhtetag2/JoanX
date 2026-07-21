@@ -360,7 +360,10 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
         const eggC = eggColorFor(hatch.eggRarity);   // shell colour of the egg being hatched
         return (
           <div className={`jx-fade${reveal ? '' : ' jx-egg-bg'}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
-            ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(b.color, 70)} 0%, ${shade(b.color, 92)} 58%, #fff 100%)` }
+            // Reveal backdrop reads the buddy's RARITY tier (common=sand · rare=ocean ·
+            // epic=iris), the same colour the egg shell wore — so an epic hatch stays purple,
+            // a rare hatch is blue, a common one sand, regardless of the buddy's own hue.
+            ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 70)} 0%, ${shade(eggC, 92)} 58%, #fff 100%)` }
             : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
             {!reveal ? (
               <React.Fragment>
@@ -405,7 +408,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
 
                 {/* the hatch: buddy pops out of a cracked-open shell over a soft glow */}
                 <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
-                  <div style={{ position: 'absolute', top: '48%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(b.color, 74)} 0%, rgba(255,255,255,0) 66%)`, zIndex: 0 }} />
+                  <div style={{ position: 'absolute', top: '48%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 74)} 0%, rgba(255,255,255,0) 66%)`, zIndex: 0 }} />
                   <div className="jx-burst" style={{ position: 'absolute', top: '48%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${b.color}`, opacity: 0, zIndex: 0 }} />
                   {/* cracked eggshell halves under the buddy's feet */}
                   <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 14, zIndex: 1 }}>

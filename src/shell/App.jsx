@@ -1,9 +1,9 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_HEADERS, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, Notices, LegalDetail, HOME_LAYOUTS, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, PROFILE_LAYOUTS, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { setLang } from '../core/i18n.jsx';
@@ -75,7 +75,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'list', friendsLayout: 'list', addFriendsLayout: 'list', collectionLayout: 'journey', dexLayout: 'list', dexHeader: 'rows', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -164,7 +164,7 @@ function App() {
   // this button does. Wipes jx.buddy AND the in-memory identity, so a later refresh stays clean.
   const resetBuddy = () => {
     try { localStorage.removeItem('jx.buddy'); } catch { /* storage unavailable */ }
-    PLAYER.activeCharId = 'c2';
+    PLAYER.activeCharId = 'c1';
     setTw(s => ({ ...s, charStyle: 'comic', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3 }));
     setBump(b => b + 1);
   };
@@ -211,7 +211,7 @@ function App() {
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
     else body = ({
-      p_reports: <ParentReports ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
+      p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
@@ -332,13 +332,6 @@ function App() {
                 ))}
               </div>
               <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Hammy (default)</button>
-
-              <div className="tw-label">Room style</div>
-              <div className="tw-row">
-                {[['theme', 'Theme'], ['scene', 'Photo scene'], ['hotspot', 'Tappable room']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.roomStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomStyle: v }))}>{l}</button>
-                ))}
-              </div>
 
               <div className="tw-label">Room switch (profile · Tappable room)</div>
               <div className="tw-row">
@@ -485,21 +478,8 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Dex header</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {DEX_HEADERS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.dexHeader === id ? ' on' : '')}
-                    onClick={() => { setTw(s => ({ ...s, dexHeader: id })); setStack([{ screen: 'collection', params: {} }]); setScreen('chardex'); }}>{label}</button>
-                ))}
-              </div>
-
-              <div className="tw-label">Friends style</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['list', 'List'], ['grid', 'Grid'], ['showcase', 'Showcase'], ['compact', 'Compact'], ['leaderboard', 'Leaderboard'], ['carousel', 'Carousel'], ['tiles', 'Tiles'], ['cover', 'Cover'], ['bubbles', 'Bubbles'], ['timeline', 'Timeline'], ['split', 'Split'], ['village', 'Village'], ['rail', 'Rail'], ['poster', 'Poster'], ['chips', 'Chips'], ['banner', 'Banner'], ['roster', 'Roster'], ['stats', 'Stats'], ['groups', 'Groups'], ['ticket', 'Ticket'], ['feed', 'Feed'], ['bento', 'Bento'], ['minimal', 'Minimal'], ['badge', 'Badge'], ['magazine', 'Magazine'], ['spotlight', 'Spotlight'], ['pill', 'Pill'], ['frame', 'Frame'], ['avatarLeft', 'Avatar L'], ['capsule', 'Capsule'], ['inline', 'Inline'], ['gradientList', 'Gradient'], ['numbered', 'Numbered'], ['cardGrid', 'Card grid'], ['gallery', 'Gallery']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.friendsLayout === v ? ' on' : '')}
-                    onClick={() => { setTw(s => ({ ...s, friendsLayout: v })); setStack([]); setScreen('friends'); }}>{l}</button>
-                ))}
-              </div>
+              {/* Friends style is locked to 'groups' (the only layout in use), so its
+                  Tweaks selector is removed — the default in `tw` keeps the screen on it. */}
 
               <div className="tw-label">Add-friends style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
@@ -509,13 +489,8 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Profile layout</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {PROFILE_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.profileLayout === id ? ' on' : '')}
-                    onClick={() => { setTw(s => ({ ...s, profileLayout: id })); setStack([]); setScreen('profile'); }}>{label}</button>
-                ))}
-              </div>
+              {/* Profile layout is locked to 'original' (the only layout in use), so its
+                  Tweaks selector is removed — the default in `tw` keeps the screen on it. */}
 
               <div className="tw-label">Egg hatch animation</div>
               <div className="tw-row">
@@ -543,6 +518,13 @@ function App() {
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
               </div>
 
+              <div className="tw-label">Report layout</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {REPORT_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.reportLayout === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, reportLayout: id })); setParentOnboarded(true); setPScreen('p_reports'); setStack([]); }}>{label}</button>
+                ))}
+              </div>
+
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
                 {[['loading', 'Loading']].map(([k, l]) => (
@@ -553,16 +535,6 @@ function App() {
             </React.Fragment>
           )}
 
-          {role === 'child' && (
-            <React.Fragment>
-              <div className="tw-label" style={{ opacity: .5 }}>Home layout (disabled)</div>
-              <div className="tw-row" style={{ opacity: .5, pointerEvents: 'none' }}>
-                {HOME_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} disabled className={'tw-chip' + (tw.homeLayout === id ? ' on' : '')} style={{ cursor: 'not-allowed' }}>{label}</button>
-                ))}
-              </div>
-            </React.Fragment>
-          )}
         </div>
       )}
     </div>
