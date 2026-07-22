@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ACHIEVEMENTS, CHARACTERS, LINK, PLAYER, guardians } from '../core/data.jsx';
-import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
+import { Badge, Icon, PhotoAvatar, THEME, Toggle } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
@@ -36,8 +36,8 @@ function TrophyShelf({ onOpen }) {
           Wraps to a second row rather than spilling past the card once the shelf
           fills up (up to 8 badges), and the medallions are sized so a full row of
           them fits the card width. */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        {earned.map(a => <Medal key={a.id} a={a} size={40} />)}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
+        {earned.map(a => <Medal key={a.id} a={a} size={46} />)}
         {earned.length === 0 && (
           <span style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>{L('Walk safely to earn your first badge.')}</span>
         )}
@@ -72,7 +72,9 @@ function Profile({ ctx }) {
       <div style={{ padding: '0 16px' }}>
         {/* hero — tapping the avatar opens the public house/rooms profile (F-32) */}
         <button onClick={() => ctx.nav('myhouse')} style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', background: `linear-gradient(165deg, ${shade(THEME.brand, 76)}, #fff 78%)`, borderRadius: 20, padding: '14px 16px', border: `1px solid ${THEME.border}`, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 13 }}>
-          <div style={{ width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={60} /></div>
+          <div style={{ width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <PhotoAvatar src={PLAYER.avatar} size={60} fallback={<Mascot species={c.species} stage={c.stage} color={c.color} size={60} />} />
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500 }}>{PLAYER.name}</div>
             {/* age + level on one inline row — fills the line and keeps the hero compact */}

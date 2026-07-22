@@ -102,7 +102,7 @@ function Battle({ ctx, layout = 'classic' }) {
 
   if (phase === 'matching') {
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#2b5782)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#365C39)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
         <div style={{ position: 'relative', width: 90, height: 90, marginBottom: 20 }}>
           <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff', opacity: .3 }} />
           <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="swords" size={40} color="#fff" stroke={2} /></div>
@@ -134,7 +134,7 @@ function Battle({ ctx, layout = 'classic' }) {
       </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#122536)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#14291b)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative' }}>
           {result && won && <Confetti n={24} />}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-around' }}>

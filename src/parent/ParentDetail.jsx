@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, NOTICES, LEGAL_DOCS, PARENT_PROFILE } from '../core/data.jsx';
-import { Badge, Bar, BottomSheet, Button, Icon, Input, Modal, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Badge, Bar, BottomSheet, Button, Icon, Input, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L, setLang } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
@@ -180,7 +180,8 @@ function ParentDetail({ ctx }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
           {/* tap the avatar to change the photo */}
           <button onClick={() => setPhotoSheet(true)} style={{ position: 'relative', border: 'none', background: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }} aria-label={L('Change photo')}>
-            <div style={{ width: 56, height: 56, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 800 }}>{PARENT_PROFILE.name[0]}</div>
+            <PhotoAvatar src={PARENT_PROFILE.avatar} size={56}
+              fallback={<div style={{ width: 56, height: 56, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 800 }}>{PARENT_PROFILE.name[0]}</div>} />
             <div style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 999, background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="camera" size={12} color={THEME.fg1} stroke={2.3} /></div>
           </button>
           <div style={{ flex: 1 }}><div style={{ fontSize: 17, fontWeight: 800 }}>{PARENT_PROFILE.name}</div><div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 1 }}>{L('Parent account')}</div></div>

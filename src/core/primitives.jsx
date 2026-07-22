@@ -130,6 +130,19 @@ function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none',
     style={{ display: 'inline-flex', flexShrink: 0, ...style }} />;
 }
 
+// A profile photo with a graceful fallback. `src` is a static image (e.g. a default placeholder
+// dropped in public/assets/avatars/); if it's absent or fails to load, `fallback` is rendered
+// instead — the colored initial for a parent, the buddy mascot for a child — so a screen looks
+// intentional before (or without) a real photo. Same img+onError idea as the avatar picker's thumb.
+function PhotoAvatar({ src, size = 52, radius = 999, fallback = null, style }) {
+  const [broken, setBroken] = React.useState(false);
+  if (!src || broken) return fallback;
+  return (
+    <img src={src} alt="" onError={() => setBroken(true)}
+      style={{ width: size, height: size, borderRadius: radius, objectFit: 'cover', display: 'block', flexShrink: 0, ...style }} />
+  );
+}
+
 // Pairing QR — a deterministic dot matrix with the three finder squares, so it reads as a
 // real QR without a QR library. It lives here, not in a screen, because there is now more
 // than one thing to pair: the child linking to a family, and a family inviting its second
@@ -173,7 +186,7 @@ function Button({ children, variant = 'primary', size = 'md', onClick, fullWidth
     outline:   { background: 'transparent', color: THEME.fg1, border: `1.5px solid ${THEME.border}` },
     danger:    { background: THEME.danger, color: '#fff', boxShadow: 'none', border: 'none' },
     ghost:     { background: 'transparent', color: THEME.primary, border: 'none' },
-    play:      { background: THEME.primary, color: '#fff', boxShadow: 'none', border: 'none' },           // brand ocean battle CTA
+    play:      { background: THEME.brand, color: '#fff', boxShadow: 'none', border: 'none' },             // brand green battle CTA
     gold:      { background: THEME.gold, color: '#fff', boxShadow: 'none', border: 'none' },
   };
   const sizes = {
@@ -468,4 +481,4 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

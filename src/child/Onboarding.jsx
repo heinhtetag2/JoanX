@@ -1,8 +1,8 @@
 // JoanX — child app · Onboarding
 
 import React from 'react';
-import { CHARACTERS, PERMISSIONS, PLAYER, guardianOwner, setPermGrant } from '../core/data.jsx';
-import { Badge, Button, Icon, PairQR, THEME } from '../core/primitives.jsx';
+import { CHARACTERS, PARENT_PROFILE, PERMISSIONS, PLAYER, guardianOwner, setPermGrant } from '../core/data.jsx';
+import { Badge, Button, Icon, PairQR, PhotoAvatar, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
@@ -382,8 +382,8 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               {[0, 0.8, 1.6].map((d, i) => (
                 <div key={`ring${i}`} className="jx-ring-slow" style={{ position: 'absolute', top: '50%', left: '50%', width: 170, height: 170, marginTop: -85, marginLeft: -85, borderRadius: 999, border: `2px solid ${shade(c.color, 20)}`, animationDelay: `${d}s` }} />
               ))}
-              <div style={{ width: 124, height: 124, borderRadius: 999, background: shade(c.color, 82), border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
-                <div className="jx-float"><Buddy size={98} /></div>
+              <div style={{ width: 124, height: 124, borderRadius: 999, background: shade(c.color, 82), border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)', overflow: 'hidden' }}>
+                <PhotoAvatar src={PLAYER.avatar} size={118} fallback={<div className="jx-float"><Buddy size={98} /></div>} />
               </div>
             </div>
 
@@ -416,14 +416,18 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               {[0, 0.8].map((d, i) => (
                 <div key={`ring${i}`} className="jx-ring" style={{ position: 'absolute', top: '50%', left: '50%', width: 152, height: 152, marginTop: -76, marginLeft: -76, borderRadius: 999, border: `2px solid ${THEME.success}`, zIndex: 0, animationDelay: `${d}s` }} />
               ))}
-              {/* child — no buddy yet (hatches after pairing), so a neutral placeholder holds the slot */}
-              <div style={{ width: 104, height: 104, borderRadius: 999, background: shade(c.color, 82), border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
-                <Buddy size={86} />
+              {/* child — their profile photo (the buddy hasn't hatched yet), falling back to the
+                  buddy placeholder when no photo is set */}
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: shade(c.color, 82), border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)', overflow: 'hidden' }}>
+                <PhotoAvatar src={PLAYER.avatar} size={98} fallback={<Buddy size={86} />} />
               </div>
-              {/* parent — tucked behind, overlapping · monogram + guardian shield */}
-              <div style={{ width: 104, height: 104, borderRadius: 999, background: P_BRAND.primaryLight, border: '5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: `inset 0 0 0 1px ${shade(P_BRAND.primary, 60)}` }}>
-                <span className="game-font" style={{ fontSize: 42, fontWeight: 500, color: P_BRAND.primary, lineHeight: 1 }}>{parentInitial}</span>
-                <span style={{ position: 'absolute', right: 0, bottom: 0, width: 32, height: 32, borderRadius: 999, background: P_BRAND.primary, border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* parent — tucked behind, overlapping · their photo + guardian shield, falling back
+                  to a name monogram when no photo is set */}
+              <div style={{ width: 104, height: 104, borderRadius: 999, background: P_BRAND.primaryLight, border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -30, position: 'relative', zIndex: 1, boxShadow: `inset 0 0 0 1px ${shade(P_BRAND.primary, 60)}` }}>
+                <PhotoAvatar src={PARENT_PROFILE.avatar} size={98}
+                  fallback={<span className="game-font" style={{ fontSize: 42, fontWeight: 500, color: P_BRAND.primary, lineHeight: 1 }}>{parentInitial}</span>} />
+                {/* shield sits on the edge, overhanging the circle — its own zIndex so it clears the ring */}
+                <span style={{ position: 'absolute', right: -3, bottom: -1, zIndex: 3, width: 32, height: 32, borderRadius: 999, background: P_BRAND.primary, border: '3px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name="shield-check" size={15} color="#fff" stroke={2.4} />
                 </span>
               </div>

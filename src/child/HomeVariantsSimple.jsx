@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Bar, Icon, RARITY, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Icon, PhotoAvatar, RARITY, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
@@ -469,9 +469,6 @@ function HomeSimpleFocus({ ctx }) {
       <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* the buddy's face leads the greeting, and doubles as the way into the profile */}
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-          <div style={{ width: 42, height: 42, borderRadius: 999, background: shade(brand, 80), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-            <Mascot species={c.species} stage={c.stage} color={c.color} size={42} />
-          </div>
           <div>
             <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600 }}>{L('Good afternoon')}</div>
             <div className="game-font" style={{ fontSize: 21, fontWeight: 500, color: THEME.fg1 }}>{PLAYER.name}</div>
@@ -513,14 +510,14 @@ function HomeSimpleFocus({ ctx }) {
       <div style={{ padding: '18px 18px 0' }}>
         <div style={{ marginBottom: 14 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-          {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points')], ['flame', THEME.joy, PLAYER.streak, L('Day streak')]].map((s, i) => (
-            <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9 }}>
+          {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points'), 'rewards'], ['flame', THEME.joy, PLAYER.streak, L('Day streak'), 'streak']].map((s, i) => (
+            <button key={i} onClick={() => ctx.nav(s[4])} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
               <Icon name={s[0]} size={18} color={s[1]} stroke={2.4} />
               <div>
                 <div className="game-font" style={{ fontSize: 20, fontWeight: 500, color: THEME.fg1, lineHeight: 1 }}>{s[2]}</div>
                 <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 3 }}>{s[3]}</div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
         {/* today's tasks — daily missions that pay a bonus */}
@@ -578,14 +575,14 @@ function HomeSimpleCover({ ctx }) {
         <div style={{ marginBottom: 16 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
-          {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points')], ['flame', THEME.joy, PLAYER.streak, L('Day streak')]].map((s, i) => (
-            <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9 }}>
+          {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points'), 'rewards'], ['flame', THEME.joy, PLAYER.streak, L('Day streak'), 'streak']].map((s, i) => (
+            <button key={i} onClick={() => ctx.nav(s[4])} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
               <Icon name={s[0]} size={18} color={s[1]} stroke={2.4} />
               <div>
                 <div className="game-font" style={{ fontSize: 20, fontWeight: 500, color: THEME.fg1, lineHeight: 1 }}>{s[2]}</div>
                 <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 3 }}>{s[3]}</div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 

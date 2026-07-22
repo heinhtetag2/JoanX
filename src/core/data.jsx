@@ -113,6 +113,9 @@ const setBattleRules = (settings = {}) => {
 
 const PLAYER = {
   name: 'Mina', age: 11, points: 1600,
+  // Default profile photo — a placeholder in public/assets/avatars/. Falls back to the buddy
+  // mascot when the file is absent (see PhotoAvatar), so the profile hero still reads.
+  avatar: '/assets/avatars/avatar-child.png',
   streak: 5, level: 7, xp: 320,   // xpMax / maxed are derived from XP_CURVE — see applyXpCurve()
   safeMinutesToday: 47, safeWalkGoal: 60,
   bonusPointsToday: 40,                    // spec #4 — safe-stop bonus points banked today (vs POINTS.dailyBonusCap); resets daily server-side
@@ -1791,7 +1794,7 @@ const PARENT_ALERTS = [
 const MAX_CHILDREN = 5;
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
+  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5, photo: '/assets/avatars/avatar-child.png',
     pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
     cfg: {
       mode: 'smart',
@@ -1803,7 +1806,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2,
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, photo: '/assets/avatars/avatar-1.svg',
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
@@ -1814,7 +1817,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8,
+  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, photo: '/assets/avatars/avatar-1.svg',
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
@@ -2508,7 +2511,9 @@ const LEGAL_DOCS = [
 // `provider` is the social identity the email belongs to (sign-up/login is phone
 // SMS + Google/Apple). The email is therefore read-only here — it's managed by
 // that account — while the phone is verified with a code when changed.
-const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google' };
+// `avatar` is the default profile photo — a placeholder in public/assets/avatars/. If the file
+// isn't there it falls back to the coloured initial (see PhotoAvatar), so the header still reads.
+const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google', avatar: '/assets/avatars/avatar-parent.png' };
 
 export { PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,

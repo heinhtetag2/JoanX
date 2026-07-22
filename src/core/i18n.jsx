@@ -264,6 +264,8 @@ const KO = {
   '5-day streak': '5일 연속', '-day streak': '일 연속',
   'Daily safe-walk reward': '매일 안전 걷기 보상', 'Ready to claim · +100 points': '받을 수 있어요 · +100 포인트',
   'Achievements': '업적', 'Achievement': '업적', 'Progress': '진행도', 'Earn to get': '달성하면',
+  // achievement unlock moment
+  'New badge earned': '새 배지 획득', 'View badges': '배지 보기',
   'First Steps': '첫 걸음', 'Walk safely for 10 minutes': '10분 안전하게 걷기',
   '5-Day Streak': '5일 연속', 'Be safe 5 days in a row': '5일 연속 안전하게',
   'Quick Reflex': '빠른 반응', 'Stop within 3s, 10 times': '3초 안에 멈추기 10회',
@@ -617,6 +619,9 @@ const KO = {
   // profile picture (optional) at parent account creation
   'Add a photo': '사진 추가', 'Change photo': '사진 변경', 'Remove photo': '사진 제거',
   'Optional — we’ll use your initial if you skip.': '선택 사항 — 건너뛰면 이름 첫 글자를 사용해요.',
+  'Optional — pick one above or we’ll use your initial.': '선택 사항 — 위에서 고르거나, 건너뛰면 이름 첫 글자를 사용해요.',
+  'Optional — pick one or we’ll use your initial.': '선택 사항 — 하나 고르거나, 건너뛰면 이름 첫 글자를 사용해요.',
+  'Choose this avatar': '이 아바타 선택', 'Upload a photo': '사진 올리기',
   'Linked with your child': '자녀와 연결됨',
   'Device connected!': '기기가 연결됐어요!',
   'You can now set up protection for your child.': '이제 아이의 보호 설정을 시작할 수 있어요.',
@@ -807,6 +812,7 @@ const KO = {
   'Encyclopedia': '도감', 'Villain Dex': '빌런 도감', 'Dex': '도감', 'My Room': '내 방', 'Me': '나',
   'Characters collected': '수집한 캐릭터', 'Villains defeated': '물리친 빌런',
   'of': '/', 'discovered': '발견', 'Stage': '단계',
+  'Badges earned': '획득한 배지', 'Buddies collected': '모은 버디', 'Complete': '완료',
   'Not yet discovered': '아직 발견하지 못함', 'Defeated': '물리침', 'Now': '지금',
   'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
   'Boss': '보스', 'Reward': '보상', 'Start battle': '배틀 시작',
@@ -914,6 +920,11 @@ const KO = {
   'accident-free days': '일 연속 무사고', 'days to go': '일 남았어요', 'Earned': '획득 완료',
   'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그',
   'more days for': '일 더 모으면', 'Every milestone cleared — amazing!': '모든 목표를 달성했어요 — 정말 대단해요!',
+  // streak detail page
+  'Streak goals': '연속 목표', 'How streaks work': '연속 기록은 이렇게 쌓여요', 'Reached': '달성', 'd': '일',
+  'Walk safely each day to add to your streak.': '매일 안전하게 걸으면 연속 기록이 하루씩 늘어요.',
+  'Miss a day and your streak starts over.': '하루라도 빠지면 처음부터 다시 시작해요.',
+  'Reach a goal to earn its reward.': '목표를 채우면 보상을 받아요.',
   'Battle again': '다시 도전하기',
   'Come back tomorrow for your next challenge.': '내일 다시 도전할 수 있어요.',
 
@@ -1113,6 +1124,26 @@ const KO = {
   'A plain-language summary of Mina’s week': '미나의 한 주를 쉬운 말로 요약',
   'Fewer risky walking-while-using moments than her first week on JoanX.': 'JoanX 사용 첫 주보다 걸으며 폰을 보는 위험한 순간이 줄었어요.',
   'AI-generated from this week’s activity. It summarizes behavior trends — it never shares raw locations or messages.': '이번 주 활동을 바탕으로 AI가 생성했어요. 행동 추이를 요약할 뿐, 위치나 메시지 원문은 공유하지 않아요.',
+
+  // ── C7 · impact / fall detection (child safety check + parent urgent alert) ──
+  'sec': '초',
+  'Impact detected': '충격 감지',
+  'Are you okay?': '괜찮아요?',
+  'A strong impact was detected.': '강한 충격이 감지됐어요.',
+  'If you don’t answer, I’ll tell your parent.': '대답이 없으면 부모님께 알릴게요.',
+  'I’m okay': '괜찮아요',
+  'I need help': '도움이 필요해요',
+  'Your parent has been told': '부모님께 알렸어요',
+  'I let them know right away. Stay where you are — help is coming.': '바로 알렸어요. 그 자리에 있어요 — 도움이 오고 있어요.',
+  'You didn’t answer, so I let them know. Stay where you are — help is coming.': '대답이 없어서 알렸어요. 그 자리에 있어요 — 도움이 오고 있어요.',
+  'JoanX is a safety aid, not an emergency service. In a real emergency, call for help.': '조안X는 안전 도우미일 뿐, 응급 서비스가 아니에요. 위급할 땐 직접 도움을 요청하세요.',
+  'Back to home': '홈으로', 'Preview parent alert': '부모 알림 미리보기',
+  'Seongsu-dong · near Ttukseom Stn': '성수동 · 뚝섬역 부근',
+  // parent urgent alert
+  'Urgent': '긴급', 'Dismiss': '닫기',
+  'No response for 20 seconds. Please check on them right away.': '20초 동안 응답이 없어요. 지금 바로 확인해 주세요.',
+  'Last known location': '마지막 위치', 'as of': '기준',
+  'Make a call': '전화 걸기', 'View location': '위치 보기',
 };
 
 function L(s) { return getLang() === 'ko' ? (KO[s] != null ? KO[s] : s) : s; }

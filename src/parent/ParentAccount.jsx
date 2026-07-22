@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FEATURES, guardians, PARENT_PROFILE } from '../core/data.jsx';
-import { Button, Icon, Modal, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Button, Icon, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -23,7 +23,8 @@ function ParentAccount({ ctx }) {
 
         {/* account identity */}
         <div onClick={() => ctx.nav('p_detail', { page: 'account' })} style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18, cursor: 'pointer' }}>
-          <div style={{ width: 52, height: 52, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 800 }}>{PARENT_PROFILE.name[0]}</div>
+          <PhotoAvatar src={PARENT_PROFILE.avatar} size={52}
+            fallback={<div style={{ width: 52, height: 52, borderRadius: 999, background: BRAND.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 800 }}>{PARENT_PROFILE.name[0]}</div>} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }}>{PARENT_PROFILE.name}</div>
             <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 1 }}>{PARENT_PROFILE.email}</div>

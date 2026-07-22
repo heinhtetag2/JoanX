@@ -43,10 +43,11 @@ const EmptySlot = ({ size = 56 }) => (
 
 // ── the variant screen ───────────────────────────────────────────────
 function CollectionVariant({ variant = 'shelf', ctx }) {
-  // 'tabs' variant: which icon-tab is active. Opens on Badges (index 2) when the
-  // Profile trophy shelf routed here via collectionIntent — peeked without clearing,
-  // so the `side` initialiser below still consumes-and-clears the flag as before.
-  const [tab, setTab] = React.useState(() => collectionIntent.side === 'badges' ? 2 : 0);
+  // 'tabs' variant: which icon-tab is active. Opens on Badges (index 1 — the strip is
+  // [Buddies, Badges]) when the Profile trophy shelf routed here via collectionIntent —
+  // peeked without clearing, so the `side` initialiser below still consumes-and-clears
+  // the flag as before.
+  const [tab, setTab] = React.useState(() => collectionIntent.side === 'badges' ? 1 : 0);
   // Open on Badges when the Profile trophy shelf routed here (collectionIntent), else
   // Buddies. A one-shot flag: read once, then cleared so a plain Collect-tab tap still
   // lands on Buddies.
@@ -550,13 +551,32 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
               const on = i === tab;
               return (
                 <button key={t.id} onClick={() => setTab(i)} aria-pressed={on} className="jx-press"
-                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 16, padding: '11px 4px 9px', background: on ? THEME.brand : '#fff', boxShadow: THEME.shadowCard, transition: 'background .16s ease', WebkitTapHighlightColor: 'transparent' }}>
-                  <Icon name={t.icon} size={20} color={on ? '#fff' : THEME.fg2} stroke={2.3} />
-                  <span style={{ fontSize: 11, fontWeight: 800, color: on ? '#fff' : THEME.fg2 }}>{L(t.label)}</span>
+                  style={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 13, padding: '9px 4px', background: on ? THEME.brand : '#fff', boxShadow: THEME.shadowCard, transition: 'background .16s ease', WebkitTapHighlightColor: 'transparent' }}>
+                  <Icon name={t.icon} size={16} color={on ? '#fff' : THEME.fg2} stroke={2.3} />
+                  <span style={{ fontSize: 13, fontWeight: 800, color: on ? '#fff' : THEME.fg2 }}>{L(t.label)}</span>
                 </button>
               );
             })}
           </div>
+
+          {/* completion summary — a slim, low-height progress row: label, a thin accent bar that
+              spans the width, and the count. Same idiom as the Villain Dex progress pill, so the
+              two dex-style screens read the same. Reflects the active tab. */}
+          {(() => {
+            const isBadges = active === 'badges';
+            const have = isBadges ? badgesEarned() : owned.length;
+            const total = isBadges ? ACHIEVEMENTS.length : all.length;
+            const accent = isBadges ? THEME.gold : THEME.primary;
+            const accentLight = isBadges ? THEME.goldLight : THEME.primaryLight;
+            const label = isBadges ? 'Badges earned' : 'Buddies collected';
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 999, boxShadow: THEME.shadowCard, padding: '10px 16px', marginBottom: 16 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', flexShrink: 0 }}>{L(label)}</span>
+                <div style={{ flex: 1, minWidth: 0 }}><Bar value={have} max={total} color={accent} track={accentLight} height={7} /></div>
+                <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: THEME.fg1, whiteSpace: 'nowrap', flexShrink: 0 }}>{have}<span style={{ color: THEME.fg3 }}>/{total}</span></span>
+              </div>
+            );
+          })()}
 
           {active === 'buddies' && buddiesGrid}
           {active === 'badges' && <BadgeGrid />}

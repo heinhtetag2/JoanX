@@ -182,7 +182,10 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
   const [i, setI] = React.useState((round - 1) % pool.length);
   const [show, setShow] = React.useState(true);   // the LINE's opacity — the card behind it never leaves
   React.useEffect(() => {
-    if (hold) return;              // Tweaks → Hold: the line on screen is the one being inspected
+    // Tweaks → Hold: freeze on a READABLE line. Returning early alone left `show` stuck at 0 if the
+    // freeze (or any re-render) landed inside the fade-out window — an empty bubble mid-swap. Force
+    // it visible so every held step shows its copy instead of flashing blank.
+    if (hold) { setShow(true); return; }
     if (pool.length < 2) return;   // nothing to rotate to: the one line simply stays
     const swaps = [];
     const iv = setInterval(() => {
@@ -463,27 +466,10 @@ function WarningOverlay({ ctx }) {
       <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, background: grace ? 'rgba(43,41,38,.16)' : lightBg ? 'rgba(248,247,247,.86)' : phase === 'message' ? 'rgba(43,41,38,.52)' : 'rgba(43,41,38,.34)', backdropFilter: lightBg ? 'blur(3px)' : 'none', transition: 'background .4s ease' }} />
 
       {/* F-08.4 / F-12 — safe state seen: the escalation freezes and the four conditions are
-          verified one by one. The bonus is what's on the far side of a full green column — so the
-          child can see the points are earned by putting the phone away and walking on, not by the
-          tap that opened this card. A sensor blip can't flicker the overlay away mid-check either. */}
-      {confirming && (
-        <div className="jx-fade" style={{ position: 'absolute', top: 92, left: 20, right: 20, display: 'flex', justifyContent: 'center', zIndex: 6 }}>
-          <div style={{ width: '100%', maxWidth: 300, background: '#fff', borderRadius: 18, padding: '14px 16px 12px', boxShadow: THEME.shadowCard }}>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg2, textAlign: 'center', marginBottom: 10 }}>{L('Checking you’re really safe…')}</div>
-            {SAFE_CONDITIONS.map((cond, i) => {
-              const done = verified > i;
-              return (
-                <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0' }}>
-                  <span style={{ width: 20, height: 20, borderRadius: 999, flexShrink: 0, background: done ? THEME.success : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .2s ease' }}>
-                    {done ? <Icon name="check" size={12} color="#fff" stroke={3.2} /> : <span style={{ width: 6, height: 6, borderRadius: 999, background: THEME.fg3 }} />}
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: done ? THEME.fg1 : THEME.fg3, transition: 'color .2s ease' }}>{L(cond)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+          verified behind the scenes (sensor/OS level — phone away, screen off, still walking),
+          then the reward policy runs. No on-screen checklist: that confirmation isn't the child's
+          to watch, so `confirming` holds the escalation quietly and either the reward toast lands
+          or the screen hands back. */}
 
       {/* ── STAGE 0: grace period — a calm, self-correct window before any warning (F-07).
           Tapping "I've got it" here means you caught yourself → no warning, straight to the save. */}

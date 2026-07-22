@@ -35,8 +35,12 @@ const HANDOFF = {
   notices:     { status: 'done', note: 'Confirmed. Notices — list + in-place detail, reads the shared NOTICES source.' },
   about:       { status: 'done', note: 'Confirmed. About — wordmark + version + tagline, Legal rows open detail pages.' },
   legal:       { status: 'done', note: 'Confirmed. Legal document detail (terms / privacy / licenses).' },
+  // C7 — impact / fall detection (highest-priority safety event), an overlay over any screen
+  impact_check:  { status: 'done', note: 'Done. Impact safety check — "Are you okay?", 20s countdown ring, "I’m okay" dismisses, "I need help" / timeout escalates.' },
+  impact_sent:   { status: 'done', note: 'Done. Escalated state — "Your parent has been told", last-known info, safety-aid disclaimer; self-dismisses.' },
 
   // ── parent app ──
+  impact_parent: { status: 'done', note: 'Done. Parent urgent alert — impact detected for child, no-response line, last location + time, Make a call / View location.' },
   parent_onboarding: { status: 'done', note: 'Confirmed. Intro → sign-up/log-in, guardian consent gate, and profile step all done.' },
   // parent profile hub + every account/settings detail page (p_detail)
   p_account:   { status: 'done', note: 'Confirmed. Profile hub: centered title, language up top, family, notifications, privacy, support, sign-out modal.' },

@@ -276,6 +276,43 @@ html, body {
 @keyframes jxCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 .jx-countdown { transform-origin: left center; animation: jxCountdown 5s linear both; }
 
+/* ── Impact / fall backdrop (C7) ─────────────────────────────────────
+   The top-priority safety screen must not read as a flat block of colour. A
+   deep diagonal base gives it depth; two soft radial "glows" drift slowly
+   across it — a living, breathing surface, not a page fill. The motion is slow
+   and low-contrast on purpose: this screen is urgent, not frantic. Placed on a
+   dedicated absolute layer (.jx-impact-bg) behind the content so its clipped
+   glows can move freely without touching the copy above them.
+   `.danger` = the child check + parent alert (red); `.safe` = the escalated
+   "parent has been told" state (brand green). One recipe, two palettes. */
+.jx-impact-bg { position: absolute; inset: 0; overflow: hidden; }
+.jx-impact-bg.danger { background: linear-gradient(158deg, #e05540 0%, #cc3f2d 40%, #a3271a 78%, #8a1f14 100%); }
+.jx-impact-bg.safe   { background: linear-gradient(158deg, #5c9a60 0%, #4b814f 44%, #3a6a3e 100%); }
+.jx-impact-bg::before, .jx-impact-bg::after { content: ''; position: absolute; border-radius: 999px; }
+.jx-impact-bg::before {
+  width: 90%; height: 60%; top: -12%; left: -10%;
+  animation: jxImpactGlowA 11s ease-in-out infinite;
+}
+.jx-impact-bg::after {
+  width: 85%; height: 55%; bottom: -14%; right: -12%;
+  animation: jxImpactGlowB 14s ease-in-out infinite;
+}
+.jx-impact-bg.danger::before { background: radial-gradient(closest-side, rgba(255,150,120,.55), rgba(255,150,120,0) 72%); }
+.jx-impact-bg.danger::after  { background: radial-gradient(closest-side, rgba(110,18,10,.5),   rgba(110,18,10,0)   72%); }
+.jx-impact-bg.safe::before   { background: radial-gradient(closest-side, rgba(190,235,190,.5), rgba(190,235,190,0) 72%); }
+.jx-impact-bg.safe::after    { background: radial-gradient(closest-side, rgba(20,70,25,.45),  rgba(20,70,25,0)   72%); }
+@keyframes jxImpactGlowA {
+  0%, 100% { transform: translate(0, 0) scale(1);      opacity: .9; }
+  50%      { transform: translate(10%, 12%) scale(1.2); opacity: .55; }
+}
+@keyframes jxImpactGlowB {
+  0%, 100% { transform: translate(0, 0) scale(1);        opacity: .75; }
+  50%      { transform: translate(-9%, -10%) scale(1.22); opacity: .45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jx-impact-bg::before, .jx-impact-bg::after { animation: none; }
+}
+
 /* ── Scroll-story motion (parent · How JoanX works) ──────────────────
    Two things carry a long-form page: a cue that says "there is more below",
    and content that arrives as you reach it rather than sitting there pre-loaded. */

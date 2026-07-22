@@ -1,12 +1,13 @@
 import React from 'react';
-import { AboutJoanX, AddFriends, AppIntro, Battle, BATTLE_LAYOUTS, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MSG_LAYOUTS, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, VillainDex, WarningOverlay } from '../child/index.jsx';
-import { applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { collectionIntent } from '../child/Badges.jsx';
+import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
-import { setLang } from '../core/i18n.jsx';
+import { L, setLang } from '../core/i18n.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
 import ProjectDocs from '../docs/ProjectDocs.jsx';
@@ -56,6 +57,15 @@ function App() {
   const [pScreen, setPScreen] = React.useState('p_reports');
   const [mode, setMode] = React.useState('smart');   // Smart is the in-scope mode; Lite (F-01) is excluded this revision
   const [overlay, setOverlay] = React.useState(false);
+  // C7 — impact / fall. The highest-priority event: triggering it ends any warning already up
+  // (impact > risk event) and takes the whole screen for both apps.
+  const [impact, setImpact] = React.useState(false);
+  const [impactKey, setImpactKey] = React.useState(null);   // which C7 step is on screen, for the handoff badge
+  const triggerImpact = () => { setOverlay(false); setHold(false); setImpact(true); };
+  // Achievement unlock moment (Tweaks preview). Holds an ACHIEVEMENTS row while the
+  // celebration is up, null when closed. "View badges" routes to the Collection's
+  // Badges side via collectionIntent — the same intent the Profile trophy shelf uses.
+  const [unlock, setUnlock] = React.useState(null);
   // Tweaks → Hold: freeze the intervention on whatever stage is showing. Prototype-only — the
   // escalation is time-driven, so without it no stage stays up long enough to be looked at.
   const [hold, setHold] = React.useState(false);
@@ -201,7 +211,7 @@ function App() {
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
-      battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
+      battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
@@ -274,6 +284,16 @@ function App() {
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
+          {/* C7 — impact/fall takeover. Renders for whichever app is showing: child sees the safety
+              check, parent sees the urgent notification. Above every other overlay (zIndex 200). */}
+          {impact && <ImpactOverlay role={role} childName={PLAYER.name} onClose={() => setImpact(false)} onGoParent={() => setRole('parent')} onKey={setImpactKey} />}
+          {/* Achievement unlock celebration (child). Sits above the screens but below the
+              impact takeover — a safety event always outranks a reward moment. */}
+          {role === 'child' && unlock && (
+            <AchievementUnlock a={unlock}
+              onClose={() => setUnlock(null)}
+              onView={() => { setUnlock(null); collectionIntent.side = 'badges'; tabTo('collection'); }} />
+          )}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           {role === 'child' && appIntro && <AppIntro onClose={() => setAppIntro(false)} />}
           <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
@@ -286,7 +306,7 @@ function App() {
           Onboarding / login aren't router screens, so they map to their own handoff keys. */}
       {devBadge && !isDocRole(role) && (
         <div style={{ position: 'fixed', top: '50%', left: 24, transform: 'translateY(-50%)', zIndex: 200 }}>
-          <HandoffBadge screenKey={role === 'child' ? (onboarded ? screen : 'onboarding') : (parentOnboarded ? pScreen : 'parent_onboarding')} />
+          <HandoffBadge screenKey={impact && impactKey ? impactKey : role === 'child' ? (onboarded ? screen : 'onboarding') : (parentOnboarded ? pScreen : 'parent_onboarding')} />
         </div>
       )}
 
@@ -322,7 +342,7 @@ function App() {
           {role === 'child' && (
             <React.Fragment>
               <div className="tw-label">Flow</div>
-              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}>Replay onboarding</button>
+              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
               <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
 
               <div className="tw-label">Buddy</div>
@@ -333,47 +353,21 @@ function App() {
               </div>
               <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Hammy (default)</button>
 
-              <div className="tw-label">Room switch (profile · Tappable room)</div>
-              <div className="tw-row">
-                {[['arrows', 'Arrows + dots'], ['chips', 'Room tabs'], ['sheet', 'Name → sheet']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.roomSwitch === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomSwitch: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Room switch selector removed — the default 'sheet' (Name → sheet) is the chosen
+                  behaviour; tw.roomSwitch stays defaulted so MyHouse keeps getting it. */}
 
-              <div className="tw-label">Buddy switch (profile)</div>
-              <div className="tw-row">
-                {[['sheet', 'Tap → sheet'], ['row', 'Avatar row'], ['collection', 'Collection']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.buddySwitch === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, buddySwitch: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Buddy switch selector removed — the default 'sheet' (Tap → sheet) is the chosen
+                  behaviour; tw.buddySwitch stays defaulted so MyHouse keeps getting it. */}
 
-              <div className="tw-label">Room accessories (profile)</div>
-              <div className="tw-row">
-                {[['tray', 'Item tray'], ['sheet', 'Item sheet'], ['editor', 'Decorate only']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.roomDecor === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomDecor: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Room accessories selector removed — the default 'tray' (Item tray) is the chosen
+                  behaviour; tw.roomDecor stays defaulted so MyHouse keeps getting it. */}
 
-              <div className="tw-label">Decorate editor</div>
-              <div className="tw-row">
-                {[['grid', 'Lists below'], ['hotspot', 'Tap the room']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.decorEditor === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, decorEditor: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Decorate editor + Stage accessory look selectors removed — the defaults 'grid'
+                  (Lists below) and 'shelf' (Chip shelf) are the chosen behaviours; both stay
+                  defaulted in tw so the screens keep getting them. */}
 
-              <div className="tw-label">Stage accessory look</div>
-              <div className="tw-row">
-                {[['shelf', 'Chip shelf'], ['grounded', 'On the ground'], ['bar', 'Shelf bar']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.heroDecorStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, heroDecorStyle: v }))}>{l}</button>
-                ))}
-              </div>
-
-              <div className="tw-label">Child avatar (before hatch)</div>
-              <div className="tw-row">
-                {[['silhouette', 'Silhouette'], ['emblem', 'Sprout'], ['backpack', 'Backpack'], ['sneaker', 'Sneaker'], ['star', 'Star']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.childAvatar === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, childAvatar: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Child avatar selector removed — the default 'silhouette' is the chosen behaviour;
+                  tw.childAvatar stays defaulted so ctx.tweaks keeps getting it. */}
 
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two
@@ -395,6 +389,29 @@ function App() {
                 </React.Fragment>
               )}
 
+              <div className="tw-label">Impact / fall detection (C7)</div>
+              {/* Highest-priority safety event — ends any warning in progress and takes the screen.
+                  Answer "I'm okay" to dismiss, "I need help" (or wait out the 20s) to escalate. */}
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', background: THEME.danger, color: '#fff', borderColor: THEME.danger }} onClick={triggerImpact}>
+                ▲ Trigger impact / fall
+              </button>
+              {impact && (
+                <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', padding: '10px', marginTop: 6 }} onClick={() => setImpact(false)}>■ Dismiss safety check</button>
+              )}
+
+              <div className="tw-label">Achievement unlock</div>
+              {/* The celebration a child sees the moment a badge is earned. Pick any badge to
+                  preview its unlock — each rarity (Common / Rare / Epic) reads differently. */}
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {ACHIEVEMENTS.map(a => (
+                  <button key={a.id} className={'tw-chip' + (unlock?.id === a.id ? ' on' : '')}
+                    onClick={() => { setRole('child'); setUnlock(a); }}>🏅 {L(a.name)}</button>
+                ))}
+              </div>
+              {unlock && (
+                <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', padding: '10px', marginTop: 6 }} onClick={() => setUnlock(null)}>■ Dismiss unlock</button>
+              )}
+
               <div className="tw-label">Story</div>
               <div className="tw-row">
                 <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => setStory(true)}>▲ How JoanX works</button>
@@ -405,19 +422,9 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Warning style</div>
-              <div className="tw-row">
-                {[['sheet', 'Sheet'], ['spotlight', 'Spotlight'], ['banner', 'Banner']].map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.overlay === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, overlay: v }))}>{l}</button>
-                ))}
-              </div>
-
-              <div className="tw-label">Message style</div>
-              <div className="tw-row">
-                {MSG_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.msgLayout === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, msgLayout: id }))}>{label}</button>
-                ))}
-              </div>
+              {/* Warning style + Message style selectors removed — the defaults 'spotlight' and
+                  'sheet' are the chosen behaviours; both stay defaulted in tw so the overlay keeps
+                  getting them. */}
 
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
@@ -454,13 +461,8 @@ function App() {
                 ))}
               </div>
 
-              <div className="tw-label">Battle layout</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {BATTLE_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.battleLayout === id ? ' on' : '')}
-                    onClick={() => { setTw(s => ({ ...s, battleLayout: id })); setStack([]); setScreen('battle'); }}>{label}</button>
-                ))}
-              </div>
+              {/* Battle layout selector removed — the default 'classic' is the chosen behaviour;
+                  tw.battleLayout stays defaulted so Battle keeps getting it. */}
 
               <div className="tw-label">Collection layout</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
@@ -512,11 +514,20 @@ function App() {
           {role === 'parent' && (
             <React.Fragment>
               <div className="tw-label">Flow</div>
-              <button className="tw-chip" style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(false); setStack([]); }}>Replay onboarding</button>
+              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setParentOnboarded(false); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
               <div className="tw-row" style={{ marginTop: 8 }}>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_addchild'); setStack([]); }}>Pairing / Add child</button>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
               </div>
+
+              <div className="tw-label">Impact / fall alert (C7)</div>
+              {/* the urgent notification the parent receives when the child didn't respond */}
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', background: THEME.danger, color: '#fff', borderColor: THEME.danger }} onClick={triggerImpact}>
+                ▲ Show urgent alert
+              </button>
+              {impact && (
+                <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', padding: '10px', marginTop: 6 }} onClick={() => setImpact(false)}>■ Dismiss alert</button>
+              )}
 
               <div className="tw-label">Report layout</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

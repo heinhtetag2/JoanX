@@ -254,7 +254,7 @@ function VillainRoad({ ctx }) {
       {/* detail card for the selected stop — anchored near the bottom edge. This
           screen has no child tab bar (villaindex isn't a CHILD_TAB_ROOT), so the
           card floats above just the home indicator, not a phantom nav bar. */}
-      <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: THEME.shadowSoft, zIndex: 5 }}>
+      <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: '0 4px 13px rgba(46,43,41,0.06)', zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 18, background: selDiscovered ? THEME.dangerLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><Mascot species={v.species} stage={2} color={v.color} mood="alert" size={46} /></div>
