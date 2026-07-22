@@ -163,13 +163,13 @@ function Collection({ ctx }) {
         <SectionHead title={L('All buddies')} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           {visibleCharacters().map(c => (
-            <button key={c.id} disabled={!c.owned} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+            <button key={c.id} disabled={!c.owned} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ background: '#fff', borderRadius: 18, padding: '16px 10px 14px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative' }}>
               {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
               <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}>
                 <Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} />
               </div>
-              <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
-              <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: c.owned ? THEME.fg1 : THEME.fg3, lineHeight: 1.2 }}>{c.owned ? c.name : '???'}</div>
+              <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
             </button>
           ))}
         </div>

@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentSettings
 
 import React from 'react';
-import { APP_CATEGORIES, CHILDREN } from '../core/data.jsx';
+import { APP_CATEGORIES, CHILDREN, PERMISSIONS } from '../core/data.jsx';
 import { Badge, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
@@ -13,6 +13,7 @@ function ParentSettings({ ctx }) {
     mode: child.mode || 'smart',
     cats: Object.fromEntries(APP_CATEGORIES.map(c => [c.id, c.blocked])),
     sens: 2, notif: true, gam: true, rules: [],
+    grants: Object.fromEntries(PERMISSIONS.map(p => [p.id, true])),
   };
   const cfg = child.cfg;
   const [, force] = React.useReducer(x => x + 1, 0);
@@ -20,6 +21,16 @@ function ParentSettings({ ctx }) {
 
   const mode = cfg.mode, cats = cfg.cats, sens = cfg.sens, notif = cfg.notif, gam = cfg.gam;
   const setModeBoth = m => { update({ mode: m }); ctx.setMode(m); };
+
+  // Onboarding consent: what the child actually accepted at setup. Read-only here —
+  // the parent can see which required protections were granted vs declined, but the
+  // grant itself lives on the child's device (OS permission), so there's no toggle.
+  const grants = cfg.grants || Object.fromEntries(PERMISSIONS.map(p => [p.id, true]));
+  const declinedCount = PERMISSIONS.filter(p => !grants[p.id]).length;
+  const allGranted = declinedCount === 0;
+  const consentTone = allGranted
+    ? { bg: 'var(--color-interactives-badge-evergreen-default)', fg: 'var(--color-interactives-badge-evergreen-label)' }
+    : { bg: 'var(--color-interactives-badge-ember-default)',     fg: 'var(--color-interactives-badge-ember-label)' };
 
   // Remove-child flow: confirm sheet → unlink device + delete this child, then
   // return to the Children list (which re-reads CHILDREN, now one shorter).
@@ -62,6 +73,43 @@ function ParentSettings({ ctx }) {
           <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '10px 4px 0' }}>
             <Icon name="info" size={13} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 11.5, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L('Switched to a new phone? Reconnect and scan the new QR shown in their JoanX app.')}</span>
+          </div>
+        </div>
+
+        {/* onboarding consent — what the child accepted at setup (read-only status the parent can check) */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Setup agreement')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+          {/* at-a-glance summary strip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', background: consentTone.bg }}>
+            <div style={{ width: 36, height: 36, borderRadius: 11, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name={allGranted ? 'shield-check' : 'shield-alert'} size={19} color={consentTone.fg} stroke={2.2} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: consentTone.fg }}>{allGranted ? L('Accepted everything') : L('%n not accepted').replace('%n', declinedCount)}</div>
+              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{`${PERMISSIONS.length - declinedCount}/${PERMISSIONS.length} · ${L('required accepted at setup')}`}</div>
+            </div>
+          </div>
+          {/* per-item accepted / declined status */}
+          {PERMISSIONS.map(p => {
+            const ok = grants[p.id];
+            return (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: `1px solid ${THEME.border}` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon name={p.icon} size={18} color={THEME.fg2} stroke={2.2} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>{L(p.name)}</div>
+                  <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L(p.blurb)}</div>
+                </div>
+                <Badge variant={ok ? 'success' : 'warning'}>
+                  <Icon name={ok ? 'check' : 'alert-triangle'} size={11} color="currentColor" stroke={2.6} />{L(ok ? 'Accepted' : 'Declined')}
+                </Badge>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', gap: 7, alignItems: 'flex-start', padding: '11px 14px 13px', borderTop: `1px solid ${THEME.border}` }}>
+            <Icon name="info" size={13} color={THEME.fg3} stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 11.5, color: THEME.fg3, lineHeight: 1.45, fontWeight: 600 }}>{L('These are the protections your child accepted during setup. Declined items limit safety warnings.')}</span>
           </div>
         </div>
 

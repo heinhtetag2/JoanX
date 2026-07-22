@@ -566,8 +566,8 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
             const isBadges = active === 'badges';
             const have = isBadges ? badgesEarned() : owned.length;
             const total = isBadges ? ACHIEVEMENTS.length : all.length;
-            const accent = isBadges ? THEME.gold : THEME.primary;
-            const accentLight = isBadges ? THEME.goldLight : THEME.primaryLight;
+            const accent = isBadges ? THEME.gold : THEME.success;
+            const accentLight = isBadges ? THEME.goldLight : THEME.successLight;
             const label = isBadges ? 'Badges earned' : 'Buddies collected';
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 999, boxShadow: THEME.shadowCard, padding: '10px 16px', marginBottom: 16 }}>

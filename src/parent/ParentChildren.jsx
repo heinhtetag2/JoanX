@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentChildren
 
 import React from 'react';
-import { CHILDREN, FEATURES, MAX_CHILDREN } from '../core/data.jsx';
+import { CHILDREN, FEATURES, MAX_CHILDREN, PERMISSIONS } from '../core/data.jsx';
 import { Icon, PhotoAvatar, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
@@ -19,11 +19,19 @@ function ParentChildren({ ctx }) {
       <div style={{ padding: '8px 16px 0' }}>
         {CHILDREN.map((k, ki) => {
           const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
+          // onboarding consent at a glance: how many required permissions the child
+          // left off. Same source Rules & settings reads (cfg.grants), default all-on.
+          const grants = k.cfg?.grants || Object.fromEntries(PERMISSIONS.map(p => [p.id, true]));
+          const consentOff = PERMISSIONS.filter(p => !grants[p.id]).length;
+          const allConsented = consentOff === 0;
           return (
           <div key={k.id} onClick={() => ctx.nav('p_settings', { child: k })} style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 12, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ position: 'relative' }}>
-                <PhotoAvatar src={k.photo} size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={<MascotChip species={k.avatar} color={k.color} size={46} bg={`var(--color-interactives-avatar-${pal}-default)`} />} />
+                {/* child photo first, then the standard child avatar — a child face for
+                    every card, never the buddy character. Mascot only if both are absent. */}
+                <PhotoAvatar src={k.photo} size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
+                  <PhotoAvatar src="/assets/avatars/avatar-child.png" size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={<MascotChip species={k.avatar} color={k.color} size={46} bg={`var(--color-interactives-avatar-${pal}-default)`} />} />} />
                 <span style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 999, background: k.online ? THEME.success : THEME.fg3, border: '2.5px solid #fff' }} />
               </div>
               <div style={{ flex: 1 }}>
@@ -44,6 +52,16 @@ function ParentChildren({ ctx }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="battery-medium" size={14} color={k.battery < 50 ? THEME.warning : THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700 }}>{k.online ? `${k.battery}%` : '—'}</span></div>
                 <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{L('Battery')}</div>
               </div>
+            </div>
+            {/* onboarding consent — the parent's at-a-glance "did this child approve
+                everything at setup?" green when all on, amber when something's missing */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, padding: '9px 12px', borderRadius: 12, background: allConsented ? THEME.successLight : THEME.warningLight }}>
+              <Icon name={allConsented ? 'shield-check' : 'shield-alert'} size={15} color={allConsented ? THEME.success : THEME.warning} stroke={2.3} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: allConsented ? THEME.success : THEME.warning }}>
+                {allConsented
+                  ? (ko ? '온보딩 동의 모두 완료' : 'All setup permissions on')
+                  : (ko ? `온보딩 ${consentOff}개 미동의 · 안전 경고 제한` : `${consentOff} setup permission${consentOff > 1 ? 's' : ''} off · warnings limited`)}
+              </span>
             </div>
           </div>
           );})}

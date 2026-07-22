@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, CHILD_REPORTS, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
-import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
+import { Icon, PhotoAvatar, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -14,10 +14,22 @@ function ChildChip({ selected, onPick }) {
   const idx = Math.min(selected, CHILDREN.length - 1);
   const k = CHILDREN[idx];
   if (!k) return null;
+  // A real child face in the switcher, never the buddy character: the child's own
+  // photo first, then the shared default child photo, and only a mascot if both are
+  // missing — the same fallback chain the Children list uses.
+  const PAL = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'];
+  const kidFace = (c, i, size, selectedBg) => {
+    const pal = PAL[i % PAL.length];
+    return (
+      <PhotoAvatar src={c.photo} size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
+        <PhotoAvatar src="/assets/avatars/avatar-child.png" size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }}
+          fallback={<MascotChip species={c.avatar} color={c.color} size={size} bg={selectedBg} />} />} />
+    );
+  };
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', padding: '6px 12px 6px 6px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <MascotChip species={k.avatar} color={k.color} size={32} bg={BRAND.primaryLight} />
+        {kidFace(k, idx, 32, BRAND.primaryLight)}
         <span style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{k.name}</span>
         <Icon name="chevron-down" size={15} color={THEME.fg2} stroke={2.4} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }} />
       </button>
@@ -31,7 +43,7 @@ function ChildChip({ selected, onPick }) {
               const on = i === idx;
               return (
                 <button key={c.id} onClick={() => { onPick(i); setOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: on ? BRAND.primaryLight : 'transparent', border: 'none', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                  <MascotChip species={c.avatar} color={c.color} size={30} bg={on ? '#fff' : THEME.surface2} />
+                  {kidFace(c, i, 30, on ? '#fff' : THEME.surface2)}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{c.name}</div>
                     <div style={{ fontSize: 11, color: THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L('Age')} {c.age} · {c.device}</div>
@@ -128,17 +140,6 @@ function StdBarChart({ data, series, line, yMax, yStep, height = 168, barW = 9, 
   );
 }
 
-const Legend = ({ items }) => (
-  <div style={{ display: 'flex', gap: 18, marginTop: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-    {items.map(([l, c]) => (
-      <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 9, height: 9, borderRadius: 3, background: c }} />
-        <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{L(l)}</span>
-      </div>
-    ))}
-  </div>
-);
-
 // Shimmer placeholder used by the Reports loading skeleton.
 const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
 
@@ -146,7 +147,7 @@ const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleto
 function ParentReports({ ctx }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
-  const [respActive, setRespActive] = React.useState(6);   // selected day in the response-mix chart (default: latest)
+  const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
 
   // loading — KPI + chart shimmer while the week's report is fetched
   if (ctx.demo?.loading) {
@@ -187,7 +188,11 @@ function ParentReports({ ctx }) {
   // data-viz palette (tuned for charts / color-blindness at 40–60)
   const SERIES = { good: 'var(--color-data-green-50)', mid: 'var(--color-data-yellow-40)', bad: 'var(--color-data-red-50)', trend: 'var(--color-data-blue-40)', rate: 'var(--color-data-yellow-40)' };
   // calmer palette for the response-mix chart — teal hero, muted accents
-  const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#e2a395' };
+  const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#6f9dcf' };
+  // response-mix chart shows the week weekend-first: Sat, Sun, then Mon–Fri. reactions is
+  // Mon-first, so this maps display position → source index for the bars, labels and tooltip.
+  const WEEK_ORDER = [5, 6, 0, 1, 2, 3, 4];
+  const oReactions = WEEK_ORDER.map(i => reactions[i]);
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   // F-20 — behavior-change framing: risky events are reported as a reduction
   // rate (start-of-week baseline vs the latest days), not a raw weekly count.
@@ -195,6 +200,8 @@ function ParentReports({ ctx }) {
   const recent3 = risk.slice(-3).reduce((a, b) => a + b, 0) / 3;
   const riskReduction = base3 > 0 ? Math.round(((base3 - recent3) / base3) * 100) : 0;
   const stopsTotal = reactions.reduce((a, d) => a + d.immediate, 0);
+  const delayedTotal = reactions.reduce((a, d) => a + d.delayed, 0);
+  const ignoredTotal = reactions.reduce((a, d) => a + d.ignored, 0);
   const totalReacts = reactions.reduce((a, d) => a + d.immediate + d.delayed + d.ignored, 0) || 1;
   const immediateShare = stopsTotal / totalReacts;
   const actData = reactions.map((d, i) => ({ label: dayLabels[i], risk: risk[i], stops: d.immediate }));
@@ -207,10 +214,13 @@ function ParentReports({ ctx }) {
   const dayName = i => (ko ? ['월', '화', '수', '목', '금', '토', '일'][i] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]);
   const t = {
     aiSub: ko ? `${nm}의 한 주를 쉬운 말로 요약` : `A plain-language summary of ${nm}'s week`,
-    respTitle: ko ? `${nm}가 경고에 반응하는 방식` : `How ${nm} responds to warnings`,
-    respNote: doingWell
-      ? (ko ? '대부분의 경고가 즉시 멈춤으로 이어져요 — 바라던 모습이에요.' : 'Most warnings end in an immediate stop — exactly what we want.')
-      : (ko ? '이번 주엔 늦은 반응과 무시가 늘었어요 — 부드럽게 이야기 나눠보세요.' : 'More delayed and ignored responses this week — worth a gentle chat.'),
+    respTitle: ko ? '경고에 반응하는 방식' : 'How they respond to warnings',
+    respInsTitle: doingWell
+      ? (ko ? '즉시 멈춤이 대부분이에요' : 'Mostly immediate stops')
+      : (ko ? '늦은 반응·무시가 늘었어요' : 'More delayed & ignored'),
+    respInsBody: doingWell
+      ? (ko ? '좋은 습관이 자리잡고 있어요 — 계속 응원해 주세요.' : 'A good habit is forming — keep cheering them on.')
+      : (ko ? '함께 규칙을 살펴보고 즉시 멈추는 연습을 해보세요.' : 'Review the rules together and practice stopping right away.'),
     buildHabits: ko ? `${nm}와 안전한 습관 만들기` : `Build safer habits with ${nm}`,
     insightTitle: ko ? '이게 무슨 의미냐면' : 'What this means',
     insightBody: doingWell
@@ -261,45 +271,115 @@ function ParentReports({ ctx }) {
           ))}
         </div>
 
-        {/* response mix card */}
+        {/* response mix card — per-series stats up top, a right %-axis chart with dashed
+            gridlines and connected rounded bars, and a bottom insight (reference layout) */}
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <div style={{ flex: 1, paddingRight: 10 }}>
-              <div style={{ fontSize: 15, fontWeight: 800 }}>{t.respTitle}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 3 }}>{t.respNote}</div>
-            </div>
-            <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{t.respTitle}</div>
+            <button onClick={() => ctx.nav('p_response', { childId: child.id })} aria-label={t.respTitle} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
-          <div style={{ marginTop: 16 }}>
-            <ChartReadout title={dayName(respActive)} rows={[
-              { label: 'immediate', value: reactions[respActive].immediate, color: RESP.immediate },
-              { label: 'delayed', value: reactions[respActive].delayed, color: RESP.delayed },
-              { label: 'ignored', value: reactions[respActive].ignored, color: RESP.ignored },
-            ]} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 94, borderBottom: `1.5px solid ${THEME.border}` }}>
-            {reactions.map((d, i) => {
-              const tot = d.immediate + d.delayed + d.ignored;
-              const on = respActive === i;
+
+          {/* per-series summary — dot + label, the week's share, a warn flag when a slower
+              response is creeping up, and a mini bar of that share */}
+          <div style={{ display: 'flex', gap: 18, marginTop: 18 }}>
+            {[
+              // lo–hi is each series' NORMAL range — a floating green band on the gray track
+              // (as % of all responses). The tick is the actual value: green when it sits inside
+              // the band, orange when it lands outside it (over for delayed/ignored).
+              { label: 'Immediate', c: RESP.immediate, val: stopsTotal,   lo: 65, hi: 90 },
+              { label: 'Delayed',   c: RESP.delayed,   val: delayedTotal, lo: 0,  hi: 15 },
+              { label: 'Ignored',   c: RESP.ignored,   val: ignoredTotal, lo: 0,  hi: 5 },
+            ].map(s => {
+              const pct = Math.round((s.val / totalReacts) * 100);
+              const inRange = pct >= s.lo && pct <= s.hi;
+              const WARN = '#ef8b2c';
               return (
-                <div key={i}
-                  onClick={() => setRespActive(i)}
-                  style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '100%', cursor: 'pointer', borderRadius: 8, background: on ? 'rgba(46,43,41,.06)' : 'transparent', transition: 'background .15s', WebkitTapHighlightColor: 'transparent' }}>
-                  <div style={{ width: 17, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 2 }}>
-                    {d.ignored > 0 && <div style={{ height: `${(d.ignored / tot) * 100}%`, background: RESP.ignored, borderRadius: 4 }} />}
-                    {d.delayed > 0 && <div style={{ height: `${(d.delayed / tot) * 100}%`, background: RESP.delayed, borderRadius: 4 }} />}
-                    <div style={{ height: `${(d.immediate / tot) * 100}%`, background: RESP.immediate, borderRadius: 4 }} />
+                <div key={s.label} style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(s.label)}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
+                    <span style={{ fontSize: 21, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{pct}%</span>
+                    {!inRange && (
+                      <span style={{ width: 17, height: 17, borderRadius: 999, background: WARN, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ color: '#fff', fontSize: 11.5, fontWeight: 900, lineHeight: 1 }}>!</span>
+                      </span>
+                    )}
+                  </div>
+                  {/* floating green NORMAL-range band on the gray track + a tick at the value */}
+                  <div style={{ position: 'relative', height: 6, borderRadius: 999, background: THEME.surface2, marginTop: 11 }}>
+                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${s.lo}%`, width: `${s.hi - s.lo}%`, background: 'rgba(79,157,137,.40)', borderRadius: 999 }} />
+                    <div style={{ position: 'absolute', top: -3, bottom: -3, left: `${Math.min(98, Math.max(2, pct))}%`, width: 3, transform: 'translateX(-50%)', borderRadius: 999, background: inRange ? RESP.immediate : WARN, boxShadow: '0 0 0 1.5px #fff' }} />
                   </div>
                 </div>
               );
             })}
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-            {reactions.map((d, i) => (
-              <span key={i} onClick={() => setRespActive(i)} style={{ flex: 1, textAlign: 'center', fontSize: 9.5, color: respActive === i ? THEME.fg1 : THEME.fg3, fontWeight: respActive === i ? 800 : 600, cursor: 'pointer' }}>{d.day[0]}</span>
+
+          {/* chart — dashed 0/50/100 gridlines behind connected rounded bars, %-axis on the right */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 26 }}>
+            <div style={{ flex: 1, position: 'relative', height: 132 }}>
+              {[100, 50, 0].map(g => (
+                <div key={g} style={{ position: 'absolute', left: 0, right: 0, top: `${100 - g}%`, borderTop: `1px dashed ${THEME.border}` }} />
+              ))}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+                {oReactions.map((d, i) => {
+                  const tot = d.immediate + d.delayed + d.ignored;
+                  const on = respActive === i;
+                  return (
+                    <div key={i} onClick={() => setRespActive(a => (a === i ? null : i))} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '100%', cursor: 'pointer', borderRadius: 8, background: on ? 'rgba(46,43,41,.05)' : 'transparent', transition: 'background .15s', WebkitTapHighlightColor: 'transparent' }}>
+                      {/* one continuous stacked bar — segments butt together, the column clips
+                          to a rounded outline so it reads as a single connected line */}
+                      <div style={{ width: 18, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', borderRadius: 6, overflow: 'hidden' }}>
+                        {d.ignored > 0 && <div style={{ height: `${(d.ignored / tot) * 100}%`, background: RESP.ignored }} />}
+                        {d.delayed > 0 && <div style={{ height: `${(d.delayed / tot) * 100}%`, background: RESP.delayed }} />}
+                        <div style={{ height: `${(d.immediate / tot) * 100}%`, background: RESP.immediate }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* tap tooltip — click a bar to show that day's breakdown over it (click-only, no hover) */}
+              {respActive != null && (() => {
+                const d = oReactions[respActive];
+                const center = Math.min(84, Math.max(16, ((respActive + 0.5) / oReactions.length) * 100));
+                return (
+                  <div style={{ position: 'absolute', top: 2, left: `${center}%`, transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', background: '#fff', borderRadius: 12, boxShadow: '0 8px 22px rgba(46,43,41,.16)', padding: '8px 11px', minWidth: 104 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg2, marginBottom: 5 }}>{dayName(WEEK_ORDER[respActive])}</div>
+                    {[['Immediate', RESP.immediate, d.immediate], ['Delayed', RESP.delayed, d.delayed], ['Ignored', RESP.ignored, d.ignored]].map(([l, c, v]) => (
+                      <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                        <span style={{ width: 7, height: 7, borderRadius: 999, background: c, flexShrink: 0 }} />
+                        <span style={{ fontSize: 10.5, color: THEME.fg2, fontWeight: 600, flex: 1, whiteSpace: 'nowrap' }}>{L(l)}</span>
+                        <span style={{ fontSize: 11, color: THEME.fg1, fontWeight: 800 }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            <div style={{ width: 30, height: 132, position: 'relative', flexShrink: 0 }}>
+              {[100, 50, 0].map(g => (
+                <span key={g} style={{ position: 'absolute', right: 0, top: `${100 - g}%`, transform: 'translateY(-50%)', fontSize: 10, color: THEME.fg3, fontWeight: 600 }}>{g}%</span>
+              ))}
+            </div>
+          </div>
+
+          {/* day labels, caret under the selected day (aligned to the bars, not the axis) */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 6, paddingRight: 38 }}>
+            {oReactions.map((d, i) => (
+              <div key={i} onClick={() => setRespActive(a => (a === i ? null : i))} style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ fontSize: 10.5, color: respActive === i ? THEME.fg1 : THEME.fg3, fontWeight: respActive === i ? 800 : 600 }}>{d.day[0]}</div>
+                {respActive === i && <div style={{ width: 0, height: 0, margin: '4px auto 0', borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: `5px solid ${THEME.fg1}` }} />}
+              </div>
             ))}
           </div>
-          <Legend items={[['Immediate', RESP.immediate], ['Delayed', RESP.delayed], ['Ignored', RESP.ignored]]} />
+
+          {/* bottom insight — the takeaway, framed like the reference's diagnosis line */}
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${THEME.border}` }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{t.respInsTitle}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 4, lineHeight: 1.5 }}>{t.respInsBody}</div>
+          </div>
         </div>
 
         {/* activity card — inline stats + bars-and-line chart + CTA */}

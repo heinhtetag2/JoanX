@@ -4,7 +4,7 @@ import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
@@ -232,6 +232,7 @@ function App() {
       // center tab-bar scan button — the global connect flow (scan/code, then child picker)
       p_connect: <ParentAddChild ctx={{ ...ctx, params: { connect: true, scan: true } }} />,
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
+      p_response: <ParentResponseDetail ctx={ctx} />,
     })[pScreen] || <ParentReports ctx={ctx} />;
   }
 

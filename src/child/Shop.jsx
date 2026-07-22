@@ -358,12 +358,15 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
         const b = reveal ? hatch.buddy : null;
         const rar = b ? RARITY[b.rarity] : null;
         const eggC = eggColorFor(hatch.eggRarity);   // shell colour of the egg being hatched
+        // The reveal is themed to the EGG's own shell colour (common=warm sand · rare=ocean ·
+        // epic=iris) — richer than the flat rarity accents, so even a common hatch feels warm
+        // rather than grey. An epic egg celebrates epic even when it hatches a commoner buddy
+        // (the buddy's own tier still shows on the gem chip).
         return (
           <div className={`jx-fade${reveal ? '' : ' jx-egg-bg'}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
-            // Reveal backdrop reads the buddy's RARITY tier (common=sand · rare=ocean ·
-            // epic=iris), the same colour the egg shell wore — so an epic hatch stays purple,
-            // a rare hatch is blue, a common one sand, regardless of the buddy's own hue.
-            ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 70)} 0%, ${shade(eggC, 92)} 58%, #fff 100%)` }
+            // Backdrop + CTA both derive from the SAME egg shell colour, so the whole reveal
+            // matches the egg you opened — surface and button never clash across any tier.
+            ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 76)} 0%, ${shade(eggC, 90)} 58%, #fff 100%)` }
             : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
             {!reveal ? (
               <React.Fragment>
@@ -373,16 +376,18 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
                   <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
                   {/* quick-pop glow — the gradual crack brings its own seam-light instead */}
                   {cracking && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
-                  <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
+                  <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
                     {cracking && gradualCrack
                       ? <CrackingEgg size={132} rarity={hatch.eggRarity} />
                       : <EggShape size={132} rarity={hatch.eggRarity} />}
                   </button>
                 </div>
                 <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Buddy Egg')}</h2>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1 }}>
-                  <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap to hatch')}
-                </div>
+                {/* label pill doubles as a second hatch trigger, so tapping it isn't a
+                    dead-end — the copy still points at the egg as the main target */}
+                <button onClick={cracking ? undefined : crackEgg} disabled={cracking} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: cracking ? 'default' : 'pointer' }}>
+                  <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap the egg to hatch')}
+                </button>
                 {/* shake affordance — parked at the far bottom, bigger + its own copy */}
                 {eggShake && !cracking && (
                   <div style={{ position: 'absolute', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 46px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -429,10 +434,15 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
                   {hatch.dup ? `${L('You already have')} ${b.name} — ${L('turned into XP')}` : L('Added to your collection')}
                 </p>
 
-                {/* CTA — flat, buddy-tinted, full-width pill (no glow, no icon) */}
-                <button onClick={closeHatch} className="jx-press" style={{ marginTop: 30, width: 260, maxWidth: '82%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: b.color, color: '#fff', borderRadius: 18, padding: '15px 0', fontSize: 15.5, fontWeight: 800, boxShadow: 'none' }}>
-                  {hatch.dup ? L('Awesome!') : L('Keep it')}
-                </button>
+                {/* CTA — bottom-anchored, full-width pill matching the Onboarding first-buddy
+                    reveal (flat, no glow/icon), a deepened shade of the egg shell colour so it
+                    reads on the soft-tinted backdrop with legible white text. Pinned to the
+                    overlay's bottom edge so its position + width stay put regardless of buddy size. */}
+                <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+                  <button onClick={closeHatch} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: shade(eggC, -22), color: '#fff', borderRadius: 18, padding: '16px 0', fontSize: 15.5, fontWeight: 800, boxShadow: 'none' }}>
+                    {hatch.dup ? L('Awesome!') : L('Keep it')}
+                  </button>
+                </div>
               </React.Fragment>
             )}
           </div>

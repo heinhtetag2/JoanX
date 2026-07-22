@@ -368,7 +368,7 @@ const KO = {
   'Opened': '열었어요', 'Outfits': '의상', 'Owned': '보유', 'Unlock rooms': '방 잠금 해제',
   // egg & hatch flow (A-2 / F-15)
   'Buddy Egg': '버디 알', 'Hatch a random new buddy': '랜덤으로 새 버디를 부화시켜요',
-  'Tap to hatch': '눌러서 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
+  'Tap to hatch': '눌러서 부화하기', 'Tap the egg to hatch': '알을 톡 눌러 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
   // outfits bought on the buddy's page (A-5)
   'Unlocks at Stage': '해금 단계',
   'Dress up your buddy': '내 친구 꾸미기',
@@ -460,6 +460,10 @@ const KO = {
   'Warns only in clear risk — fewest interruptions.': '명백한 위험에서만 알려요 — 방해 최소화.', 'Recommended balance of safety and calm.': '안전과 편안함의 권장 균형.', 'Warns earlier and more often.': '더 일찍, 더 자주 알려요.',
   'Time rules': '시간 규칙', 'School commute': '등하굣길', 'After school': '방과 후', 'At home': '집에서',
   'Relaxed': '완화', 'Add a schedule': '일정 추가', 'Playground': '놀이터',
+  // parent: onboarding consent status — what the child accepted during setup
+  'Setup agreement': '온보딩 동의', 'Accepted everything': '모두 동의함', '%n not accepted': '%n개 미동의',
+  'required accepted at setup': '온보딩 필수 항목 동의', 'Accepted': '동의함', 'Declined': '미동의',
+  'These are the protections your child accepted during setup. Declined items limit safety warnings.': '온보딩에서 아이가 동의한 보호 항목이에요. 미동의 항목은 안전 경고가 제한됩니다.',
 
   // ── parent: schedule editor ──
   'Edit schedule': '일정 편집', 'New schedule': '새 일정', 'Schedule name': '일정 이름',

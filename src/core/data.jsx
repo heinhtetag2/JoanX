@@ -1800,28 +1800,31 @@ const CHILDREN = [
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
       sens: 2, notif: true, gam: true,
+      grants: { motion: true, usage: true, overlay: true, notif: true },
       rules: [
         { t: 'School commute', s: 'Mon–Fri · 7:30–8:30 AM', tag: 'Strict' },
         { t: 'After school',   s: 'Mon–Fri · 3:00–5:00 PM', tag: 'Balanced' },
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, photo: '/assets/avatars/avatar-1.svg',
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, photo: '/assets/avatars/avatar-leo.png',
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
       sens: 3, notif: true, gam: false,
+      grants: { motion: true, usage: true, overlay: false, notif: true },
       rules: [
         { t: 'School commute', s: 'Mon–Fri · 8:00–8:40 AM', tag: 'Strict' },
         { t: 'Playground',     s: 'Daily · 4:00–6:00 PM',   tag: 'Strict' },
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, photo: '/assets/avatars/avatar-1.svg',
+  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, photo: '/assets/avatars/avatar-yuna.png',
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
       sens: 2, notif: true, gam: true,
+      grants: { motion: true, usage: true, overlay: true, notif: false },
       rules: [
         { t: 'School commute', s: 'Mon–Fri · 8:10–8:40 AM', tag: 'Strict' },
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },

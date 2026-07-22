@@ -1,8 +1,8 @@
 // JoanX — parent app · ParentAddChild
 
 import React from 'react';
-import { APP_CATEGORIES, CHILDREN, MAX_CHILDREN } from '../core/data.jsx';
-import { Button, DateField, Icon, Input, SelectField, THEME, Toggle, formatPhone, screenBgFor } from '../core/primitives.jsx';
+import { APP_CATEGORIES, CHILDREN, MAX_CHILDREN, PARENT_PROFILE } from '../core/data.jsx';
+import { Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle, formatPhone, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip, shade } from '../core/characters.jsx';
 import { BRAND, brandBtn } from './shared.jsx';
@@ -91,6 +91,9 @@ function ParentAddChild({ ctx }) {
   };
 
   const childInitial = (((pairChild ? pairChild.name : (kids[0] && kids[0].name)) || '').trim()[0] || 'C').toUpperCase();
+  // the child shown on the connected screen: the one just paired, else the first kid.
+  // Its photo drives the child avatar; mascot / initial fall back when there's no photo.
+  const connChild = pairChild || kids[0] || null;
   const allNamed = kids.every(k => k.name.trim());
 
   return (
@@ -310,13 +313,18 @@ function ParentAddChild({ ctx }) {
               {[0, 0.8].map((d, i) => (
                 <div key={`ring${i}`} className="jx-ring" style={{ position: 'absolute', top: '50%', left: '50%', width: 124, height: 124, marginTop: -62, marginLeft: -62, borderRadius: 999, border: `2px solid ${THEME.success}`, zIndex: 0, animationDelay: `${d}s` }} />
               ))}
-              {/* child */}
-              <div style={{ width: 86, height: 86, borderRadius: 999, background: THEME.beachBg, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)' }}>
-                <span className="game-font" style={{ fontSize: 34, fontWeight: 500, color: THEME.beach }}>{childInitial}</span>
+              {/* child — this child's photo, then the standard child avatar, and only
+                  then the mascot / initial. This connect moment always shows a child
+                  face (never the buddy character) even before a per-child photo exists. */}
+              <div style={{ width: 86, height: 86, borderRadius: 999, background: THEME.beachBg, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 2, boxShadow: 'inset 0 0 0 1px rgba(46,43,41,.05)', overflow: 'hidden' }}>
+                <PhotoAvatar src={connChild?.photo} size={78} fallback={
+                  <PhotoAvatar src="/assets/avatars/avatar-child.png" size={78} fallback={connChild
+                    ? <MascotChip species={connChild.avatar} color={connChild.color} size={78} bg={THEME.beachBg} />
+                    : <span className="game-font" style={{ fontSize: 34, fontWeight: 500, color: THEME.beach }}>{childInitial}</span>} />} />
               </div>
-              {/* parent */}
-              <div style={{ width: 86, height: 86, borderRadius: 999, background: BRAND.primaryLight, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -26, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(68,122,175,.10)' }}>
-                <Icon name="users" size={38} color={BRAND.primary} stroke={2.2} />
+              {/* parent — real photo, the people glyph as fallback */}
+              <div style={{ width: 86, height: 86, borderRadius: 999, background: BRAND.primaryLight, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -26, position: 'relative', zIndex: 1, boxShadow: 'inset 0 0 0 1px rgba(68,122,175,.10)', overflow: 'hidden' }}>
+                <PhotoAvatar src={PARENT_PROFILE.avatar} size={78} fallback={<Icon name="users" size={38} color={BRAND.primary} stroke={2.2} />} />
               </div>
             </div>
 

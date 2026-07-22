@@ -40,10 +40,10 @@ function reportModel(sel, ctx) {
   const dayName = i => (ko ? ['월', '화', '수', '목', '금', '토', '일'][i] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]);
   const t = {
     aiSub: ko ? `${nm}의 한 주를 쉬운 말로 요약` : `A plain-language summary of ${nm}'s week`,
-    respTitle: ko ? `${nm}가 경고에 반응하는 방식` : `How ${nm} responds to warnings`,
+    respTitle: ko ? '경고에 반응하는 방식' : 'How they respond to warnings',
     respNote: doingWell
-      ? (ko ? '대부분의 경고가 즉시 멈춤으로 이어져요 — 바라던 모습이에요.' : 'Most warnings end in an immediate stop — exactly what we want.')
-      : (ko ? '이번 주엔 늦은 반응과 무시가 늘었어요 — 부드럽게 이야기 나눠보세요.' : 'More delayed and ignored responses this week — worth a gentle chat.'),
+      ? (ko ? '대부분 즉시 멈춰요.' : 'Mostly immediate stops.')
+      : (ko ? '늦은 반응·무시가 늘었어요.' : 'More delayed and ignored responses.'),
     buildHabits: ko ? `${nm}와 안전한 습관 만들기` : `Build safer habits with ${nm}`,
     insightTitle: ko ? '이게 무슨 의미냐면' : 'What this means',
     insightBody: doingWell
@@ -68,7 +68,8 @@ function reportModel(sel, ctx) {
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
     { v: rep.acceptance + '%', l: 'Acceptance', c: SERIES.rate },
   ];
-  return { child, rep, reactions, risk, SERIES, RESP, actData, riskMax, doingWell, ko, dayName, t, tone, kpis, inline };
+  return { child, rep, reactions, risk, SERIES, RESP, actData, riskMax, doingWell, ko, dayName, t, tone, kpis, inline,
+    openResponse: () => ctx.nav('p_response', { childId: child.id }) };
 }
 
 // ── child switcher (identical behaviour to the original) ─────────────
@@ -196,7 +197,7 @@ const Legend = ({ items }) => (
 // ── reusable content blocks (self-contained; own their chart state) ──
 // Stacked-bar response mix over 7 days. `bare` drops the card chrome for the feed layout.
 function ResponseMixCard({ model, bare }) {
-  const { reactions, RESP, dayName, t } = model;
+  const { reactions, RESP, dayName, t, openResponse } = model;
   const [active, setActive] = React.useState(6);
   const body = (
     <React.Fragment>
@@ -206,7 +207,7 @@ function ResponseMixCard({ model, bare }) {
             <div style={{ fontSize: 15, fontWeight: 800 }}>{t.respTitle}</div>
             <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 3 }}>{t.respNote}</div>
           </div>
-          <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
+          <button onClick={() => openResponse && openResponse()} aria-label={t.respTitle} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
         </div>
       )}
       <div style={{ marginTop: bare ? 4 : 16 }}>

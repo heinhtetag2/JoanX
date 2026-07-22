@@ -17,10 +17,13 @@ import { screenBgActive, ScreenHeader } from './shared.jsx';
 
 // This week, one dot per day — the last `streak` days are safe (done), the rest
 // still ahead. Same week strip the Rewards streak card uses, so the two agree.
-const WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const WEEK_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const WEEK_KO = ['월', '화', '수', '목', '금', '토', '일'];
 
 function StreakDetail({ ctx }) {
   const streak = PLAYER.streak;
+  const week = ctx.lang === 'ko' ? WEEK_KO : WEEK_EN;
+  const todayIdx = Math.min(streak, week.length) - 1;   // the most recent safe day = "today"
   // The two accident-free milestones, straight from POINTS so the numbers match the grant
   // engine. 7 days pays points; 30 days pays a Special Egg (and the Ember buddy). Built in
   // render, not at module load, so the reward copy re-localises when the language toggles.
@@ -49,7 +52,10 @@ function StreakDetail({ ctx }) {
                 <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.9)' }}>{L('Day streak')}</span>
               </div>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,.86)', marginTop: 4, lineHeight: 1.4 }}>
-                {next ? `${next.days - streak} ${L('more days for')} ${next.reward}` : L('Every milestone cleared — amazing!')}
+                {next
+                  // KO attaches the counter to 일 with no space ("2일 더 모으면"); EN keeps it ("2 more days for")
+                  ? `${next.days - streak}${ctx.lang === 'ko' ? '' : ' '}${L('more days for')} ${next.reward}`
+                  : L('Every milestone cleared — amazing!')}
               </div>
             </div>
           </div>
@@ -70,13 +76,15 @@ function StreakDetail({ ctx }) {
         <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '15px 16px', marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, marginBottom: 12 }}>{L('This week')}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {WEEK.map((d, i) => {
+            {week.map((d, i) => {
               const done = i < streak;
+              const today = i === todayIdx;
               return (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 999, background: done ? THEME.joy : THEME.surface2, border: done ? 'none' : `2px solid ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {done ? <Icon name="flame" size={16} color="#fff" stroke={2.6} /> : <span style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 700 }}>{d}</span>}
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 999, background: done ? THEME.joy : THEME.surface2, border: today ? `2px solid ${shade(THEME.joy, -22)}` : done ? 'none' : `2px solid ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+                    {done && <Icon name="flame" size={16} color="#fff" stroke={2.6} />}
                   </div>
+                  <span style={{ fontSize: 11, color: today ? THEME.fg1 : THEME.fg3, fontWeight: today ? 800 : 600 }}>{d}</span>
                 </div>
               );
             })}
