@@ -26,7 +26,7 @@ function reportModel(sel, ctx) {
   };
   const reactions = rep.reactions, risk = rep.risk;
   const SERIES = { trend: 'var(--color-data-blue-40)', rate: 'var(--color-data-yellow-40)' };
-  const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#e2a395' };
+  const RESP = { immediate: '#4f9d89', delayed: '#e0af3e', ignored: '#e86f5f' };
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const base3 = risk.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
   const recent3 = risk.slice(-3).reduce((a, b) => a + b, 0) / 3;
@@ -197,7 +197,7 @@ const Legend = ({ items }) => (
 // ── reusable content blocks (self-contained; own their chart state) ──
 // Stacked-bar response mix over 7 days. `bare` drops the card chrome for the feed layout.
 function ResponseMixCard({ model, bare }) {
-  const { reactions, RESP, dayName, t, openResponse } = model;
+  const { reactions, RESP, dayName, ko, t, openResponse } = model;
   const [active, setActive] = React.useState(6);
   const body = (
     <React.Fragment>
@@ -235,7 +235,7 @@ function ResponseMixCard({ model, bare }) {
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
         {reactions.map((d, i) => (
-          <span key={i} onClick={() => setActive(i)} style={{ flex: 1, textAlign: 'center', fontSize: 9.5, color: active === i ? THEME.fg1 : THEME.fg3, fontWeight: active === i ? 800 : 600, cursor: 'pointer' }}>{d.day[0]}</span>
+          <span key={i} onClick={() => setActive(i)} style={{ flex: 1, textAlign: 'center', fontSize: 9.5, color: active === i ? THEME.fg1 : THEME.fg3, fontWeight: active === i ? 800 : 600, cursor: 'pointer' }}>{ko ? dayName(i) : d.day[0]}</span>
         ))}
       </div>
       <Legend items={[['Immediate', RESP.immediate], ['Delayed', RESP.delayed], ['Ignored', RESP.ignored]]} />

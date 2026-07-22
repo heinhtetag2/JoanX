@@ -144,7 +144,7 @@ function StdBarChart({ data, series, line, yMax, yStep, height = 168, barW = 9, 
 const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
 
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
-function ParentReports({ ctx }) {
+function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
   const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
@@ -188,10 +188,10 @@ function ParentReports({ ctx }) {
   // data-viz palette (tuned for charts / color-blindness at 40–60)
   const SERIES = { good: 'var(--color-data-green-50)', mid: 'var(--color-data-yellow-40)', bad: 'var(--color-data-red-50)', trend: 'var(--color-data-blue-40)', rate: 'var(--color-data-yellow-40)' };
   // calmer palette for the response-mix chart — teal hero, muted accents
-  const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#6f9dcf' };
+  const RESP = { immediate: '#4f9d89', delayed: '#e0af3e', ignored: '#e86f5f' };
   // response-mix chart shows the week weekend-first: Sat, Sun, then Mon–Fri. reactions is
   // Mon-first, so this maps display position → source index for the bars, labels and tooltip.
-  const WEEK_ORDER = [5, 6, 0, 1, 2, 3, 4];
+  const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];   // Mon→Sun, matching the detail page + streak screen
   const oReactions = WEEK_ORDER.map(i => reactions[i]);
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   // F-20 — behavior-change framing: risky events are reported as a reduction
@@ -244,6 +244,15 @@ function ParentReports({ ctx }) {
     const good = k.l === 'Avg. response' ? !positive : positive;
     return { ...k, good };
   });
+  // "Ring + stats" KPI variant (Tweaks): a donut + a 2×2 grid. The tile icons wear a
+  // green-forward family that echoes the response donut beside them (brand green ·
+  // teal · gold · brand green) so the whole KPI block reads as one palette, not two.
+  const gridStats = [
+    { icon: 'footprints',   c: '#6a9f4b', v: rep.safeWalkMin + 'm', l: 'Safe walking' },   // olive green
+    { icon: 'timer',        c: '#3f9d8c', v: rep.avgResponse + 's', l: 'Avg. response' },   // teal
+    { icon: 'flame',        c: '#c9922b', v: rep.streak + 'd',      l: 'Safe streak' },     // gold (echoes donut delayed)
+    { icon: 'shield-check', c: '#4f9d89', v: stopsTotal,            l: 'Safe stops' },       // data teal-green (= donut immediate), NOT the brand green
+  ];
   // inline stat-dots inside the activity card. Lead metric is the risky-behavior
   // reduction rate (a down-arrow % is the win), not the raw event count (F-20).
   const inline = [
@@ -257,19 +266,65 @@ function ParentReports({ ctx }) {
       <ParentHead stacked sub={L("This week's progress")} title={L(doingWell ? 'Getting better' : 'Needs attention')} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
 
-        {/* KPI cards — 2×2 grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '4px 0 6px' }}>
-          {kpis.map((k, i) => (
-            <div key={i} style={{ background: '#fff', borderRadius: 18, padding: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Icon name={k.icon} size={17} color={THEME.fg3} stroke={2} /></div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
-                <span style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{k.v}</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>
+        {/* KPI block — Tweaks: 'cards' (2×2 white cards) or flat 'ring' (ring + stat grid, no card bg) */}
+        {kpiStyle === 'ring' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '6px 2px 12px' }}>
+            {/* response-mix donut — total responses in the middle, coloured segments for the
+                immediate / delayed / ignored split (like the reference's "Total" donut) */}
+            <div style={{ position: 'relative', width: 104, height: 104, flexShrink: 0 }}>
+              <svg width={104} height={104} viewBox="0 0 104 104">
+                <circle cx="52" cy="52" r="44" fill="none" stroke="rgba(46,43,41,.08)" strokeWidth="11" />
+                {(() => {
+                  const C = 2 * Math.PI * 44, gap = 4;
+                  let acc = 0;
+                  return [
+                    { v: stopsTotal,   c: RESP.immediate },
+                    { v: delayedTotal, c: RESP.delayed },
+                    { v: ignoredTotal, c: RESP.ignored },
+                  ].filter(s => s.v > 0).map((s, i) => {
+                    const full = (s.v / totalReacts) * C;
+                    const len = Math.max(1, full - gap);
+                    const off = -acc;
+                    acc += full;
+                    return <circle key={i} cx="52" cy="52" r="44" fill="none" stroke={s.c} strokeWidth="11" strokeLinecap="round"
+                      strokeDasharray={`${len} ${C - len}`} strokeDashoffset={off} transform="rotate(-90 52 52)" />;
+                  });
+                })()}
+              </svg>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 27, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{totalReacts}</span>
+                <span style={{ fontSize: 10.5, color: THEME.fg2, fontWeight: 600, marginTop: 3 }}>{ko ? '총 반응' : 'Total'}</span>
               </div>
-              <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 5 }}>{L(k.l)}</div>
             </div>
-          ))}
-        </div>
+            {/* 2×2 stat grid */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 10px' }}>
+              {gridStats.map(s => (
+                <div key={s.l} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 999, background: `${s.c}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon name={s.icon} size={16} color={s.c} stroke={2.3} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{s.v}</span>
+                    <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(s.l)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '4px 0 6px' }}>
+            {kpis.map((k, i) => (
+              <div key={i} style={{ background: '#fff', borderRadius: 18, padding: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Icon name={k.icon} size={17} color={THEME.fg3} stroke={2} /></div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
+                  <span style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{k.v}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>
+                </div>
+                <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 5 }}>{L(k.l)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* response mix card — per-series stats up top, a right %-axis chart with dashed
             gridlines and connected rounded bars, and a bottom insight (reference layout) */}
@@ -292,7 +347,7 @@ function ParentReports({ ctx }) {
             ].map(s => {
               const pct = Math.round((s.val / totalReacts) * 100);
               const inRange = pct >= s.lo && pct <= s.hi;
-              const WARN = '#ef8b2c';
+              const WARN = RESP.ignored;   // the risk/attention hue — one warm-red language, not a stray orange
               return (
                 <div key={s.label} style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -309,7 +364,7 @@ function ParentReports({ ctx }) {
                   </div>
                   {/* floating green NORMAL-range band on the gray track + a tick at the value */}
                   <div style={{ position: 'relative', height: 6, borderRadius: 999, background: THEME.surface2, marginTop: 11 }}>
-                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${s.lo}%`, width: `${s.hi - s.lo}%`, background: 'rgba(79,157,137,.40)', borderRadius: 999 }} />
+                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${s.lo}%`, width: `${s.hi - s.lo}%`, background: 'rgba(75,129,79,.40)', borderRadius: 999 }} />
                     <div style={{ position: 'absolute', top: -3, bottom: -3, left: `${Math.min(98, Math.max(2, pct))}%`, width: 3, transform: 'translateX(-50%)', borderRadius: 999, background: inRange ? RESP.immediate : WARN, boxShadow: '0 0 0 1.5px #fff' }} />
                   </div>
                 </div>
@@ -369,7 +424,7 @@ function ParentReports({ ctx }) {
           <div style={{ display: 'flex', gap: 8, marginTop: 6, paddingRight: 38 }}>
             {oReactions.map((d, i) => (
               <div key={i} onClick={() => setRespActive(a => (a === i ? null : i))} style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}>
-                <div style={{ fontSize: 10.5, color: respActive === i ? THEME.fg1 : THEME.fg3, fontWeight: respActive === i ? 800 : 600 }}>{d.day[0]}</div>
+                <div style={{ fontSize: 10.5, color: respActive === i ? THEME.fg1 : THEME.fg3, fontWeight: respActive === i ? 800 : 600 }}>{ko ? dayName(WEEK_ORDER[i]) : d.day[0]}</div>
                 {respActive === i && <div style={{ width: 0, height: 0, margin: '4px auto 0', borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: `5px solid ${THEME.fg1}` }} />}
               </div>
             ))}

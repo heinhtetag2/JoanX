@@ -14,7 +14,7 @@ import { BRAND, ParentHead } from './shared.jsx';
 
 // Immediate = safe (green), delayed = yellow, ignored = risky (red). This is the
 // semantic palette — ignored is the one to worry about, so it reads red, not blue.
-const RESP = { immediate: '#4f9d89', delayed: '#ecc879', ignored: '#e2a395' };
+const RESP = { immediate: '#4f9d89', delayed: '#e0af3e', ignored: '#e86f5f' };
 
 function ParentResponseDetail({ ctx }) {
   const ko = getLang() === 'ko';

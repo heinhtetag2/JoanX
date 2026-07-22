@@ -85,7 +85,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -221,7 +221,7 @@ function App() {
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
     else body = ({
-      p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
+      p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
@@ -233,7 +233,7 @@ function App() {
       p_connect: <ParentAddChild ctx={{ ...ctx, params: { connect: true, scan: true } }} />,
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
       p_response: <ParentResponseDetail ctx={ctx} />,
-    })[pScreen] || <ParentReports ctx={ctx} />;
+    })[pScreen] || <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} />;
   }
 
   const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
@@ -536,6 +536,17 @@ function App() {
                   <button key={id} className={'tw-chip' + (tw.reportLayout === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, reportLayout: id })); setParentOnboarded(true); setPScreen('p_reports'); setStack([]); }}>{label}</button>
                 ))}
               </div>
+
+              {tw.reportLayout === 'analytics' && (
+                <>
+                  <div className="tw-label">KPI card style</div>
+                  <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                    {[['cards', 'Cards'], ['ring', 'Ring + stats']].map(([id, label]) => (
+                      <button key={id} className={'tw-chip' + (tw.kpiStyle === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, kpiStyle: id })); setParentOnboarded(true); setPScreen('p_reports'); setStack([]); }}>{label}</button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
