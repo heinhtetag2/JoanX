@@ -8,12 +8,12 @@ import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
 import { music, sfx } from '../core/sound.jsx';
 
-// A white (or accent) contour that hugs a mascot's silhouette — eight hard
-// drop-shadows fanned around it fake a solid outline, so a transparent PNG/SVG
-// character can wear a sticker border without sitting inside a filled circle.
-const strokeOutline = (c, t = 2) =>
-  `drop-shadow(${t}px 0 0 ${c}) drop-shadow(-${t}px 0 0 ${c}) drop-shadow(0 ${t}px 0 ${c}) drop-shadow(0 -${t}px 0 ${c})` +
-  ` drop-shadow(${t}px ${t}px 0 ${c}) drop-shadow(-${t}px ${t}px 0 ${c}) drop-shadow(${t}px -${t}px 0 ${c}) drop-shadow(-${t}px -${t}px 0 ${c})`;
+// A white contour that hugs a mascot's silhouette — FOUR diagonal drop-shadows
+// fake a solid outline (diagonals cover corners AND edges, so half the shadows
+// of a full 8-way fan render the same sticker border at a fraction of the paint
+// cost — this screen stacks one on every villain, so cheapness matters).
+const strokeOutline = (c, t = 1) =>
+  `drop-shadow(${t}px ${t}px 0 ${c}) drop-shadow(-${t}px ${t}px 0 ${c}) drop-shadow(${t}px -${t}px 0 ${c}) drop-shadow(-${t}px -${t}px 0 ${c})`;
 
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Two layouts, switchable from the Tweaks panel: 'road' (level-map trail,
@@ -114,7 +114,7 @@ function VillainRoad({ ctx }) {
   const curRef = React.useRef(null);
 
   // stop coordinates in a 0..W × 0..H space — hand-placed to land on the path
-  // that is PAINTED INTO the map art (villain-map.png), not on a road we draw.
+  // that is PAINTED INTO the map art (villain-map.webp), not on a road we draw.
   // The art climbs BOTTOM → TOP: the lush garden at the bottom is level 1, the
   // trail winds up over the stone bridge and ends at the star gate at the top,
   // which is where the toughest villain / boss sits. So index 0 is the bottom
@@ -158,7 +158,7 @@ function VillainRoad({ ctx }) {
             stretched, so it always looks right); the stops are pinned by coordinate on top,
             so it's the PATH that adapts to the art, not the art that bends to the path. */}
         <div onClick={() => { if (sel != null) setSel(null); }} style={{ position: 'relative', height: H,
-          backgroundImage: 'url(/assets/backgrounds/villain-map.png)',
+          backgroundImage: 'url(/assets/backgrounds/villain-map.webp)',
           backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center top' }}>
           {/* no drawn road, footsteps, or scenery: the path and world are painted INTO the
               map art, so the only overlay is the villains themselves, dropped onto it. */}
@@ -179,7 +179,7 @@ function VillainRoad({ ctx }) {
                   {/* the villain as a sticker: one clean white contour hugging its shape,
                       the SAME on every stop — state is carried by the pulse ring (current)
                       and a gentle scale (tapped), never by recolouring the outline. */}
-                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(.95) contrast(.9) '}${strokeOutline('#fff', 0.75)} drop-shadow(0 3px 4px rgba(46,43,41,.30))`, lineHeight: 0 }}>
+                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(.95) contrast(.9) '}${strokeOutline('#fff', 1)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
                     <Mascot species={vi.species} stage={2} color={vi.color} mood="alert" size={size} />
                   </div>
                   {/* status pill — one chip at the top carries the whole state instead of a

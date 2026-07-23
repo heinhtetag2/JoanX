@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>JoanX — Prototype</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg?v=3">
+<!-- Villain-road map is a full-bleed background fetched only when that screen mounts,
+     so it used to pop in late. Prefetch it during idle after first paint → it's warm
+     in cache by the time the child opens the Villain Dex, and the screen shows instantly. -->
+<link rel="prefetch" as="image" href="/assets/backgrounds/villain-map.webp">
 <style>
   html, body { height: 100%; background-color: #10502f; }
   body {

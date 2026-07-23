@@ -362,38 +362,22 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
             <button onClick={() => ctx.nav('p_response', { childId: child.id })} aria-label={t.respTitle} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
 
-          {/* per-series summary — dot + label, the week's share, a warn flag when a slower
-              response is creeping up, and a mini bar of that share */}
+          {/* per-series summary — just dot + label + the week's share, no range band or warn flag */}
           <div style={{ display: 'flex', gap: 18, marginTop: 18 }}>
             {[
-              // lo–hi is each series' NORMAL range — a floating green band on the gray track
-              // (as % of all responses). The tick is the actual value: green when it sits inside
-              // the band, orange when it lands outside it (over for delayed/ignored).
-              { label: 'Immediate', c: RESP.immediate, val: stopsTotal,   lo: 65, hi: 90 },
-              { label: 'Delayed',   c: RESP.delayed,   val: delayedTotal, lo: 0,  hi: 15 },
-              { label: 'Ignored',   c: RESP.ignored,   val: ignoredTotal, lo: 0,  hi: 5 },
+              { label: 'Immediate', c: RESP.immediate, val: stopsTotal },
+              { label: 'Delayed',   c: RESP.delayed,   val: delayedTotal },
+              { label: 'Ignored',   c: RESP.ignored,   val: ignoredTotal },
             ].map(s => {
               const pct = Math.round((s.val / totalReacts) * 100);
-              const inRange = pct >= s.lo && pct <= s.hi;
-              const WARN = RESP.ignored;   // the risk/attention hue — one warm-red language, not a stray orange
               return (
                 <div key={s.label} style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c, flexShrink: 0 }} />
                     <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(s.label)}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
+                  <div style={{ marginTop: 7 }}>
                     <span style={{ fontSize: 21, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{pct}%</span>
-                    {!inRange && (
-                      <span style={{ width: 17, height: 17, borderRadius: 999, background: WARN, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ color: '#fff', fontSize: 11.5, fontWeight: 900, lineHeight: 1 }}>!</span>
-                      </span>
-                    )}
-                  </div>
-                  {/* floating green NORMAL-range band on the gray track + a tick at the value */}
-                  <div style={{ position: 'relative', height: 6, borderRadius: 999, background: THEME.surface2, marginTop: 11 }}>
-                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${s.lo}%`, width: `${s.hi - s.lo}%`, background: 'rgba(75,129,79,.40)', borderRadius: 999 }} />
-                    <div style={{ position: 'absolute', top: -3, bottom: -3, left: `${Math.min(98, Math.max(2, pct))}%`, width: 3, transform: 'translateX(-50%)', borderRadius: 999, background: inRange ? RESP.immediate : WARN, boxShadow: '0 0 0 1.5px #fff' }} />
                   </div>
                 </div>
               );
