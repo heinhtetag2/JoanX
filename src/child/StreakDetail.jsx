@@ -10,9 +10,8 @@
 
 import React from 'react';
 import { PLAYER, POINTS } from '../core/data.jsx';
-import { Bar, Icon, THEME } from '../core/primitives.jsx';
+import { Bar, Icon, SealCheck, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 
 // ── Streak-badge ladder ──────────────────────────────────────────────
@@ -48,51 +47,14 @@ function StreakDetail({ ctx }) {
   // engine. 7 days pays points; 30 days pays a Special Egg (and the Ember buddy). Built in
   // render, not at module load, so the reward copy re-localises when the language toggles.
   const MILESTONES = [
-    { days: POINTS.streak7Days,  reward: `+${POINTS.streak7Bonus} ${L('points')}`, icon: 'star', color: THEME.gold,  bg: THEME.goldLight },
-    { days: POINTS.streak30Days, reward: L('a Special Egg'),                       icon: 'egg',  color: THEME.rEpic, bg: THEME.rEpicBg },
+    { days: POINTS.streak7Days,  reward: `+${POINTS.streak7Bonus} ${L('points')}` },
+    { days: POINTS.streak30Days, reward: L('a Special Egg') },
   ];
-  const next = MILESTONES.find(m => streak < m.days);   // the goal still being worked toward
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       <ScreenHeader title={L('Safe streak')} onBack={() => ctx.back()} />
       <div style={{ padding: '0 16px' }}>
-
-        {/* hero — brand green (hero surfaces stay brand, not the ember flame accent), the flame
-            held in a white chip, the count big, and the next reward as a live progress bar */}
-        {/* 1px transparent border matches the milestone/goal cards' border, so the hero's
-            content (chip, count) shares the exact same left edge as their titles + flames */}
-        <div style={{ borderRadius: 24, border: '1px solid transparent', padding: '20px 16px', marginBottom: 14, color: '#fff', boxSizing: 'border-box', width: '100%',
-          background: `linear-gradient(165deg, ${shade(THEME.brand, 12)}, ${shade(THEME.brand, -20)})` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon name="flame" size={30} color="#fff" stroke={2.3} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{streak}</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.9)' }}>{L('Day streak')}</span>
-              </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.86)', marginTop: 4, lineHeight: 1.4 }}>
-                {next
-                  // KO attaches the counter to 일 with no space ("2일 더 모으면"); EN keeps it ("2 more days for")
-                  ? `${next.days - streak}${ctx.lang === 'ko' ? '' : ' '}${L('more days for')} ${next.reward}`
-                  : L('Every milestone cleared — amazing!')}
-              </div>
-            </div>
-          </div>
-
-          {next && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ height: 7, borderRadius: 999, background: 'rgba(255,255,255,.24)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: 999, background: '#fff', width: `${Math.round((streak / next.days) * 100)}%` }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.86)', marginTop: 7 }}>
-                <span>{streak}{L('d')}</span><span>{next.days}{L('d')}</span>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* streak-heat ladder — the flame grows hotter the longer the streak burns */}
         <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '15px 16px 16px', marginBottom: 14 }}>
@@ -131,9 +93,9 @@ function StreakDetail({ ctx }) {
                 {/* header — icon centred on the title + reward (its two primary lines), so it
                     never floats when a progress bar is present below */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 14, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: done ? 1 : .55 }}>
-                    <Icon name={done ? m.icon : 'lock'} size={20} color={done ? m.color : THEME.fg3} stroke={2.3} />
-                  </div>
+                  {/* the same seal-check the daily tasks use — green when the goal is reached,
+                      grey while it's still being earned (replaces the padlock chip) */}
+                  <SealCheck size={40} bg={done ? THEME.success : THEME.border} tick={done ? '#fff' : THEME.fg3} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
@@ -142,9 +104,9 @@ function StreakDetail({ ctx }) {
                     <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
                   </div>
                 </div>
-                {/* progress drops below, indented to line up under the text (icon 44 + gap 13) */}
+                {/* progress drops below, indented to line up under the text (seal 40 + gap 13) */}
                 {!done && (
-                  <div style={{ marginTop: 10, marginLeft: 57 }}>
+                  <div style={{ marginTop: 10, marginLeft: 53 }}>
                     <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
                     <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 700, marginTop: 5 }}>{streak}/{m.days} {L('days')}</div>
                   </div>
