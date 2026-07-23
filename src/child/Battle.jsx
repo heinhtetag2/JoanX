@@ -1,8 +1,8 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, rewardTier, resetVillainRecord, isBoss, nextVillain, PLAYER, rarityOf, recommendedLevel, resolveBattle, roleOf, STATS, statsFor, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
-import { Bar, Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
+import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
@@ -22,7 +22,6 @@ function Battle({ ctx, layout = 'classic' }) {
   const [stageUp, setStageUp] = React.useState(null);            // A-3.3: the win evolved the buddy
   const [storyChapter, setStoryChapter] = React.useState(null);   // A-8.1: the first win opened a chapter
   const [wonEgg, setWonEgg] = React.useState(null);               // A-8.4: the egg this win actually paid
-  const [, redraw] = React.useReducer(n => n + 1, 0);   // the record lives on the shared villain row
   const [lastReward, setLastReward] = React.useState(BATTLE_REWARDS.firstClear);
   // A-8.2 — the villain fought and the power/odds it was rolled against, frozen at roll time
   const [lastFoe, setLastFoe] = React.useState(null);
@@ -47,14 +46,7 @@ function Battle({ ctx, layout = 'classic' }) {
   const open = nextVillain();                               // null once the whole ladder is cleared
   const [targetLv, setTargetLv] = React.useState((open || ladder[ladder.length - 1]).lv);
   const villain = villainByLv(targetLv) || ladder[0];
-  const cleared = ladder.filter(v => v.defeated);
-  const isRematch = villain.defeated;                       // already beaten once
   const isFinale = villain.role === 'finalBoss' && !villain.defeated;
-  // A-8.4 — the reward shown BEFORE the fight is read from rewardTier(), the same function
-  // that pays it out afterwards. This screen used to work the tier out for itself, which meant
-  // two copies of the rule — and the copy here had already fallen behind: it promised Vilord's
-  // first clear an ordinary first-clear reward, not the boss reward it actually pays.
-  const reward = BATTLE_REWARDS[rewardTier(villain, true)];
   const opp = { species: villain.species, name: villain.name, color: villain.color, level: villain.lv, rarity: 'rare' };
 
   // A-3.3 — battles are fought with the four core stats (HP · Courage · Protection ·
@@ -62,7 +54,6 @@ function Battle({ ctx, layout = 'classic' }) {
   // formula lives there, not here: a balance retune is a server settings change, and a
   // screen that did its own arithmetic would quietly disagree with the stats it displays.
   const power = battlePower;
-  const selStats = statsFor(sel);
   // A-8.2 — the recommended level is advice, not a gate. A buddy below it can still be sent
   // in; the odds just get long. `odds` is the number the child is shown BEFORE committing,
   // and it is the same number the roll happens against — see rollBattle.
@@ -307,153 +298,71 @@ function Battle({ ctx, layout = 'classic' }) {
   );
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Battle')} onBack={() => ctx.nav('home')} right={<button onClick={() => ctx.nav('villaindex')} aria-label={L('Villain Dex')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', border: 'none', borderRadius: 999, padding: '7px 12px', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{L('Dex')}</span></button>} />
-      <div style={{ padding: '0 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: THEME.primaryLight, borderRadius: 14, padding: '11px 14px', marginBottom: 16 }}>
-          <Icon name="info" size={18} color={THEME.primary} stroke={2.3} />
-          <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: THEME.primaryDark, fontWeight: 600 }}>{usedToday ? L('Come back tomorrow for your next challenge.') : L("Five villain challenges a day. Battles pause while you're walking.")}</span>
-          <span className="game-font" style={{ flexShrink: 0, fontSize: 12, fontWeight: 500, color: THEME.primaryDark, background: '#fff', borderRadius: 999, padding: '3px 9px' }}>{left}/{battlesPerDay()}</span>
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: screenBgActive() }}>
+      <ScreenHeader title={L('Battle')} onBack={() => ctx.back()} />
+      <div className="no-sb" style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 102 }}>
+      <div style={{ padding: '0 16px 8px' }}>
+        {/* Who you're up against — already chosen on the villain road, so it's one compact
+            line here, not a card. This screen's whole job is the fighter choice. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', borderRadius: 16, padding: '10px 13px', border: `1.5px solid ${THEME.border}`, marginBottom: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Mascot species={villain.species} stage={2} color={villain.color} mood="alert" size={34} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: THEME.danger, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Opponent')} · Lv{villain.lv}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{L(villain.name)}</div>
+          </div>
+          <span className="game-font" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface2, borderRadius: 999, padding: '5px 11px', fontSize: 13, fontWeight: 500, color: THEME.fg2 }}>
+            <Icon name="zap" size={13} color={THEME.danger} stroke={2.4} />{villain.power}
+          </span>
         </div>
 
-        {/* The villain being challenged (A-8). A rematch is labelled as such; a boss says so.
-            The ability line is here because these are characters, not power bars — a child
-            should know Noct puts the lights out before deciding to walk into it. */}
-        <div style={{ background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 12, border: `1.5px solid ${isRematch ? THEME.border : THEME.dangerLight}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ flexShrink: 0 }}><Mascot species={villain.species} stage={2} color={villain.color} mood="alert" size={56} /></div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: isRematch ? THEME.fg3 : THEME.danger, textTransform: 'uppercase', letterSpacing: .4 }}>
-                  {isRematch ? L('Rematch') : L('Next villain')} · Lv{villain.lv}
-                </span>
-                {isBoss(villain) && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '2px 7px', fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: .3 }}>
-                    <Icon name={roleOf(villain).icon} size={10} color="#9e7300" stroke={2.6} />{L(roleOf(villain).label)}
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>{L(villain.name)}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Power')} {villain.power}{isRematch ? ` · ${L('cleared')} ${villain.clears}×` : ''}</div>
-            </div>
-            <span className="game-font" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '5px 10px', fontSize: 12, fontWeight: 500 }}>
-              <Icon name="star" size={12} color={THEME.gold} fill={THEME.gold} stroke={2} />+{reward.points}
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 11, paddingTop: 11, borderTop: `1px solid ${THEME.border}` }}>
-            <Icon name="zap" size={14} color={THEME.danger} stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg1 }}>{L(villain.ability.name)}</div>
-              <div style={{ fontSize: 11.5, color: THEME.fg2, lineHeight: 1.45, marginTop: 1 }}>{L(villain.ability.effect)}</div>
-            </div>
-          </div>
-
-          {/* A-8.2 — the odds, before you commit. The recommended level is shown as advice
-              and an under-levelled fight is flagged, but nothing here refuses the challenge:
-              the child is told the chance and allowed to take it. */}
-          <div style={{ marginTop: 11, paddingTop: 11, borderTop: `1px solid ${THEME.border}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: THEME.fg1 }}>{L('Your chance')}</span>
-              <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: odds >= 50 ? THEME.success : odds >= 25 ? THEME.warning : THEME.danger }}>{odds}%</span>
-              <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: under ? THEME.warning : THEME.fg3 }}>
-                {L('Recommended')} Lv{recommendedLevel(villain)}
-              </span>
-            </div>
-            <Bar value={odds} max={100} color={odds >= 50 ? THEME.success : odds >= 25 ? THEME.warning : THEME.danger} height={7} />
-            {under && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                <Icon name="alert-triangle" size={13} color={THEME.warning} stroke={2.4} />
-                <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, lineHeight: 1.4 }}>
-                  {sel.name} {L('is under the recommended level — you can still fight, the odds are just longer.')}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* A-8.1 — the RECORD. This is what a re-challenge is for: proof the buddy has
-              grown. `bestPower` is the strongest buddy that has beaten this villain, so
-              coming back at a higher level is visibly worth something. Only shown once the
-              villain is beaten — before that there is no record, just a locked door. */}
-          {isRematch && (
-            <div style={{ marginTop: 11, paddingTop: 11, borderTop: `1px solid ${THEME.border}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: THEME.fg1 }}>{L('Your record')}</span>
-                <button onClick={() => { resetVillainRecord(villain); redraw(); }}
-                  style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 800, color: THEME.fg3, padding: 0 }}>
-                  <Icon name="rotate-ccw" size={11} color={THEME.fg3} stroke={2.4} />{L('Reset')}
-                </button>
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                {[[L('Wins'), villain.record.wins], [L('Losses'), villain.record.losses],
-                  [L('Best power'), villain.record.bestPower ?? '—']].map(([lbl, val], i) => (
-                  <div key={i} style={{ flex: 1, background: THEME.surface2, borderRadius: 11, padding: '7px 6px', textAlign: 'center' }}>
-                    <div className="game-font" style={{ fontSize: 15, fontWeight: 500, color: THEME.fg1 }}>{val}</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.fg3 }}>{lbl}</div>
+        {/* Choose your fighter — the one decision this screen exists for. Each buddy shows
+            its win chance against THIS villain, turning the pick into a read of the odds
+            rather than a guess. The selected one gets the buddy-tinted card + check. */}
+        <SectionHead title={L('Choose your fighter')} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          {owned.map(c => {
+            const on = sel.id === c.id;
+            const w = winPercent(c, villain);                                  // this buddy vs this villain
+            const wc = w >= 50 ? THEME.success : w >= 25 ? THEME.warning : THEME.danger;
+            return (
+              <button key={c.id} onClick={() => setSel(c)} style={{ position: 'relative', textAlign: 'left', background: on ? THEME.successLight : '#fff', borderRadius: 18, padding: '12px 12px 11px', border: `2px solid ${on ? THEME.success : THEME.border}`, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s, background .15s' }}>
+                {on && <span style={{ position: 'absolute', top: 9, right: 9, width: 20, height: 20, borderRadius: 999, background: THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={48} /></div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                    <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {c.level} · {L('Power')} {power(c)}</div>
                   </div>
-                ))}
-              </div>
-              {/* the first clear is banked — say so, so a re-challenge is never mistaken
-                  for a second shot at the big reward (A-8.1) */}
-              <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600, marginTop: 7, lineHeight: 1.4 }}>
-                {L('First-clear reward already earned — rematches pay the repeat reward.')}
-              </div>
-            </div>
-          )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, background: on ? '#fff' : THEME.surface2, borderRadius: 10, padding: '5px 9px' }}>
+                  <Icon name="target" size={12} color={wc} stroke={2.5} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2 }}>{L('Win chance')}</span>
+                  <span className="game-font" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 500, color: wc }}>{w}%</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* A-8.1: beaten villains stay challengeable — for records and practice,
-            at the smaller repeat reward. */}
-        {cleared.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2, margin: '0 2px 7px' }}>
-              {L('Challenge again')} · <span style={{ color: THEME.fg3 }}>+{BATTLE_REWARDS.repeat.points} {L('points')}</span>
-            </div>
-            <div className="no-sb" style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 2px 6px', margin: '0 -2px' }}>
-              {open && (
-                <button onClick={() => setTargetLv(open.lv)} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, width: 66, padding: '8px 4px', borderRadius: 14, background: '#fff', border: targetLv === open.lv ? `2px solid ${THEME.danger}` : '2px solid transparent', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <Icon name="swords" size={22} color={THEME.danger} stroke={2.2} />
-                  <span style={{ fontSize: 9.5, fontWeight: 800, color: THEME.danger }}>{L('New')}</span>
-                </button>
-              )}
-              {cleared.map(v => (
-                <button key={v.lv} onClick={() => setTargetLv(v.lv)} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, width: 66, padding: '8px 4px', borderRadius: 14, background: '#fff', border: targetLv === v.lv ? `2px solid ${THEME.primary}` : '2px solid transparent', boxShadow: THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <Mascot species={v.species} stage={2} color={v.color} mood="alert" size={34} />
-                  <span style={{ fontSize: 9.5, fontWeight: 800, color: THEME.fg2 }}>Lv{v.lv}</span>
-                </button>
-              ))}
-            </div>
+        {/* the one caveat worth keeping — the picked buddy is under the villain's level, so
+            the odds are long. Not a block, just a heads-up before committing. */}
+        {under && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: THEME.warningLight, borderRadius: 12, padding: '9px 12px', marginBottom: 14 }}>
+            <Icon name="alert-triangle" size={14} color={THEME.warning} stroke={2.4} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, lineHeight: 1.4 }}>{sel.name} {L('is under the recommended level — you can still fight, the odds are just longer.')}</span>
           </div>
         )}
 
-        {/* chosen */}
-        <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(165deg, ${shade(sel.color, 74)}, #fff 75%)`, boxShadow: THEME.shadowCard, textAlign: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Your fighter')}</div>
-          <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={sel.species} stage={sel.stage} color={sel.color} size={150} /></div>
-          <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{sel.name}</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 8 }}>
-            {STATS.map((s, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Icon name={s.icon} size={14} color={THEME.fg2} stroke={2.3} />
-                <span className="game-font" style={{ fontSize: 13, fontWeight: 500 }}>{selStats[s.key]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <SectionHead title={L('Choose a buddy')} />
-        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, marginBottom: 14 }} className="no-sb">
-          {owned.map(c => (
-            <button key={c.id} onClick={() => setSel(c)} style={{ flexShrink: 0, width: 104, background: '#fff', borderRadius: 18, padding: '12px 6px', border: sel.id === c.id ? `2.5px solid ${THEME.primary}` : `2.5px solid transparent`, boxShadow: THEME.shadowCard, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={62} />
-              <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
-              <div style={{ fontSize: 10, color: THEME.fg2 }}>Lv {c.level}</div>
-            </button>
-          ))}
-        </div>
-
+      </div>
+      </div>
+      {/* CTA pinned to the bottom of the screen — it no longer floats mid-page with a
+          gap beneath it. The fighter grid scrolls above; this footer stays put. */}
+      <div style={{ flexShrink: 0, padding: '10px 16px calc(env(safe-area-inset-bottom) + 14px)' }}>
         {usedToday
           ? <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L('Come back tomorrow')}</Button>
-          : <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Find a match')} · {left}/{battlesPerDay()}</Button>}
+          : <Button variant="play" size="lg" fullWidth icon="swords" onClick={start}>{L('Start battle')} · {left}/{battlesPerDay()}</Button>}
       </div>
     </div>
   );
