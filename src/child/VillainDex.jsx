@@ -8,6 +8,13 @@ import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
 import { music, sfx } from '../core/sound.jsx';
 
+// A white (or accent) contour that hugs a mascot's silhouette — eight hard
+// drop-shadows fanned around it fake a solid outline, so a transparent PNG/SVG
+// character can wear a sticker border without sitting inside a filled circle.
+const strokeOutline = (c, t = 2) =>
+  `drop-shadow(${t}px 0 0 ${c}) drop-shadow(-${t}px 0 0 ${c}) drop-shadow(0 ${t}px 0 ${c}) drop-shadow(0 -${t}px 0 ${c})` +
+  ` drop-shadow(${t}px ${t}px 0 ${c}) drop-shadow(-${t}px ${t}px 0 ${c}) drop-shadow(${t}px -${t}px 0 ${c}) drop-shadow(-${t}px -${t}px 0 ${c})`;
+
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Two layouts, switchable from the Tweaks panel: 'road' (level-map trail,
 // à la Candy Crush) and 'list' (the original card list).
@@ -165,16 +172,15 @@ function VillainRoad({ ctx }) {
             const size = isCur ? 80 : 64;
             return (
               <div key={vi.id} ref={isCur ? curRef : null} onClick={(e) => { e.stopPropagation(); if (i !== sel) sfx.select(); setSel(i); }}
-                style={{ position: 'absolute', left: `${(pts[i].x / W) * 100}%`, top: pts[i].y, transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', zIndex: 2 }}>
-                <div style={{ position: 'relative' }}>
-                  {/* sonar ring on the current challenger */}
-                  {isCur && <span style={{ position: 'absolute', inset: -7, borderRadius: 999, border: `2.5px solid ${THEME.danger}`, animation: 'jxRing 1.8s ease-out infinite', pointerEvents: 'none' }} />}
-                  <div style={{ width: size, height: size, borderRadius: 999, background: discovered ? '#fff' : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: isCur ? `2.5px solid ${THEME.danger}` : isSel ? `2.5px solid ${THEME.fg2}` : '2.5px solid #fff',
-                    boxShadow: isCur ? '0 8px 20px rgba(209,69,50,.28)' : THEME.shadowCard, transition: 'border-color .2s' }}>
-                    <div style={{ filter: discovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}>
-                      <Mascot species={vi.species} stage={2} color={vi.color} mood="alert" size={size - 16} />
-                    </div>
+                style={{ position: 'absolute', left: `${(pts[i].x / W) * 100}%`, top: pts[i].y, transform: `translate(-50%,-50%) scale(${isSel ? 1.1 : 1})`, transformOrigin: 'center', transition: 'transform .18s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', zIndex: isSel ? 3 : 2 }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
+                  {/* sonar pulse locates the current challenger — a soft ring, no hard disc */}
+                  {isCur && <span style={{ position: 'absolute', width: size, height: size, borderRadius: 999, border: `2.5px solid ${THEME.danger}`, animation: 'jxRing 1.8s ease-out infinite', pointerEvents: 'none' }} />}
+                  {/* the villain as a sticker: one clean white contour hugging its shape,
+                      the SAME on every stop — state is carried by the pulse ring (current)
+                      and a gentle scale (tapped), never by recolouring the outline. */}
+                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(.95) contrast(.9) '}${strokeOutline('#fff', 0.75)} drop-shadow(0 3px 4px rgba(46,43,41,.30))`, lineHeight: 0 }}>
+                    <Mascot species={vi.species} stage={2} color={vi.color} mood="alert" size={size} />
                   </div>
                   {/* status pill — one chip at the top carries the whole state instead of a
                       check/lock floating off the circle's corner: green ✓ once defeated, a
