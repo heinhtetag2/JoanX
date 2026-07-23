@@ -124,33 +124,27 @@ function StreakDetail({ ctx }) {
           <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, padding: '15px 16px 6px' }}>{L('Streak goals')}</div>
           {MILESTONES.map((m, i) => {
             const done = streak >= m.days;
-            const left = Math.max(0, m.days - streak);
-            // motivating over precise: "N days left" beats a bare fraction. KO has no plural.
-            const leftLabel = ctx.lang === 'ko' ? `${left}일 남음` : `${left} ${left === 1 ? 'day' : 'days'} left`;
             return (
-              <div key={m.days} style={{ padding: '15px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+              <div key={m.days} style={{ padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                {/* header — icon centred on the title + reward (its two primary lines), so it
+                    never floats when a progress bar is present below */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-                  {/* Show the REWARD (a gold star / the Special Egg), never a padlock — the payoff
-                      is what motivates, and it tells the two goals apart at a glance. The progress
-                      bar + "days left" already say it isn't earned yet, so a lock is redundant. */}
-                  <div style={{ width: 46, height: 46, borderRadius: 14, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon name={m.icon} size={23} color={m.color} stroke={2.3} />
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: done ? 1 : .55 }}>
+                    <Icon name={done ? m.icon : 'lock'} size={20} color={done ? m.color : THEME.fg3} stroke={2.3} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
+                      {done && <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>}
+                    </div>
                     <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
                   </div>
-                  {/* status — earned, or how far to go */}
-                  {done
-                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '4px 9px', flexShrink: 0 }}>
-                        <Icon name="check" size={12} color={THEME.success} stroke={3} />{L('Reached')}
-                      </span>
-                    : <span style={{ fontSize: 11, fontWeight: 800, color: THEME.fg2, background: THEME.surface2, borderRadius: 999, padding: '4px 10px', flexShrink: 0 }}>{leftLabel}</span>}
                 </div>
-                {/* progress bar tinted to the reward colour (gold / epic), full-width under the row */}
+                {/* progress drops below, indented to line up under the text (icon 44 + gap 13) */}
                 {!done && (
-                  <div style={{ marginTop: 12 }}>
-                    <Bar value={streak} max={m.days} color={m.color} height={6} />
+                  <div style={{ marginTop: 10, marginLeft: 57 }}>
+                    <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
+                    <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 700, marginTop: 5 }}>{streak}/{m.days} {L('days')}</div>
                   </div>
                 )}
               </div>
