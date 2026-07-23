@@ -315,7 +315,6 @@ function App() {
           )}
           {story && <HowItWorks theme={tw.storyTheme} onClose={() => setStory(false)} onStart={() => setStory(false)} />}
           {role === 'child' && appIntro && <AppIntro onClose={() => setAppIntro(false)} />}
-          <div className="home-ind" style={{ background: role === 'child' && overlay && mode === 'lite' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.32)' }} />
         </div>
       </div>
       </div>

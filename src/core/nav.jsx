@@ -8,7 +8,10 @@ import { L } from './i18n.jsx';
 const CHILD_TABS = [
   { id: 'home', root: 'home', icon: 'house', label: 'Home' },
   { id: 'collection', root: 'collection', icon: 'layout-grid', label: 'Collect', alt: ['character'] },
-  { id: 'battle', root: 'battle', icon: 'swords', label: '', center: true },
+  // The center CTA opens the villain road (빌런 도감) directly — you pick your
+  // opponent on the map first, then "배틀 시작" drops into the Battle hub to fight.
+  // (id stays 'battle' for the tour hook + center styling; only the target differs.)
+  { id: 'battle', root: 'villaindex', icon: 'swords', label: '', center: true },
   // Friends promoted to a primary tab (per product decision). Safety is no longer
   // a tab but stays reachable from every Home variant's "protected" status card.
   { id: 'friends', root: 'friends', icon: 'heart-handshake', label: 'Friends', alt: ['friendhouse', 'addfriend'] },

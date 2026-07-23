@@ -26,7 +26,7 @@ function VillainList({ ctx }) {
   const defeated = VILLAINS.filter(v => v.defeated).length;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.nav('battle')}
+      <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.back()}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
       <div style={{ padding: '0 16px' }}>
         <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
@@ -156,7 +156,13 @@ function VillainRoad({ ctx }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 300, background: screenBgActive() }}>
+      {/* illustrated world map as the scrolling backdrop: `background-attachment: local`
+          makes the art travel WITH the trail as you scroll (not pinned), and repeat-y
+          tiles it down so the full length of the ladder always sits on painted ground */}
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 300,
+        backgroundColor: THEME.brand,
+        backgroundImage: 'url(/assets/backgrounds/villain-map.png)',
+        backgroundSize: '100% auto', backgroundRepeat: 'repeat-y', backgroundAttachment: 'local' }}>
         <div style={{ padding: '0 16px' }}>
           <DexProgress have={defeated} total={VILLAINS.length} label="Villains defeated" icon="skull" accent={THEME.danger} accentLight={THEME.dangerLight} />
         {/* A-8.1 — chapters are earned by first clears, so this counter and the defeated
@@ -253,7 +259,7 @@ function VillainRoad({ ctx }) {
         </div>
       </div>
 
-      <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.nav('battle')}
+      <ScreenHeader title={L('Villain Dex')} onBack={() => ctx.back()}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="skull" size={15} color={THEME.danger} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{defeated}/{VILLAINS.length}</span></div>} />
 
       {/* detail card for the selected stop — anchored near the bottom edge. This

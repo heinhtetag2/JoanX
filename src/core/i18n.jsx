@@ -258,7 +258,7 @@ const KO = {
   'Battle math': '배틀 계산', 'Safe-walk bonus': '안전 걷기 보너스', 'Your total': '내 총 파워',
   'Battle again': '다시 배틀', 'Back home': '홈으로',
   'battles left today. Battles pause while you\'re walking.': '회의 배틀이 남았어요. 걷는 동안에는 배틀이 멈춰요.',
-  'Your fighter': '내 파이터', 'Choose a buddy': '친구 선택', 'Find a match': '매칭 찾기',
+  'Your fighter': '내 파이터', 'Choose a buddy': '친구 선택', 'Choose your fighter': '누구와 함께 싸울까요', 'Opponent': '상대', 'Find a match': '매칭 찾기',
 
   // ── rewards ──
   '5-day streak': '5일 연속', '-day streak': '일 연속',

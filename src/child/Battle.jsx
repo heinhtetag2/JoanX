@@ -21,7 +21,6 @@ function Battle({ ctx, layout = 'classic' }) {
   const [wasImproved, setWasImproved] = React.useState(false);   // A-8.1: a new personal best
   const [stageUp, setStageUp] = React.useState(null);            // A-3.3: the win evolved the buddy
   const [storyChapter, setStoryChapter] = React.useState(null);   // A-8.1: the first win opened a chapter
-  const [wonEgg, setWonEgg] = React.useState(null);               // A-8.4: the egg this win actually paid
   const [lastReward, setLastReward] = React.useState(BATTLE_REWARDS.firstClear);
   // A-8.2 — the villain fought and the power/odds it was rolled against, frozen at roll time
   const [lastFoe, setLastFoe] = React.useState(null);
@@ -95,7 +94,6 @@ function Battle({ ctx, layout = 'classic' }) {
       setWasImproved(res.improved);         // A-8.1 — a new personal best against this villain
       setStageUp(res.stageUp);              // A-3.3 — battle XP carried the buddy into a new stage
       setStoryChapter(res.storyChapter);    // A-8.1 — a first win, and only a first win, tells its story
-      setWonEgg(res.eggWon);                // A-8.4 — the egg that actually dropped, not the one the tier lists
       setLastReward(res.reward);
       setUsedCount(PLAYER.battlesToday);
       w ? sfx.win() : sfx.lose();
@@ -176,18 +174,10 @@ function Battle({ ctx, layout = 'classic' }) {
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
                       <Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
                     </div>
-                    {/* A-8.4 — the EGG. Driven by what was actually awarded, never by
-                        `reward.egg`: an event drop on a repeat is a chance, so reading the
-                        tier would promise an egg the roll did not hand over. It waits in
-                        Your Eggs rather than hatching here — one celebration at a time. */}
-                    {wonEgg && !wasEnding && (
-                      <div className="jx-pop" style={{ display: 'flex', justifyContent: 'center', marginTop: 9 }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.14)', borderRadius: 999, padding: '6px 13px', fontSize: 12.5, fontWeight: 800, color: '#fff' }}>
-                          <Icon name="egg" size={14} color="#fff" stroke={2.3} />
-                          {L(rarityOf(wonEgg).label)} {L('Egg')} · {L('waiting in Your Eggs')}
-                        </span>
-                      </div>
-                    )}
+                    {/* A-8.4 — the egg drop is deliberately NOT surfaced here. The win
+                        awards it behind the scenes; the child meets it on the egg-hatch
+                        screen (via Your Eggs / Back home), so this result stays about the
+                        battle, not the reward. */}
                     {wasFirstClear && (
                       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>
@@ -219,7 +209,7 @@ function Battle({ ctx, layout = 'classic' }) {
                 {/* A-8.1 — a rematch is only worth fighting if it can beat something. The
                     record tracks the strongest buddy you have won with, so this is the line
                     that says the re-challenge actually meant something. */}
-                {wasImproved && (
+                {wasImproved && !wasFirstClear && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.12)', borderRadius: 999, padding: '5px 12px' }}>
                     <Icon name="trending-up" size={13} color={THEME.gold} stroke={2.5} />
                     <span style={{ fontSize: 12, fontWeight: 800, color: THEME.gold }}>{L('New personal best')} · {L('Power')} {lastMath.base}</span>
@@ -237,12 +227,8 @@ function Battle({ ctx, layout = 'classic' }) {
                     <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.gold, textTransform: 'uppercase', letterSpacing: .5 }}>{L('Ending unlocked')}</span>
                   </div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,.86)', lineHeight: 1.6 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
-                  {lastReward.egg && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.12)', borderRadius: 999, padding: '6px 12px' }}>
-                      <Icon name="egg" size={14} color="#fff" stroke={2.3} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{L('Special reward')} · {L(rarityOf(lastReward.egg).label)} {L('Egg')}</span>
-                    </div>
-                  )}
+                  {/* the special-reward egg drops behind the scenes and is met on the
+                      egg-hatch screen, not announced here — same rule as every other win. */}
                 </div>
               )}
 

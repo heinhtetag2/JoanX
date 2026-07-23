@@ -435,11 +435,17 @@ function DateField({ label, value, placeholder, onChange, accent = THEME.primary
 }
 
 // Progress / XP bar
-function Bar({ value = 0, max = 100, color = THEME.primary, track = THEME.border, height = 10, glow }) {
+function Bar({ value = 0, max = 100, color = THEME.primary, track = THEME.border, height = 10, glow, striped }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  // `striped` lays a diagonal hatch over the fill — two tones of the same colour, so
+  // the bar reads as a candy-stripe without a second hue. Same hatch language as the
+  // rarity backdrops.
+  const fill = striped
+    ? { backgroundColor: color, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,.30) 0 7px, transparent 7px 15px)' }
+    : { background: color };
   return (
     <div style={{ width: '100%', height, background: track, borderRadius: 999, overflow: 'hidden' }}>
-      <div style={{ width: pct + '%', height: '100%', background: color, borderRadius: 999, transition: 'width .6s cubic-bezier(.4,0,.2,1)', boxShadow: glow ? `0 0 10px ${color}` : 'none' }} />
+      <div style={{ width: pct + '%', height: '100%', ...fill, borderRadius: 999, transition: 'width .6s cubic-bezier(.4,0,.2,1)', boxShadow: glow ? `0 0 10px ${color}` : 'none' }} />
     </div>
   );
 }

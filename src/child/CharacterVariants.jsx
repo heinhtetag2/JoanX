@@ -79,10 +79,12 @@ function CharVariant({ ctx, variant }) {
   // move the numbers, which is the whole point of a stage-up.
   const STAT_COLOR = { hp: THEME.joy, courage: THEME.gold, protection: THEME.primary, speed: '#4b9a6b' };
   const statVals = statsFor({ ...orig, level, stage });
-  // rings are relative to the biggest stat on show: HP runs into the hundreds, so a
-  // fixed /100 dial would peg every ring full and tell the child nothing.
-  const statMax = Math.max(...STATS.map(s => statVals[s.key]), 1);
-  const traits = STATS.map(s => ({ k: s.key, label: s.label, icon: s.icon, color: STAT_COLOR[s.key] }));
+  // HP is hidden from the buddy stat view (still drives battle math via STATS/statsFor).
+  const shownStats = STATS.filter(s => s.key !== 'hp');
+  // rings are relative to the biggest stat on show, so a fixed /100 dial doesn't
+  // peg every ring full and tell the child nothing.
+  const statMax = Math.max(...shownStats.map(s => statVals[s.key]), 1);
+  const traits = shownStats.map(s => ({ k: s.key, label: s.label, icon: s.icon, color: STAT_COLOR[s.key] }));
   // Detail chrome — background, hero, tabs, accents — is ALWAYS the product green, never the
   // buddy's own colour. The buddy is art (the Mascot keeps its species colour); switching or
   // previewing a buddy never repaints the screen. Only the stat rings keep their per-stat hues.
@@ -453,7 +455,7 @@ function CharVariant({ ctx, variant }) {
   const xpRow = (inkSub) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 260, margin: '12px auto 0' }}>
       <span style={{ fontSize: 11.5, fontWeight: 700, color: inkSub || THEME.fg2 }}>XP</span>
-      <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow /></div>
+      <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} track={THEME.goldLight} height={12} /></div>
       <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: inkSub || THEME.fg1 }}>{orig.xp}/{orig.xpMax}</span>
     </div>
   );

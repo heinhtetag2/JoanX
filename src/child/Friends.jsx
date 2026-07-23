@@ -474,7 +474,7 @@ function Friends({ ctx, layout = 'list' }) {
       const on = friends.filter(f => f.online), off = friends.filter(f => !f.online);
       const section = (title, arr) => (arr.length ? (
         <React.Fragment key={title}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4, margin: '10px 4px 8px' }}>{title} · {arr.length}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4, margin: '10px 4px 8px', textAlign: 'right' }}>{title} · {arr.length}</div>
           <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
             {arr.map((f, i) => (
               <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
