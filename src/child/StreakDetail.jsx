@@ -60,7 +60,7 @@ function StreakDetail({ ctx }) {
 
         {/* hero — brand green (hero surfaces stay brand, not the ember flame accent), the flame
             held in a white chip, the count big, and the next reward as a live progress bar */}
-        <div style={{ borderRadius: 24, padding: '20px 18px', marginBottom: 14, color: '#fff',
+        <div style={{ borderRadius: 24, padding: '20px 16px', marginBottom: 14, color: '#fff',
           background: `linear-gradient(165deg, ${shade(THEME.brand, 12)}, ${shade(THEME.brand, -20)})` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
             <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -125,23 +125,28 @@ function StreakDetail({ ctx }) {
           {MILESTONES.map((m, i) => {
             const done = streak >= m.days;
             return (
-              <div key={m.days} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
-                <div style={{ width: 44, height: 44, borderRadius: 14, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: done ? 1 : .55 }}>
-                  <Icon name={done ? m.icon : 'lock'} size={20} color={done ? m.color : THEME.fg3} stroke={2.3} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
-                    {done && <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>}
+              <div key={m.days} style={{ padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                {/* header — icon centred on the title + reward (its two primary lines), so it
+                    never floats when a progress bar is present below */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: done ? 1 : .55 }}>
+                    <Icon name={done ? m.icon : 'lock'} size={20} color={done ? m.color : THEME.fg3} stroke={2.3} />
                   </div>
-                  <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
-                  {!done && (
-                    <div style={{ marginTop: 8 }}>
-                      <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
-                      <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 700, marginTop: 5 }}>{streak}/{m.days} {L('days')}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
+                      {done && <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>}
                     </div>
-                  )}
+                    <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
+                  </div>
                 </div>
+                {/* progress drops below, indented to line up under the text (icon 44 + gap 13) */}
+                {!done && (
+                  <div style={{ marginTop: 10, marginLeft: 57 }}>
+                    <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
+                    <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 700, marginTop: 5 }}>{streak}/{m.days} {L('days')}</div>
+                  </div>
+                )}
               </div>
             );
           })}
