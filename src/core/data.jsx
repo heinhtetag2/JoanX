@@ -469,7 +469,9 @@ const POINTS = {
   postWarningStopBonus: 20,    // +20 — 'delayed':  stopped after the warning was shown
   dailyAccidentFreeBonus: 100, // +100 for an accident-free day
   streak7Days: 7,   streak7Bonus: 300,        // +300 at 7 accident-free days
+  streak14Days: 14, streak14Bonus: 700,       // +700 at 14 accident-free days
   streak30Days: 30, streak30Reward: 'epic-egg', // 30 days → Special Egg / event reward
+  streak100Days: 100,                          // 100 days → Legendary Egg
   // Anti-farm ceiling (spec #4 note): the most safe-stop BONUS points earnable in one day. The
   // per-session cooldown (SAFE_STOP) stops rapid re-triggering; this caps the day's total so a
   // child can't grind warnings for points across a whole day. Per-minute safe-walking points are

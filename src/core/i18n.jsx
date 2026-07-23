@@ -258,7 +258,7 @@ const KO = {
   'Battle math': '배틀 계산', 'Safe-walk bonus': '안전 걷기 보너스', 'Your total': '내 총 파워',
   'Battle again': '다시 배틀', 'Back home': '홈으로',
   'battles left today. Battles pause while you\'re walking.': '회의 배틀이 남았어요. 걷는 동안에는 배틀이 멈춰요.',
-  'Your fighter': '내 파이터', 'Choose a buddy': '친구 선택', 'Choose your fighter': '누구와 함께 싸울까요', 'Opponent': '상대', 'Find a match': '매칭 찾기',
+  'Your fighter': '내 파이터', 'Change': '변경', 'Choose a buddy': '친구 선택', 'Choose your fighter': '누구와 함께 싸울까요', 'Opponent': '상대', 'Find a match': '매칭 찾기',
 
   // ── rewards ──
   '5-day streak': '5일 연속', '-day streak': '일 연속',
@@ -922,7 +922,7 @@ const KO = {
   'Immediate stop': '즉시 멈춤', 'Accident-free day': '무사고 하루',
   'Ready to claim': '받을 수 있어요', 'Streak rewards': '연속 달성 보상',
   'accident-free days': '일 연속 무사고', 'days to go': '일 남았어요', 'Earned': '획득 완료',
-  'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그',
+  'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그', 'a Legendary Egg': '레전더리 에그',
   'more days for': '일 더 모으면', 'Every milestone cleared — amazing!': '모든 목표를 달성했어요 — 정말 대단해요!',
   // streak detail page
   'Streak goals': '연속 목표', 'Streak milestones': '연속 이정표', 'How streaks work': '연속 기록은 이렇게 쌓여요', 'Reached': '달성', 'd': '일',

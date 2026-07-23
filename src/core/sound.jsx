@@ -293,7 +293,7 @@ const TRACKS = {
     bass: [110, _R, _R, _R, 87.31, _R, _R, _R, 98, _R, _R, _R, 82.41, _R, _R, _R],       // low chord root, held per bar-quarter
     lead: [440, 523.25, 659.25, 523.25, 349.23, 440, 523.25, 440, 392, 493.88, 587.33, 493.88, 329.63, 392, 493.88, 392],  // arpeggio over the chords
     kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],                               // soft pulse on the downbeats
-    hat:  [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],                               // offbeat ticks — a light shaker, not a drum kit
+    // no hat layer: the offbeat noise-shaker read as a constant background hiss on the map
   },
   // "stay with me" — the impact / safety-check theme. The buddy is playing guitar
   // to keep the child calm through the countdown, so this is warm and reassuring,

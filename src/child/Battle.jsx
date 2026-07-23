@@ -11,7 +11,12 @@ import { sfx, music } from '../core/sound.jsx';
 
 function Battle({ ctx, layout = 'classic' }) {
   const owned = CHARACTERS.filter(c => c.owned);
-  const [sel, setSel] = React.useState(owned[0]);
+  // Arriving from a character's own fight button (CharacterDetail's swords icon) means
+  // the fighter is already chosen — that buddy. We land on it pre-selected and with the
+  // chooser collapsed into a locked card; any other entry shows the full grid as before.
+  const preChar = ctx.params?.charId && owned.find(c => c.id === ctx.params.charId);
+  const [sel, setSel] = React.useState(preChar || owned[0]);
+  const [chooserOpen, setChooserOpen] = React.useState(!preChar);
   const [phase, setPhase] = React.useState('select'); // select|matching|versus|result
   const [won, setWon] = React.useState(true);
   // the result screen must report the battle that just happened, not what a
@@ -253,7 +258,7 @@ function Battle({ ctx, layout = 'classic' }) {
           <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
             {/* A-8: challenges are capped per day — offer another only while some remain */}
             {left > 0
-              ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => setPhase('select')}>{L('Battle again')} · {left}</Button>
+              ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => ctx.nav('villaindex')}>{L('Battle again')} · {left}</Button>
               : <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L("That's your battle for today")}</Button>}
             <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,.8)', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
@@ -303,6 +308,30 @@ function Battle({ ctx, layout = 'classic' }) {
           </span>
         </div>
 
+        {/* Fighter already chosen (came in from the buddy's own fight button): show it
+            locked in, with a "Change" link to reopen the grid. Skips the pick entirely
+            for the common case where the child tapped fight ON the buddy they want. */}
+        {!chooserOpen ? (() => {
+          const w = winPercent(sel, villain);
+          const wc = w >= 50 ? THEME.success : w >= 25 ? THEME.warning : THEME.danger;
+          return (
+            <React.Fragment>
+              <SectionHead title={L('Your fighter')} action={L('Change')} onAction={() => setChooserOpen(true)} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: THEME.successLight, borderRadius: 18, padding: '12px 14px', border: `2px solid ${THEME.success}`, marginBottom: 16 }}>
+                <div style={{ flexShrink: 0 }}><Mascot species={sel.species} stage={sel.stage} color={sel.color} size={52} /></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sel.name}</div>
+                  <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {sel.level} · {L('Power')} {power(sel)}</div>
+                </div>
+                <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2 }}>{L('Win chance')}</div>
+                  <div className="game-font" style={{ fontSize: 20, fontWeight: 500, color: wc, lineHeight: 1.1 }}>{w}%</div>
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })() : (
+        <React.Fragment>
         {/* Choose your fighter — the one decision this screen exists for. Each buddy shows
             its win chance against THIS villain, turning the pick into a read of the odds
             rather than a guess. The selected one gets the buddy-tinted card + check. */}
@@ -331,6 +360,8 @@ function Battle({ ctx, layout = 'classic' }) {
             );
           })}
         </div>
+        </React.Fragment>
+        )}
 
         {/* the one caveat worth keeping — the picked buddy is under the villain's level, so
             the odds are long. Not a block, just a heads-up before committing. */}

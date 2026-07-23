@@ -11,6 +11,7 @@ export { ParentAddChild } from './ParentAddChild.jsx';
 export { ParentDetail } from './ParentDetail.jsx';
 export { ParentAIReport } from './ParentAIReport.jsx';
 export { ParentResponseDetail } from './ParentResponseDetail.jsx';
+export { ParentWeeklyDetail } from './ParentWeeklyDetail.jsx';
 export { ParentSchedule } from './ParentSchedule.jsx';
 export { ParentOnboarding } from './ParentOnboarding.jsx';
 export { HowItWorks, STORY_THEMES_LIST } from './HowItWorks.jsx';

@@ -43,12 +43,17 @@ function StreakFlame({ tier, lit }) {
 
 function StreakDetail({ ctx }) {
   const streak = PLAYER.streak;
-  // The two accident-free milestones, straight from POINTS so the numbers match the grant
-  // engine. 7 days pays points; 30 days pays a Special Egg (and the Ember buddy). Built in
-  // render, not at module load, so the reward copy re-localises when the language toggles.
+  // The accident-free milestones, straight from POINTS so the numbers match the grant
+  // engine. Point goals pay points; the 30/100-day goals pay an Egg (30 also grants the
+  // Ember buddy). Each reward carries a `tone` so the amount can be coloured by what it is
+  // — gold for points, warm for eggs — instead of one flat grey line (the reward is the
+  // point of the goal, so it should read as lively, not muted). Built in render so the copy
+  // re-localises when the language toggles.
   const MILESTONES = [
-    { days: POINTS.streak7Days,  reward: `+${POINTS.streak7Bonus} ${L('points')}` },
-    { days: POINTS.streak30Days, reward: L('a Special Egg') },
+    { days: POINTS.streak7Days,   amount: `+${POINTS.streak7Bonus}`,  unit: L('points'), tone: 'gold' },
+    { days: POINTS.streak14Days,  amount: `+${POINTS.streak14Bonus}`, unit: L('points'), tone: 'gold' },
+    { days: POINTS.streak30Days,  amount: L('a Special Egg'),         unit: null,        tone: 'egg' },
+    { days: POINTS.streak100Days, amount: L('a Legendary Egg'),       unit: null,        tone: 'egg' },
   ];
 
   return (
@@ -88,28 +93,40 @@ function StreakDetail({ ctx }) {
           <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, padding: '15px 16px 6px' }}>{L('Streak goals')}</div>
           {MILESTONES.map((m, i) => {
             const done = streak >= m.days;
+            // The reward amount carries the colour: green once earned, else gold for points /
+            // warm for eggs. This is the lively bit the reference mission card gets right —
+            // the number you're working toward isn't a grey afterthought.
+            const rewardColor = done ? THEME.success : m.tone === 'gold' ? THEME.gold : THEME.joy;
             return (
-              <div key={m.days} style={{ padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
+              <div key={m.days} style={{ padding: '12px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none',
+                background: done ? THEME.successLight : 'transparent' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                   {/* the same seal-check the daily tasks use — green when the goal is reached,
-                      grey while it's still being earned (replaces the padlock chip) */}
-                  <SealCheck size={40} bg={done ? THEME.success : THEME.border} tick={done ? '#fff' : THEME.fg3} />
+                      grey while it's still being earned. Smaller than the tappable daily-task
+                      badge: here it's a static status dot, so it needn't carry that weight. */}
+                  <SealCheck size={28} bg={done ? THEME.success : THEME.border} tick={done ? '#fff' : THEME.fg3} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     {/* title left, count/Reached pushed to the top-right — so the row isn't
                         four things stacked in one column. The bar spans below on its own. */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
                       {done
-                        ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>
+                        ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, fontSize: 10.5, fontWeight: 800, color: THEME.success, background: '#fff', borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>
                         : <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: THEME.fg3 }}>{streak}/{m.days}</span>}
                     </div>
-                    <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
+                    {/* reward: the amount coloured + bold (gold / warm / green), the unit muted
+                        after it — the reference's treatment, so the payoff reads as the point */}
+                    <div style={{ fontSize: 12.5, marginTop: 2 }}>
+                      <span style={{ fontWeight: 800, color: rewardColor }}>{m.amount}</span>
+                      {m.unit && <span style={{ fontWeight: 600, color: THEME.fg2, marginLeft: 4 }}>{m.unit}</span>}
+                    </div>
                   </div>
                 </div>
-                {/* just the bar now — full-width across the row, no label stacked beneath it */}
+                {/* thin bar, indented to line up under the title (past the status dot) so the
+                    row reads as one block, not a badge with a stray bar under it */}
                 {!done && (
-                  <div style={{ marginTop: 11 }}>
-                    <Bar value={streak} max={m.days} color={THEME.joy} height={6} />
+                  <div style={{ marginTop: 8, marginLeft: 39 }}>
+                    <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
                   </div>
                 )}
               </div>

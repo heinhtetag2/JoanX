@@ -20,14 +20,18 @@ function screenBgActive() {
 
 // `left` fills the leading slot on screens with no back button — tab roots that still
 // want something there (Friends puts the player's own avatar in it).
-function ScreenHeader({ title, onBack, left, right, flush }) {
+function ScreenHeader({ title, onBack, left, right, flush, light }) {
+  // `light` — for full-bleed dark artwork (the villain map): no frosted blur, and the
+  // title reads in white with a soft shadow instead of a white chip, so nothing but the
+  // back button carries a background. The trailing slot is coloured by the caller.
+  const noBlur = flush || light;
   return (
     // position:fixed (not absolute) so the header pins to the phone screen and the body scrolls
     // *under* it — an absolute header inside the scroll container scrolled away with the content.
     // fixed resolves against the nearest ancestor carrying a transform/filter (the .screen frame,
     // and the saturate() play wrapper), both non-scrolling and screen-sized — not the browser.
     // `flush` drops the frosted blur so a full-bleed backdrop reads through cleanly.
-    <div style={{ position: 'fixed', top: 50, left: 0, right: 0, zIndex: 4, height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'transparent', backdropFilter: flush ? 'none' : 'blur(6px)', WebkitBackdropFilter: flush ? 'none' : 'blur(6px)' }}>
+    <div style={{ position: 'fixed', top: 50, left: 0, right: 0, zIndex: 4, height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'transparent', backdropFilter: noBlur ? 'none' : 'blur(6px)', WebkitBackdropFilter: noBlur ? 'none' : 'blur(6px)' }}>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
         {onBack ? (
           <button onClick={onBack} aria-label="Back" style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -41,7 +45,7 @@ function ScreenHeader({ title, onBack, left, right, flush }) {
           on it. Bare fg1 text only survives by luck of the current room: the switcher can put a
           bright window or a pale wall behind it. A scrim would fix contrast too, but it dims the
           top of the illustration and puts the document-toolbar feel back. */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', height: flush ? 38 : 'auto', padding: flush ? '0 14px' : 0, borderRadius: 999, background: flush ? '#fff' : 'transparent', boxShadow: flush ? THEME.shadowCard : 'none', fontSize: 16, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', textAlign: 'center' }}>{title}</div>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', height: flush ? 38 : 'auto', padding: flush ? '0 14px' : 0, borderRadius: 999, background: flush ? '#fff' : 'transparent', boxShadow: flush ? THEME.shadowCard : 'none', fontSize: 16, fontWeight: 800, color: light ? '#fff' : THEME.fg1, textShadow: light ? '0 1px 4px rgba(0,0,0,.5)' : 'none', whiteSpace: 'nowrap', textAlign: 'center' }}>{title}</div>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {flush && right
           ? <div style={{ display: 'flex', alignItems: 'center', height: 38, padding: '0 13px', borderRadius: 999, background: '#fff', boxShadow: THEME.shadowCard }}>{right}</div>

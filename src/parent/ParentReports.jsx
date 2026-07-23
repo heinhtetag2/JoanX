@@ -273,8 +273,26 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead stacked sub={L("This week's progress")} title={nm} right={<ChildChip selected={sel} onPick={setSel} />} />
+      <ParentHead stacked sub={L("This week's progress")} title={<span>{nm} <span style={{ fontSize: 19 }}>{doingWell ? '🌱' : '💪'}</span></span>} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
+
+        {/* Highlight strip — the one-line "so, how's the week going?" the header used to
+            leave blank. Tone-aware: a warm-green win when the child is trending well, a
+            soft amber nudge when it needs a look. The emoji + bold headline give the
+            screen a lead voice before the numbers start. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14 }}>
+          <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
+              {doingWell ? (ko ? `${nm}, 좋은 흐름이에요` : `${nm} is on a roll`) : (ko ? `${nm}, 조금만 더 도와줘요` : `${nm} could use a nudge`)}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: tone.ink, opacity: .82, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {ko
+                ? `위험 순간 ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · 안전 멈춤 ${stopsTotal}회 · 수용 ${rep.acceptance}%`
+                : `Risky moments ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · ${stopsTotal} safe stops · ${rep.acceptance}% accepted`}
+            </div>
+          </div>
+        </div>
 
         {/* KPI block — Tweaks: 'cards' (2×2 white cards) or flat 'ring' (ring + stat grid, no card bg) */}
         {kpiStyle === 'ring' ? (
@@ -451,7 +469,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
-            <div style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></div>
+            <button onClick={() => ctx.nav('p_weekactivity', { childId: child.id })} aria-label={L('Weekly activity')} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
           <div style={{ display: 'flex', gap: 22, marginBottom: 18, alignItems: 'flex-start' }}>
             {inline.map(s => (
@@ -504,4 +522,4 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   );
 }
 
-export { ParentReports };
+export { ParentReports, StdBarChart };
