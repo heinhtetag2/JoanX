@@ -90,25 +90,26 @@ function StreakDetail({ ctx }) {
             const done = streak >= m.days;
             return (
               <div key={m.days} style={{ padding: '14px 16px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
-                {/* header — icon centred on the title + reward (its two primary lines), so it
-                    never floats when a progress bar is present below */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
                   {/* the same seal-check the daily tasks use — green when the goal is reached,
                       grey while it's still being earned (replaces the padlock chip) */}
                   <SealCheck size={40} bg={done ? THEME.success : THEME.border} tick={done ? '#fff' : THEME.fg3} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {/* title left, count/Reached pushed to the top-right — so the row isn't
+                        four things stacked in one column. The bar spans below on its own. */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontSize: 14.5, fontWeight: 800, color: THEME.fg1 }}>{m.days}{L('-day streak')}</span>
-                      {done && <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>}
+                      {done
+                        ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, fontSize: 10.5, fontWeight: 800, color: THEME.success, background: THEME.successLight, borderRadius: 999, padding: '2px 8px' }}>{L('Reached')}</span>
+                        : <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: THEME.fg3 }}>{streak}/{m.days}</span>}
                     </div>
                     <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{m.reward}</div>
                   </div>
                 </div>
-                {/* progress drops below, indented to line up under the text (seal 40 + gap 13) */}
+                {/* just the bar now — full-width across the row, no label stacked beneath it */}
                 {!done && (
-                  <div style={{ marginTop: 10, marginLeft: 53 }}>
-                    <Bar value={streak} max={m.days} color={THEME.joy} height={5} />
-                    <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 700, marginTop: 5 }}>{streak}/{m.days} {L('days')}</div>
+                  <div style={{ marginTop: 11 }}>
+                    <Bar value={streak} max={m.days} color={THEME.joy} height={6} />
                   </div>
                 )}
               </div>
