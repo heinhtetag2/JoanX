@@ -15,11 +15,6 @@ import { L } from '../core/i18n.jsx';
 import { shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 
-// This week, one dot per day — the last `streak` days are safe (done), the rest
-// still ahead. Same week strip the Rewards streak card uses, so the two agree.
-const WEEK_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-const WEEK_KO = ['월', '화', '수', '목', '금', '토', '일'];
-
 // ── Streak-badge ladder ──────────────────────────────────────────────
 // Length landmarks for how long the streak has burned. These are dedication
 // markers, not reward tiers (the tangible payouts live in "Streak goals" below,
@@ -49,8 +44,6 @@ function StreakFlame({ tier, lit }) {
 
 function StreakDetail({ ctx }) {
   const streak = PLAYER.streak;
-  const week = ctx.lang === 'ko' ? WEEK_KO : WEEK_EN;
-  const todayIdx = Math.min(streak, week.length) - 1;   // the most recent safe day = "today"
   // The two accident-free milestones, straight from POINTS so the numbers match the grant
   // engine. 7 days pays points; 30 days pays a Special Egg (and the Ember buddy). Built in
   // render, not at module load, so the reward copy re-localises when the language toggles.
@@ -104,7 +97,9 @@ function StreakDetail({ ctx }) {
           <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, marginBottom: 16 }}>{L('Streak milestones')}</div>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             {HEAT.map((tier, i) => {
-              const lit = streak >= tier.days;
+              // Prototype default: unlock the first four milestones (3/10/30/100d) so the
+              // ladder shows lit by default; the rest still light from the live streak.
+              const lit = i < 4 || streak >= tier.days;
               return (
                 <React.Fragment key={tier.days}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -115,29 +110,10 @@ function StreakDetail({ ctx }) {
                     // a SHORT connector, centred in the gap and on the flame's mid-line
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center', marginTop: FLAME_SIZE / 2 - 1 }}>
                       <div style={{ width: 16, height: 2, borderRadius: 999,
-                        background: streak >= HEAT[i + 1].days ? '#f0d6c4' : THEME.border }} />
+                        background: (i + 1 < 4 || streak >= HEAT[i + 1].days) ? '#f0d6c4' : THEME.border }} />
                     </div>
                   )}
                 </React.Fragment>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* this week — one dot per day, the safe days filled */}
-        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '15px 16px', marginBottom: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, marginBottom: 12 }}>{L('This week')}</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {week.map((d, i) => {
-              const done = i < streak;
-              const today = i === todayIdx;
-              return (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 999, background: done ? THEME.joy : THEME.surface2, border: today ? `2px solid ${shade(THEME.joy, -22)}` : done ? 'none' : `2px solid ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
-                    {done && <Icon name="flame" size={16} color="#fff" stroke={2.6} />}
-                  </div>
-                  <span style={{ fontSize: 11, color: today ? THEME.fg1 : THEME.fg3, fontWeight: today ? 800 : 600 }}>{d}</span>
-                </div>
               );
             })}
           </div>
