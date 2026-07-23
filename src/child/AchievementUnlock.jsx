@@ -17,6 +17,7 @@ import { L } from '../core/i18n.jsx';
 import { shade } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
 import { BadgeArt, tierOf } from './Badges.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // How long the moment holds before it auto-dismisses if the child does nothing.
 // Long enough to read the badge and see the points land, short enough that it
@@ -27,6 +28,8 @@ const UNLOCK_MS = 4200;
 // grid uses); `onClose` dismisses; `onView` jumps to the Badges shelf.
 function AchievementUnlock({ a, onClose, onView }) {
   const t = tierOf(a);
+  // the fanfare — keyed to the badge, so previewing a different one replays it
+  React.useEffect(() => { sfx.achievement(); }, [a.id]);
   // auto-dismiss so a preview (or a real unlock left untouched) doesn't sit forever
   React.useEffect(() => {
     const id = setTimeout(() => onClose && onClose(), UNLOCK_MS);

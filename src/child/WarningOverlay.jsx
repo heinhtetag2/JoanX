@@ -6,6 +6,12 @@ import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
+import { sfx, music } from '../core/sound.jsx';
+
+// The phases where the intervention is on screen and actively asking the child to
+// look up — the alert theme loops through these, and only these (cooldown is a
+// deliberately quiet stand-down, reward is the safe-stop payoff).
+const WARN_ACTIVE = ['grace', 'buzz', 'warn', 'message'];
 
 // Timings. Everything the spec pins down (the 2s hold, the message dwell, the gap between
 // lines, the 5s cooldown) runs at full length and comes straight from INTERVENTION, which is
@@ -363,6 +369,17 @@ function WarningOverlay({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const tier = interventionTier(round);              // F-08.3 — tone firms up with every ignored round
   const stoppedAt = React.useRef(null);              // phase the risk ended in → immediate vs delayed stop
+
+  // Audio for the moment: the "look up" theme loops while the intervention is on
+  // screen (grace/buzz/warn/message), goes quiet on the stand-down cooldown, and
+  // resolves to a positive chime when a safe stop is rewarded. Game cues, muted by
+  // the sound toggle; the real, un-mutable safety signal is the physical buzz (F-08).
+  React.useEffect(() => {
+    if (WARN_ACTIVE.includes(phase)) music.start('alert');
+    else music.stop();
+    if (phase === 'reward') sfx.success();
+    return () => music.stop();   // closing / unmounting stops the loop
+  }, [phase]);
 
   // F-08.4 / F-12 — detection reports the risk may have ended (phone put away, or walking finished).
   // We do NOT reward on that first signal, and we do NOT reward the tap itself: a single button

@@ -481,4 +481,16 @@ function SectionHead({ title, action, onAction }) {
   );
 }
 
-export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, RARITY, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+// Scalloped "seal" check — a 12-lobed rounded burst with a hand-drawn tick, from the
+// Joanx Figma (node 157:1392). For completed / verified moments where a plain circle-check
+// reads too flat. Recolored to the brand: soft-green seal + brand-green tick by default.
+function SealCheck({ size = 24, bg = THEME.success, tick = '#fff', style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 351 352" fill="none" style={{ display: 'block', flexShrink: 0, ...style }} aria-hidden="true">
+      <path d="M151.243 19.2685C165.446 7.986 185.554 7.986 199.757 19.2685L221.53 36.5632C227.221 41.0835 234.061 43.9238 241.28 44.7637L268.913 47.979C286.891 50.0708 301.067 64.2563 303.147 82.2354L306.372 110.107C307.204 117.299 310.021 124.117 314.509 129.798L331.908 151.827C343.101 165.999 343.101 186.001 331.908 200.173L314.509 222.202C310.021 227.883 307.204 234.701 306.372 241.893L303.147 269.765C301.067 287.744 286.891 301.929 268.913 304.021L241.28 307.236C234.061 308.076 227.221 310.917 221.53 315.437L199.757 332.732C185.554 344.014 165.446 344.014 151.243 332.732L129.47 315.437C123.779 310.917 116.939 308.076 109.72 307.236L82.0867 304.021C64.1089 301.929 49.9326 287.744 47.8525 269.765L44.6279 241.893C43.7959 234.701 40.9786 227.883 36.4915 222.202L19.0922 200.173C7.89917 186.001 7.89918 165.999 19.0923 151.827L36.4915 129.798C40.9786 124.117 43.7959 117.299 44.6279 110.107L47.8525 82.2354C49.9326 64.2563 64.1089 50.0708 82.0867 47.979L109.72 44.7637C116.939 43.9238 123.779 41.0835 129.47 36.5632L151.243 19.2685Z" fill={bg} />
+      <path d="M130 178L165.121 218.486C165.559 218.992 166.361 218.932 166.72 218.368L221 133" stroke={tick} strokeWidth="21" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, RARITY, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Badge, Bar, Icon, PhotoAvatar, RARITY, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Icon, PhotoAvatar, RARITY, SealCheck, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
 // A standalone DUPLICATE of the 6 home layouts (Original + the 5 in
@@ -148,7 +149,7 @@ function WinsListS({ ctx }) {
 
 // Today's tasks — small daily missions that pay a bonus. Undone rows are
 // tappable (kid checks one off → earns its points); done rows read as earned.
-function TodayTasksS({ accent }) {
+function TodayTasksS({ accent, ctx }) {
   const [tasks, setTasks] = React.useState(TODAY_TASKS);
   const done = tasks.filter(t => t.done).length;
   const earned = tasks.filter(t => t.done).reduce((s, t) => s + t.reward, 0);
@@ -160,12 +161,17 @@ function TodayTasksS({ accent }) {
   // otherwise get confetti every time they opened the app, which turns a reward into wallpaper.
   const [cheer, setCheer] = React.useState(false);
   const complete = (id) => {
+    const target = tasks.find(t => t.id === id);
+    if (!target || target.done) return;   // a no-op tick makes no sound and no state change
     // the state updater stays pure — firing the celebration from inside it would run twice
     // under StrictMode's double-invoke, and updaters are not the place for side effects
-    const next = tasks.map(t => (t.id === id && !t.done ? { ...t, done: true } : t));
+    const next = tasks.map(t => (t.id === id ? { ...t, done: true } : t));
     const wasAll = tasks.every(t => t.done);
     setTasks(next);
-    if (!wasAll && next.every(t => t.done)) setCheer(true);
+    // clearing the last task is a bigger moment than any single tick — a fuller
+    // cheer alongside the confetti, one ding for every tick before it
+    if (!wasAll && next.every(t => t.done)) { sfx.success(); setCheer(true); }
+    else sfx.taskDone();
   };
   React.useEffect(() => {
     if (!cheer) return undefined;
@@ -187,15 +193,27 @@ function TodayTasksS({ accent }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {tasks.map(t => (
-          <button key={t.id} onClick={() => complete(t.id)} disabled={t.done} style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', textAlign: 'left', fontFamily: 'inherit', background: t.done ? THEME.surface2 : '#fff', border: `1.5px solid ${t.done ? 'transparent' : THEME.border}`, borderRadius: 14, padding: '10px 12px', cursor: t.done ? 'default' : 'pointer', transition: 'background .15s ease' }}>
-            <span style={{ width: 22, height: 22, borderRadius: 999, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: t.done ? THEME.success : '#fff', border: t.done ? 'none' : `2px solid ${THEME.border}` }}>
-              {t.done && <Icon name="check" size={14} color="#fff" stroke={3.2} />}
-            </span>
-            <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: t.done ? THEME.fg3 : THEME.fg1, textDecoration: t.done ? 'line-through' : 'none' }}>{L(t.title)}</span>
-            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, padding: '4px 9px', borderRadius: 999, fontWeight: 500, fontSize: 12, background: t.done ? THEME.successLight : THEME.goldLight, color: t.done ? THEME.success : '#9e7300' }}>
-              <Icon name={t.done ? 'check' : 'star'} size={11} color={t.done ? THEME.success : THEME.gold} fill={t.done ? 'none' : THEME.gold} stroke={2.4} />+{t.reward}
-            </span>
-          </button>
+          // A task is a real-world action, not a checkbox — so the row doesn't "complete"
+          // on tap. The seal shows status (earned = solid brand, still-to-do = muted), and
+          // an explicit 'Go' pill takes the child off to actually do it (here: marks it done).
+          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', background: t.done ? THEME.surface2 : '#fff', border: `1.5px solid ${t.done ? 'transparent' : THEME.border}`, borderRadius: 14, padding: '10px 12px' }}>
+            <SealCheck size={30} bg={t.done ? THEME.success : THEME.border} tick={t.done ? '#fff' : THEME.fg3} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: t.done ? THEME.fg3 : THEME.fg1, textDecoration: t.done ? 'line-through' : 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(t.title)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: t.done ? THEME.success : '#9e7300' }}>+{t.reward}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: THEME.fg3 }}>{L(t.reward === 1 ? 'point' : 'points')}</span>
+              </div>
+            </div>
+            {t.done ? (
+              <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, fontWeight: 700, color: THEME.success }}>
+                <Icon name="check" size={14} color={THEME.success} stroke={2.8} />{L('Done')}
+              </span>
+            ) : (
+              // soft-tint pill — 'Go' takes the child to the screen where they do the task
+              <button onClick={() => complete(t.id)} style={{ flexShrink: 0, background: THEME.successLight, color: shade(THEME.success, -18), border: 'none', borderRadius: 999, padding: '8px 18px', fontSize: 13.5, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer', boxShadow: 'none' }}>{L('Go')}</button>
+            )}
+          </div>
         ))}
       </div>
 
@@ -285,7 +303,7 @@ function HomeSimpleOriginal({ ctx }) {
         </div>
 
         {/* today's tasks — daily missions that pay a bonus */}
-        <TodayTasksS accent={c.color} />
+        <TodayTasksS accent={c.color} ctx={ctx} />
       </div>
     </div>
   );
@@ -521,7 +539,7 @@ function HomeSimpleFocus({ ctx }) {
           ))}
         </div>
         {/* today's tasks — daily missions that pay a bonus */}
-        <TodayTasksS accent={brand} />
+        <TodayTasksS accent={brand} ctx={ctx} />
       </div>
     </div>
   );

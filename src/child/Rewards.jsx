@@ -5,13 +5,14 @@ import { ACHIEVEMENTS, PLAYER, POINTS } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { screenBgActive, Confetti } from './shared.jsx';
+import { sfx } from '../core/sound.jsx';
 
 function Rewards({ ctx }) {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const streakDone = [true, true, true, true, true, false, false];
   const [claimed, setClaimed] = React.useState(false);
   const [pop, setPop] = React.useState(false);
-  const claim = () => { if (claimed) return; setClaimed(true); setPop(true); PLAYER.points += POINTS.dailyAccidentFreeBonus; setTimeout(() => setPop(false), 1900); };
+  const claim = () => { if (claimed) return; sfx.claim(); setClaimed(true); setPop(true); PLAYER.points += POINTS.dailyAccidentFreeBonus; setTimeout(() => setPop(false), 1900); };
 
   // next accident-free milestone (A-1.1): 7 days → +300, 30 days → Special Egg
   const nextMilestone = PLAYER.streak < POINTS.streak7Days

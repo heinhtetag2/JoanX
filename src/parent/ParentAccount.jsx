@@ -1,15 +1,20 @@
 // JoanX — parent app · ParentAccount
 
 import React from 'react';
-import { FEATURES, guardians, PARENT_PROFILE } from '../core/data.jsx';
+import { FEATURES, guardians, PARENT_PROFILE, PARENT_PREFS } from '../core/data.jsx';
 import { Button, Icon, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // ── Parent / account settings (global — not tied to one child) ───────
 function ParentAccount({ ctx }) {
   const [push, setPush] = React.useState(true);
   const [weekly, setWeekly] = React.useState(true);
+  // this device's own sound toggle (separate from the child's) — held on PARENT_PREFS
+  // so the sound engine reads it live; mirrored in state so the switch re-renders
+  const [sound, setSound] = React.useState(PARENT_PREFS.sound !== false);
+  const setSoundPref = v => { PARENT_PREFS.sound = v; setSound(v); if (v) sfx.toggle(true); };
   const [signOut, setSignOut] = React.useState(false);   // sign-out confirmation modal
   const chev = <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />;
   const rowStyle = i => ({ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' });
@@ -35,7 +40,7 @@ function ParentAccount({ ctx }) {
         {/* Language sits up top — it's the setting a parent is most likely to reach for, so it
             shouldn't be buried under Support at the bottom of the screen. */}
         {label(L('General'))}
-        {card(
+        {card(<React.Fragment>
           <div style={{ ...rowStyle(0), cursor: 'default' }}><Icon name="languages" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Language')}</div>
             <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 999, padding: 3 }}>
               {[['en', 'EN'], ['ko', '한국어']].map(([v, l]) => (
@@ -43,7 +48,9 @@ function ParentAccount({ ctx }) {
               ))}
             </div>
           </div>
-        )}
+          {/* this device's UI + alert sounds — a separate mute from the child's app */}
+          <div style={{ ...rowStyle(1), cursor: 'default' }}><Icon name="volume-2" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Sound effects')}</div><Toggle on={sound} onChange={setSoundPref} /></div>
+        </React.Fragment>)}
 
         {/* The household. Sits above Notifications because "who else can see my child" is a
             bigger question than "does my phone buzz", and a parent looking for it looks here. */}

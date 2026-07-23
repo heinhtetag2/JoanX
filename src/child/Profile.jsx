@@ -7,6 +7,7 @@ import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 import { BadgeArt, collectionIntent } from './Badges.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // ── Trophy shelf (Profile) ───────────────────────────────────────────
 // The badge's home outside the Collection tab. A badge you can't show off is only
@@ -108,7 +109,8 @@ function Profile({ ctx }) {
               could mute it — with neither child nor parent told protection was off — would
               break the core promise. The safety buzz is always on; notification policy is the
               parent's (F-22). */}
-          <Row icon="volume-2" label={L('Sound effects')}><Toggle on={prefs.sound} onChange={v => setPref('sound', v)} /></Row>
+          {/* re-enabling plays a confirmation blip — the global tap can't, it fires before the pref flips */}
+          <Row icon="volume-2" label={L('Sound effects')}><Toggle on={prefs.sound} onChange={v => { setPref('sound', v); sfx.toggle(v); }} /></Row>
         </div>
 
         {/* Accessibility section hidden for now — the right set of controls is still being

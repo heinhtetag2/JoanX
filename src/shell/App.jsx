@@ -8,6 +8,7 @@ import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, Pa
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
+import { installUiSounds, music } from '../core/sound.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
 import ProjectDocs from '../docs/ProjectDocs.jsx';
@@ -99,6 +100,23 @@ function App() {
     fit(); window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
   }, []);
+
+  // Install the game-sound layer once, and keep the current app role on a window
+  // flag the sound engine reads: game cues (incl. the global button-tap blip)
+  // fire for the CHILD app only — the parent guardian app stays silent.
+  React.useEffect(() => { installUiSounds(); }, []);
+  React.useEffect(() => { window.JX_ROLE = role; }, [role]);
+
+  // Central BGM guarantee: background music belongs to a small set of surfaces
+  // (the Villain Dex + Battle screens, and the warning / impact overlays) and
+  // NOWHERE else. Screens start/stop their own track, but if any cleanup is ever
+  // missed the loop must not bleed onto Home — so this stops music the moment the
+  // child is not on a music surface. Runs after child effects, so navigating INTO
+  // a music screen (which just started its track) is preserved, not cut off.
+  React.useEffect(() => {
+    const hasBGM = role === 'child' && (overlay || impact || screen === 'villaindex' || screen === 'battle');
+    if (!hasBGM) music.stop();
+  }, [role, screen, overlay, impact]);
 
   // apply tweak overrides to whichever buddy is currently active, incl. its
   // name so the label matches the character/style that's actually shown.

@@ -8,6 +8,7 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment } from './shared.jsx';
 import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // ── Points & Shop ────────────────────────────────────────────────────
 // Buying is only ONE of the ways an egg arrives (A-2.1) — missions, distance
@@ -79,6 +80,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
       setToast({ ok: false, msg }); setTimeout(() => setToast(null), 1600);
       return;
     }
+    sfx.purchase();
     setPts(PLAYER.points);
     setOwned({ ...PLAYER.eggs });
     openHatch(egg);
@@ -97,6 +99,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
   const crackEgg = () => {
     if (cracking.current) return;
     cracking.current = true;
+    sfx.hatchCrack(gradualCrack);
     setHatch(h => (h && h.phase === 'egg' ? { ...h, phase: 'cracking' } : h));
     // hold the reveal for the length of the chosen animation — the gradual crack
     // runs longer on purpose, so the fissure has time to spread before the pop
@@ -118,6 +121,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
     if (!egg) return;
     const res = hatchFromInventory(egg, PLAYER);
     if (!res.ok) { setHatch(null); cracking.current = false; return; }   // nothing to hatch — don't fake a reveal
+    sfx.hatchReveal();
     setOwned({ ...PLAYER.eggs });
     setPts(PLAYER.points);
     setHatch(h => (h ? { ...h, phase: 'reveal', buddy: res.buddy, dup: res.dup, xp: res.xp } : h));
@@ -376,7 +380,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
                   <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
                   {/* quick-pop glow — the gradual crack brings its own seam-light instead */}
                   {cracking && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
-                  <button onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
+                  <button data-sfx="off" onClick={cracking ? undefined : crackEgg} disabled={cracking} className={`jx-press ${cracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: cracking ? 'default' : 'pointer', padding: 0 }}>
                     {cracking && gradualCrack
                       ? <CrackingEgg size={132} rarity={hatch.eggRarity} />
                       : <EggShape size={132} rarity={hatch.eggRarity} />}
@@ -385,7 +389,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
                 <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Buddy Egg')}</h2>
                 {/* label pill doubles as a second hatch trigger, so tapping it isn't a
                     dead-end — the copy still points at the egg as the main target */}
-                <button onClick={cracking ? undefined : crackEgg} disabled={cracking} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: cracking ? 'default' : 'pointer' }}>
+                <button data-sfx="off" onClick={cracking ? undefined : crackEgg} disabled={cracking} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: cracking ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: cracking ? 'default' : 'pointer' }}>
                   <Icon name={cracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={cracking ? 'jx-pulse-soft' : undefined} />{L(cracking ? 'Hatching…' : 'Tap the egg to hatch')}
                 </button>
                 {/* shake affordance — parked at the far bottom, bigger + its own copy */}

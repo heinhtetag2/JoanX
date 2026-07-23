@@ -16,6 +16,7 @@ import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
+import { sfx, music } from '../core/sound.jsx';
 
 // The window before we notify the parent for the child. Full 20s per the spec; the pilot can
 // retune it. Named once so the copy, the ring and the bar all count the same clock.
@@ -55,6 +56,17 @@ function ImpactSafetyCheck({ onClose, onGoParent, onKey }) {
   const [secs, setSecs] = React.useState(IMPACT_COUNTDOWN_S);
   // tell the dev handoff badge which step is on screen
   React.useEffect(() => { onKey && onKey(phase === 'sent' ? 'impact_sent' : 'impact_check'); }, [phase, onKey]);
+
+  // Audio: a warm, looping guitar theme plays through the "are you okay?" countdown
+  // — the buddy is playing to keep the child calm, so the screen gets a tune, not a
+  // beep — then it stops and a single reassuring chime lands once the parent has been
+  // told. Game cues, muted by the sound toggle; the real escalation (and its buzz)
+  // never depends on any of this.
+  React.useEffect(() => {
+    if (phase === 'check') music.start('calm');
+    else if (phase === 'sent') { music.stop(); sfx.reassure(); }
+    return () => music.stop();   // dismissing / unmounting stops the loop
+  }, [phase]);
 
   // The countdown. Ticks once a second while the check is up; reaching zero auto-escalates,
   // which is the same outcome as "I need help" (spec: no response within 20s → auto-notify).
@@ -165,6 +177,19 @@ function ImpactSafetyCheck({ onClose, onGoParent, onKey }) {
 // the title, the no-response line and the two buttons are the whole card.
 function ImpactParentAlert({ childName = PLAYER.name, onClose, onKey }) {
   React.useEffect(() => { onKey && onKey('impact_parent'); }, [onKey]);
+  // The parent's alert KEEPS RINGING until they act — a single chime is too easy to
+  // miss for "your child may be hurt." It re-sounds on an interval while the takeover
+  // is up, and `stopRing()` silences it the instant the parent dismisses or calls.
+  // (Muted by the parent app's own sound toggle; the visual alert stands regardless.)
+  const ring = React.useRef(null);
+  const stopRing = React.useCallback(() => { if (ring.current) { clearInterval(ring.current); ring.current = null; } }, []);
+  React.useEffect(() => {
+    sfx.parentAlert();
+    ring.current = setInterval(() => sfx.parentAlert(), 1900);
+    return stopRing;
+  }, [stopRing]);
+  // dismissing stops the ring first, then closes
+  const dismiss = () => { stopRing(); onClose && onClose(); };
   return (
     <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', color: '#fff', overflow: 'hidden' }}>
       {/* same living red backdrop as the child check — one surface for both faces of the event */}
@@ -174,7 +199,7 @@ function ImpactParentAlert({ childName = PLAYER.name, onClose, onKey }) {
           <span className="jx-pulse-soft" style={{ width: 9, height: 9, borderRadius: 999, background: '#fff', display: 'inline-block' }} />
           {L('Urgent')}
         </span>
-        <button onClick={onClose} aria-label={L('Dismiss')} style={{ width: 34, height: 34, borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <button onClick={dismiss} aria-label={L('Dismiss')} style={{ width: 34, height: 34, borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="x" size={18} color="#fff" stroke={2.6} />
         </button>
       </div>
@@ -197,7 +222,7 @@ function ImpactParentAlert({ childName = PLAYER.name, onClose, onKey }) {
       {/* one direct action — call the child. The last-known place is already shown above as
           context; a separate map viewer isn't part of this flow, so calling is the whole CTA. */}
       <div style={{ padding: '0 22px calc(env(safe-area-inset-bottom) + 22px)' }}>
-        <button style={{ width: '100%', padding: '15px 28px', borderRadius: 16, border: 'none', background: '#fff', color: THEME.danger, fontFamily: 'inherit', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
+        <button onClick={stopRing} style={{ width: '100%', padding: '15px 28px', borderRadius: 16, border: 'none', background: '#fff', color: THEME.danger, fontFamily: 'inherit', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
           <Icon name="phone" size={19} color={THEME.danger} stroke={2.6} />{L('Make a call')}
         </button>
       </div>

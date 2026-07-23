@@ -260,10 +260,20 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
     { v: rep.acceptance + '%', l: 'Acceptance', c: SERIES.rate },
   ];
+  // activity-card footer: a small at-a-glance read of the week's chart —
+  // which day drew the most safe stops, and which had the most risky moments.
+  const stopsByDay = reactions.map(d => d.immediate);
+  const bestDayIdx = stopsByDay.indexOf(Math.max(...stopsByDay));
+  const riskiestIdx = risk.indexOf(Math.max(...risk));
+  const activityFoot = [
+    { l: ko ? '가장 안전한 날' : 'Safest day', v: dayName(bestDayIdx), c: SERIES.trend },
+    { l: ko ? '주의가 많던 날' : 'Most alerts', v: dayName(riskiestIdx), c: '#8fb0dd' },
+    { l: ko ? '이번 주 안전 멈춤' : 'Safe stops', v: stopsTotal, c: '#4f9d89' },
+  ];
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead stacked sub={L("This week's progress")} title={L(doingWell ? 'Getting better' : 'Needs attention')} right={<ChildChip selected={sel} onPick={setSel} />} />
+      <ParentHead stacked sub={L("This week's progress")} title={nm} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
 
         {/* KPI block — Tweaks: 'cards' (2×2 white cards) or flat 'ring' (ring + stat grid, no card bg) */}
@@ -457,10 +467,18 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           </div>
           <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14}
             tooltip={(d, i) => ({ title: dayName(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
-          <button onClick={() => ctx.nav('p_children')} style={{ width: '100%', marginTop: 18, display: 'flex', alignItems: 'center', gap: 10, background: THEME.surface2, border: 'none', borderRadius: 14, padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Icon name="sparkles" size={17} color={BRAND.primary} stroke={2.3} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1 }}>{t.buildHabits}</span>
-          </button>
+          {/* footer — a divider, then a plain read of the week's chart */}
+          <div style={{ borderTop: `1px solid ${THEME.border}`, marginTop: 16, paddingTop: 14, display: 'flex', gap: 26 }}>
+            {activityFoot.map(s => (
+              <div key={s.l}>
+                <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, color: THEME.fg1 }}>{s.v}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: 999, background: s.c }} />
+                  <span style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600 }}>{s.l}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* insight — tone adapts to whether this child is trending well */}

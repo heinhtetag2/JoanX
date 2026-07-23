@@ -6,6 +6,7 @@ import { Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip, shade } from '../core/characters.jsx';
 import { BRAND, brandBtn } from './shared.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // Multi-step add-child wizard, aligned with the child app's onboarding:
 // 1 Details → 2 Pair (code) → 3 Connected celebration → 4 Configure protection.
@@ -52,6 +53,9 @@ function ParentAddChild({ ctx }) {
   const pairChild = (pickedId && CHILDREN.find(x => x.id === pickedId)) || (ctx.params?.pairChildId ? CHILDREN.find(x => x.id === ctx.params.pairChildId) : null);
   // in connect mode the pair step happens first, then the picker
   const afterPair = () => setWiz(connectMode ? 5 : 3);
+  // the "connected!" celebration (wiz 3) plays a warm confirmation — the parent-app
+  // counterpart of the child's connected chime. Muted by the parent sound toggle.
+  React.useEffect(() => { if (wiz === 3) sfx.connected(); }, [wiz]);
   const back = () => {
     if (wiz === 5) return setWiz(2);
     if (wiz === 2) return (connectMode || pairMode) ? ctx.nav('p_children') : setWiz(1);

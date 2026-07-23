@@ -7,6 +7,7 @@ import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
+import { sfx, music } from '../core/sound.jsx';
 
 function Battle({ ctx, layout = 'classic' }) {
   const owned = CHARACTERS.filter(c => c.owned);
@@ -30,6 +31,15 @@ function Battle({ ctx, layout = 'classic' }) {
   const [usedCount, setUsedCount] = React.useState(PLAYER.battlesToday || 0);
   const left = Math.max(0, battlesPerDay() - usedCount);
   const usedToday = left === 0;
+
+  // The battle theme carries in from the Villain Dex: it loops while you're choosing
+  // a fighter, then stops the moment the match starts (matching / versus / result),
+  // so the start / win / lose cues land clean over silence. Muted by the sound toggle.
+  React.useEffect(() => {
+    if (phase === 'select' && !PLAYER.walking) music.start('battle');
+    else music.stop();
+    return () => music.stop();
+  }, [phase]);
   // A-8: the ladder is climbed sequentially — the next undefeated foe is the
   // default target. A-8.1: an already-beaten villain can be re-challenged, so
   // the target is state, not a derived constant.
@@ -70,8 +80,9 @@ function Battle({ ctx, layout = 'classic' }) {
   // afterwards would report a chance the child never fought at.
   const start = () => {
     if (!canChallenge(villain).ok) return;   // locked villain, or no challenges left today
+    sfx.battleStart();
     setPhase('matching');
-    setTimeout(() => setPhase('versus'), 1600);
+    setTimeout(() => { sfx.attack(); setPhase('versus'); }, 1600);
     setTimeout(() => {
       const res = resolveBattle(villain, sel);
       if (!res.ok) { setPhase('select'); return; }   // gate closed between tap and resolve
@@ -96,6 +107,7 @@ function Battle({ ctx, layout = 'classic' }) {
       setWonEgg(res.eggWon);                // A-8.4 — the egg that actually dropped, not the one the tier lists
       setLastReward(res.reward);
       setUsedCount(PLAYER.battlesToday);
+      w ? sfx.win() : sfx.lose();
       setWon(w); setPhase('result');
     }, 3200);
   };

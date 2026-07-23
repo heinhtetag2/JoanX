@@ -6,6 +6,7 @@ import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // The child app's page background — a single brand-green wash on every screen.
 // It deliberately does NOT tint by the active buddy: the brand colour is green
@@ -69,6 +70,8 @@ function ScreenHeader({ title, onBack, left, right, flush }) {
 function StageUpMoment({ character, stage, color, onDone }) {
   const c = color || character?.color || THEME.primary;
   const info = stageOf(stage);
+  // the buddy evolving is a peak moment — an ascending arpeggio as the new form pops
+  React.useEffect(() => { sfx.levelUp(); }, [stage]);
   React.useEffect(() => {
     const t = setTimeout(() => onDone && onDone(), 2600);
     return () => clearTimeout(t);

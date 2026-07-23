@@ -13,6 +13,7 @@ import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgActive, screenBgFor, ScreenHeader, StatCard } from './shared.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // ── shared state ─────────────────────────────────────────────────────
 // Device prefs live on PLAYER so a toggle persists across navigation (not lost on unmount),
@@ -66,7 +67,7 @@ function Preferences({ ctx, st, card, label }) {
       <div style={card}>
         <LangRow ctx={ctx} />
         <Sep />
-        <Row icon="volume-2" label={L('Sound effects')}><Toggle on={st.prefs.sound} onChange={v => st.setPref('sound', v)} /></Row>
+        <Row icon="volume-2" label={L('Sound effects')}><Toggle on={st.prefs.sound} onChange={v => { st.setPref('sound', v); sfx.toggle(v); }} /></Row>
         <Sep />
         <Row icon="vibrate" label={L('Haptics')}><Toggle on={st.prefs.haptics} onChange={v => st.setPref('haptics', v)} /></Row>
         <Sep />

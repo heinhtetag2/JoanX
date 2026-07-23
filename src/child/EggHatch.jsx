@@ -112,11 +112,14 @@ function useShakeToHatch(active, onShake) {
   }, [active]);
 }
 
-// how long the crack animation runs before the buddy pops out
-const HATCH_MS = 820;
-// the "Gradual crack" tweak runs longer — the anticipation IS the feature, so the
-// reveal is held back while the fissure spreads. Must match jxEggCrack in joanx.css.
-const HATCH_CRACK_MS = 2200;
+// how long the crack animation runs before the buddy pops out. Held a beat longer
+// than a reflex-pop so the reveal lands as a surprise, not a blink. Must match
+// jxEggHatch in joanx.css.
+const HATCH_MS = 1250;
+// the "Gradual crack" tweak runs longer still — the anticipation IS the feature, so
+// the reveal is held back while the fissure spreads and the tension builds. Must
+// match jxEggCrack in joanx.css.
+const HATCH_CRACK_MS = 2400;
 
 // The gradual-crack egg (Tweaks: Egg hatch → "Gradual crack"). The shell trembles
 // and pops via .jx-egg-crack, a jagged fissure draws itself down the shell, and a

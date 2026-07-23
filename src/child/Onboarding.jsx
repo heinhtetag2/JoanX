@@ -7,6 +7,7 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
 import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // The first buddy every new child is given (for now): Hammy, the green one. Onboarding and
 // the hatch wear his colour, so the flow that hands you a green buddy is itself green —
@@ -73,8 +74,11 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
     setCharReveal(true);
   };
   const crackEgg = () => {
-    setEggPhase(p => (p === 'egg' ? 'cracking' : p));
+    if (eggPhase !== 'egg') return;   // already cracking — a tap and a shake can both land
+    sfx.hatchCrack(gradualCrack);
+    setEggPhase('cracking');
     setTimeout(() => {
+      sfx.hatchReveal();
       setEggPhase('reveal');
       setPrize(p => { if (p) ctx.setBuddy(p.id, {}); return p; });   // adopt the hatched buddy app-wide
     }, gradualCrack ? HATCH_CRACK_MS : HATCH_MS);
@@ -113,10 +117,12 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
     return () => clearInterval(t);
   }, [step, pairing, connected]);
 
-  // pairing handshake — brief "connecting…" wait, then the success screen
+  // pairing handshake — brief "connecting…" wait, then the success screen.
+  // A hopeful ping as the wait begins, a warm "connected" resolve when it lands.
   React.useEffect(() => {
     if (!pairing) return undefined;
-    const t = setTimeout(() => { setPairing(false); setConnected(true); }, 2800);
+    sfx.connecting();
+    const t = setTimeout(() => { setPairing(false); setConnected(true); sfx.connected(); }, 2800);
     return () => clearTimeout(t);
   }, [pairing]);
   const codeLeftLabel = `${Math.floor(codeLeft / 60)}:${String(codeLeft % 60).padStart(2, '0')}`;
@@ -461,7 +467,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${STARTER_EGG_C}55` }} />
               <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${STARTER_EGG_C}55` }} />
               {eggPhase === 'cracking' && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(STARTER_EGG_C, 60)} 0%, transparent 68%)` }} />}
-              <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
+              <button data-sfx="off" onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
                 {/* the common starter egg — its own sand shell, not the buddy's colour (that
                     would give the surprise away), and matching the wash behind it */}
                 {eggPhase === 'cracking' && gradualCrack
@@ -473,7 +479,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
             <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Your first buddy!')}</h2>
             <p style={{ fontSize: 14.5, color: THEME.fg2, lineHeight: 1.5, margin: '8px 0 0', maxWidth: 260 }}>{L('Someone is waiting inside. Hatch the egg to meet them.')}</p>
 
-            <button onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 14, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: eggPhase === 'cracking' ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: eggPhase === 'cracking' ? 'default' : 'pointer' }}>
+            <button data-sfx="off" onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 14, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: eggPhase === 'cracking' ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: eggPhase === 'cracking' ? 'default' : 'pointer' }}>
               <Icon name={eggPhase === 'cracking' ? 'hourglass' : 'pointer'} size={15} color={shade(STARTER_EGG_C, -18)} stroke={2.3} className={eggPhase === 'cracking' ? 'jx-pulse-soft' : undefined} />{L(eggPhase === 'cracking' ? 'Hatching…' : 'Tap the egg to hatch')}
             </button>
 

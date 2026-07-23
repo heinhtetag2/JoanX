@@ -165,7 +165,7 @@ const KO = {
   'min phone-free': '분 폰 안 보기', 'points per safe minute': '포인트 / 안전 1분',
   "Today's safe-walk goal": '오늘의 안전 걷기 목표', 'Daily goal': '오늘의 목표', 'Next level': '다음 레벨', 'min': '분',
   // today's tasks (home)
-  "Today's tasks": '오늘의 미션', 'done': '완료',
+  "Today's tasks": '오늘의 미션', 'done': '완료', 'Go': '하기', 'Done': '완료', 'points': '포인트', 'point': '포인트',
   'Finish a phone-free walk': '폰 없이 걷기 끝내기', 'Reach your safe-walk goal': '안전 걷기 목표 달성',
   'Say hi to your buddy': '버디에게 인사하기',
   'All tasks done!': '미션 모두 완료!', 'bonus earned today': '오늘 보너스 획득', 'Tap to complete': '눌러서 완료',
@@ -925,7 +925,7 @@ const KO = {
   'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그',
   'more days for': '일 더 모으면', 'Every milestone cleared — amazing!': '모든 목표를 달성했어요 — 정말 대단해요!',
   // streak detail page
-  'Streak goals': '연속 목표', 'How streaks work': '연속 기록은 이렇게 쌓여요', 'Reached': '달성', 'd': '일',
+  'Streak goals': '연속 목표', 'Streak milestones': '연속 이정표', 'How streaks work': '연속 기록은 이렇게 쌓여요', 'Reached': '달성', 'd': '일',
   'Walk safely each day to add to your streak.': '매일 안전하게 걸으면 연속 기록이 하루씩 늘어요.',
   'Miss a day and your streak starts over.': '하루라도 빠지면 처음부터 다시 시작해요.',
   'Reach a goal to earn its reward.': '목표를 채우면 보상을 받아요.',

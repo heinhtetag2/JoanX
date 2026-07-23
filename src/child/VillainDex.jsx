@@ -6,11 +6,16 @@ import { Badge, Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
+import { music, sfx } from '../core/sound.jsx';
 
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Two layouts, switchable from the Tweaks panel: 'road' (level-map trail,
 // à la Candy Crush) and 'list' (the original card list).
 function VillainDex({ ctx, layout = 'road' }) {
+  // the villain map is the "fighting" screen — a looping battle theme plays while
+  // it's open and stops the moment you leave (both layouts, hence it lives here).
+  // Muted like every other cue by Profile → Sound effects.
+  React.useEffect(() => { music.start('battle'); return () => music.stop(); }, []);
   if (layout === 'road') return <VillainRoad ctx={ctx} />;
   return <VillainList ctx={ctx} />;
 }
@@ -216,7 +221,7 @@ function VillainRoad({ ctx }) {
             const isSel = i === sel;
             const size = isCur ? 80 : 64;
             return (
-              <div key={vi.id} ref={isCur ? curRef : null} onClick={() => setSel(i)}
+              <div key={vi.id} ref={isCur ? curRef : null} onClick={() => { if (i !== sel) sfx.select(); setSel(i); }}
                 style={{ position: 'absolute', left: `${(pts[i].x / W) * 100}%`, top: pts[i].y, transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', zIndex: 2 }}>
                 <div style={{ position: 'relative' }}>
                   {/* sonar ring on the current challenger */}

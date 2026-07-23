@@ -20,6 +20,31 @@ import { screenBgActive, ScreenHeader } from './shared.jsx';
 const WEEK_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const WEEK_KO = ['월', '화', '수', '목', '금', '토', '일'];
 
+// ── Streak-badge ladder ──────────────────────────────────────────────
+// Length landmarks for how long the streak has burned. These are dedication
+// markers, not reward tiers (the tangible payouts live in "Streak goals" below,
+// straight from POINTS). Every badge is the SAME size — only the DESIGN changes:
+// the flame art (from Figma, /assets/streak) runs hotter and more elaborate up the
+// ladder. A reached tier burns in full colour; a locked one is desaturated to a
+// grey flame. Data-driven off PLAYER.streak, so it can't disagree with the count.
+const HEAT = [
+  { days: 3,   img: 1 },
+  { days: 10,  img: 2 },
+  { days: 30,  img: 3 },
+  { days: 100, img: 4 },
+  { days: 200, img: 5 },
+];
+const FLAME_SIZE = 50;   // one size for every badge — the design changes, not the scale
+
+// One flame from the set. The PNGs sit on white, which blends into the white card;
+// a locked tier is desaturated to a grey flame.
+function StreakFlame({ tier, lit }) {
+  return (
+    <img src={`/assets/streak/flame-${tier.img}.png`} alt="" draggable="false"
+      style={{ height: FLAME_SIZE, display: 'block', filter: lit ? 'none' : 'grayscale(1) opacity(.5)' }} />
+  );
+}
+
 function StreakDetail({ ctx }) {
   const streak = PLAYER.streak;
   const week = ctx.lang === 'ko' ? WEEK_KO : WEEK_EN;
@@ -70,6 +95,28 @@ function StreakDetail({ ctx }) {
               </div>
             </div>
           )}
+        </div>
+
+        {/* streak-heat ladder — the flame grows hotter the longer the streak burns */}
+        <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Streak milestones')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: '18px 16px 16px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            {HEAT.map((tier, i) => {
+              const lit = streak >= tier.days;
+              return (
+                <React.Fragment key={tier.days}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <StreakFlame tier={tier} lit={lit} />
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: lit ? THEME.fg1 : THEME.fg3 }}>{tier.days}{L('d')}</span>
+                  </div>
+                  {i < HEAT.length - 1 && (
+                    <div style={{ flex: 1, height: 4, borderRadius: 999, marginTop: 25,
+                      background: streak >= HEAT[i + 1].days ? '#f0d6c4' : THEME.border }} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
 
         {/* this week — one dot per day, the safe days filled */}
