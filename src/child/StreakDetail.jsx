@@ -60,7 +60,9 @@ function StreakDetail({ ctx }) {
 
         {/* hero — brand green (hero surfaces stay brand, not the ember flame accent), the flame
             held in a white chip, the count big, and the next reward as a live progress bar */}
-        <div style={{ borderRadius: 24, padding: '20px 16px', marginBottom: 14, color: '#fff',
+        {/* 1px transparent border matches the milestone/goal cards' border, so the hero's
+            content (chip, count) shares the exact same left edge as their titles + flames */}
+        <div style={{ borderRadius: 24, border: '1px solid transparent', padding: '20px 16px', marginBottom: 14, color: '#fff', boxSizing: 'border-box', width: '100%',
           background: `linear-gradient(165deg, ${shade(THEME.brand, 12)}, ${shade(THEME.brand, -20)})` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
             <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
