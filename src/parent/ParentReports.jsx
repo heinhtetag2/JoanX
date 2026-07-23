@@ -28,9 +28,10 @@ function ChildChip({ selected, onPick }) {
   };
   return (
     <div style={{ position: 'relative' }}>
-      <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', padding: '6px 12px 6px 6px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+      {/* the child's name already headlines the page, so the switcher is just a face +
+          chevron — no second "Mina" sitting right beside the title. */}
+      <button onClick={() => setOpen(o => !o)} aria-label={k.name} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', padding: '6px 8px 6px 6px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
         {kidFace(k, idx, 32, BRAND.primaryLight)}
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{k.name}</span>
         <Icon name="chevron-down" size={15} color={THEME.fg2} stroke={2.4} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }} />
       </button>
       {open && (
@@ -193,7 +194,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // Mon-first, so this maps display position → source index for the bars, labels and tooltip.
   const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];   // Mon→Sun, matching the detail page + streak screen
   const oReactions = WEEK_ORDER.map(i => reactions[i]);
-  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const dayLabels = ctx.lang === 'ko' ? ['월', '화', '수', '목', '금', '토', '일'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   // F-20 — behavior-change framing: risky events are reported as a reduction
   // rate (start-of-week baseline vs the latest days), not a raw weekly count.
   const base3 = risk.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
@@ -284,7 +285,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
-              {doingWell ? (ko ? `${nm}, 좋은 흐름이에요` : `${nm} is on a roll`) : (ko ? `${nm}, 조금만 더 도와줘요` : `${nm} could use a nudge`)}
+              {doingWell ? (ko ? `이번 주, 좋은 흐름이에요` : `On a roll this week`) : (ko ? `조금만 더 도와주면 돼요` : `Could use a nudge this week`)}
             </div>
             <div style={{ fontSize: 12, fontWeight: 600, color: tone.ink, opacity: .82, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ko
