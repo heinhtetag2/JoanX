@@ -34,7 +34,9 @@ const HEAT = [
   { days: 100, img: 4 },
   { days: 200, img: 5 },
 ];
-const FLAME_SIZE = 50;   // one size for every badge — the design changes, not the scale
+const FLAME_SIZE = 36;   // one size for every badge — the design changes, not the scale.
+                         // Sized to the app's icon rhythm (the week dots are 34px), so the
+                         // ladder reads as part of the system, not oversized hero art.
 
 // One flame from the set. The PNGs sit on white, which blends into the white card;
 // a locked tier is desaturated to a grey flame.
@@ -110,7 +112,8 @@ function StreakDetail({ ctx }) {
                     <span style={{ fontSize: 12.5, fontWeight: 800, color: lit ? THEME.fg1 : THEME.fg3 }}>{tier.days}{L('d')}</span>
                   </div>
                   {i < HEAT.length - 1 && (
-                    <div style={{ flex: 1, height: 4, borderRadius: 999, marginTop: 25,
+                    // a hairline connector, centred on the flame (marginTop ≈ FLAME_SIZE/2)
+                    <div style={{ flex: 1, height: 2, borderRadius: 999, marginTop: FLAME_SIZE / 2 - 1,
                       background: streak >= HEAT[i + 1].days ? '#f0d6c4' : THEME.border }} />
                   )}
                 </React.Fragment>
