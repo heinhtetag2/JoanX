@@ -477,7 +477,7 @@ const KO = {
   // ── parent: account settings ──
   'Settings': '설정', 'Subscription': '구독', 'JoanX Family': '조안X 패밀리',
   'of 5 children connected': '/ 5명 연결됨', 'Active': '활성',
-  'Weekly summary email': '주간 요약 이메일',
+  'Weekly summary': '주간 요약', 'Delivered in this app': '앱에서 바로 확인',
   'Privacy & data': '개인정보 및 데이터', 'Data & privacy': '데이터 및 개인정보',
   'Location history': '위치 기록', 'Export my data': '내 데이터 내보내기', 'General': '일반', 'Support': '지원',
 

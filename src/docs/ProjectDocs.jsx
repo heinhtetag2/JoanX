@@ -736,11 +736,11 @@ function ProjectDocs() {
           </p>
           <div className="doc-grid2">
             <div>
-              <div className="doc-h3" style={{ marginTop: 0 }}>Child app · 32 files</div>
+              <div className="doc-h3" style={{ marginTop: 0 }}>Child app · 33 files</div>
               {[
                 ['Home', 'ChildHome · HomeVariants · HomeVariantsSimple · SafetyStatus'],
                 ['Collection', 'Collection · CharacterDetail · CharacterDex · VillainDex · DexHeaders'],
-                ['Battle', 'Battle · BattleVariants'],
+                ['Battle', 'Battle · BattleVariants · BattleVersus'],
                 ['Friends', 'Friends · AddFriends · FriendHouse · Guestbook'],
                 ['Profile', 'Profile · MyHouse · DecorateRoom · HelpSupport · AboutJoanX'],
                 ['Overlays', 'WarningOverlay · LiteBlock · EggHatch · Onboarding · Shop · Rewards · Notifications'],

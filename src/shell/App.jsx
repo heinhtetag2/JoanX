@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
@@ -86,7 +86,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}) });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -229,7 +229,9 @@ function App() {
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
-      battle: <Battle ctx={ctx} layout={tw.battleLayout} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
+      // keyed on the preview target: Battle reads it once, as its initial phase, so
+      // jumping from one preview to another has to remount rather than reconcile
+      battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
@@ -353,7 +355,7 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['comic', 'Comic'], ['cute', '3D Cute']].map(([v, l]) => (
+            {[['comic', 'Comic'], ['cute', '3D Cute'], ['revamp', 'Revamp']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>
@@ -482,6 +484,27 @@ function App() {
 
               {/* Battle layout selector removed — the default 'classic' is the chosen behaviour;
                   tw.battleLayout stays defaulted so Battle keeps getting it. */}
+
+              {/* The fight staging (versus + result). Picking one drops you on the battle
+                  screen with the villain road behind it, so the layout can be reached the
+                  way a child reaches it — pick a fighter, start, watch. */}
+              <div className="tw-label">Versus screen</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {VERSUS_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.versusLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, versusLayout: id })); setStack([{ screen: 'villaindex', params: {} }]); setParams({}); setScreen('battle'); }}>{label}</button>
+                ))}
+              </div>
+              {/* Playing to the versus phase means picking a fighter, starting, and catching
+                  a beat that lasts 1.6 seconds — no way to actually read a layout. These jump
+                  straight to it and hold it there. Nothing is rolled: no daily challenge is
+                  spent and no villain record moves, so previewing costs the prototype nothing. */}
+              <div className="tw-row" style={{ marginTop: 6 }}>
+                {[['versus', '▶ Preview versus'], ['result', '▶ Preview result']].map(([p, label]) => (
+                  <button key={p} className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
+                    onClick={() => { setRole('child'); setStack([{ screen: 'villaindex', params: {} }]); setParams({ preview: p }); setScreen('battle'); }}>{label}</button>
+                ))}
+              </div>
 
               <div className="tw-label">Collection layout</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

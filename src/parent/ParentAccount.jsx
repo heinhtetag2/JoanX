@@ -71,7 +71,16 @@ function ParentAccount({ ctx }) {
         {label(L('Notifications'))}
         {card(<React.Fragment>
           <div style={{ ...rowStyle(0), cursor: 'default' }}><Icon name="bell" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Push notifications')}</div><Toggle on={push} onChange={setPush} /></div>
-          <div style={{ ...rowStyle(1), cursor: 'default' }}><Icon name="mail" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Weekly summary email')}</div><Toggle on={weekly} onChange={setWeekly} /></div>
+          {/* The weekly summary is delivered in the app, not mailed out. A report that
+              leaves for an inbox is a copy of a child's week sitting outside the account
+              that is allowed to see it — so the toggle governs the notification that the
+              week's report is ready, and the report itself stays on Reports. */}
+          <div style={{ ...rowStyle(1), cursor: 'default' }}><Icon name="file-text" size={18} color={THEME.fg2} stroke={2.2} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{L('Weekly summary')}</div>
+              <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 1 }}>{L('Delivered in this app')}</div>
+            </div>
+            <Toggle on={weekly} onChange={setWeekly} /></div>
         </React.Fragment>)}
 
         {label(L('Privacy & data'))}

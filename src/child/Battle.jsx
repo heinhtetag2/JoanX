@@ -7,17 +7,28 @@ import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
+import { VersusStage } from './BattleVersus.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
-function Battle({ ctx, layout = 'classic' }) {
+function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const owned = CHARACTERS.filter(c => c.owned);
   // Arriving from a character's own fight button (CharacterDetail's swords icon) means
   // the fighter is already chosen — that buddy. We land on it pre-selected and with the
   // chooser collapsed into a locked card; any other entry shows the full grid as before.
-  const preChar = ctx.params?.charId && owned.find(c => c.id === ctx.params.charId);
+  // From a character's own fight button we get an explicit charId. The Tweaks "Versus
+  // screen" preview passes none, so fall back to the ACTIVE buddy there (not owned[0]) —
+  // the demo then shows whichever buddy you've picked (e.g. Hammy) against the next
+  // villain (Noct / 녹트), rather than an arbitrary first-in-list fighter.
+  const preChar = (ctx.params?.charId && owned.find(c => c.id === ctx.params.charId))
+    || (ctx.params?.preview && owned.find(c => c.id === PLAYER.activeCharId));
   const [sel, setSel] = React.useState(preChar || owned[0]);
   const [chooserOpen, setChooserOpen] = React.useState(!preChar);
-  const [phase, setPhase] = React.useState('select'); // select|matching|versus|result
+  // Tweaks → "Versus screen" jumps straight to the fight staging so a layout can be read
+  // without playing a battle for it. It rolls NOTHING: no daily challenge is spent, no
+  // villain record moves, nothing is frozen — which is why the numbers it shows are the
+  // live ones below rather than a snapshot from a roll that never happened.
+  const preview = ctx.params?.preview;                    // 'versus' | 'result' | undefined
+  const [phase, setPhase] = React.useState(preview || 'select'); // select|matching|versus|result
   const [won, setWon] = React.useState(true);
   // the result screen must report the battle that just happened, not what a
   // re-render now computes — `villain.defeated` flips the moment we win.
@@ -131,7 +142,7 @@ function Battle({ ctx, layout = 'classic' }) {
     // come from the snapshot taken at roll time (a level-up would otherwise rewrite history);
     // during the versus phase, nothing has been rolled yet, so they are computed live.
     const live = { base: power(sel), bonus: BATTLE_ODDS.safeWalkBonus, odds };
-    const { base, bonus, odds: shownOdds } = result ? lastMath : live;
+    const { base, bonus, odds: shownOdds } = (result && !preview) ? lastMath : live;
     const myTotal = base + bonus;
     const mathRow = (lbl, val, color, i) => (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.09)' : 'none' }}>
@@ -139,23 +150,26 @@ function Battle({ ctx, layout = 'classic' }) {
         <span className="game-font" style={{ fontSize: 15.5, fontWeight: 500, color: color || '#fff' }}>{val}</span>
       </div>
     );
+    // Arena backdrop — a full-bleed painted battle scene (floating meadow island)
+    // instead of the old flat near-black. Covers the whole screen; the two fighter
+    // plates and the VS shield sit on top. A soft dark scrim (below) keeps the white
+    // name/power text readable over the bright meadow without hiding the art.
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#14291b)', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
+        {/* soft overlay: a gentle flat tint across the whole scene so the vibrant arena
+            is muted a touch and the fighters read as the foreground */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,30,.22)', pointerEvents: 'none' }} />
+        {/* legibility scrim: darkens top & bottom slightly so text/plates read; the
+            middle stays clear so the arena art shows through behind the VS */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,18,26,.45) 0%,rgba(20,18,26,.12) 32%,rgba(20,18,26,.12) 68%,rgba(20,18,26,.5) 100%)', pointerEvents: 'none' }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative', transform: 'translateY(-20px)' }}>
           {result && won && <Confetti n={24} />}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-around' }}>
-            <div style={{ textAlign: 'center', opacity: result && !won ? .4 : 1, transition: 'opacity .4s' }}>
-              <div className={result && won ? 'jx-pop' : ''}><Mascot species={sel.species} stage={sel.stage} color={sel.color} size={120} /></div>
-              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{sel.name}</div>
-              <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {sel.level} · PWR {power(sel)}</div>
-            </div>
-            <div className="game-font" style={{ color: THEME.gold, fontSize: 26, fontWeight: 500 }}>VS</div>
-            <div style={{ textAlign: 'center', opacity: result && won ? .4 : 1, transition: 'opacity .4s' }}>
-              <div style={{ transform: 'scaleX(-1)' }}><Mascot species={foeCard.species} stage={2} color={foeCard.color} mood="alert" size={120} /></div>
-              <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{L(foeCard.name)}</div>
-              <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {foeCard.level} · PWR {foe.power}</div>
-            </div>
-          </div>
+          {/* who is fighting whom — the one block both phases share, so the fighters
+              do not jump position between the versus moment and the result. Layouts
+              live in BattleVersus.jsx; switch via Tweaks ("Versus screen"). */}
+          <VersusStage variant={versus} result={result} won={won}
+            me={{ ...sel, power: power(sel) }}
+            foe={{ ...foeCard, power: foe.power }} />
 
           {result && (
             <React.Fragment>
@@ -254,6 +268,14 @@ function Battle({ ctx, layout = 'classic' }) {
             </React.Fragment>
           )}
         </div>
+        {/* The versus phase has no controls of its own — it is a beat between the tap and
+            the roll, and a real one times out on its own after 1.6s. A previewed one never
+            rolls, so it needs the one way out that a child would otherwise never see. */}
+        {preview && !result && (
+          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
+            <button onClick={() => ctx.nav('home')} style={{ width: '100%', background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', color: '#fff', borderRadius: 999, padding: '12px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Close')}</button>
+          </div>
+        )}
         {result && (
           <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
             {/* A-8: challenges are capped per day — offer another only while some remain */}

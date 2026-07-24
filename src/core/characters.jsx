@@ -394,7 +394,7 @@ function MascotToyCute({ species = 'fox', size = 160, style, float }) {
 // The comic line is the app's product line, so it is brand-locked to the JoanX green —
 // switching buddy (Hammy → Pip → Sunny…) never repaints the app. Comic mascots are fixed
 // PNG art, so pinning the accent only affects chrome, never the character illustration.
-const STYLE_BRAND = { cute: CUTE_BRAND, comic: THEME.brand };
+const STYLE_BRAND = { cute: CUTE_BRAND, comic: THEME.brand, revamp: THEME.brand };
 
 // The locked brand colour of a character style, or null if the style recolours per buddy.
 const styleBrand = (style) => STYLE_BRAND[style || window.JX_CHAR_STYLE] || null;
@@ -411,6 +411,10 @@ const STYLE_BUDDIES = {
   ],
   toy: [
     ['cat',  'Mochi', '#e79a52'],   // only Mochi has a real 3D render for now
+  ],
+  // one brand green across the line — only Sprout has a render for now
+  revamp: [
+    ['fox',  'Sprout', THEME.brand],
   ],
   // one brand colour across the line — switching buddy must not restyle the app
   cute: [
@@ -634,6 +638,44 @@ function MascotComic({ species = 'fox', size = 160, style, float }) {
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}
          className={float ? 'jx-float' : ''}>
       <img src={`/assets/characters/comic/${encodeURIComponent(file)}`} alt="" draggable="false"
+           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
+                    transform: tf || undefined, transformOrigin: 'center bottom' }} />
+    </div>
+  );
+}
+
+// ── Revamp line ("revamp") — the refreshed hero mascot: a rendered 3D forest
+// sprite (leaf ears + sprout, gold brow gem, yellow scout scarf, big violet
+// eyes) supplied as a transparent PNG. Fixed render, so recolour/stage/mood
+// don't apply — and like the comic line it is brand-locked to the JoanX green,
+// so switching buddy changes the art, never the app's accent.
+const REVAMP_DEFAULT = 'sprout.png';
+const REVAMP_SRC = {
+  fox: 'sprout.png',   // Sprout — the forest-sprite hero (Hammy slot)
+};
+const REVAMP_BRAND = THEME.brand;   // one green across the line, matching the app chrome
+// the render is a tall, full-frame pose with a raised waving arm → reads a
+// touch small under object-fit; lift the whole line so it fills its frame like
+// the toy set (bumped up so it reads big inside the showcase ring).
+const REVAMP_BASE = 1.55;
+const REVAMP_SCALE = {};
+const REVAMP_SHIFT = { _all: { x: 0.05, y: 0.23 } };
+function MascotRevamp({ species = 'fox', size = 160, style }) {
+  // deliberately ignore `float` — Sprout stays planted (no up/down bob)
+  const file = REVAMP_SRC[species] || REVAMP_DEFAULT;
+  const k = (REVAMP_SCALE[species] || 1) * REVAMP_BASE;
+  const { x: dx = 0, y: dy = 0 } = REVAMP_SHIFT[species] || REVAMP_SHIFT._all || {};
+  const tf = [
+    dx ? `translateX(${dx * 100}%)` : '',
+    dy ? `translateY(${dy * 100}%)` : '',
+    k !== 1 ? `scale(${k})` : '',
+  ].filter(Boolean).join(' ');
+  return (
+    // jx-mascot-still marks Sprout as a planted mascot: the 3D render reads wrong bobbing,
+    // so any float wrapper it sits inside (the home hero, onboarding) is stopped by a CSS
+    // rule keyed off this class — see joanx.css. The mascot itself never adds jx-float.
+    <div className="jx-mascot-still" style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
+      <img src={`/assets/characters/revamp/${encodeURIComponent(file)}`} alt="" draggable="false"
            style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
                     transform: tf || undefined, transformOrigin: 'center bottom' }} />
     </div>
@@ -903,6 +945,7 @@ function Mascot(props) {
   if (s === 'kr') return <MascotKR {...props} />;
   if (s === 'toon') return <MascotToon {...props} />;
   if (s === 'comic') return <MascotComic {...props} />;
+  if (s === 'revamp') return <MascotRevamp {...props} />;
   if (s === 'toy') return <MascotToy {...props} />;
   if (s === 'cute') return <MascotToyCute {...props} />;
   if (s === 'soft') return <MascotSoft {...props} />;

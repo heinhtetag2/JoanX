@@ -15,6 +15,7 @@ export { CollectionVariant, COLLECTION_LAYOUTS } from './CollectionVariants.jsx'
 export { CharacterDetail } from './CharacterDetail.jsx';
 export { Battle } from './Battle.jsx';
 export { BATTLE_LAYOUTS } from './BattleVariants.jsx';
+export { VERSUS_LAYOUTS } from './BattleVersus.jsx';
 export { Rewards } from './Rewards.jsx';
 export { StreakDetail } from './StreakDetail.jsx';
 export { Shop } from './Shop.jsx';
