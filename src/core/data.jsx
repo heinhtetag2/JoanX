@@ -155,7 +155,11 @@ const PLAYER = {
   // The safety buzz is always on. Accessibility covers the cognitive/attention dimension:
   // `calmMode` strips extra decoration for a child who is easily overwhelmed, `simpleMode`
   // shows fewer things at once.
-  prefs: { sound: true, calmMode: false, simpleMode: false },
+  // Sound starts OFF: the app is opened cold in front of other people (a demo, a
+  // classroom, a parent handing the phone over), and audio that arrives uninvited is
+  // worse than audio you had to ask for. Turn it on from Profile → Sound effects, or
+  // from the Tweaks panel while reviewing.
+  prefs: { sound: false, calmMode: false, simpleMode: false },
   // A-13 — which CHILDREN row this device IS. The parent app and the child app were two
   // separate models of the same kid with nothing joining them; this is the join.
   childId: 'k1',
@@ -2527,7 +2531,8 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '
 // `sound` gates the parent app's UI/alert cues. It does NOT gate the safety
 // escalation itself — the urgent alert still reaches the parent even muted, the
 // same way the child's safety buzz is never silenced by a game toggle.
-const PARENT_PREFS = { sound: true };
+// Off by default, for the same reason the child's is (see PLAYER.prefs).
+const PARENT_PREFS = { sound: false };
 
 export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,

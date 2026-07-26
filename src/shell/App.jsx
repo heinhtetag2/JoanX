@@ -1,14 +1,14 @@
 import React from 'react';
 import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
-import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
+import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
-import { installUiSounds, music } from '../core/sound.jsx';
+import { installUiSounds, music, sfx } from '../core/sound.jsx';
 import DesignSystem from '../docs/DesignSystem.jsx';
 import SpecChecklist from '../docs/SpecChecklist.jsx';
 import ProjectDocs from '../docs/ProjectDocs.jsx';
@@ -82,6 +82,18 @@ function App() {
   //              product must not let them stare at mid-stride
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false, walking: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
+  // Sound — one dev switch over BOTH apps' mutes (the child game reads PLAYER.prefs.sound,
+  // the parent app PARENT_PREFS.sound). Both ship OFF, so a review session is silent until
+  // it is asked for. The value is read straight off the prefs on every render rather than
+  // mirrored into state, so flipping the child's own Profile → Sound effects row can't leave
+  // this panel showing the opposite; the tick just forces the re-render after our own click.
+  const [, setSoundTick] = React.useState(0);
+  const soundOn = PLAYER.prefs.sound !== false;
+  const changeSound = (v) => {
+    PLAYER.prefs.sound = v; PARENT_PREFS.sound = v;
+    setSoundTick(n => n + 1);
+    if (v) sfx.toggle(true);   // confirm the un-mute; muting is confirmed by the silence
+  };
   const [devBadge, setDevBadge] = React.useState(!__q.has('nodev'));   // per-screen handoff status badge — on by default; hide with ?nodev or the Tweaks toggle
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
@@ -598,6 +610,16 @@ function App() {
               </div>
             </React.Fragment>
           )}
+
+          {/* Last in the panel, under both roles' sections: it isn't a variant to compare,
+              it's the volume for whatever you are looking at — game cues + BGM in the child
+              app, the quiet functional cues in the parent app. Off is the default. */}
+          <div className="tw-label">Sound</div>
+          <div className="tw-row">
+            {[[true, 'On'], [false, 'Off']].map(([v, l]) => (
+              <button key={String(v)} className={'tw-chip' + (soundOn === v ? ' on' : '')} onClick={() => changeSound(v)}>{l}</button>
+            ))}
+          </div>
 
         </div>
       )}
