@@ -67,6 +67,35 @@ html, body {
 @keyframes jxPop { 0% { transform: scale(.72); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .jx-pop { animation: jxPop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
+/* the VS badge spins in like a struck medal turning to face you. It starts with the plates
+   and overlaps their whole slide, so it still reads as one screen animating rather than a
+   slide followed by a separate effect — but it does NOT copy their curve, which is the one
+   thing that has to differ. The plates' cubic-bezier(.16,1,.3,1) is a heavy ease-out: it puts
+   89 of the 180 degrees into the first 10% of the duration and dribbles the rest away over an
+   invisible tail. On something that travels that is a confident arrival; on something that
+   rotates it is a whip-crack followed by a crawl, and no amount of extra duration fixes it
+   because the crack is in the shape of the curve, not its length.
+   So the turn gets an even curve instead, easing out at the end rather than at the start.
+   Duration is .5s, and the ease-IN was pulled almost out of it: a quarter turn is a small
+   gesture, and holding it back at the start (9° in the first 75ms) left it looking like
+   nothing was happening yet — draggy, even though the number was small. It now moves on the
+   first frame, 28° by 75ms, and is essentially there by 300ms with the plates.
+   No overshoot: a bounce is what a slam is for.
+   The turn STARTS EDGE-ON, at -90°, and opens to face you. It does not begin at -180°, and
+   that is not a style choice: vs-shield.png is a flat image with VS lettering, a gem and
+   sparkles on it, and the far half of a 180° turn shows a flat image MIRRORED — a backwards
+   VS pointed at the child. Nothing rendered the back, so nothing could hide it. At a fast
+   whip that flashed past in a couple of frames; spread evenly over .8s it became a legible
+   backwards badge for a third of a second. From -90° the front is the only face that ever
+   exists, and the sliver at 0 width still gives the edge-on read a flip is wanted for. */
+@keyframes jxVsFlip {
+  0%   { transform: perspective(700px) rotateY(-90deg) scale(1.12); opacity: 0; }
+  22%  { opacity: 1; }
+  100% { transform: perspective(700px) rotateY(0deg) scale(1); opacity: 1; }
+}
+.jx-vs-flip { animation: jxVsFlip .5s cubic-bezier(.25,.35,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .jx-vs-flip { animation: none; } }
+
 /* subtle tactile feedback for icon buttons / chips */
 .jx-press { transition: transform .12s ease, filter .12s ease; }
 .jx-press:hover { filter: brightness(.97); }

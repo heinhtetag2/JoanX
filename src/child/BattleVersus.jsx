@@ -183,17 +183,19 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
   );
 }
 
-// The shield in the gap between the two plates. Flat gold on a hexagon — no glow, no
-// shine sweep; it marks where the two sides meet, not an effect.
-function Shield({ size = 62 }) {
-  const hex = 'polygon(50% 0, 100% 26%, 100% 74%, 50% 100%, 0 74%, 0 26%)';
+// The shield in the gap between the two plates — a painted badge (laurel wreath, gem, VS
+// lettering baked in), not a CSS hexagon. It flips in alongside the two fighters as they
+// slide (see jx-vs-flip in joanx.css); on the result strip it re-mounts with the same class,
+// so a rematch turns the badge again rather than dropping a static one in.
+// `delay` is the wait before it turns, in seconds — it belongs to the SCREEN, not to the
+// badge. It is 0 on both screens now and the prop stays only because that is a property of
+// the screen, not a constant: the versus stage starts the flip with the plates because they
+// share a curve and are meant to settle together, and the result strip has no entrance to
+// wait for at all. Anything above 0 re-opens the gap that made the old badge read as late.
+function Shield({ size = 62, delay = 0 }) {
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, background: THEME.gold, clipPath: hex }} />
-      <div style={{ position: 'absolute', inset: 3, background: '#20201d', clipPath: hex, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="game-font" style={{ fontSize: size * .34, fontWeight: 500, color: THEME.gold, letterSpacing: .5 }}>VS</span>
-      </div>
-    </div>
+    <img src="/assets/battle/vs-shield.png" alt="VS" className="jx-vs-flip"
+      style={{ width: size, height: size, flexShrink: 0, display: 'block', animationDelay: `${delay}s` }} />
   );
 }
 
@@ -216,8 +218,9 @@ function BannerStage({ me, foe, result, won }) {
             dim={!won} pop={won} />
         </div>
         {/* overlapping the seam by 10px a side, not spacing the two apart — the shield
-            should cost the banners as little width as possible */}
-        <div style={{ margin: '0 -10px', zIndex: 2, flexShrink: 0 }}><Shield size={46} /></div>
+            should cost the banners as little width as possible. Lifted well off the seam
+            so it sits toward the top of the two plates rather than on their shared centre. */}
+        <div style={{ margin: '-46px -10px 0', zIndex: 2, flexShrink: 0 }}><Shield size={58} /></div>
         <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
           <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
             art={PLATE_ART.red} ornament="left" mood="alert" mini
@@ -238,9 +241,13 @@ function BannerStage({ me, foe, result, won }) {
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
-          resting on a mascot, which breaks the neighbouring plate's top edge. */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2 }}>
-        <Shield size={64} />
+          resting on a mascot, which breaks the neighbouring plate's top edge. Nudged up a
+          touch and sized up so it reads as the centrepiece of the gap, not a small badge
+          lost in it. */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2, marginTop: -14 }}>
+        {/* starts with the plates, not after them: the flip runs the same .6s on the same
+            curve, so badge and banners decelerate together and stop on the same frame */}
+        <Shield size={76} />
       </div>
 
       {/* buddy (our hero) on BOTTOM — GREEN grove plate (ornament right), mascot leaning

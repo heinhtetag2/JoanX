@@ -300,12 +300,17 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
             the roll, and a real one times out on its own after 1.6s. A previewed one never
             rolls, so it needs the one way out that a child would otherwise never see. */}
         {preview && !result && (
-          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
+          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)', position: 'relative', zIndex: 3 }}>
             <button onClick={() => ctx.nav('home')} style={{ width: '100%', background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', color: '#fff', borderRadius: 999, padding: '12px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Close')}</button>
           </div>
         )}
         {result && (
-          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
+          // above the scrim, not under it. The scrim is an absolutely-positioned sibling and
+          // this strip was static, so it painted OVER the buttons — at the very bottom that
+          // is rgba(20,18,26,.9), which is how a near-solid white border and #fff label ended
+          // up reading as grey. The scrim is there to darken the ART the CTAs stand on; it was
+          // darkening the CTAs by the same amount, which is the one thing it must not do.
+          <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)', position: 'relative', zIndex: 1 }}>
             {/* A-8: challenges are capped per day — offer another only while some remain */}
             {/* The battle CTA stays brand green here as everywhere else — it is the same
                 action, it should not change colour just because the backdrop is art. What
@@ -317,13 +322,14 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
             {left > 0
               ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => ctx.nav('villaindex')}>{L('Battle again')} · {left}</Button>
               : <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L("That's your battle for today")}</Button>}
-            {/* "Back home" is a ghost — no fill, so the green CTA above keeps the whole of
-                the attention. What it must NOT be is bare text with nothing to hold against
-                a sunlit meadow: a near-solid white edge draws the button's shape whatever the
-                art behind it does, and the label goes to full white. The faint wash inside is
-                not a fill, it is insurance — the arena still has bright water at the bottom,
-                and white type needs something darker than that behind it. */}
-            <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'rgba(255,255,255,.22)', border: '1.5px solid rgba(255,255,255,.85)', color: '#fff', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
+            {/* "Back home" is a ghost — genuinely no fill, so the green CTA above keeps the
+                whole of the attention. What it must NOT be is bare text with nothing to hold
+                against a sunlit meadow: a near-solid white edge draws the button's shape
+                whatever the art behind it does, and the label sits just under full white so it
+                reads as secondary to the green without reading as disabled. It carried a white
+                wash for a while to buy contrast; that was treating the symptom — the strip
+                sitting under the scrim (see the container above) was what dulled it. */}
+            <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'transparent', border: '1.5px solid rgba(255,255,255,.92)', color: 'rgba(255,255,255,.96)', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
         )}
 
