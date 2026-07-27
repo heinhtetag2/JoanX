@@ -98,8 +98,9 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   //   arrive (0–620)   the plates slide in and the shield flips. Already built.
   //   charge (620–2050) the buddy's power counts up through the safe-walk bonus, and the chance
   //                    that total buys appears under it.
-  //   clash  (…–+2600) a five-blow exchange that escalates, holds, and then finishes. The
-  //                    shield snaps on every contact, hardest on the last.
+  //   clash  (…–+3800) a five-blow exchange that escalates, holds, then finishes. The shield
+  //                    snaps on every contact, and the loser is destroyed on the last one —
+  //                    it shudders, greys out and breaks apart, leaving the winner alone.
   // A tap during the exchange skips to the result; a tap during the charge starts the exchange.
   // A tap fires the clash early. It CANNOT change the outcome and is not required: resolveBattle
   // owns every rule (see below), and F-19 means this screen has to be able to run to the end in
@@ -146,10 +147,13 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       // miniature: the fight had more in it than the soundtrack admitted.
       beats.current.push(
         ...[442, 858, 1274, 1664, 2288].map(at => setTimeout(() => sfx.attack(), at)),
-        setTimeout(() => {
-          w ? sfx.win() : sfx.lose();
-          setPhase('result');
-        }, 2600),                              // the exchange's own length — see .jx-clash-* in joanx.css
+        // the win/lose cue lands as the loser goes, not as the screen changes
+        setTimeout(() => (w ? sfx.win() : sfx.lose()), 2600),
+        // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 2.29s and
+        // runs 1.3s, so the plate is not finished coming apart until 3.59s — cutting any earlier
+        // deletes the destruction rather than showing it. This lands ~200ms after, on the winner
+        // alone in the arena, which is the payoff the five blows were building to.
+        setTimeout(() => setPhase('result'), 3800),
       );
     }
   };

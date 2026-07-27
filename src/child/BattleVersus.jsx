@@ -108,7 +108,7 @@ function Medallions({ c, size = 40 }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom, note, clashClass }) {
+function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom, note, clashClass, koClass }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
@@ -136,6 +136,11 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
       width: mini ? '100%' : '95%', alignSelf: mini ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
       marginRight: ornLeft ? -bleed : 0, marginLeft: ornLeft ? 0 : -bleed,
     }}>
+      {/* Two layers, because the loser is doing two things at once and they cannot share a
+          `transform`. The OUTER element is the fight — it is being driven around by the clash
+          keyframes. This one is the plate coming apart, and it has to run over the top of that
+          movement rather than replace it. One wrapper, and the two compose. */}
+      <div className={koClass || undefined}>
       <div style={{ position: 'relative', width: '100%' }}>
         {/* the scene, at its own aspect — the plate's height is the art's height at this
             width. The buddy art is drawn ornament-right and flipped to put it left. */}
@@ -184,6 +189,7 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
           but the charge readout is a wide pill, and riding that offset put it half off the phone.
           It centres on the plate instead. */}
       {note}
+      </div>
     </div>
   );
 }
@@ -272,7 +278,8 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
           from the right (position-based, so the top card always slides in from the right). */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
         art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right"
-        clashClass={clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')} />
+        clashClass={clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')}
+        koClass={clash === 'win' ? 'jx-ko' : null} />
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
@@ -290,6 +297,7 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
       <Plate char={me} name={me.name} level={me.level} power={shownPower}
         art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left"
         clashClass={clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')}
+        koClass={clash === 'lose' ? 'jx-ko' : null}
         note={
           // The BOX is always here, empty or not. The versus column is centre-justified, so a
           // block that only mounts at 620ms re-centres the whole stage and jerks both plates

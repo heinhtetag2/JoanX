@@ -191,7 +191,7 @@ html, body {
   88% { transform: translateY(-31px); }   /* drives through */
 }
 @keyframes jxClashBotLose {
-  0%, 100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
   7%  { transform: translateY(9px); }
   17% { transform: translateY(-16px); }   /* still lands the first — it was a fight */
   25% { transform: translateY(-1px); }
@@ -202,7 +202,10 @@ html, body {
   64% { transform: translateY(16px); }
   72% { transform: translateY(2px); }
   79% { transform: translateY(9px); }
-  88% { transform: translateY(42px); }    /* knocked back */
+  88% { transform: translateY(42px); opacity: 1; }   /* knocked back */
+  /* holds where the blow left it. The disappearing is NOT done here — see .jx-ko, which runs
+     on a layer inside the plate. This keyframe only has to stop pulling it back upright. */
+  100% { transform: translateY(34px); }
 }
 @keyframes jxClashTopWin {
   0%, 100% { transform: translateY(0); }
@@ -219,7 +222,7 @@ html, body {
   88% { transform: translateY(31px); }    /* drives through */
 }
 @keyframes jxClashTopLose {
-  0%, 100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
   7%  { transform: translateY(-9px); }
   17% { transform: translateY(-15px); }
   25% { transform: translateY(-1px); }
@@ -230,7 +233,8 @@ html, body {
   64% { transform: translateY(20px); }
   72% { transform: translateY(2px); }
   79% { transform: translateY(-9px); }
-  88% { transform: translateY(-44px); }   /* knocked back */
+  88% { transform: translateY(-44px); opacity: 1; }  /* knocked back, and stays beaten */
+  100% { transform: translateY(-36px); }
 }
 .jx-clash-top-win  { animation: jxClashTopWin  2.6s cubic-bezier(.4,.05,.25,1) both; }
 .jx-clash-top-lose { animation: jxClashTopLose 2.6s cubic-bezier(.4,.05,.25,1) both; }
@@ -252,6 +256,29 @@ html, body {
   88% { transform: scale(1.34); }
 }
 .jx-shield-hits { animation: jxShieldHits 2.6s cubic-bezier(.3,1.4,.5,1) both; }
+
+/* THE KNOCKOUT — the beaten plate coming apart, on its own layer inside the plate so it plays
+   over the clash rather than replacing it. Delayed to 2.29s: that is 88% of the 2.6s exchange,
+   the frame the decisive blow lands, so the destruction starts ON the hit rather than after it.
+   Two halves. First it SHUDDERS — six fast oscillations, decaying, the plate failing to hold
+   together. Then it goes: sinks, tips, drains to grey, blurs out and fades. The slow half is
+   deliberately the longer one; a fast disappear reads as an element being removed, and what is
+   wanted is something being destroyed. grayscale before opacity is most of that read — colour
+   leaving first is what makes it look killed rather than hidden. */
+@keyframes jxKO {
+  0%  { transform: translate(0) rotate(0) scale(1); opacity: 1; filter: none; }
+  5%  { transform: translateX(-6px) rotate(-1.8deg); }
+  11% { transform: translateX(6px)  rotate(1.8deg); }
+  17% { transform: translateX(-5px) rotate(-1.4deg); }
+  23% { transform: translateX(5px)  rotate(1.4deg); }
+  29% { transform: translateX(-3px) rotate(-.8deg); }
+  35% { transform: translateX(2px)  rotate(.4deg); }
+  41% { transform: translate(0) rotate(0) scale(1); opacity: 1; filter: grayscale(.35); }
+  70% { opacity: .55; filter: grayscale(.9) blur(1.5px); }
+  100% { transform: translateY(30px) rotate(-2.5deg) scale(.8); opacity: 0; filter: grayscale(1) blur(5px); }
+}
+.jx-ko { animation: jxKO 1.3s cubic-bezier(.45,0,.65,1) 2.29s both; }
+@media (prefers-reduced-motion: reduce) { .jx-ko { animation-duration: .01s; animation-delay: 2.29s; } }
 
 @media (prefers-reduced-motion: reduce) {
   .jx-dim-in, .jx-overlay-in, .jx-char-in, .jx-content-in { animation: none; }
