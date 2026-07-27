@@ -888,7 +888,7 @@ const KO = {
   'Snuffs every light, every sound and every warning at once.': '모든 빛과 소리와 경고를 한 번에 꺼버려요.',
 
   // ── battle / villains (A-8) ──
-  'Approaching the villain…': '빌런에게 접근 중…', 'Next villain': '다음 빌런', 'Power': '파워',
+  'Next villain': '다음 빌런', 'Power': '파워',
   "Five villain challenges a day. Battles pause while you're walking.": '하루 다섯 번까지 빌런에 도전할 수 있어요. 걷는 동안에는 배틀이 멈춰요.',
   // repeat challenges (A-8.1)
   'Rematch': '재대결', 'Challenge again': '다시 도전하기', 'Repeat challenge': '반복 도전',
@@ -901,7 +901,7 @@ const KO = {
   'Your chance': '승률', 'Recommended': '권장', 'New personal best': '최고 기록 경신',
   'is under the recommended level — you can still fight, the odds are just longer.': '권장 레벨보다 낮아요 — 도전할 수 있지만 승률이 낮아요.',
   'Likely win': '유리해요', 'Close call': '접전이에요', 'Tough fight': '힘든 상대예요',
-  'First clear! A new villain is unlocked.': '첫 승리! 새로운 빌런이 열렸어요.',
+  'First clear!': '첫 승리!',
   // A-8.1 — basic reward vs first-clear bonus, and the story a first win unlocks
   'Basic': '기본 보상', 'First-clear bonus': '첫 승리 보너스',
   'Story unlocked': '이야기 해금', 'Chapter': '챕터', 'Story chapters': '이야기 챕터',

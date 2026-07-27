@@ -1,8 +1,8 @@
 // JoanX — child app · Battle select-screen layout explorations (10 variants)
 // One data model (next villain on the ladder + your owned buddies), ten ways to
 // stage the moment before a fight. Switch via the Tweaks panel ("Battle layout").
-// Baseline 'classic' lives in Battle.jsx; the fight phases (matching / versus /
-// result) are shared by every layout and stay there too.
+// Baseline 'classic' lives in Battle.jsx; the fight phases (versus / result) are
+// shared by every layout and stay there too.
 
 import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, PLAYER, STATS, statsFor, statMax, winPercent } from '../core/data.jsx';

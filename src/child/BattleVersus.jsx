@@ -6,11 +6,11 @@
 // and breaking its top edge, name + power below, a shield in the gap. Switch via Tweaks
 // ("Versus screen").
 //
-// Both layouts render the SAME block on both the versus phase and the result
-// phase — the result screen is the versus screen with the outcome written under
-// it, so the fighters must not jump position between the two. `result` only
-// changes the scale (the result screen has the battle math and rewards to fit
-// underneath) and dims the loser.
+// The versus phase is the fighters' screen; the RESULT screen is not. Two stacked
+// plates plus the shield gap is a full phone height on their own, which left the
+// headline, the reward and the battle math below the fold with no way to reach them.
+// So on the result the banner layout folds to a single side-by-side strip (`mini`):
+// same two fighters, same order of reading, a fraction of the height. The loser dims.
 //
 // System notes: no decorative sparkle, and the only thing that moves is the winner's
 // mascot on the result. The plates are painted assets (see PLATE_ART) rather than CSS
@@ -105,25 +105,35 @@ function Medallions({ c, size = 40 }) {
 // the name reads on the dark backdrop under the art, not on a sunlit sky inside it.
 // `ornament` says which corner the painted scroll is in; the mascot leans the other way
 // and the medallions take the opposite bottom corner, so neither lands on the ornament.
-function Plate({ char, name, level, power, art, ornament, mood, dim, pop, compact, enterFrom }) {
+// `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
+// drops every device that only pays off at full size — the off-screen bleed, the lean, the
+// stat medallions — and sits centred in its half of a row instead.
+function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom }) {
   const ornLeft = ornament === 'left';
-  const mSize = compact ? 104 : 132;
+  const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
   // stagger read as a hard diagonal rather than two plates merely offset. The medallions
   // below are shifted inward by the same amount so they never ride off with the bleed.
-  const bleed = compact ? 18 : 30;
+  const bleed = mini ? 0 : 30;
   // which way the mascot (and the name under it) sits off the plate centre. It leans toward
   // the ornament/inset side — into the open scene, AWAY from the bleeding edge — so the fox
   // reads over the autumn sky (not off the right) and the panda over the grove path.
-  const lean = ornLeft ? -30 : 30;
+  // In the result strip the two plates meet at a shield in the middle, so the lean points
+  // INWARD: each mascot steps toward that seam (buddy right, villain left) so the two read
+  // as facing each other rather than drifting to the outer edges of the screen.
+  // Not symmetric, though: the buddy art puts its mascot further right inside its own half
+  // than the villain art does inside its, so an equal inward lean crowded the buddy up
+  // against the shield. The buddy leans OUT instead — past its half's centre, away from the
+  // seam — which is what actually lands the two mascots mirrored across the VS.
+  const lean = mini ? (ornLeft ? -18 : -30) : (ornLeft ? -30 : 30);
   return (
     // The two plates are staggered, not stacked flush: each is narrower than the phone and
     // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
     // (ornament left) pins + bleeds RIGHT; villain (ornament right) pins + bleeds LEFT — the
     // diagonal the reference is built on. Medallions and name stay on the inset side, on-screen.
-    <div className={enterFrom === 'left' ? 'jx-slide-left' : 'jx-slide-right'} style={{
+    <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
       opacity: dim ? .42 : 1, transition: 'opacity .4s',
-      width: compact ? '90%' : '95%', alignSelf: ornLeft ? 'flex-end' : 'flex-start',
+      width: mini ? '100%' : '95%', alignSelf: mini ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
       marginRight: ornLeft ? -bleed : 0, marginLeft: ornLeft ? 0 : -bleed,
     }}>
       <div style={{ position: 'relative', width: '100%' }}>
@@ -135,14 +145,14 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, compac
             layout is built on. Nudged away from the ornament so it stands on open ground
             rather than in the scroll. */}
         <div className={pop ? 'jx-pop' : ''} style={{
-          position: 'absolute', bottom: compact ? 2 : 6, left: `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
+          position: 'absolute', bottom: mini ? 0 : 6, left: `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
         }}>
           <Mascot species={char.species} stage={char.stage} color={char.color} mood={mood} size={mSize} />
         </div>
 
         {/* medallions on the outer bottom corner, half below the plate. Inset by bleed+14
             from the plate edge so they clear the off-screen bleed and land 14px in-screen. */}
-        {!compact && (
+        {!mini && (
           <div style={{ position: 'absolute', bottom: -16, [ornLeft ? 'right' : 'left']: bleed - 8 }}>
             <Medallions c={char} />
           </div>
@@ -156,15 +166,17 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, compac
         display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
         // extra nudge on the name block only (not the mascot): buddy pulls further
         // left, villain further right, so each label sits tucked toward its own side.
-        transform: `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
+        // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
+        // read as one stacked unit under each banner
+        transform: mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
         // clears the medallions, which hang ~17px below the plate on the opposite corner
-        marginTop: compact ? 2 : 6,
+        marginTop: mini ? 4 : 6,
       }}>
-        <div className="game-font" style={{ color: '#fff', fontSize: compact ? 17 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
-        <div className="game-font" style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
-          <Icon name="zap" size={15} color={THEME.gold} stroke={2.5} />
-          <span style={{ fontSize: compact ? 18 : 22, fontWeight: 500, color: THEME.gold, lineHeight: 1 }}>{power}</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>· {L('Lv')} {level}</span>
+        <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
+        <div className="game-font" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+          <Icon name="zap" size={mini ? 14 : 15} color={THEME.gold} stroke={2.5} />
+          <span style={{ fontSize: mini ? 18.5 : 22, fontWeight: 500, color: THEME.gold, lineHeight: 1 }}>{power}</span>
+          <span style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>· {L('Lv')} {level}</span>
         </div>
       </div>
     </div>
@@ -187,6 +199,34 @@ function Shield({ size = 62 }) {
 
 function BannerStage({ me, foe, result, won }) {
   const foeChar = { species: foe.species, stage: 2, color: foe.color, level: foe.level, name: foe.name };
+
+  // RESULT — the fold. Both plates on one row, the shield between them, no bleed and no
+  // medallions: a strip that says who fought, not a stage. Buddy on the left because the
+  // sentence the result screen tells is "you beat them", read left to right. No slide-in
+  // either — this is not an entrance, it is what the entrance settled into.
+  if (result) {
+    // Full-bleed to the phone edges (cancels the result screen's 24px gutter) and the shield
+    // sits ON the seam rather than in a gap between: every pixel of width goes to the two
+    // painted banners, which is the only way they read as banners at this height.
+    return (
+      <div style={{ width: 'calc(100% + 48px)', margin: '0 -24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+          <Plate char={me} name={me.name} level={me.level} power={me.power}
+            art={PLATE_ART.green} ornament="right" mood="happy" mini
+            dim={!won} pop={won} />
+        </div>
+        {/* overlapping the seam by 10px a side, not spacing the two apart — the shield
+            should cost the banners as little width as possible */}
+        <div style={{ margin: '0 -10px', zIndex: 2, flexShrink: 0 }}><Shield size={46} /></div>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+          <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
+            art={PLATE_ART.red} ornament="left" mood="alert" mini
+            dim={won} pop={false} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     // full-bleed to the phone edges (cancels the versus screen's 24px gutter) so a plate
     // pinned to an edge actually reaches it — the stagger needs the real screen width
@@ -194,21 +234,19 @@ function BannerStage({ me, foe, result, won }) {
       {/* villain on TOP — RED autumn plate (ornament left), mascot leaning right. Enters
           from the right (position-based, so the top card always slides in from the right). */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
-        art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right"
-        dim={result && won} pop={false} compact={result} />
+        art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right" />
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
           resting on a mascot, which breaks the neighbouring plate's top edge. */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: result ? 80 : 128, zIndex: 2 }}>
-        <Shield size={result ? 52 : 64} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2 }}>
+        <Shield size={64} />
       </div>
 
       {/* buddy (our hero) on BOTTOM — GREEN grove plate (ornament right), mascot leaning
           left. Enters from the left (bottom card always slides in from the left). */}
       <Plate char={me} name={me.name} level={me.level} power={me.power}
-        art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left"
-        dim={result && !won} pop={result && won} compact={result} />
+        art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left" />
     </div>
   );
 }

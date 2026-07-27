@@ -10,6 +10,10 @@ import { BattleSelect } from './BattleVariants.jsx';
 import { VersusStage } from './BattleVersus.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
+// The amber the points pill uses for text on its pale goldLight bed. THEME.gold is a FILL —
+// too pale to read as type on anything light, fine as type on the dark green card.
+const GOLD_INK = '#9e7300';
+
 function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const owned = CHARACTERS.filter(c => c.owned);
   // Arriving from a character's own fight button (CharacterDetail's swords icon) means
@@ -28,7 +32,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   // villain record moves, nothing is frozen — which is why the numbers it shows are the
   // live ones below rather than a snapshot from a roll that never happened.
   const preview = ctx.params?.preview;                    // 'versus' | 'result' | undefined
-  const [phase, setPhase] = React.useState(preview || 'select'); // select|matching|versus|result
+  const [phase, setPhase] = React.useState(preview || 'select'); // select|versus|result
   const [won, setWon] = React.useState(true);
   // the result screen must report the battle that just happened, not what a
   // re-render now computes — `villain.defeated` flips the moment we win.
@@ -36,7 +40,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const [wasEnding, setWasEnding] = React.useState(false);   // A-8: the final boss just fell
   const [wasImproved, setWasImproved] = React.useState(false);   // A-8.1: a new personal best
   const [stageUp, setStageUp] = React.useState(null);            // A-3.3: the win evolved the buddy
-  const [storyChapter, setStoryChapter] = React.useState(null);   // A-8.1: the first win opened a chapter
+  // (no storyChapter state — the chapter a first win opens is not announced on this screen)
   const [lastReward, setLastReward] = React.useState(BATTLE_REWARDS.firstClear);
   // A-8.2 — the villain fought and the power/odds it was rolled against, frozen at roll time
   const [lastFoe, setLastFoe] = React.useState(null);
@@ -47,7 +51,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const usedToday = left === 0;
 
   // The battle theme carries in from the Villain Dex: it loops while you're choosing
-  // a fighter, then stops the moment the match starts (matching / versus / result),
+  // a fighter, then stops the moment the match starts (versus / result),
   // so the start / win / lose cues land clean over silence. Muted by the sound toggle.
   React.useEffect(() => {
     if (phase === 'select' && !PLAYER.walking) music.start('battle');
@@ -86,9 +90,11 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   // afterwards would report a chance the child never fought at.
   const start = () => {
     if (!canChallenge(villain).ok) return;   // locked villain, or no challenges left today
+    // Straight into the arena: no "approaching the villain" interstitial. The versus
+    // stage's own slide-in (.6s) is the transition, so the wait it used to fill is gone.
     sfx.battleStart();
-    setPhase('matching');
-    setTimeout(() => { sfx.attack(); setPhase('versus'); }, 1600);
+    setPhase('versus');
+    setTimeout(() => sfx.attack(), 700);     // lands once both fighters have slid in
     setTimeout(() => {
       const res = resolveBattle(villain, sel);
       if (!res.ok) { setPhase('select'); return; }   // gate closed between tap and resolve
@@ -109,26 +115,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       setWasFirstClear(res.firstClear);
       setWasImproved(res.improved);         // A-8.1 — a new personal best against this villain
       setStageUp(res.stageUp);              // A-3.3 — battle XP carried the buddy into a new stage
-      setStoryChapter(res.storyChapter);    // A-8.1 — a first win, and only a first win, tells its story
       setLastReward(res.reward);
       setUsedCount(PLAYER.battlesToday);
       w ? sfx.win() : sfx.lose();
       setWon(w); setPhase('result');
-    }, 3200);
+    }, 1800);
   };
-
-  if (phase === 'matching') {
-    return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(170deg,#2b2926,#365C39)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-        <div style={{ position: 'relative', width: 90, height: 90, marginBottom: 20 }}>
-          <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#fff', opacity: .3 }} />
-          <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="swords" size={40} color="#fff" stroke={2} /></div>
-        </div>
-        <div className="game-font" style={{ color: '#fff', fontSize: 21, fontWeight: 500 }}>{L('Approaching the villain…')}</div>
-        <div style={{ color: 'rgba(255,255,255,.75)', fontSize: 13, marginTop: 6 }}>{L('Lv')}{villain.lv} · {L(villain.name)}</div>
-      </div>
-    );
-  }
 
   if (phase === 'versus' || phase === 'result') {
     const result = phase === 'result';
@@ -145,8 +137,8 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     const { base, bonus, odds: shownOdds } = (result && !preview) ? lastMath : live;
     const myTotal = base + bonus;
     const mathRow = (lbl, val, color, i) => (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.09)' : 'none' }}>
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.72)', fontWeight: 600 }}>{lbl}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.1)' : 'none' }}>
+        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.7)', fontWeight: 600 }}>{lbl}</span>
         <span className="game-font" style={{ fontSize: 15.5, fontWeight: 500, color: color || '#fff' }}>{val}</span>
       </div>
     );
@@ -155,14 +147,28 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     // plates and the VS shield sit on top. A soft dark scrim (below) keeps the white
     // name/power text readable over the bright meadow without hiding the art.
     return (
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: 60 }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
         {/* soft overlay: a gentle flat tint across the whole scene so the vibrant arena
-            is muted a touch and the fighters read as the foreground */}
+            is muted a touch and the fighters read as the foreground. Both phases share it:
+            the result's own white card carries its text, so there is nothing left for a
+            heavier tint to fix — dimming the arena twice only made the screen gloomy. */}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,30,.22)', pointerEvents: 'none' }} />
         {/* legibility scrim: darkens top & bottom slightly so text/plates read; the
             middle stays clear so the arena art shows through behind the VS */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,18,26,.45) 0%,rgba(20,18,26,.12) 32%,rgba(20,18,26,.12) 68%,rgba(20,18,26,.5) 100%)', pointerEvents: 'none' }} />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative', transform: 'translateY(-20px)' }}>
+        {/* the result's bottom runs much darker, and this is what keeps the CTAs legible.
+            The button is brand green and the arena's lower half is a sunlit green meadow —
+            green on green, with the disabled style being the same green at 45%, is how an
+            enabled button ends up looking greyed out. Darkening the strip the two CTAs stand
+            on separates them by value instead of by hue, so the green can stay green. */}
+        <div style={{ position: 'absolute', inset: 0, background: result
+          ? 'linear-gradient(180deg,rgba(20,18,26,.4) 0%,rgba(20,18,26,.1) 30%,rgba(20,18,26,.12) 56%,rgba(20,18,26,.66) 78%,rgba(20,18,26,.9) 100%)'
+          : 'linear-gradient(180deg,rgba(20,18,26,.45) 0%,rgba(20,18,26,.12) 32%,rgba(20,18,26,.12) 68%,rgba(20,18,26,.5) 100%)', pointerEvents: 'none' }} />
+        {/* One fixed screen, centred — no scrolling. Everything the result has to say fits
+            between the header and the buttons because the fighters fold to a strip (see
+            BattleVersus.jsx); if a case ever stops fitting, that case gets shorter, it does
+            not get a scrollbar. Overflow stays visible so the mascots can keep breaking the
+            top edge of their plates. */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', position: 'relative', transform: result ? 'none' : 'translateY(-20px)' }}>
           {result && won && <Confetti n={24} />}
           {/* who is fighting whom — the one block both phases share, so the fighters
               do not jump position between the versus moment and the result. Layouts
@@ -172,9 +178,27 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
             foe={{ ...foeCard, power: foe.power }} />
 
           {result && (
-            <React.Fragment>
-              <div className="jx-pop" style={{ marginTop: 26, textAlign: 'center' }}>
-                <div className="game-font" style={{ fontSize: 36, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>
+            /* THE SHEET. Every word the result says lives on this one card.
+               Before it, the headline / reward pill / bonus lines / battle math sat straight
+               on the arena art, and a bright sunlit meadow is the worst possible backing for
+               white and gold text — the numbers were unreadable exactly where they mattered.
+               It is a DEEP GREEN-GREY, not white and not a neutral black. Neutral dark read
+               as a box dropped on a painting; plain white read as a form printed over one;
+               a saturated brand green read as a slab of colour. This is the brand hue pulled
+               most of the way toward charcoal and left at 72% — enough green to belong to the
+               arena's meadow, not enough to compete with it, and open enough that the scene
+               reads clearly through it. Flat fill, hairline edge, no shadow.
+               72% is about the floor: the math inset below adds its own darkening, but the
+               headline and the support lines have only this card behind them, and any thinner
+               puts them back on the bright meadow they were rescued from.
+
+               Hierarchy inside it, brightest to quietest: the gold headline, then the pale
+               gold reward pill (the one thing the child came for), then the supporting lines
+               in muted white, and last the battle math — sunk into a darker inset so it reads
+               as the receipt under the result rather than a second announcement. */
+            <div style={{ width: '100%', maxWidth: 320, marginTop: 18, background: 'rgba(40,58,44,.72)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 24, padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="jx-pop" style={{ textAlign: 'center' }}>
+                <div className="game-font" style={{ fontSize: 34, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>
                   {!won ? L('So close!') : wasEnding ? L('Nox is out.') : L('Victory!')}
                 </div>
                 {/* A-8.1 — a rematch that beat the old record. This is the payoff for
@@ -190,7 +214,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                     difference the whole rule exists to create. */}
                 {won && (
                   <React.Fragment>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: '#9e7300', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: GOLD_INK, padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
                       <Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
                     </div>
                     {/* A-8.4 — the egg drop is deliberately NOT surfaced here. The win
@@ -199,7 +223,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                         battle, not the reward. */}
                     {wasFirstClear && (
                       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.72)' }}>
                           {L('Basic')} +{BATTLE_RULES.base.points}
                         </span>
                         <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.gold }}>
@@ -207,21 +231,21 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                         </span>
                       </div>
                     )}
-                    <div style={{ color: 'rgba(255,255,255,.75)', fontSize: 12.5, marginTop: 8 }}>
+                    <div style={{ color: 'rgba(255,255,255,.78)', fontSize: 12.5, marginTop: 8 }}>
+                      {/* "first clear" stays — it is why the bonus above is bigger — but the
+                          "a new villain is unlocked" half is gone with the story button: this
+                          screen reports the fight, it does not hand out unlock notices. */}
                       {wasEnding
                         ? L('The final villain is beaten — the ending is yours.')
                         : wasFirstClear
-                          ? L('First clear! A new villain is unlocked.')
+                          ? L('First clear!')
                           : `${L('Repeat challenge')} · ${L('cleared')} ${foe.clears}×`}
                     </div>
-                    {/* the third thing a first win buys, after the bonus and the next villain */}
-                    {storyChapter && (
-                      <button onClick={() => ctx.nav('villaindex')} className="jx-press"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', color: '#fff', borderRadius: 999, padding: '7px 14px', fontSize: 12, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer' }}>
-                        <Icon name="book-open" size={13} color={THEME.gold} stroke={2.4} />
-                        {L('Story unlocked')} · {L('Chapter')} {storyChapter}
-                      </button>
-                    )}
+                    {/* No "story unlocked · chapter N" button here. A first win still opens its
+                        chapter — resolveBattle records it and the Villain Dex is where it is
+                        read — but the result screen does not advertise it. This screen is about
+                        the fight that just happened; an unlock badge pointing somewhere else is
+                        a second errand stapled to the win. */}
                   </React.Fragment>
                 )}
                 {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{`${L('Still earned')} +${BATTLE_REWARDS.loss.points} ${L('points for trying!')}`}</div>}
@@ -229,7 +253,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                     record tracks the strongest buddy you have won with, so this is the line
                     that says the re-challenge actually meant something. */}
                 {wasImproved && !wasFirstClear && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.12)', borderRadius: 999, padding: '5px 12px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.13)', borderRadius: 999, padding: '5px 12px' }}>
                     <Icon name="trending-up" size={13} color={THEME.gold} stroke={2.5} />
                     <span style={{ fontSize: 12, fontWeight: 800, color: THEME.gold }}>{L('New personal best')} · {L('Power')} {lastMath.base}</span>
                   </div>
@@ -240,19 +264,23 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                   bigger number: it closes the story the ten villains were telling and hands
                   over the special reward. Nothing else in the app shows this panel. */}
               {wasEnding && (
-                <div className="jx-pop" style={{ width: '100%', maxWidth: 300, marginTop: 18, background: 'rgba(255,255,255,.09)', border: `1px solid ${THEME.gold}66`, borderRadius: 18, padding: '14px 16px' }}>
+                <div className="jx-pop" style={{ width: '100%', marginTop: 14, background: 'rgba(255,255,255,.08)', border: `1px solid ${THEME.gold}66`, borderRadius: 16, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
                     <Icon name="sunrise" size={16} color={THEME.gold} stroke={2.3} />
                     <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.gold, textTransform: 'uppercase', letterSpacing: .5 }}>{L('Ending unlocked')}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.86)', lineHeight: 1.6 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.88)', lineHeight: 1.6 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
                   {/* the special-reward egg drops behind the scenes and is met on the
                       egg-hatch screen, not announced here — same rule as every other win. */}
                 </div>
               )}
 
-              {/* battle math — how the result was calculated */}
-              <div className="jx-pop" style={{ width: '100%', maxWidth: 300, marginTop: 20, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.13)', borderRadius: 18, padding: '12px 16px 14px' }}>
+              {/* battle math — how the result was calculated. It is SUNK, not raised: a
+                  darker inset inside the card, no border of its own. The result is the
+                  announcement; this is the receipt under it, and pushing it a step back is
+                  what stops five rows of numbers from out-shouting the one line that says
+                  the child won. */}
+              <div className="jx-pop" style={{ width: '100%', marginTop: 16, background: 'rgba(0,0,0,.2)', borderRadius: 16, padding: '10px 14px 12px', flexShrink: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 2 }}>{L('Battle math')}</div>
                 {mathRow(`${sel.name} · ${L('Power')}`, base, '#fff', 0)}
                 {mathRow(L('Safe-walk bonus'), `+${bonus}`, THEME.gold, 1)}
@@ -265,7 +293,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                     : (ko ? `이번엔 안 됐어요 — 능력치를 키우면 승률이 올라가요.` : `Not this time — stronger stats mean better odds.`)}
                 </div>
               </div>
-            </React.Fragment>
+            </div>
           )}
         </div>
         {/* The versus phase has no controls of its own — it is a beat between the tap and
@@ -279,10 +307,23 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
         {result && (
           <div style={{ padding: '0 24px calc(env(safe-area-inset-bottom) + 24px)' }}>
             {/* A-8: challenges are capped per day — offer another only while some remain */}
+            {/* The battle CTA stays brand green here as everywhere else — it is the same
+                action, it should not change colour just because the backdrop is art. What
+                made it read as disabled was the backdrop, not the fill: solid green over a
+                sunlit green meadow, with the disabled state being that same green at 45%.
+                The fix is under the button, not in it — the scrim above darkens the strip
+                the two CTAs stand on, so a full-strength green now has something to be
+                full-strength against. */}
             {left > 0
               ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => ctx.nav('villaindex')}>{L('Battle again')} · {left}</Button>
               : <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L("That's your battle for today")}</Button>}
-            <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,.8)', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
+            {/* "Back home" is a ghost — no fill, so the green CTA above keeps the whole of
+                the attention. What it must NOT be is bare text with nothing to hold against
+                a sunlit meadow: a near-solid white edge draws the button's shape whatever the
+                art behind it does, and the label goes to full white. The faint wash inside is
+                not a fill, it is insurance — the arena still has bright water at the bottom,
+                and white type needs something darker than that behind it. */}
+            <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'rgba(255,255,255,.22)', border: '1.5px solid rgba(255,255,255,.85)', color: '#fff', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
         )}
 
