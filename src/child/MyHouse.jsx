@@ -1,7 +1,7 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { CHARACTERS, DECOR, HOUSE_BGS, PLAYER, ROOMS, SCENES, themeOf } from '../core/data.jsx';
+import { CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, PLAYER, REACTIONS, ROOMS, SCENES, themeOf } from '../core/data.jsx';
 import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
@@ -74,13 +74,22 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   // standing in the room from the status bar to the home indicator.
   const roomPage = variant === 'hotspot' && homeEd.theme.bg;
 
-  // The flush header's title is a floating chip, not bare text, so it ends lower in the 48px
-  // band than a text baseline did — the stock 102 left the room switcher crowding it. Give the
-  // chip its own air on these two variants; every other screen keeps 102.
-  const flushHdr = variant === 'scene' || variant === 'hotspot';
+  // The reactions friends left, biggest first, zeros dropped — a reaction nobody picked is not
+  // a score of nought, it is a thing that did not happen, and a row of 0s reads as a friend
+  // who visited and thought little of the room. Read off PLAYER the same way FriendHouse reads
+  // its counts off the friend row, so the two screens can never disagree about a tally.
+  const topReactions = REACTIONS
+    .map(r => ({ ...r, n: (PLAYER.reactions || {})[r.key] || 0 }))
+    .filter(r => r.n > 0)
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 3);
+
+  // The header no longer wears white chips on the room art (see the ScreenHeader below), so the
+  // extra 12px this used to add is gone with them: a bare text title sits higher and narrower in
+  // the 48px band than a 38px chip did, and the stock 102 clears the room switcher on its own.
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: flushHdr ? 114 : 102, paddingBottom: 110,
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110,
       ...(roomPage
         ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
         : { background: screenBgActive() }) }}>
@@ -89,8 +98,15 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       {variant === 'scene' && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 470, backgroundImage: sceneBgImg(sceneObj), backgroundSize: '140%', backgroundPosition: '38% top', backgroundRepeat: 'no-repeat', backgroundColor: sceneObj.tint, WebkitMaskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', maskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', zIndex: 0, pointerEvents: 'none' }} />
       )}
-      <ScreenHeader title={L('My Profile')} onBack={() => ctx.back()} flush={flushHdr}
-        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="heart" size={15} color={THEME.joy} fill={THEME.joy} stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{PLAYER.likes}</span></div>} />
+      {/* Same treatment as the Villain Dex: title and like count in white straight on the room
+          art, only the back button keeping a background. The white chips this used to wear read
+          as a toolbar bolted over the illustration — three floating controls in a row — where the
+          Dex's bare white text lets the art run to the top edge uninterrupted.
+          The heart goes white with the rest. It is the one element that loses something (the joy
+          orange), but a lone coloured icon between white text and a white chevron is what makes a
+          row like this look assembled rather than designed. */}
+      <ScreenHeader light title={L('My Profile')} onBack={() => ctx.back()}
+        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}><Icon name="heart" size={15} color="#fff" fill="#fff" stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{PLAYER.likes}</span></div>} />
       <div style={{ padding: '0 16px', position: 'relative', zIndex: 1 }}>
 
         {/* hero · 'hotspot' — the home room itself, tappable. No "Friends see this"
@@ -174,6 +190,34 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                   <Icon name={ic} size={13} color={THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700 }}>{v}</span>
                 </div>
               ))}
+            </div>
+
+            {/* What friends left when they visited — the return leg of A-10 / F-32, which the
+                profile never had. A visiting friend can leave a reaction and a note on
+                FriendHouse; on your own room the reaction went nowhere at all, and the notes
+                sat on a screen with nothing here pointing at it.
+                It stays ONE row of chips, deliberately. A note preview used to live further
+                down this page and was pulled (see below) because the profile is the room, not
+                a feed under it — that still holds. A count is not a feed: it says someone came
+                and left something, and the reading of it happens on the Guestbook screen.
+                The breakdown is the top three only. All five would be a row of near-zeros
+                saying less than the three that actually happened, and it is a summary — the
+                exact tally of 👏 is not what a child comes to this row for. */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              {topReactions.map(r => (
+                <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 10px' }}>
+                  <span style={{ fontSize: 13, lineHeight: 1 }}>{r.emoji}</span>
+                  <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg1 }}>{r.n}</span>
+                </div>
+              ))}
+              {/* always rendered, even at zero — it is the only thing on the room that says a
+                  guestbook exists, so hiding it when empty means it can never be discovered */}
+              <button onClick={() => ctx.nav('guestbook')} className="jx-press" aria-label={L('Guestbook')}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', border: 'none', borderRadius: 999, padding: '5px 11px', fontFamily: 'inherit', cursor: 'pointer' }}>
+                <Icon name="book-heart" size={13} color={THEME.fg2} stroke={2.3} />
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{L('Guestbook')}</span>
+                <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2 }}>{MY_GUESTBOOK.length}</span>
+              </button>
             </div>
           </div>
         )}

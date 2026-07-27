@@ -141,7 +141,14 @@ const PLAYER = {
   charUnlocks: { 'u-streak-7': 1 },   // the 7-day streak already paid out a Rare
   itemGrants: {},                     // A-5.1 — item rules paid out so far
   // public profile / house (F-32 / A-6·A-7)
-  friendCode: 'JNX-MINA-27', likes: 18, houseBg: 'sky', scene: 'forest',
+  // `reactions` is the same breakdown every FRIENDS row carries (see REACTIONS / react()) —
+  // which reaction each visiting friend left, tallied. The profile had only the flat `likes`
+  // total, so a friend could tap 🔥 on your room and you had no way to ever learn they did.
+  // It is stored rather than derived on both sides for the same reason the friend rows do it,
+  // and there is no myReaction here because a child cannot react to their own room. Nothing
+  // calls react(PLAYER), so `likes` cannot drift out of step with the tally the way the
+  // reactionTotal() note warns about; it stays as the one number the header shows.
+  friendCode: 'JNX-MINA-27', likes: 18, reactions: { love: 7, fire: 5, like: 3, clap: 2, wow: 1 }, houseBg: 'sky', scene: 'forest',
   // items placed in the public profile scene (around the buddy) — F-32
   profileDecor: { plant: true },
   // Child device preferences — the game's own feedback plus accessibility.

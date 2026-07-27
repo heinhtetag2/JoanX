@@ -21,9 +21,12 @@ function screenBgActive() {
 // `left` fills the leading slot on screens with no back button — tab roots that still
 // want something there (Friends puts the player's own avatar in it).
 function ScreenHeader({ title, onBack, left, right, flush, light }) {
-  // `light` — for full-bleed dark artwork (the villain map): no frosted blur, and the
+  // `light` — for full-bleed artwork (the villain map, the room): no frosted blur, and the
   // title reads in white with a soft shadow instead of a white chip, so nothing but the
   // back button carries a background. The trailing slot is coloured by the caller.
+  // `flush` is the white-chip treatment below. Nothing passes it now that the room screen
+  // reads light too — kept because it is the answer for a screen whose art is genuinely
+  // pale, where white-on-white cannot be rescued by a shadow.
   const noBlur = flush || light;
   return (
     // position:fixed (not absolute) so the header pins to the phone screen and the body scrolls
