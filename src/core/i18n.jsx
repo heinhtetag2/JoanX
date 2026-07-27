@@ -191,10 +191,12 @@ const KO = {
   "You're protected": '안전하게 보호 중', 'Active & protected': '활성화 · 보호 중', 'Lite mode active': '라이트 모드 작동 중',
   "Walking + phone use is being watched.": '걷기 + 폰 사용을 지켜보고 있어요.', 'Your phone pauses while you walk.': '걸을 때 폰이 잠시 멈춰요.',
   'Preview a safety moment': '안전 순간 미리보기',
+  'Lite mode — turned on by your parent': '부모님이 설정한 라이트 모드', 'Smart mode — turned on by your parent': '부모님이 설정한 스마트 모드',
   'mode': '모드', 'Set by your parent': '부모님이 설정함', 'Sensors OK': '센서 정상',
   'Motion · GPS while walking': '동작 · 걸을 때 GPS', 'Motion · no GPS': '동작 · GPS 없음',
   'Danger zones nearby': '근처 위험 구역',
   "You'll only get a heads-up if you walk toward a busy crossing — never just for passing by.": '복잡한 횡단보도로 향할 때만 알려줘요 — 그냥 지나갈 땐 알리지 않아요.',
+  'Your parent can see how long you walk safely and any warnings you get.': '얼마나 안전하게 걸었는지, 받은 경고는 부모님도 볼 수 있어요.',
   'toward': '향해 갈',
 
   // ── notifications ──
