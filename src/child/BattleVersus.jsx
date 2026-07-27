@@ -240,7 +240,7 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
   // stopped mattering. Here it lands in the one second a child is actually leaning in, which
   // is the only moment "you are at 392 instead of 352 because you walked safe today" is worth
   // saying. Same numbers, same source (lastMath / live in Battle.jsx) — read earlier.
-  const shownPower = useCountUp(me.power, me.power + (charge?.bonus || 0), 900, !!charge);
+  const shownPower = useCountUp(me.power, me.power + (charge?.bonus || 0), 1100, !!charge);
 
   // RESULT — the fold. Both plates on one row, the shield between them, no bleed and no
   // medallions: a strip that says who fought, not a stage. Buddy on the left because the

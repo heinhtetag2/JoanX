@@ -96,9 +96,9 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   // The versus phase in three beats. It used to be 1800ms with a .6s slide-in at the front and
   // nothing behind it — including an sfx.attack() at 700ms with no hit on screen to belong to.
   //   arrive (0–620)   the plates slide in and the shield flips. Already built.
-  //   charge (620–2050) the buddy's power counts up through the safe-walk bonus, and the chance
+  //   charge (620–2400) the buddy's power counts up through the safe-walk bonus, and the chance
   //                    that total buys appears under it.
-  //   clash  (…–+3800) a five-blow exchange that escalates, holds, then finishes. The shield
+  //   clash  (…–+5050) a five-blow exchange that escalates, holds, then finishes. The shield
   //                    snaps on every contact, and the loser is destroyed on the last one —
   //                    it shudders, greys out and breaks apart, leaving the winner alone.
   // A tap during the exchange skips to the result; a tap during the charge starts the exchange.
@@ -146,14 +146,14 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       // exchange. A single attack sound over a three-blow trade was the old version's problem in
       // miniature: the fight had more in it than the soundtrack admitted.
       beats.current.push(
-        ...[442, 858, 1274, 1664, 2288].map(at => setTimeout(() => sfx.attack(), at)),
+        ...[646, 1254, 1862, 2432, 3344].map(at => setTimeout(() => sfx.attack(), at)),
         // the win/lose cue lands as the loser goes, not as the screen changes
-        setTimeout(() => (w ? sfx.win() : sfx.lose()), 2600),
-        // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 2.29s and
-        // runs 1.3s, so the plate is not finished coming apart until 3.59s — cutting any earlier
+        setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
+        // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s and
+        // runs 1.5s, so the plate is not finished coming apart until 4.84s — cutting any earlier
         // deletes the destruction rather than showing it. This lands ~200ms after, on the winner
         // alone in the arena, which is the payoff the five blows were building to.
-        setTimeout(() => setPhase('result'), 3800),
+        setTimeout(() => setPhase('result'), 5050),
       );
     }
   };
@@ -189,7 +189,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     clearBeats();
     beats.current = [
       setTimeout(() => setBeat('charge'), 620),   // once both fighters have landed
-      setTimeout(fire, 2050),                     // ~1.4s to read the charge, then it goes on its own
+      setTimeout(fire, 2400),                     // ~1.8s to read the charge, then it goes on its own
     ];
   };
 

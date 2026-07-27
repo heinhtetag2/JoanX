@@ -236,10 +236,10 @@ html, body {
   88% { transform: translateY(-44px); opacity: 1; }  /* knocked back, and stays beaten */
   100% { transform: translateY(-36px); }
 }
-.jx-clash-top-win  { animation: jxClashTopWin  2.6s cubic-bezier(.4,.05,.25,1) both; }
-.jx-clash-top-lose { animation: jxClashTopLose 2.6s cubic-bezier(.4,.05,.25,1) both; }
-.jx-clash-bot-win  { animation: jxClashBotWin  2.6s cubic-bezier(.4,.05,.25,1) both; }
-.jx-clash-bot-lose { animation: jxClashBotLose 2.6s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-top-win  { animation: jxClashTopWin  3.8s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-top-lose { animation: jxClashTopLose 3.8s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-bot-win  { animation: jxClashBotWin  3.8s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-bot-lose { animation: jxClashBotLose 3.8s cubic-bezier(.4,.05,.25,1) both; }
 
 /* the shield is where the two meet, so it is what takes the hits — it snaps on every one of the
    five and hardest on the decisive blow. Without this the plates pass through the point of
@@ -255,10 +255,10 @@ html, body {
   64% { transform: scale(1.2); }
   88% { transform: scale(1.34); }
 }
-.jx-shield-hits { animation: jxShieldHits 2.6s cubic-bezier(.3,1.4,.5,1) both; }
+.jx-shield-hits { animation: jxShieldHits 3.8s cubic-bezier(.3,1.4,.5,1) both; }
 
 /* THE KNOCKOUT — the beaten plate coming apart, on its own layer inside the plate so it plays
-   over the clash rather than replacing it. Delayed to 2.29s: that is 88% of the 2.6s exchange,
+   over the clash rather than replacing it. Delayed to 3.34s: that is 88% of the 3.8s exchange,
    the frame the decisive blow lands, so the destruction starts ON the hit rather than after it.
    Two halves. First it SHUDDERS — six fast oscillations, decaying, the plate failing to hold
    together. Then it goes: sinks, tips, drains to grey, blurs out and fades. The slow half is
@@ -277,8 +277,8 @@ html, body {
   70% { opacity: .55; filter: grayscale(.9) blur(1.5px); }
   100% { transform: translateY(30px) rotate(-2.5deg) scale(.8); opacity: 0; filter: grayscale(1) blur(5px); }
 }
-.jx-ko { animation: jxKO 1.3s cubic-bezier(.45,0,.65,1) 2.29s both; }
-@media (prefers-reduced-motion: reduce) { .jx-ko { animation-duration: .01s; animation-delay: 2.29s; } }
+.jx-ko { animation: jxKO 1.5s cubic-bezier(.45,0,.65,1) 3.34s both; }
+@media (prefers-reduced-motion: reduce) { .jx-ko { animation-duration: .01s; animation-delay: 3.34s; } }
 
 @media (prefers-reduced-motion: reduce) {
   .jx-dim-in, .jx-overlay-in, .jx-char-in, .jx-content-in { animation: none; }
