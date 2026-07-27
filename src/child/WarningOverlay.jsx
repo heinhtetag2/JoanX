@@ -64,7 +64,7 @@ function RewardToast({ c, secs = 2.1, result }) {
           </span>
         </div>
 
-        <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{early ? L('Looked up in time!') : L('Nice save!')}</div>
+        <div className="game-font" style={{ fontSize: 22, fontWeight: 500 }}>{early ? L('Eyes up in time!') : L('Nice save!')}</div>
 
         {/* what the stop was worth, in the app's own words (F-12) — named by how early it came (spec #4) */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '5px 11px', borderRadius: 999, background: THEME.successLight, color: THEME.success, fontSize: 11.5, fontWeight: 800 }}>
@@ -132,7 +132,7 @@ function RoundBadge({ round, tier, inline }) {
 }
 
 // F-09 — timed character message: a bottom toast (~20% height). The toast itself HOLDS for as
-// long as the risk does — it is the surface carrying "I looked up", and a safety CTA that blinks
+// long as the risk does — it is the surface carrying "Looking ahead", and a safety CTA that blinks
 // out from under a child's thumb is worse than no CTA. What is timed is the *copy*: each line
 // reads for MESSAGE_MS, then cross-fades to the next, with MESSAGE_GAP_MS between one line and
 // the next so the same line can never return inside the minimum interval.
@@ -231,7 +231,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
   // alone as the primary brand CTA — no competing dismiss.
   const Actions = () => (
     <div style={{ marginTop: 16 }}>
-      <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
+      <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('Looking ahead')}</Button>
     </div>
   );
 
@@ -252,9 +252,9 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
           </div>
         </div>
         <div style={{ marginTop: 14 }}>
-          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('Looking ahead')}</Button>
         </div>
-        <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
+        <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Eyes up soon, or I’ll keep reminding you')}</div>
       </React.Fragment>
     ),
     // 1 · CARD — buddy left, message right, actions below. The straight system card.
@@ -315,7 +315,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
           </div>
         </div>
         <div style={{ marginTop: 14 }}>
-          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('I looked up')}</Button>
+          <Button variant="primary" size="md" icon="check" fullWidth onClick={onRespond} style={ctaStyle()}>{L('Looking ahead')}</Button>
         </div>
       </div>
     ),
@@ -424,7 +424,7 @@ function WarningOverlay({ ctx }) {
     const t = setTimeout(() => ctx.closeOverlay(), REWARD_MS);
     return () => clearTimeout(t);
   }, [phase, hold]);
-  // F-08.2 — the child's only button is "I looked up"; there is no dismiss. If they simply ignore
+  // F-08.2 — the child's only button is "Looking ahead"; there is no dismiss. If they simply ignore
   // the message, IGNORE_MS lapses and this fires with outcome 'ignored' — clearing the UI, not the
   // risk. The overlay leaves the screen and RECHECK_MS of quiet follows: no warning of any kind for
   // this same hazardous situation. Only when the cooldown lapses is the risk re-assessed — and only
@@ -497,7 +497,7 @@ function WarningOverlay({ ctx }) {
               <div className="jx-char-in" style={{ flexShrink: 0 }}><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={46} /></div></div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Walking — heads up in a sec')}</div>
-                <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Look up now and no warning is needed.')}</div>
+                <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Eyes up now and no warning is needed.')}</div>
               </div>
               <button onClick={respond} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.brandLight, color: THEME.brandDark, fontWeight: 800, fontSize: 12.5, padding: '9px 13px', borderRadius: 999 }}>{L("I've got it")}</button>
             </div>
@@ -561,9 +561,9 @@ function WarningOverlay({ ctx }) {
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ marginTop: 14 }}>
-                <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle()}>{L('I looked up')}</Button>
+                <Button variant="primary" size="md" icon="check" fullWidth onClick={respond} style={ctaStyle()}>{L('Looking ahead')}</Button>
               </div>
-              <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Look up soon, or I’ll keep reminding you')}</div>
+              <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 10 }}>{L('Eyes up soon, or I’ll keep reminding you')}</div>
             </div>
           )}
 
@@ -578,7 +578,7 @@ function WarningOverlay({ ctx }) {
               {/* One thing on this screen, and it is the safe action: looking up is the child's
                   only option, so the brand CTA stands alone with no competing dismiss. */}
               <div className="jx-content-in" style={{ width: '100%', display: 'flex', justifyContent: 'center', animationDelay: '.34s' }}>
-                <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('I looked up')}</Button>
+                <Button variant="primary" size="lg" fullWidth onClick={respond} style={{ maxWidth: 280, ...ctaStyle() }}>{L('Looking ahead')}</Button>
               </div>
             </div>
           )}
@@ -591,7 +591,7 @@ function WarningOverlay({ ctx }) {
                   <div className="jx-char-in" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 800 }}>{round === 1 ? L('Eyes up while walking') : L(tier.title) + ' ' + PLAYER.name + '!'}</div>
-                    <div style={{ fontSize: 12, color: THEME.fg2 }}>{round === 1 ? L("Tap when you've looked up") : L(tier.body)}</div>
+                    <div style={{ fontSize: 12, color: THEME.fg2 }}>{round === 1 ? L("Tap when your eyes are up") : L(tier.body)}</div>
                   </div>
                   <div style={{ width: 34, height: 34, borderRadius: 999, background: THEME.brandLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon name="check" size={18} color={THEME.brand} stroke={2.6} />

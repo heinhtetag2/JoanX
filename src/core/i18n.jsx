@@ -168,7 +168,7 @@ const KO = {
   "Today's tasks": '오늘의 미션', 'done': '완료', 'Go': '하기', 'Done': '완료', 'points': '포인트', 'point': '포인트',
   'Finish a phone-free walk': '폰 없이 걷기 끝내기', 'Reach your safe-walk goal': '안전 걷기 목표 달성',
   'Say hi to your buddy': '버디에게 인사하기',
-  'All tasks done!': '미션 모두 완료!', 'bonus earned today': '오늘 보너스 획득', 'Tap to complete': '눌러서 완료',
+  'All tasks done!': '미션 모두 완료!', 'bonus earned today': '오늘 받은 보너스', 'Tap to complete': '눌러서 완료',
   'Keep your head up and walk safe!': '고개를 들고 안전하게 걸어요!',
   "Today's journey": '오늘의 여정', 'left': '남음',
   'My buddy': '내 친구', 'Claim reward': '보상 받기',
@@ -214,9 +214,9 @@ const KO = {
   'JoanX only pings you for safety, rewards, and your buddy.': '조안X는 안전, 보상, 친구 소식만 알려드려요.',
   'Daily reward is ready': '오늘의 보상이 준비됐어요', 'Claim +100 points for walking safely.': '안전하게 걸어서 +100 포인트를 받으세요.', 'Claim': '받기',
   'New danger zone near school': '학교 근처 새 위험 구역', 'A busy crossing was added to your route.': '경로에 복잡한 횡단보도가 추가됐어요.',
-  'Nice save near Oak St.': '오크 거리 근처에서 잘했어요', 'You looked up in 2s — +30 bonus points.': '2초 만에 고개를 들었어요 — +30 보너스 포인트.',
+  'Nice save near Oak St.': '오크 거리 근처에서 잘했어요', 'Eyes up in 2s — +30 bonus points.': '2초 만에 고개를 들었어요 — +30 보너스 포인트.',
   '5-day safe streak!': '5일 연속 안전!', '2 more days unlocks a Special buddy.': '2일 더 하면 스페셜 친구를 해금해요.',
-  'You won a battle vs. Bolt': 'Bolt와의 배틀에서 이겼어요', '+120 points earned.': '+120 포인트 획득.',
+  'You won a battle vs. Bolt': 'Bolt와의 배틀에서 이겼어요', '+120 points earned.': '+120 포인트 받았어요.',
   'A grown-up updated your settings': '보호자가 설정을 변경했어요', 'Warning style is now set to “gentle”.': '알림 스타일이 “부드럽게”로 설정됐어요.',
 
   // ── collection ──
@@ -265,7 +265,7 @@ const KO = {
   'Daily safe-walk reward': '매일 안전 걷기 보상', 'Ready to claim · +100 points': '받을 수 있어요 · +100 포인트',
   'Achievements': '업적', 'Achievement': '업적', 'Progress': '진행도', 'Earn to get': '달성하면',
   // achievement unlock moment
-  'New badge earned': '새 배지 획득', 'View badges': '배지 보기',
+  'New badge earned': '새 배지를 받았어요', 'View badges': '배지 보기',
   'First Steps': '첫 걸음', 'Walk safely for 10 minutes': '10분 안전하게 걷기',
   '5-Day Streak': '5일 연속', 'Be safe 5 days in a row': '5일 연속 안전하게',
   'Quick Reflex': '빠른 반응', 'Stop within 3s, 10 times': '3초 안에 멈추기 10회',
@@ -331,7 +331,7 @@ const KO = {
   'Your points and streak': '내 포인트와 연속 기록',
   'Which app types are blocked': '차단된 앱 종류',
   'Where you are': '내 위치',
-  'Your messages and guestbook': '내 메시지와 방명록',
+  'Your messages and guestbook': '내 메시지와 친구 한마디',
   'Your photos': '내 사진',
 
   // ── Help & support ──
@@ -365,7 +365,7 @@ const KO = {
   'Points': '포인트', 'Your points': '내 포인트', 'Min safe': '안전 분',
   'Win battles': '배틀 승리', 'Keep streaks': '연속 유지', 'Daily reward': '매일 보상',
   'Mystery Buddy Box': '미스터리 친구 상자', 'Get a random new buddy': '랜덤으로 새 친구를 받아요',
-  'Opened': '열었어요', 'Outfits': '의상', 'Owned': '보유', 'Unlock rooms': '방 잠금 해제',
+  'Opened': '열었어요', 'Outfits': '의상', 'Owned': '내 것', 'Unlock rooms': '방 열기',
   // egg & hatch flow (A-2 / F-15)
   'Buddy Egg': '버디 알', 'Hatch a random new buddy': '랜덤으로 새 버디를 부화시켜요',
   'Tap to hatch': '눌러서 부화하기', 'Tap the egg to hatch': '알을 톡 눌러 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
@@ -386,13 +386,13 @@ const KO = {
   'Only from events and missions': '이벤트와 미션으로만 얻을 수 있어요',
   'Only from events, special missions and achievement rewards.': '이벤트, 스페셜 미션, 업적 보상으로만 얻을 수 있어요.',
   // egg acquisition (A-2.1) — earned eggs + the routes that grant them
-  'Your eggs': '내 알', 'Earned — ready to hatch': '획득 완료 — 부화할 수 있어요',
+  'Your eggs': '내 알', 'Earned — ready to hatch': '받았어요 — 부화할 수 있어요',
   'Hatch': '부화하기', 'Also earn from': '이렇게도 얻어요',
   'Missions': '미션', 'Distance & time': '거리 · 시간', 'Point shop': '포인트 상점',
   'Level-up reward': '레벨업 보상', 'Events & seasons': '이벤트 · 시즌',
   // character unlock routes (A-4.1) — earned by safe behaviour, not only by the odds
   'Hatch a Common Egg': '일반 알 부화하기', 'Hatch a Rare Egg': '레어 알 부화하기', 'Hatch an Epic Egg': '에픽 알 부화하기',
-  '7 days accident-free': '7일 연속 무사고', '30 days accident-free': '30일 연속 무사고',
+  '7 days accident-free': '7일 연속 안전', '30 days accident-free': '30일 연속 안전',
   'Walk 100 km safely': '누적 100km 안전하게 걷기',
   'Halve your phone use while walking': '걸을 때 폰 사용 절반으로 줄이기',
   'Early Walker': '아침 산책러',
@@ -673,7 +673,7 @@ const KO = {
   'Runs quietly on Android while your child walks': '아이가 걷는 동안 안드로이드에서 조용히 작동해요',
   'Restarts after reboot': '재부팅 후 자동 시작', 'Protection resumes automatically if the phone restarts': '폰이 다시 켜지면 보호가 자동으로 재개돼요',
   'Diagnostic log': '진단 로그', 'Log cleared': '로그를 지웠어요', 'Clear log': '로그 지우기',
-  'Walk detected': '걷기 감지됨', 'Warning shown · looked up in 2s': '경고 표시 · 2초 만에 고개 듦',
+  'Walk detected': '걷기 감지됨', 'Warning shown · eyes up in 2s': '경고 표시 · 2초 만에 고개 듦',
   'Safe walk complete · +200': '안전 걷기 완료 · +200', 'Synced to cloud': '클라우드에 동기화됨',
   'Kept 7 days on this device for troubleshooting, then deleted.': '문제 해결을 위해 이 기기에 7일간 보관 후 삭제돼요.',
 
@@ -781,42 +781,47 @@ const KO = {
 
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',
-  'One gentle buzz': '부드러운 진동 한 번', 'I looked up': '고개 들었어요',
+  'One gentle buzz': '부드러운 진동 한 번', 'Looking ahead': '고개 들었어요',
   // 2s hold window after the buzz — stop inside it and no warning is shown (F-08.1)
   'Stop within 2s and no warning appears.': '2초 안에 멈추면 경고가 표시되지 않아요.', 'I stopped': '멈췄어요',
   // dismiss → re-assess → buzz + warn again, one tone firmer (F-08.2 / F-08.3)
   'Got it!': '알겠어!', 'Still walking — I’ll check again in a moment': '아직 걷는 중 — 잠시 후 다시 확인할게요',
   'Looks safe — making sure…': '안전해 보여요 — 확인 중…',
   'Checking you’re really safe…': '정말 안전한지 확인 중…',
-  'Warning shown': '경고 표시됨', 'Phone put away': '폰 치웠어요', 'Screen off': '화면 껐어요', 'Walking safely': '안전하게 걷는 중',
-  'Already counted — keep it up!': '이미 반영됐어요 — 계속 잘해요!',
-  'Buzzing again — still walking': '다시 진동 — 아직 걷는 중', 'Reminder': '알림', 'recorded in your report': '리포트에 기록됨',
+  'Warning shown': '경고가 떴어요', 'Phone put away': '폰 치웠어요', 'Screen off': '화면 껐어요', 'Walking safely': '안전하게 걷는 중',
+  'Already counted — keep it up!': '이미 세어 뒀어요 — 계속 잘해요!',
+  'Buzzing again — still walking': '다시 진동 — 아직 걷는 중', 'Reminder': '알림', 'recorded in your report': '리포트에 남아요',
   'Still walking,': '아직 걷고 있어요,', 'Phone down until you stop — I mean it this time.': '멈출 때까지 폰은 내려둬요 — 이번엔 진심이에요.',
   'This is unsafe,': '위험해요,', 'Stop walking or put the phone away now. This is going in your report.': '지금 멈추거나 폰을 넣어요. 이 기록은 리포트에 남아요.',
   // grace period — subtle self-correct window before the warning (F-07)
-  'Walking — heads up in a sec': '걷는 중 — 잠시 후 알려줄게요', 'Look up now and no warning is needed.': '지금 고개를 들면 경고가 필요 없어요.', "I've got it": '알겠어요',
+  'Walking — heads up in a sec': '걷는 중 — 잠시 후 알려줄게요', 'Eyes up now and no warning is needed.': '지금 고개를 들면 경고가 필요 없어요.', "I've got it": '알겠어요',
   // staged escalation (F-08) + timed character message (F-09)
   'Buzz': '진동', 'Warning': '경고', 'Message': '메시지',
   'Eyes up!': '고개 들어요!', 'Phone away for now': '폰은 잠깐 넣어둬요', 'Look ahead!': '앞을 봐요!',
   // rotating message pools per tone tier (F-09) — no line repeats back-to-back
   'Watch your step!': '발밑 조심해요!',
   'Eyes on the path, please': '가는 길을 봐요', 'Phone down while walking': '걸을 땐 폰을 내려요', 'Head up — I mean it': '고개 들어요 — 진심이에요',
-  'Stop walking — now': '지금 멈춰요', 'This is unsafe': '위험해요', 'Put the phone away': '폰을 넣어요', 'Look up before you get hurt': '다치기 전에 고개를 들어요',
+  'Stop walking — now': '지금 멈춰요', 'This is unsafe': '위험해요', 'Put the phone away': '폰을 넣어요', 'Eyes up before you get hurt': '다치기 전에 고개를 들어요',
   'still walking': '계속 걷는 중', 'Still on your phone?': '아직 폰 보고 있어요?',
   'Auto-dismisses in a moment · no nagging': '잠시 후 자동으로 사라져요 · 잔소리 없이',
-  'Look up soon, or I’ll keep reminding you': '곧 고개를 들지 않으면 계속 알려줄게요',
+  'Eyes up soon, or I’ll keep reminding you': '곧 고개를 들지 않으면 계속 알려줄게요',
   "Hammy noticed you're walking. Let's put the phone away and stay safe.": '친구가 걷는 걸 알아챘어요. 폰을 넣고 안전하게 걸어요.',
-  'Stop fast for bonus points': '빨리 멈추면 보너스 포인트', 'Eyes up while walking': '걸을 땐 고개 들어요', "Tap when you've looked up": '고개를 들면 눌러요',
-  'Nice save!': '잘했어요!', "Stopped in": '멈춤:', "that's an immediate stop.": '즉시 멈춤이에요.', 'points': '포인트',
+  'Stop fast for bonus points': '빨리 멈추면 보너스 포인트', 'Eyes up while walking': '걸을 땐 고개 들어요', "Tap when your eyes are up": '고개를 들면 눌러요',
+  'Nice save!': '잘했어요!', "Stopped in": '멈춤:', "that's an immediate stop.": '바로 멈춘 거예요.', 'points': '포인트',
   "Let's walk first": '먼저 걷고 나서', "Your phone takes a quick break while you're walking. It comes back as soon as you stop.": '걷는 동안 폰이 잠깐 쉬어요. 멈추면 바로 돌아와요.',
-  'Calls & texts still work': '전화와 문자는 계속 돼요', 'Unlocks when you stop walking': '걷기를 멈추면 잠금 해제',
+  'Calls & texts still work': '전화와 문자는 계속 돼요', 'Unlocks when you stop walking': '걷기를 멈추면 다시 열려요',
 
   // ── encyclopedias (A-4 / A-9) ──
   'See plans': '요금제 보기',
-  'Encyclopedia': '도감', 'Villain Dex': '빌런 도감', 'Dex': '도감', 'My Room': '내 방', 'Me': '나',
-  'Characters collected': '수집한 캐릭터', 'Villains defeated': '물리친 빌런',
+  // 도감 is a reference-book word — an illustrated encyclopedia you look things up in. Korean
+  // children do meet it through 포켓몬 도감, but it names the SHELF rather than the thing on it,
+  // and next to 컬렉션 on the tab bar it left two words for one idea. 모음 says the same thing in
+  // a word a child already owns. 수집한 goes to 모은 for the same reason, and because the very
+  // next line already said 모은 버디 — the file was calling one action by two names.
+  'Encyclopedia': '모음', 'Villain Dex': '빌런 모음', 'Dex': '모음', 'My Room': '내 방', 'Me': '나',
+  'Characters collected': '모은 캐릭터', 'Villains defeated': '물리친 빌런',
   'of': '/', 'discovered': '발견', 'Stage': '단계',
-  'Badges earned': '획득한 배지', 'Buddies collected': '모은 버디', 'Complete': '완료',
+  'Badges earned': '받은 배지', 'Buddies collected': '모은 버디', 'Complete': '완료',
   'Not yet discovered': '아직 발견하지 못함', 'Defeated': '물리침', 'Now': '지금',
   'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
   'Boss': '보스', 'Reward': '보상', 'Start battle': '배틀 시작',
@@ -919,9 +924,9 @@ const KO = {
   'Tap the card for stats': '카드를 눌러 능력치 보기', 'Ready when you are!': '준비되면 시작해요!',
 
   // ── points & reward criteria (F-13 / F-14 · A-1.1) ──
-  'Immediate stop': '즉시 멈춤', 'Accident-free day': '무사고 하루',
+  'Immediate stop': '바로 멈춤', 'Accident-free day': '안전하게 보낸 하루',
   'Ready to claim': '받을 수 있어요', 'Streak rewards': '연속 달성 보상',
-  'accident-free days': '일 연속 무사고', 'days to go': '일 남았어요', 'Earned': '획득 완료',
+  'accident-free days': '일 연속 안전', 'days to go': '일 남았어요', 'Earned': '받았어요',
   'Special Egg': '스페셜 에그', 'a Special Egg': '스페셜 에그', 'a Legendary Egg': '레전더리 에그',
   'more days for': '일 더 모으면', 'Every milestone cleared — amazing!': '모든 목표를 달성했어요 — 정말 대단해요!',
   // streak detail page
@@ -934,15 +939,19 @@ const KO = {
 
   // ── friends (F-32) ──
   'Friends': '친구', 'Visit': '방문', 'Visit friends': '친구 방문',
-  'Visit a friend’s house, leave a like, sign the guestbook.': '친구 집을 방문해 좋아요를 남기고 방명록을 써요.',
-  'JoanX has no chat — just friendly visits, likes, and guestbook notes.': 'JoanX에는 채팅이 없어요 — 방문, 좋아요, 방명록만 있어요.',
+  'Visit a friend’s house, leave a like, sign the guestbook.': '친구 집에 놀러 가서 좋아요와 한마디를 남겨요.',
+  'JoanX has no chat — just friendly visits, likes, and guestbook notes.': 'JoanX에는 채팅이 없어요 — 놀러 가기, 좋아요, 친구 한마디만 있어요.',
   '’s house': '님의 집', 'Featured buddy': '대표 친구',
-  'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 완료!',
-  'Rooms': '방', 'Guestbook': '방명록',
+  'Leave a like': '좋아요 남기기', 'Liked!': '좋아요 했어요!',
+  // 방명록 is the register you sign at a wedding hall or a funeral — a word a child meets from
+  // an adult, if ever, and it describes the BOOK rather than what is in it. 친구 한마디 is what
+  // the feature actually is: a word your friends left. Used everywhere the feature is named,
+  // including the parent-facing copy, so the product calls it one thing.
+  'Rooms': '방', 'Guestbook': '친구 한마디',
   // profile room switcher — all three rooms are free, so this only names them
   'Your rooms': '내 방', 'Showing': '보여주는 중', 'Tap to show': '눌러서 보여주기',
   'Pick the room your friends see.': '친구들에게 보여줄 방을 골라보세요.',
-  'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '방문당 한 개',
+  'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '한 번에 한 개',
   // guestbook free-text note (F-32) + moderation reasons (moderation.jsx)
   'Write a short note, or tap one below.': '짧은 메모를 쓰거나, 아래에서 골라요.', 'Say something kind…': '따뜻한 말을 남겨요…', 'Leave note': '메모 남기기',
   'Let’s keep it kind — that message can’t be posted.': '고운 말로 써 주세요 — 이 메모는 남길 수 없어요.',
@@ -966,7 +975,7 @@ const KO = {
   // ── dex · species labels, blurbs, and lock hints (SPECIES_INFO / CHARACTERS.locked) ──
   'Fox': '여우', 'Cat': '고양이', 'Bird': '새', 'Owl': '부엉이', 'Croc': '악어',
   'FAQ': '자주 묻는 질문',
-  'Clever and brave — always the first to look up and check the road.': '영리하고 용감해요 — 언제나 가장 먼저 고개를 들고 길을 살펴요.',
+  'Clever and brave — always the first to check the road ahead.': '영리하고 용감해요 — 언제나 가장 먼저 고개를 들고 길을 살펴요.',
   'Quick on its feet. Loves a fast, safe dash across a quiet street.': '발이 빨라요. 한적한 길을 안전하게 쏙 건너는 걸 좋아해요.',
   'Eyes in the sky — spots busy crossings from far away.': '하늘의 눈 — 복잡한 횡단보도를 멀리서도 알아봐요.',
   'A calm, watchful night-walker who never rushes.': '차분하고 조심스러운 밤길 산책가, 절대 서두르지 않아요.',
@@ -993,8 +1002,8 @@ const KO = {
   'Every month': '매달',
   'JoanX keeps getting better.': 'JoanX는 꾸준히 좋아집니다.',
   'A steady stream of small improvements — here are the latest.': '크고 작은 개선이 계속돼요. 최근 소식이에요.',
-  'Guestbook moved to the Friends tab': '방명록이 친구 탭으로 옮겨졌어요',
-  'Two new buddies joined the dex': '새로운 버디 두 마리가 도감에 추가됐어요',
+  'Guestbook moved to the Friends tab': '친구 한마디가 친구 탭으로 옮겨졌어요',
+  'Two new buddies joined the dex': '새로운 버디 두 마리가 모음에 들어왔어요',
   'Warnings got a calmer, clearer look': '경고 화면이 더 차분하고 선명해졌어요',
   'Weekly report loads twice as fast': '주간 리포트가 두 배 빨라졌어요',
   'Battle rewards rebalanced': '배틀 보상이 다시 조정됐어요',
@@ -1008,14 +1017,14 @@ const KO = {
   'Welcome': '웰컴 혜택', 'Grab your first-month coupon': '즉시 할인 쿠폰 받기',
   'JoanX keeps growing with your child.': 'JoanX는 아이와 함께 자랍니다.',
   'Safe-walk detection, staged warnings, weekly reports': '안전 보행 감지, 단계별 경고, 주간 리포트',
-  'Buddy collection, eggs, battles': '버디 수집, 알, 배틀',
-  'Friends, room visits, guestbook': '친구, 방 방문, 방명록',
+  'Buddy collection, eggs, battles': '버디 모으기, 알, 배틀',
+  'Friends, room visits, guestbook': '친구, 방 놀러 가기, 친구 한마디',
   'AI weekly summary for parents': '부모를 위한 AI 주간 요약',
   'Phone down while walking → points, XP, a growing buddy.': '걷는 동안 폰을 넣어두면 포인트와 EXP가 쌓이고 버디가 자라요.',
   'Points buy eggs. The rarest buddies take real streaks.': '포인트로 알을 사요. 희귀한 버디는 진짜 연속 기록이 필요해요.',
-  'Room visits, likes, guestbook notes. That is the whole social layer.': '방 방문, 좋아요, 방명록 메모. 소셜 기능은 그게 전부예요.',
+  'Room visits, likes, guestbook notes. That is the whole social layer.': '방 놀러 가기, 좋아요, 친구 한마디. 소셜 기능은 그게 전부예요.',
   'The screen is never blocked. JoanX can only get more insistent.': '화면을 차단하지 않아요. 조금 더 단호해질 뿐이에요.',
-  'No messaging between children — visits, likes, and guestbook notes.': '아이들끼리 메시지를 주고받지 않아요 — 방문, 좋아요, 방명록뿐이에요.',
+  'No messaging between children — visits, likes, and guestbook notes.': '아이들끼리 메시지를 주고받지 않아요 — 놀러 가기, 좋아요, 친구 한마디뿐이에요.',
   'No live feed, no location trail. A calm weekly summary.': '실시간 화면도, 위치 기록도 없어요. 차분한 주간 요약뿐이에요.',
   'How JoanX works': 'JoanX 작동 방식',
   'Your child puts the phone down — because they want to.': '아이가 스스로 폰을 내려놓습니다.',
@@ -1055,7 +1064,7 @@ const KO = {
   'It never locks the phone': '폰을 잠그지 않아요',
   'The screen is never blocked. JoanX can only get more insistent — the child is always in control of their phone.': '화면을 차단하지 않아요. 조금 더 단호해질 뿐, 폰의 주도권은 언제나 아이에게 있어요.',
   'There is no chat': '채팅이 없어요',
-  'No messaging between children. Just visits, likes, and guestbook notes.': '아이들끼리 메시지를 주고받지 않아요. 방문, 좋아요, 방명록 메모뿐이에요.',
+  'No messaging between children. Just visits, likes, and guestbook notes.': '아이들끼리 메시지를 주고받지 않아요. 놀러 가기, 좋아요, 친구 한마디뿐이에요.',
   'You do not watch them live': '실시간으로 지켜보지 않아요',
   'No live feed and no location trail — a calm weekly summary, and a nudge only when it truly matters.': '실시간 화면도, 위치 기록도 없어요. 차분한 주간 요약과 꼭 필요할 때의 알림뿐이에요.',
   'Nothing is kept forever': '기록을 영원히 보관하지 않아요',
@@ -1085,7 +1094,7 @@ const KO = {
   'Add a buddy and some decorations below': '아래에서 친구와 장식을 추가해요',
   'Buddies in this room': '이 방의 친구들', 'Tap to move a buddy in or out.': '눌러서 친구를 넣거나 빼요.',
   'Not placed': '배치 안 함', 'Room is full': '방이 가득 찼어요', 'items': '개',
-  'Placed': '배치됨', 'Owned': '보유',
+  'Placed': '배치됨', 'Owned': '내 것',
   // green room decor
   'Plant': '화분', 'Little Tree': '작은 나무', 'Watering Can': '물뿌리개', 'Bird Feeder': '새 모이통',
   'Flower Bed': '꽃밭', 'Camp Tent': '캠핑 텐트',
@@ -1117,7 +1126,7 @@ const KO = {
   "JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.": 'JoanX는 메시지를 읽거나 엿듣거나 위치를 추적하지 않아요. 걷기를 감지하는 기기 내 모션만 사용하며, 자녀의 신원과 분리해 저장해요.',
 
   // ── safe-stop reward tiers (spec #4) ──
-  'Safe stop': '안전하게 멈춤', 'Looked up in time!': '제때 고개를 들었어요!',
+  'Safe stop': '안전하게 멈춤', 'Eyes up in time!': '제때 고개를 들었어요!',
   'No warning needed': '경고 없이 성공', 'Stopped after a warning': '경고 후 멈춤',
   'Daily reward maxed — still counts!': '오늘 보상은 다 받았어요 — 그래도 인정!',
 

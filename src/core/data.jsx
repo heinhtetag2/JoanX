@@ -539,7 +539,7 @@ const INTERVENTION = {
   messages: {
     gentle: ['Eyes up!', 'Phone away for now', 'Look ahead!', 'Watch your step!'],
     firm:   ['Still on your phone?', 'Eyes on the path, please', 'Phone down while walking', 'Head up — I mean it'],
-    urgent: ['Stop walking — now', 'This is unsafe', 'Put the phone away', 'Look up before you get hurt'],
+    urgent: ['Stop walking — now', 'This is unsafe', 'Put the phone away', 'Eyes up before you get hurt'],
   },
 };
 
@@ -1848,7 +1848,7 @@ const CHILDREN = [
 
 // ── Character encyclopedia (A-4): species blurbs for the dex ──────────
 const SPECIES_INFO = {
-  fox:  { label: 'Fox',  blurb: 'Clever and brave — always the first to look up and check the road.' },
+  fox:  { label: 'Fox',  blurb: 'Clever and brave — always the first to check the road ahead.' },
   cat:  { label: 'Cat',  blurb: 'Quick on its feet. Loves a fast, safe dash across a quiet street.' },
   bird: { label: 'Bird', blurb: 'Eyes in the sky — spots busy crossings from far away.' },
   owl:  { label: 'Owl',  blurb: 'A calm, watchful night-walker who never rushes.' },

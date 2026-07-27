@@ -28,7 +28,7 @@ const notifSeed = (c) => [
   // known: switching to 한국어 re-renders rather than remounting, so a seed-time swap would
   // leave this one row in English.
   { id: 'n2', when: 'today', type: 'char', mascot: true, t: '{name} is almost ready to evolve', s: '180 XP to Stage 3 — keep walking phone-free.', time: '20m', unread: true, go: 'character' },
-  { id: 'n3', when: 'today', type: 'safety', icon: 'timer', color: THEME.success, bg: THEME.successLight, t: 'Nice save near Oak St.', s: 'You looked up in 2s — +30 bonus points.', time: '1h', unread: true },
+  { id: 'n3', when: 'today', type: 'safety', icon: 'timer', color: THEME.success, bg: THEME.successLight, t: 'Nice save near Oak St.', s: 'Eyes up in 2s — +30 bonus points.', time: '1h', unread: true },
   { id: 'n4', when: 'today', type: 'zone', icon: 'map-pin', color: THEME.danger, bg: THEME.dangerLight, t: 'New danger zone near school', s: 'A busy crossing was added to your route.', time: '3h', unread: false },
   { id: 'n5', when: 'earlier', type: 'streak', icon: 'flame', color: THEME.joy, bg: THEME.joyBg, t: '5-day safe streak!', s: '2 more days unlocks a Special buddy.', time: 'Yest.', unread: false },
   { id: 'n6', when: 'earlier', type: 'battle', icon: 'swords', color: THEME.camping, bg: THEME.campingBg, t: 'You beat Rush', s: '+120 points earned.', time: 'Yest.', unread: false, go: 'battle' },

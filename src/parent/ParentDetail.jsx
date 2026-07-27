@@ -307,7 +307,7 @@ function ParentDetail({ ctx }) {
             ) : (
               <React.Fragment>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11.5, color: THEME.fg2 }}>
-                  {[['08:12', 'Walk detected'], ['08:12', 'Warning shown · looked up in 2s'], ['08:31', 'Safe walk complete · +200'], ['09:01', 'Synced to cloud']].map(([t, e], i) => (
+                  {[['08:12', 'Walk detected'], ['08:12', 'Warning shown · eyes up in 2s'], ['08:31', 'Safe walk complete · +200'], ['09:01', 'Synced to cloud']].map(([t, e], i) => (
                     <div key={i} style={{ display: 'flex', gap: 8 }}><span style={{ color: THEME.fg3 }}>{t}</span><span>{L(e)}</span></div>
                   ))}
                 </div>
