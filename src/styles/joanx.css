@@ -156,8 +156,109 @@ html, body {
 .jx-slide-right { animation: jxSlideInRight .6s cubic-bezier(.16,1,.3,1) backwards; }
 .jx-slide-left  { animation: jxSlideInLeft  .6s cubic-bezier(.16,1,.3,1) backwards; }
 
+/* THE CLASH — the two plates drive at the shield between them and one loses the exchange.
+   Which plate plays which is settled BEFORE this starts: resolveBattle has already rolled,
+   so this is a readout of an outcome, not a coin landing. The winner drives through and
+   rocks back; the loser meets it, gives, and is knocked well past where it started.
+   Declared after .jx-slide-* on purpose. Both live on the same element and `animation` is a
+   shorthand, not additive — the later rule replaces the slide outright. Harmless, because
+   the slide is long finished by the time a clash class is added, and it saves wrapping every
+   plate in a second div whose only job is to own a transform.
+   FIVE BLOWS, then a held beat, then the finish. A single lunge is a collision, not a fight —
+   however long you stretch it there is one thing to watch and it is over. This is a trade that
+   escalates: each blow lands harder than the one before it, the two sides alternate so neither
+   is simply winning, and the pull-back at 79% is a deliberate hole in the rhythm — the fight
+   stops for a moment and that silence is what makes the last blow land. Without the hold, five
+   blows is just a longer twitch.
+   The loser of the fight lands blows 2 and 4 regardless. That is the whole reason a trade reads
+   as a contest rather than an execution, and it stays true whichever way the roll went.
+   The two plates are complementary at every beat — whoever is landing drives AT the shield while
+   the other is pushed off it — so the pair has to be read as one timeline:
+     7% wind · 17% buddy · 33% villain · 49% buddy · 64% villain · 79% HOLD · 88% decisive
+   Toward the shield is NEGATIVE Y for the bottom plate and POSITIVE Y for the top one. */
+@keyframes jxClashBotWin {
+  0%, 100% { transform: translateY(0); }
+  7%  { transform: translateY(9px); }     /* wind back */
+  17% { transform: translateY(-16px); }   /* lands */
+  25% { transform: translateY(-1px); }
+  33% { transform: translateY(11px); }    /* takes one */
+  41% { transform: translateY(0); }
+  49% { transform: translateY(-21px); }   /* lands, harder */
+  57% { transform: translateY(-1px); }
+  64% { transform: translateY(14px); }    /* takes one, harder */
+  72% { transform: translateY(2px); }
+  79% { transform: translateY(15px); }    /* the hold — wound right back */
+  88% { transform: translateY(-31px); }   /* drives through */
+}
+@keyframes jxClashBotLose {
+  0%, 100% { transform: translateY(0); }
+  7%  { transform: translateY(9px); }
+  17% { transform: translateY(-16px); }   /* still lands the first — it was a fight */
+  25% { transform: translateY(-1px); }
+  33% { transform: translateY(12px); }
+  41% { transform: translateY(0); }
+  49% { transform: translateY(-19px); }
+  57% { transform: translateY(-1px); }
+  64% { transform: translateY(16px); }
+  72% { transform: translateY(2px); }
+  79% { transform: translateY(9px); }
+  88% { transform: translateY(42px); }    /* knocked back */
+}
+@keyframes jxClashTopWin {
+  0%, 100% { transform: translateY(0); }
+  7%  { transform: translateY(-9px); }
+  17% { transform: translateY(-15px); }   /* takes one */
+  25% { transform: translateY(-1px); }
+  33% { transform: translateY(18px); }    /* lands */
+  41% { transform: translateY(0); }
+  49% { transform: translateY(-20px); }   /* takes one, harder */
+  57% { transform: translateY(-1px); }
+  64% { transform: translateY(21px); }    /* lands, harder */
+  72% { transform: translateY(2px); }
+  79% { transform: translateY(-14px); }   /* the hold */
+  88% { transform: translateY(31px); }    /* drives through */
+}
+@keyframes jxClashTopLose {
+  0%, 100% { transform: translateY(0); }
+  7%  { transform: translateY(-9px); }
+  17% { transform: translateY(-15px); }
+  25% { transform: translateY(-1px); }
+  33% { transform: translateY(18px); }    /* still answers */
+  41% { transform: translateY(0); }
+  49% { transform: translateY(-20px); }
+  57% { transform: translateY(-1px); }
+  64% { transform: translateY(20px); }
+  72% { transform: translateY(2px); }
+  79% { transform: translateY(-9px); }
+  88% { transform: translateY(-44px); }   /* knocked back */
+}
+.jx-clash-top-win  { animation: jxClashTopWin  2.6s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-top-lose { animation: jxClashTopLose 2.6s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-bot-win  { animation: jxClashBotWin  2.6s cubic-bezier(.4,.05,.25,1) both; }
+.jx-clash-bot-lose { animation: jxClashBotLose 2.6s cubic-bezier(.4,.05,.25,1) both; }
+
+/* the shield is where the two meet, so it is what takes the hits — it snaps on every one of the
+   five and hardest on the decisive blow. Without this the plates pass through the point of
+   contact and nothing marks that contact happened. Replaces .jx-vs-flip on the same element
+   (shorthand, not additive), which is finished long before a clash starts.
+   It grows with the blows — the fifth is bigger than the first — so the shield is keeping score
+   of the escalation rather than just blinking five identical times. */
+@keyframes jxShieldHits {
+  0%, 12%, 25%, 41%, 57%, 72%, 82%, 100% { transform: scale(1); }
+  17% { transform: scale(1.11); }
+  33% { transform: scale(1.13); }
+  49% { transform: scale(1.17); }
+  64% { transform: scale(1.2); }
+  88% { transform: scale(1.34); }
+}
+.jx-shield-hits { animation: jxShieldHits 2.6s cubic-bezier(.3,1.4,.5,1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .jx-dim-in, .jx-overlay-in, .jx-char-in, .jx-content-in { animation: none; }
+  /* the clash still has to END on the outcome, so it is shortened rather than removed —
+     dropping it would leave the plates parked and the beat would read as a freeze */
+  .jx-clash-top-win, .jx-clash-top-lose, .jx-clash-bot-win, .jx-clash-bot-lose,
+  .jx-shield-hits { animation-duration: .01s; }
 }
 
 @keyframes jxPulse {

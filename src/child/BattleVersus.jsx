@@ -108,7 +108,7 @@ function Medallions({ c, size = 40 }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom }) {
+function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom, note, clashClass }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
@@ -131,7 +131,7 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
     // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
     // (ornament left) pins + bleeds RIGHT; villain (ornament right) pins + bleeds LEFT — the
     // diagonal the reference is built on. Medallions and name stay on the inset side, on-screen.
-    <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
+    <div className={`${enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''}${clashClass ? ' ' + clashClass : ''}`} style={{
       opacity: dim ? .42 : 1, transition: 'opacity .4s',
       width: mini ? '100%' : '95%', alignSelf: mini ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
       marginRight: ornLeft ? -bleed : 0, marginLeft: ornLeft ? 0 : -bleed,
@@ -179,8 +179,35 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
           <span style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>· {L('Lv')} {level}</span>
         </div>
       </div>
+      {/* OUTSIDE the name block, and deliberately so. That block is shoved 60px right of centre
+          (lean + 30) to sit under a mascot that leans the same way — fine for two short lines,
+          but the charge readout is a wide pill, and riding that offset put it half off the phone.
+          It centres on the plate instead. */}
+      {note}
     </div>
   );
+}
+
+// The power number counting up through the safe-walk bonus. rAF rather than a CSS transition
+// because the thing being animated is the VALUE, not a style — and the value is the point:
+// a child watching 352 become 392 is watching this morning's walk being spent.
+// It lands exactly on `to` on the final frame rather than wherever the clock happened to be,
+// so the number the charge settles on is always the number the fight is rolled against.
+function useCountUp(from, to, ms, run) {
+  const [v, setV] = React.useState(to);
+  React.useEffect(() => {
+    if (!run || from === to) { setV(to); return; }
+    let raf, t0;
+    const step = (t) => {
+      if (t0 == null) t0 = t;
+      const p = Math.min(1, (t - t0) / ms);
+      setV(Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [from, to, ms, run]);
+  return v;
 }
 
 // The shield in the gap between the two plates — a painted badge (laurel wreath, gem, VS
@@ -192,15 +219,22 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
 // the screen, not a constant: the versus stage starts the flip with the plates because they
 // share a curve and are meant to settle together, and the result strip has no entrance to
 // wait for at all. Anything above 0 re-opens the gap that made the old badge read as late.
-function Shield({ size = 62, delay = 0 }) {
+function Shield({ size = 62, delay = 0, hits }) {
   return (
-    <img src="/assets/battle/vs-shield.png" alt="VS" className="jx-vs-flip"
+    <img src="/assets/battle/vs-shield.png" alt="VS" className={hits ? 'jx-shield-hits' : 'jx-vs-flip'}
       style={{ width: size, height: size, flexShrink: 0, display: 'block', animationDelay: `${delay}s` }} />
   );
 }
 
-function BannerStage({ me, foe, result, won }) {
+function BannerStage({ me, foe, result, won, charge, clash }) {
   const foeChar = { species: foe.species, stage: 2, color: foe.color, level: foe.level, name: foe.name };
+
+  // CHARGE — the buddy's power counting up through the safe-walk bonus, and the chance that
+  // total buys. The result screen already prints all of this, but as a receipt, after it has
+  // stopped mattering. Here it lands in the one second a child is actually leaning in, which
+  // is the only moment "you are at 392 instead of 352 because you walked safe today" is worth
+  // saying. Same numbers, same source (lastMath / live in Battle.jsx) — read earlier.
+  const shownPower = useCountUp(me.power, me.power + (charge?.bonus || 0), 900, !!charge);
 
   // RESULT — the fold. Both plates on one row, the shield between them, no bleed and no
   // medallions: a strip that says who fought, not a stage. Buddy on the left because the
@@ -237,7 +271,8 @@ function BannerStage({ me, foe, result, won }) {
       {/* villain on TOP — RED autumn plate (ornament left), mascot leaning right. Enters
           from the right (position-based, so the top card always slides in from the right). */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
-        art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right" />
+        art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right"
+        clashClass={clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')} />
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
@@ -247,13 +282,37 @@ function BannerStage({ me, foe, result, won }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2, marginTop: -14 }}>
         {/* starts with the plates, not after them: the flip runs the same .6s on the same
             curve, so badge and banners decelerate together and stop on the same frame */}
-        <Shield size={76} />
+        <Shield size={76} hits={!!clash} />
       </div>
 
       {/* buddy (our hero) on BOTTOM — GREEN grove plate (ornament right), mascot leaning
           left. Enters from the left (bottom card always slides in from the left). */}
-      <Plate char={me} name={me.name} level={me.level} power={me.power}
-        art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left" />
+      <Plate char={me} name={me.name} level={me.level} power={shownPower}
+        art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left"
+        clashClass={clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')}
+        note={
+          // The BOX is always here, empty or not. The versus column is centre-justified, so a
+          // block that only mounts at 620ms re-centres the whole stage and jerks both plates
+          // upward at the exact moment the child starts reading them. Holding the height from
+          // the first frame keeps the stage still and lets the readout simply fade in.
+          <div style={{ height: 44, marginTop: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+            {charge && (
+              // Two lines, both earned: what the walk added, and what the total buys. The bonus
+              // is gold like the power it just fed; the chance is quieter, because it is context
+              // for that number rather than a second headline competing with it.
+              <React.Fragment>
+                <div className="jx-content-in" style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(20,18,26,.55)', borderRadius: 999, padding: '4px 11px' }}>
+                  <Icon name="footprints" size={12} color={THEME.gold} stroke={2.4} />
+                  <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: THEME.gold, lineHeight: 1 }}>+{charge.bonus}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>{L('Safe-walk bonus')}</span>
+                </div>
+                <div className="jx-content-in" style={{ fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.75)', textShadow: '0 1px 4px rgba(0,0,0,.5)', animationDelay: '.08s' }}>
+                  {L('Your chance')} {charge.odds}%
+                </div>
+              </React.Fragment>
+            )}
+          </div>
+        } />
     </div>
   );
 }
@@ -262,8 +321,8 @@ function BannerStage({ me, foe, result, won }) {
 // `me` and `foe` are already flattened by Battle.jsx (name / level / power /
 // species / colour), so no layout here reaches back into PLAYER or the villain
 // ladder — the result screen fights a frozen opponent and this must not undo it.
-function VersusStage({ variant = 'classic', me, foe, result, won }) {
-  if (variant === 'banner') return <BannerStage me={me} foe={foe} result={result} won={won} />;
+function VersusStage({ variant = 'classic', me, foe, result, won, charge, clash }) {
+  if (variant === 'banner') return <BannerStage me={me} foe={foe} result={result} won={won} charge={charge} clash={clash} />;
   return <ClassicStage me={me} foe={foe} result={result} won={won} />;
 }
 

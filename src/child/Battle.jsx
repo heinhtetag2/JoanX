@@ -33,6 +33,11 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   // live ones below rather than a snapshot from a roll that never happened.
   const preview = ctx.params?.preview;                    // 'versus' | 'result' | undefined
   const [phase, setPhase] = React.useState(preview || 'select'); // select|versus|result
+  // which beat of the versus phase is on screen: arrive | charge | clash. A previewed versus
+  // opens straight on `charge`, because that is the beat worth looking at and a preview never
+  // rolls — there is no clash for it to advance into.
+  const [beat, setBeat] = React.useState(preview === 'versus' ? 'charge' : 'arrive');
+  const [clash, setClash] = React.useState(null);          // null | 'win' | 'lose'
   const [won, setWon] = React.useState(true);
   // the result screen must report the battle that just happened, not what a
   // re-render now computes — `villain.defeated` flips the moment we win.
@@ -88,14 +93,28 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   // resolveBattle reads power and odds BEFORE it awards XP, so the numbers it hands back are
   // the ones the fight was actually decided on — a win can level the buddy up, and recomputing
   // afterwards would report a chance the child never fought at.
-  const start = () => {
-    if (!canChallenge(villain).ok) return;   // locked villain, or no challenges left today
-    // Straight into the arena: no "approaching the villain" interstitial. The versus
-    // stage's own slide-in (.6s) is the transition, so the wait it used to fill is gone.
-    sfx.battleStart();
-    setPhase('versus');
-    setTimeout(() => sfx.attack(), 700);     // lands once both fighters have slid in
-    setTimeout(() => {
+  // The versus phase in three beats. It used to be 1800ms with a .6s slide-in at the front and
+  // nothing behind it — including an sfx.attack() at 700ms with no hit on screen to belong to.
+  //   arrive (0–620)   the plates slide in and the shield flips. Already built.
+  //   charge (620–2050) the buddy's power counts up through the safe-walk bonus, and the chance
+  //                    that total buys appears under it.
+  //   clash  (…–+2600) a five-blow exchange that escalates, holds, and then finishes. The
+  //                    shield snaps on every contact, hardest on the last.
+  // A tap during the exchange skips to the result; a tap during the charge starts the exchange.
+  // A tap fires the clash early. It CANNOT change the outcome and is not required: resolveBattle
+  // owns every rule (see below), and F-19 means this screen has to be able to run to the end in
+  // a pocket. If skill decided a battle, the reward would stop being about walking safely, which
+  // is the only thing the game is here to pay out for.
+  const beats = React.useRef([]);
+  const fired = React.useRef(false);
+  const clearBeats = () => { beats.current.forEach(clearTimeout); beats.current = []; };
+  React.useEffect(() => clearBeats, []);
+
+  const fire = () => {
+    if (fired.current) return;               // tap racing the auto-advance, or a second tap
+    fired.current = true;
+    clearBeats();
+    {
       const res = resolveBattle(villain, sel);
       if (!res.ok) { setPhase('select'); return; }   // gate closed between tap and resolve
       const w = res.won;
@@ -117,9 +136,57 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       setStageUp(res.stageUp);              // A-3.3 — battle XP carried the buddy into a new stage
       setLastReward(res.reward);
       setUsedCount(PLAYER.battlesToday);
-      w ? sfx.win() : sfx.lose();
-      setWon(w); setPhase('result');
-    }, 1800);
+      setWon(w);
+      // The clash SHOWS the outcome — winner drives through, loser is knocked back — so it has
+      // to be told which is which. Its own state rather than reading `won`, so the animation
+      // can never render a frame against a stale value.
+      setClash(w ? 'win' : 'lose');
+      // one cue per blow, on the frames the plates actually meet — 24% / 46% / 84% of the 1.5s
+      // exchange. A single attack sound over a three-blow trade was the old version's problem in
+      // miniature: the fight had more in it than the soundtrack admitted.
+      beats.current.push(
+        ...[442, 858, 1274, 1664, 2288].map(at => setTimeout(() => sfx.attack(), at)),
+        setTimeout(() => {
+          w ? sfx.win() : sfx.lose();
+          setPhase('result');
+        }, 2600),                              // the exchange's own length — see .jx-clash-* in joanx.css
+      );
+    }
+  };
+
+  // A 2.6s exchange is long enough that sitting through it has to be optional. The outcome is
+  // already rolled and every side effect already applied by the time the first blow lands, so
+  // skipping costs nothing — it just stops showing the child something they have decided they
+  // are done watching. Same reason the charge can be tapped past.
+  const skipToResult = () => {
+    clearBeats();
+    won ? sfx.win() : sfx.lose();
+    setPhase('result');
+  };
+
+  // one handler for the whole versus phase: during the charge a tap throws the first punch,
+  // during the exchange it jumps to the result, and during the slide-in it does nothing —
+  // there is nothing to hurry past while the fighters are still arriving.
+  const tapVersus = () => {
+    if (preview) return;                     // a preview rolls nothing, so it has nothing to advance
+    if (beat === 'charge') fire();
+    else if (clash) skipToResult();
+  };
+
+  const start = () => {
+    if (!canChallenge(villain).ok) return;   // locked villain, or no challenges left today
+    // Straight into the arena: no "approaching the villain" interstitial. The versus
+    // stage's own slide-in (.6s) is the transition, so the wait it used to fill is gone.
+    sfx.battleStart();
+    fired.current = false;
+    setClash(null);
+    setBeat('arrive');
+    setPhase('versus');
+    clearBeats();
+    beats.current = [
+      setTimeout(() => setBeat('charge'), 620),   // once both fighters have landed
+      setTimeout(fire, 2050),                     // ~1.4s to read the charge, then it goes on its own
+    ];
   };
 
   if (phase === 'versus' || phase === 'result') {
@@ -134,7 +201,14 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     // come from the snapshot taken at roll time (a level-up would otherwise rewrite history);
     // during the versus phase, nothing has been rolled yet, so they are computed live.
     const live = { base: power(sel), bonus: BATTLE_ODDS.safeWalkBonus, odds };
-    const { base, bonus, odds: shownOdds } = (result && !preview) ? lastMath : live;
+    // Frozen from the moment the roll happens — which is the CLASH, not the result screen. A win
+    // awards XP and can level the buddy, so power(sel) may jump the instant resolveBattle returns;
+    // with live numbers still feeding the charge readout, the count-up would see a new target
+    // mid-clash and start over from a different base. The child would watch the number they were
+    // just shown rewrite itself. `frozen` also keeps the old rule intact: a preview rolls nothing,
+    // so it always reads live.
+    const frozen = !preview && (result || !!clash);
+    const { base, bonus, odds: shownOdds } = frozen ? lastMath : live;
     const myTotal = base + bonus;
     const mathRow = (lbl, val, color, i) => (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.1)' : 'none' }}>
@@ -147,7 +221,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     // plates and the VS shield sit on top. A soft dark scrim (below) keeps the white
     // name/power text readable over the bright meadow without hiding the art.
     return (
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
+      // The whole arena is the tap target during the versus beat — the child is watching two
+      // fighters, not hunting a button, and a 44pt target somewhere on a full-bleed scene would
+      // be the one thing they had to aim at. Not a <button>: there is nothing here a keyboard or
+      // a screen reader should be told to press, since the beat completes on its own either way.
+      <div onClick={!result ? tapVersus : undefined}
+        style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
         {/* soft overlay: a gentle flat tint across the whole scene so the vibrant arena
             is muted a touch and the fighters read as the foreground. Both phases share it:
             the result's own white card carries its text, so there is nothing left for a
@@ -174,7 +253,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
               do not jump position between the versus moment and the result. Layouts
               live in BattleVersus.jsx; switch via Tweaks ("Versus screen"). */}
           <VersusStage variant={versus} result={result} won={won}
-            me={{ ...sel, power: power(sel) }}
+            charge={!result && beat !== 'arrive' ? { bonus, odds: shownOdds } : null}
+            clash={!result ? clash : null}
+            // During the versus beats the plate counts up FROM this number, so it has to be the
+            // one the fight was decided on, not a post-XP recount. The result screen keeps the
+            // live power — there the buddy has finished the battle and levelling is the payoff.
+            me={{ ...sel, power: result ? power(sel) : base }}
             foe={{ ...foeCard, power: foe.power }} />
 
           {result && (
