@@ -783,7 +783,7 @@ const KO = {
 
   // ── safety moments ──
   'Eyes up,': '고개 들어요,', "Let's put the phone away while we're walking.": '걷는 동안 폰은 잠시 넣어둬요.',
-  'One gentle buzz': '부드러운 진동 한 번', 'Looking ahead': '고개 들었어요',
+  'One gentle buzz': '부드러운 진동 한 번', 'Okay, got it': '고개 들었어요',
   // 2s hold window after the buzz — stop inside it and no warning is shown (F-08.1)
   'Stop within 2s and no warning appears.': '2초 안에 멈추면 경고가 표시되지 않아요.', 'I stopped': '멈췄어요',
   // dismiss → re-assess → buzz + warn again, one tone firmer (F-08.2 / F-08.3)
