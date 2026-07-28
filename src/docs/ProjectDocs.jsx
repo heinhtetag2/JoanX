@@ -1308,7 +1308,7 @@ function ProjectDocs() {
           <div className="doc-stats" style={{ marginBottom: 20 }}>
             {[
               { n: '41%', l: 'Risk reduction', c: C.good },
-              { n: '88%', l: 'Warning acceptance', c: C.good },
+              { n: '88%', l: 'Stopped when warned', c: C.good },
               { n: '312', l: 'Safe-walk minutes', c: C.ocean },
               { n: '2.4s', l: 'Avg. response', c: C.warn },
               { n: '5', l: 'Day streak', c: C.iris },

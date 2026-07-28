@@ -54,7 +54,7 @@ function reportModel(sel, ctx) {
     ? { bg: THEME.successLight, ink: '#274427', icon: THEME.success, name: 'lightbulb' }
     : { bg: THEME.goldLight, ink: '#5b4a1e', icon: THEME.gold, name: 'alert-circle' };
   const kpis = [
-    { icon: 'check-circle-2', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Warning acceptance' },
+    { icon: 'circle-check-big', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Stopped when warned' },
     { icon: 'footprints', v: rep.safeWalkMin + 'm', delta: rep.deltas.walk, l: 'Safe walking' },
     { icon: 'timer', v: rep.avgResponse + 's', delta: rep.deltas.resp, l: 'Avg. response' },
     { icon: 'flame', v: rep.streak + 'd', delta: rep.deltas.streak, l: 'Safe streak' },
@@ -66,7 +66,7 @@ function reportModel(sel, ctx) {
   const inline = [
     { v: (riskReduction >= 0 ? '↓' : '↑') + Math.abs(riskReduction) + '%', l: 'Risky moments', sub: 'vs. week start', c: '#bdd2ee', vc: riskReduction >= 0 ? THEME.success : THEME.danger },
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
-    { v: rep.acceptance + '%', l: 'Acceptance', c: SERIES.rate },
+    { v: rep.acceptance + '%', l: 'Stopped when warned', c: SERIES.rate },
   ];
   return { child, rep, reactions, risk, SERIES, RESP, actData, riskMax, doingWell, ko, dayName, t, tone, kpis, inline,
     openResponse: () => ctx.nav('p_response', { childId: child.id }) };

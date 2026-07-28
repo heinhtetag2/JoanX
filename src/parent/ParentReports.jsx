@@ -247,7 +247,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // top KPI cards (horizontally scrollable). A delta is "good" when it moves the
   // right way for its metric — for Avg. response, lower (a minus) is the win.
   const kpis = [
-    { icon: 'shield-check', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Warning acceptance', c: THEME.success, bg: THEME.successLight },
+    { icon: 'circle-check-big', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Stopped when warned', c: THEME.success, bg: THEME.successLight },
     { icon: 'flame', v: rep.streak + 'd', delta: rep.deltas.streak, l: 'Safe streak', c: THEME.joy, bg: THEME.joyBg },
   ].map(k => {
     const positive = String(k.delta).trim().startsWith('+');
@@ -268,7 +268,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   const inline = [
     { v: (riskReduction >= 0 ? '↓' : '↑') + Math.abs(riskReduction) + '%', l: 'Risky moments', sub: 'vs. week start', c: '#bdd2ee', vc: riskReduction >= 0 ? THEME.success : THEME.danger },
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
-    { v: rep.acceptance + '%', l: 'Acceptance', c: SERIES.rate },
+    { v: rep.acceptance + '%', l: 'Stopped when warned', c: SERIES.rate },
   ];
   // activity-card footer: a small at-a-glance read of the week's chart —
   // which day drew the most safe stops, and which had the most risky moments.

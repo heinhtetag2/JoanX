@@ -92,7 +92,7 @@ function ParentWeeklyDetail({ ctx }) {
           {[
             { v: riskTotal, l: L('Risky moments'), c: RISK_C },
             { v: stopsTotal, l: L('Safe stops'), c: STOP_C },
-            { v: rep.acceptance + '%', l: L('Acceptance'), c: 'var(--color-data-yellow-40)' },
+            { v: rep.acceptance + '%', l: L('Stopped when warned'), c: 'var(--color-data-yellow-40)' },
           ].map(s => (
             <div key={s.l} style={{ flex: 1, background: '#fff', borderRadius: 16, boxShadow: THEME.shadowCard, padding: '14px 12px' }}>
               <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: THEME.fg1 }}>{s.v}</div>

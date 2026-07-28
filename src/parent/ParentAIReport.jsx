@@ -81,7 +81,7 @@ function ParentAIReport({ ctx }) {
     { icon: 'footprints', t: ko ? '늘어난 안전 걷기' : 'More safe walking', s: ko ? `이번 주 안전 걷기 ${rep.safeWalkMin}분 (${rep.deltas.walk}).` : `${rep.safeWalkMin} safe minutes this week (${rep.deltas.walk}).` },
   ] : [
     { icon: 'timer', t: ko ? '반응 시간' : 'Reaction time', s: ko ? `평균 ${rep.avgResponse}초 (${rep.deltas.resp}).` : `${rep.avgResponse}s on average (${rep.deltas.resp}).` },
-    { icon: 'shield-alert', t: ko ? '경고 수용률' : 'Warning acceptance', s: ko ? `경고의 ${rep.acceptance}%에서 멈춰요 (${rep.deltas.acceptance}).` : `Stops for ${rep.acceptance}% of warnings (${rep.deltas.acceptance}).` },
+    { icon: 'circle-check-big', t: ko ? '경고 시 멈춤' : 'Stopped when warned', s: ko ? `경고의 ${rep.acceptance}%에서 멈춰요 (${rep.deltas.acceptance}).` : `Stops for ${rep.acceptance}% of warnings (${rep.deltas.acceptance}).` },
     { icon: 'footprints', t: ko ? '안전 걷기' : 'Safe walking', s: ko ? `이번 주 ${rep.safeWalkMin}분 (${rep.deltas.walk}).` : `${rep.safeWalkMin} minutes this week (${rep.deltas.walk}).` },
   ];
 
