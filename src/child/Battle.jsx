@@ -39,6 +39,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const [beat, setBeat] = React.useState(preview === 'versus' ? 'charge' : 'arrive');
   const [clash, setClash] = React.useState(null);          // null | 'win' | 'lose'
   const [won, setWon] = React.useState(true);
+  // the real-time HP the clash bars show — resolveBattle hands back the whole five-beat
+  // track already (see clashHpTrack in data.jsx) at roll time; this screen just walks
+  // `hpStep` forward on the same timers that already drive the hit sound and shield flip,
+  // so the bar drains on the exact beat the blow visibly lands.
+  const [clashHp, setClashHp] = React.useState(null);
+  const [hpStep, setHpStep] = React.useState(0);
   // the result screen must report the battle that just happened, not what a
   // re-render now computes — `villain.defeated` flips the moment we win.
   const [wasFirstClear, setWasFirstClear] = React.useState(false);
@@ -142,11 +148,14 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       // to be told which is which. Its own state rather than reading `won`, so the animation
       // can never render a frame against a stale value.
       setClash(w ? 'win' : 'lose');
+      setClashHp(res.clashHp);
+      setHpStep(0);
       // one cue per blow, on the frames the plates actually meet — 24% / 46% / 84% of the 1.5s
       // exchange. A single attack sound over a three-blow trade was the old version's problem in
-      // miniature: the fight had more in it than the soundtrack admitted.
+      // miniature: the fight had more in it than the soundtrack admitted. The HP bars step
+      // forward on these exact same timers, so a bar drains on the frame the blow lands.
       beats.current.push(
-        ...[646, 1254, 1862, 2432, 3344].map(at => setTimeout(() => sfx.attack(), at)),
+        ...[646, 1254, 1862, 2432, 3344].map((at, i) => setTimeout(() => { sfx.attack(); setHpStep(i + 1); }, at)),
         // the win/lose cue lands as the loser goes, not as the screen changes
         setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
         // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s and
@@ -184,6 +193,8 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
     sfx.battleStart();
     fired.current = false;
     setClash(null);
+    setClashHp(null);
+    setHpStep(0);
     setBeat('arrive');
     setPhase('versus');
     clearBeats();
@@ -259,6 +270,10 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
           <VersusStage variant={versus} result={result} won={won}
             charge={!result && beat !== 'arrive' ? { bonus, odds: shownOdds } : null}
             clash={!result ? clash : null}
+            // The real-time damage the clash bars read off — `clashHp` is the whole five-beat
+            // track from resolveBattle, `hpStep` is how far the timers have walked into it.
+            // Only meaningful once a clash is actually running; result has its own math card.
+            hp={!result && clash && clashHp ? { meCur: clashHp.me[hpStep], meMax: clashHp.meMax, foeCur: clashHp.foe[hpStep], foeMax: clashHp.foeMax } : null}
             // During the versus beats the plate counts up FROM this number, so it has to be the
             // one the fight was decided on, not a post-XP recount. The result screen keeps the
             // live power — there the buddy has finished the battle and levelling is the payoff.

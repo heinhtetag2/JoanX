@@ -19,7 +19,7 @@
 
 import React from 'react';
 import { STATS, statsFor } from '../core/data.jsx';
-import { Icon, THEME } from '../core/primitives.jsx';
+import { Bar, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 
@@ -108,7 +108,7 @@ function Medallions({ c, size = 40 }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom, note, clashClass, koClass }) {
+function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, enterFrom, note, clashClass, koClass, hpCur, hpMax }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
@@ -131,34 +131,47 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
     // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
     // (ornament left) pins + bleeds RIGHT; villain (ornament right) pins + bleeds LEFT — the
     // diagonal the reference is built on. Medallions and name stay on the inset side, on-screen.
-    <div className={`${enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''}${clashClass ? ' ' + clashClass : ''}`} style={{
+    <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
       opacity: dim ? .42 : 1, transition: 'opacity .4s',
       width: mini ? '100%' : '95%', alignSelf: mini ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
       marginRight: ornLeft ? -bleed : 0, marginLeft: ornLeft ? 0 : -bleed,
     }}>
-      {/* Two layers, because the loser is doing two things at once and they cannot share a
-          `transform`. The OUTER element is the fight — it is being driven around by the clash
-          keyframes. This one is the plate coming apart, and it has to run over the top of that
-          movement rather than replace it. One wrapper, and the two compose. */}
+      {/* The plate — art, medallions, name — holds still through the exchange; it is a
+          backdrop, not a fighter, so it should not be the thing recoiling from a punch. Only
+          the mascot (below) carries the clash transform. koClass still runs on this whole
+          wrapper: the banner coming apart is the bigger, one-time moment of the decisive
+          blow, not a per-hit flinch, so it is allowed to take the whole plate with it. */}
       <div className={koClass || undefined}>
       <div style={{ position: 'relative', width: '100%' }}>
         {/* the scene, at its own aspect — the plate's height is the art's height at this
-            width. The buddy art is drawn ornament-right and flipped to put it left. */}
-        <img src={art.src} alt="" style={{ display: 'block', width: '100%', height: 'auto', transform: art.flip ? 'scaleX(-1)' : 'none' }} />
+            width. The buddy art is drawn ornament-right and flipped to put it left.
+            It fades out for the exchange: the banner is scenery for the stare-down, not
+            the fight itself, so once the hits start it steps back and leaves the two
+            mascots to trade blows against the plain arena. Opacity only (not unmounted),
+            so the box keeps the height the mascot's `bottom` is measured against. */}
+        <img src={art.src} alt="" style={{
+          display: 'block', width: '100%', height: 'auto', transform: art.flip ? 'scaleX(-1)' : 'none',
+          opacity: clashClass ? 0 : 1, transition: 'opacity .3s ease',
+        }} />
 
         {/* the mascot stands on the scene and breaks its top edge — the move the whole
             layout is built on. Nudged away from the ornament so it stands on open ground
-            rather than in the scroll. */}
+            rather than in the scroll. The clash class sits on the INNER div so the hit
+            recoil composes with (rather than replaces) this div's own translateX(-50%)
+            centering. */}
         <div className={pop ? 'jx-pop' : ''} style={{
           position: 'absolute', bottom: mini ? 0 : 6, left: `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
         }}>
-          <Mascot species={char.species} stage={char.stage} color={char.color} mood={mood} size={mSize} />
+          <div className={clashClass || undefined}>
+            <Mascot species={char.species} stage={char.stage} color={char.color} mood={mood} size={mSize} />
+          </div>
         </div>
 
         {/* medallions on the outer bottom corner, half below the plate. Inset by bleed+14
-            from the plate edge so they clear the off-screen bleed and land 14px in-screen. */}
+            from the plate edge so they clear the off-screen bleed and land 14px in-screen.
+            Plate furniture, so it fades with the art rather than being left floating over it. */}
         {!mini && (
-          <div style={{ position: 'absolute', bottom: -16, [ornLeft ? 'right' : 'left']: bleed - 8 }}>
+          <div style={{ position: 'absolute', bottom: -16, [ornLeft ? 'right' : 'left']: bleed - 8, opacity: clashClass ? 0 : 1, transition: 'opacity .3s ease' }}>
             <Medallions c={char} />
           </div>
         )}
@@ -166,9 +179,12 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
 
       {/* name + power below the plate, CENTERED under the mascot — the mascot leans off the
           plate centre by `lean`, and the name tracks it by the same shift, so the two read as
-          one stacked unit rather than the name drifting to a corner. */}
+          one stacked unit rather than the name drifting to a corner. It fades out for the
+          exchange, and an HP bar fades in on the SAME spot (a CSS grid overlap, both children
+          in cell 1/1) rather than beside it — so the fight shows what that trade actually cost
+          each fighter instead of just the two of them swinging at each other. */}
       <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+        display: 'grid', justifyItems: 'center',
         // extra nudge on the name block only (not the mascot): buddy pulls further
         // left, villain further right, so each label sits tucked toward its own side.
         // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
@@ -177,18 +193,30 @@ function Plate({ char, name, level, power, art, ornament, mood, dim, pop, mini, 
         // clears the medallions, which hang ~17px below the plate on the opposite corner
         marginTop: mini ? 4 : 6,
       }}>
-        <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
-        <div className="game-font" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-          <Icon name="zap" size={mini ? 14 : 15} color={THEME.gold} stroke={2.5} />
-          <span style={{ fontSize: mini ? 18.5 : 22, fontWeight: 500, color: THEME.gold, lineHeight: 1 }}>{power}</span>
-          <span style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>· {L('Lv')} {level}</span>
+        <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: clashClass ? 0 : 1, transition: 'opacity .3s ease' }}>
+          <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
+          <div className="game-font" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+            <Icon name="zap" size={mini ? 14 : 15} color={THEME.gold} stroke={2.5} />
+            <span style={{ fontSize: mini ? 18.5 : 22, fontWeight: 500, color: THEME.gold, lineHeight: 1 }}>{power}</span>
+            <span style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>· {L('Lv')} {level}</span>
+          </div>
         </div>
+        {hpMax != null && (
+          <div style={{ gridArea: '1 / 1', width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: clashClass ? 1 : 0, transition: 'opacity .3s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Icon name="heart" size={12} color={THEME.heart} stroke={2.5} />
+              <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{hpCur}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>/ {hpMax}</span>
+            </div>
+            <Bar value={hpCur} max={hpMax} color={THEME.heart} track="rgba(255,255,255,.22)" height={7} />
+          </div>
+        )}
       </div>
       {/* OUTSIDE the name block, and deliberately so. That block is shoved 60px right of centre
           (lean + 30) to sit under a mascot that leans the same way — fine for two short lines,
           but the charge readout is a wide pill, and riding that offset put it half off the phone.
-          It centres on the plate instead. */}
-      {note}
+          It centres on the plate instead. Same clash fade as the name block above it. */}
+      <div style={{ opacity: clashClass ? 0 : 1, transition: 'opacity .3s ease' }}>{note}</div>
       </div>
     </div>
   );
@@ -232,7 +260,7 @@ function Shield({ size = 62, delay = 0, hits }) {
   );
 }
 
-function BannerStage({ me, foe, result, won, charge, clash }) {
+function BannerStage({ me, foe, result, won, charge, clash, hp }) {
   const foeChar = { species: foe.species, stage: 2, color: foe.color, level: foe.level, name: foe.name };
 
   // CHARGE — the buddy's power counting up through the safe-walk bonus, and the chance that
@@ -279,7 +307,8 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
       <Plate char={foeChar} name={L(foe.name)} level={foe.level} power={foe.power}
         art={PLATE_ART.red} ornament="left" mood="alert" enterFrom="right"
         clashClass={clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')}
-        koClass={clash === 'win' ? 'jx-ko' : null} />
+        koClass={clash === 'win' ? 'jx-ko' : null}
+        hpCur={hp?.foeCur} hpMax={hp?.foeMax} />
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
@@ -298,6 +327,7 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
         art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left"
         clashClass={clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')}
         koClass={clash === 'lose' ? 'jx-ko' : null}
+        hpCur={hp?.meCur} hpMax={hp?.meMax}
         note={
           // The BOX is always here, empty or not. The versus column is centre-justified, so a
           // block that only mounts at 620ms re-centres the whole stage and jerks both plates
@@ -329,8 +359,8 @@ function BannerStage({ me, foe, result, won, charge, clash }) {
 // `me` and `foe` are already flattened by Battle.jsx (name / level / power /
 // species / colour), so no layout here reaches back into PLAYER or the villain
 // ladder — the result screen fights a frozen opponent and this must not undo it.
-function VersusStage({ variant = 'classic', me, foe, result, won, charge, clash }) {
-  if (variant === 'banner') return <BannerStage me={me} foe={foe} result={result} won={won} charge={charge} clash={clash} />;
+function VersusStage({ variant = 'classic', me, foe, result, won, charge, clash, hp }) {
+  if (variant === 'banner') return <BannerStage me={me} foe={foe} result={result} won={won} charge={charge} clash={clash} hp={hp} />;
   return <ClassicStage me={me} foe={foe} result={result} won={won} />;
 }
 

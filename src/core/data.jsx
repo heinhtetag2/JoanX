@@ -2143,7 +2143,11 @@ const resolveBattle = (villain, c, player = PLAYER, rng = Math.random) => {
   }
 
   player.battlesToday = Math.min(battlesPerDay(), (player.battlesToday || 0) + 1);
-  return { ok: true, won, power, odds, tier, reward, firstClear, improved, eggWon,
+  // A-3.3-ish — the versus screen's real-time HP bars. Computed off the same `won` the
+  // roll just decided, so the bar that drains to zero and the plate that breaks apart
+  // over it are always reporting the same outcome.
+  const clashHp = clashHpTrack(c, villain, won);
+  return { ok: true, won, power, odds, tier, reward, firstClear, improved, eggWon, clashHp,
            levels: growth.levels, stageUp: growth.stageUp,
            // A-8.1 — the three things a FIRST win buys that a repeat does not: the bonus (in
            // `reward`), the next villain (`unlocked`), and the story chapter (`storyChapter`).
@@ -2298,8 +2302,11 @@ const battleStats = (c, v) => {
     [s.key, Math.max(1, base[s.key] * (1 + (hero[s.key] || 0)) * lvl * rar * walk)]));
 };
 
-const winChance = (c, v) => {
-  if (!c || !v) return 0;
+// The raw trade a fight is decided on — Courage+Speed into damage, Protection soaking it —
+// pulled out of winChance so the versus screen's clash HP track (below) can turn the same
+// numbers into what actually lands on screen. One calculation, so the odds a child was
+// shown and the bar they watch drain can never disagree about who hits harder.
+const duel = (c, v) => {
   const W = BATTLE_ODDS;
   const me = battleStats(c, v);
   const foe = villainStats(v);
@@ -2313,6 +2320,41 @@ const winChance = (c, v) => {
 
   const dmgToFoe = Math.max(W.minDamage, atk(me)  - foeDef);   // Courage vs their Protection
   const dmgToMe  = Math.max(W.minDamage, atk(foe) - myDef);    // their Courage vs my Protection
+  return { me, foe, dmgToFoe, dmgToMe };
+};
+
+// The five-blow exchange the versus screen animates, in real HP: two hits land on each
+// side regardless of outcome (a trade, not an execution — see the matching CSS comment in
+// joanx.css), using the SAME dmgToFoe/dmgToMe the odds were computed from, just scaled up
+// for the second, harder swing. Only the fifth, decisive blow depends on `won`: it drains
+// whoever lost to zero, on the same beat the plate's own KO effect already fires on.
+const clashHpTrack = (c, v, won) => {
+  const { me, foe, dmgToFoe, dmgToMe } = duel(c, v);
+  const meMax = Math.max(1, Math.round(me.hp));
+  const foeMax = Math.max(1, Math.round(foe.hp));
+  const meTrack = [meMax], foeTrack = [foeMax];
+  let meHp = meMax, foeHp = foeMax;
+  const hit = (hp, dmg, mult) => Math.max(1, Math.round(hp - dmg * mult));
+
+  foeHp = hit(foeHp, dmgToFoe, 1);    // beat 1 — buddy lands
+  meTrack.push(meHp); foeTrack.push(foeHp);
+  meHp = hit(meHp, dmgToMe, 1);       // beat 2 — foe answers
+  meTrack.push(meHp); foeTrack.push(foeHp);
+  foeHp = hit(foeHp, dmgToFoe, 1.4);  // beat 3 — buddy, harder
+  meTrack.push(meHp); foeTrack.push(foeHp);
+  meHp = hit(meHp, dmgToMe, 1.4);     // beat 4 — foe, harder
+  meTrack.push(meHp); foeTrack.push(foeHp);
+  if (won) foeHp = 0; else meHp = 0;  // beat 5 — decisive, finishes the loser
+  meTrack.push(meHp); foeTrack.push(foeHp);
+
+  return { meMax, foeMax, me: meTrack, foe: foeTrack };
+};
+
+const winChance = (c, v) => {
+  if (!c || !v) return 0;
+  const W = BATTLE_ODDS;
+  const { me, foe, dmgToFoe, dmgToMe } = duel(c, v);
+  const mods = v.ability?.mods || {};
 
   // HP → endurance. The weight is an EXPONENT, not a multiplier: a multiplier scales both
   // sides' round counts and cancels clean out of the ratio below, so `endurance.hp` would

@@ -141,6 +141,16 @@ function StdBarChart({ data, series, line, yMax, yStep, height = 168, barW = 9, 
   );
 }
 
+// Small round avatar chip for the bot side of the chat drawer — same gradient as the FAB
+// that opens it, so the icon that started the conversation keeps "speaking" inside it.
+function ChatAvatar() {
+  return (
+    <div style={{ width: 26, height: 26, borderRadius: 999, flexShrink: 0, background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="sparkles" size={13} color="#fff" stroke={2.3} />
+    </div>
+  );
+}
+
 // Shimmer placeholder used by the Reports loading skeleton.
 const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
 
@@ -149,6 +159,8 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
   const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
+  const [chatOpen, setChatOpen] = React.useState(false);       // "Ask about this week" drawer
+  const [askedQ, setAskedQ] = React.useState([]);               // chatQuestions indices asked so far, in order — the running thread
 
   // loading — KPI + chart shimmer while the week's report is fetched
   if (ctx.demo?.loading) {
@@ -236,10 +248,8 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // top KPI cards (horizontally scrollable). A delta is "good" when it moves the
   // right way for its metric — for Avg. response, lower (a minus) is the win.
   const kpis = [
-    { icon: 'check-circle-2', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Warning acceptance' },
-    { icon: 'footprints', v: rep.safeWalkMin + 'm', delta: rep.deltas.walk, l: 'Safe walking' },
-    { icon: 'timer', v: rep.avgResponse + 's', delta: rep.deltas.resp, l: 'Avg. response' },
-    { icon: 'flame', v: rep.streak + 'd', delta: rep.deltas.streak, l: 'Safe streak' },
+    { icon: 'shield-check', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Warning acceptance', c: THEME.success, bg: THEME.successLight },
+    { icon: 'flame', v: rep.streak + 'd', delta: rep.deltas.streak, l: 'Safe streak', c: THEME.joy, bg: THEME.joyBg },
   ].map(k => {
     const positive = String(k.delta).trim().startsWith('+');
     const good = k.l === 'Avg. response' ? !positive : positive;
@@ -272,6 +282,39 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
     { l: ko ? '이번 주 안전 멈춤' : 'Safe stops', v: stopsTotal, c: '#4f9d89' },
   ];
 
+  // "Ask about this week" — canned Q&A behind the floating chat button. Every answer
+  // reuses numbers already computed above, so the drawer can never contradict the
+  // cards/charts it's explaining.
+  const chatQuestions = [
+    {
+      icon: 'trending-down', c: THEME.success, bg: THEME.successLight,
+      q: ko ? '위험한 순간이 왜 줄었나요?' : 'Why did risky moments drop?',
+      a: ko
+        ? `2주 전과 비교해 위험한 순간이 ${riskReduction}% 줄었어요. ${dayName(riskiestIdx)}에 주의가 가장 많았고, ${dayName(bestDayIdx)}이 가장 안전했어요.`
+        : `Risky moments are down ${riskReduction}% compared to two weeks ago. ${dayName(riskiestIdx)} had the most alerts, while ${dayName(bestDayIdx)} was the safest day.`,
+      chart: true,
+    },
+    {
+      icon: 'shield-check', c: THEME.success, bg: THEME.successLight,
+      q: ko ? '경고 수용률은 어떻게 계산되나요?' : 'How is the acceptance rate calculated?',
+      a: ko
+        ? `이번 주 경고 ${totalReacts}건 중 ${stopsTotal + delayedTotal}건에서 멈췄어요 — 수용률 ${rep.acceptance}% (지난주보다 ${rep.deltas.acceptance}). 그중 ${stopsTotal}건은 즉시 멈춤이었어요.`
+        : `Out of ${totalReacts} warnings this week, ${nm} stopped for ${stopsTotal + delayedTotal} of them — an acceptance rate of ${rep.acceptance}% (${rep.deltas.acceptance} vs last week). ${stopsTotal} of those were immediate stops.`,
+    },
+    {
+      icon: 'flame', c: THEME.joy, bg: THEME.joyBg,
+      q: ko ? '안전 연속 기록은 무슨 뜻인가요?' : 'What does the safe streak mean?',
+      a: ko
+        ? `${nm}는 ${rep.streak}일 연속 하루 안전 목표를 지켰어요 (지난주보다 ${rep.deltas.streak}). 위험한 순간 없이 하루를 마치면 기록이 이어져요.`
+        : `${nm} has kept a ${rep.streak}-day streak of hitting the daily safety goal (${rep.deltas.streak} vs last week). It continues each day they finish with no risky moments.`,
+    },
+    {
+      icon: 'lightbulb', c: tone.icon, bg: tone.bg,
+      q: ko ? '이번 주 뭘 도와주면 될까요?' : 'What should I help with this week?',
+      a: t.insightBody,
+    },
+  ];
+
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead stacked sub={L("This week's progress")} title={<span>{nm} <span style={{ fontSize: 19 }}>{doingWell ? '🌱' : '💪'}</span></span>} right={<ChildChip selected={sel} onPick={setSel} />} />
@@ -280,8 +323,10 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
         {/* Highlight strip — the one-line "so, how's the week going?" the header used to
             leave blank. Tone-aware: a warm-green win when the child is trending well, a
             soft amber nudge when it needs a look. The emoji + bold headline give the
-            screen a lead voice before the numbers start. */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14 }}>
+            screen a lead voice before the numbers start. Tappable — jumps straight to
+            this child's Rules & settings. */}
+        <button onClick={() => ctx.nav('p_settings', { child })} aria-label={L('Rules & settings')}
+          style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
@@ -293,7 +338,8 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
                 : `Risky moments ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · ${stopsTotal} safe stops · ${rep.acceptance}% accepted`}
             </div>
           </div>
-        </div>
+          <Icon name="chevron-right" size={18} color={tone.ink} stroke={2.4} style={{ opacity: .55, flexShrink: 0 }} />
+        </button>
 
         {/* KPI block — Tweaks: 'cards' (2×2 white cards) or flat 'ring' (ring + stat grid, no card bg) */}
         {kpiStyle === 'ring' ? (
@@ -344,12 +390,14 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '4px 0 6px' }}>
             {kpis.map((k, i) => (
               <div key={i} style={{ background: '#fff', borderRadius: 18, padding: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Icon name={k.icon} size={17} color={THEME.fg3} stroke={2} /></div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
-                  <span style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{k.v}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 999, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon name={k.icon} size={15} color={k.c} stroke={2.3} />
+                  </div>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>
                 </div>
-                <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 5 }}>{L(k.l)}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: k.c, marginTop: 10 }}>{k.v}</div>
+                <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L(k.l)}</div>
               </div>
             ))}
           </div>
@@ -503,6 +551,74 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           <Icon name="chevron-right" size={20} color="#fff" stroke={2.4} />
         </button>
       </div>
+
+      {/* floating "ask about this week" button — a guided Q&A, not a free-text chat, so
+          every answer is a pre-written explanation of a number already on this screen */}
+      <button onClick={() => { setChatOpen(true); setAskedQ([]); }} aria-label={L('Ask about this week')}
+        style={{ position: 'fixed', right: 20, bottom: 104, width: 52, height: 52, borderRadius: 999, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 45 }}>
+        <Icon name="sparkles" size={22} color="#fff" stroke={2.2} />
+      </button>
+
+      {chatOpen && (
+        <div className="no-sb jx-fade" style={{ position: 'absolute', inset: 0, zIndex: 90, overflowY: 'auto', paddingTop: 50, paddingBottom: 30, background: screenBgFor(BRAND.primary) }}>
+          <ParentHead onBack={() => setChatOpen(false)} title={ko ? `${nm}의 한 주에 대해 물어보세요` : `Ask about ${nm}'s week`} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '10px 20px 4px' }}>
+            {/* bot greeting */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <ChatAvatar />
+              <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.5, fontWeight: 500 }}>
+                {ko ? `안녕하세요! ${nm}의 이번 주에 대해 궁금한 걸 아래에서 골라보세요.` : `Hi! Pick anything below to learn more about ${nm}'s week.`}
+              </div>
+            </div>
+
+            {/* running thread — each asked question as a user bubble, its answer as a bot bubble */}
+            {askedQ.map((qi, turn) => {
+              const cq = chatQuestions[qi];
+              return (
+                <React.Fragment key={turn}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ maxWidth: '86%', background: BRAND.primary, borderRadius: '16px 4px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: '#fff', fontWeight: 600, lineHeight: 1.4 }}>
+                      {cq.q}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <ChatAvatar />
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.55, fontWeight: 500 }}>
+                        {cq.a}
+                      </div>
+                      {cq.chart && (
+                        <div style={{ background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 16, padding: 12 }}>
+                          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14} height={130}
+                            tooltip={(d, i) => ({ title: dayName(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+
+            {/* suggested-question badges — only the ones not asked yet, chip-style like a chat suggestion row */}
+            {(() => {
+              const remaining = chatQuestions.map((cq, i) => ({ ...cq, i })).filter(cq => !askedQ.includes(cq.i));
+              if (!remaining.length) return null;
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 2 }}>
+                  {remaining.map(cq => (
+                    <button key={cq.i} onClick={() => setAskedQ(h => [...h, cq.i])} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '7px 12px 7px 8px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 999, background: cq.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon name={cq.icon} size={11} color={cq.c} stroke={2.4} />
+                      </div>
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{cq.q}</span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
