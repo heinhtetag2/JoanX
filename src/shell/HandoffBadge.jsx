@@ -45,7 +45,20 @@ const HANDOFF = {
   // parent profile hub + every account/settings detail page (p_detail)
   p_account:   { status: 'done', note: 'Confirmed. Profile hub: centered title, language up top, family, notifications, privacy, support, sign-out modal.' },
   p_detail:    { status: 'done', note: 'Confirmed. All account/settings detail pages: editable name & SMS-verified phone, read-only Google-linked email, change password, delete-account modal, Notices, Help (inline FAQ), 1:1 Inquiry, About + Legal, Data & privacy, Export.' },
-  // e.g. p_reports: { status: 'partial', note: 'Charts done; weekly-activity data still mocked — wire real API.' },
+  // rest of the parent app — all screens confirmed
+  p_reports:      { status: 'done', note: 'Confirmed. Weekly dashboard — tappable highlight banner, acceptance-rate + safe-streak KPI cards, response-mix and weekly-activity charts, insight card, floating AI-summary chat with suggested questions.' },
+  p_children:     { status: 'done', note: 'Confirmed. Children list — device status per child, tap a card to open its Rules & settings.' },
+  p_activity:     { status: 'done', note: 'Confirmed. Alerts/activity feed — recent safety moments across all children, icon + tone per event kind.' },
+  p_settings:     { status: 'done', note: 'Confirmed. Rules & settings — device connection/reconnect, onboarding consent review, Smart/Lite protection mode.' },
+  p_family:       { status: 'done', note: 'Confirmed. Family — two guardians on one household, every change attributed to who made it.' },
+  p_invite:       { status: 'done', note: 'Confirmed. Invite a second guardian to the family.' },
+  p_addchild:     { status: 'done', note: 'Confirmed. Add-child wizard — details → pair code → connected celebration → configure protection.' },
+  p_profile:      { status: 'done', note: 'Confirmed. Parent profile tab — the account detail page reused as a tab root.' },
+  p_connect:      { status: 'done', note: 'Confirmed. Connect/pair another device — reuses the add-child pairing step.' },
+  p_schedule:     { status: 'done', note: 'Confirmed. Schedule editor — add/edit a child’s time rule.' },
+  p_aireport:     { status: 'done', note: 'Confirmed. AI Safety Report — verdict-first, plain-language weekly narrative per child.' },
+  p_response:     { status: 'done', note: 'Confirmed. "How they respond to warnings" detail — weekly chart, per-type breakdown, safest/riskiest-day insight.' },
+  p_weekactivity: { status: 'done', note: 'Confirmed. "Weekly activity" detail — full bars-and-line week, per-day table, safest/riskiest-day insight.' },
 };
 
 function entryFor(key) {

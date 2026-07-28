@@ -12,10 +12,25 @@ import { shade } from '../core/characters.jsx';
 // not just by their price tag: plain speckles → banded → crowned with stars.
 const EGG_SKIN = {
   common: '#d9b98a',   // warm sand
-  rare:   '#5a92c9',   // ocean
+  rare:   '#3fa15c',   // leaf green, not teal — reads as a gem, and sits against the rare
+                        // backdrop's forest instead of fighting it the way the old ocean blue did
   epic:   '#7f63c5',   // iris
 };
 const eggColorFor = (rarity) => EGG_SKIN[rarity] || '#e6a94b';
+
+// Painted hatch backdrops, one per egg tier — shared by the Shop (buying/hatching
+// an owned egg) and Onboarding (the first buddy's egg). /assets/egg/ is the standard
+// drop folder for this art; a tier missing from this map just keeps the drifting
+// jx-egg-bg CSS gradient, so adding one here is the whole job.
+const EGG_HATCH_BG = {
+  common: '/assets/egg/egg-bg-common.png',
+  rare: '/assets/egg/egg-bg-forest2.png',
+  epic: '/assets/egg/egg-bg-epic2.png',
+  // new candidates not yet assigned to a tier — kept as their own keys so Tweaks →
+  // Preview: background can try them against any egg before one gets picked for a tier.
+  forest: '/assets/egg/egg-bg-forest.png',
+  gold: '/assets/egg/egg-bg-gold.png',
+};
 
 const STAR = 'polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%)';
 
@@ -38,9 +53,13 @@ function EggShape({ size = 120, color, rarity }) {
           ? 'inset -7px -10px 18px rgba(40,16,80,.45), inset 6px 8px 20px rgba(255,214,255,.35), 0 12px 26px rgba(74,42,143,.34)'
           : `inset -6px -9px 15px ${shade(c, -30)}55, 0 10px 22px rgba(46,43,41,.16)` }}>
 
-        {/* rare — two painted bands wrapping the shell */}
-        {rarity === 'rare' && [58, 72].map((t, i) => (
-          <div key={i} style={{ position: 'absolute', top: `${t}%`, left: '-10%', width: '120%', height: i ? '5%' : '8%', background: shade(c, -26), opacity: .5, transform: 'rotate(-7deg)' }} />
+        {/* rare — small flat gem flecks: the exact same recipe as common's speckles below
+            (a few single-shade shapes, no gradient, no rotation-heavy composition) so it
+            stays exactly as simple, just diamonds instead of dots. That's the whole rung up
+            from common — plain became gem-cut — without repeating the earlier attempts'
+            mistake of layering gradients/textures onto a shell this small. */}
+        {rarity === 'rare' && [[28, 26, 8, .6], [54, 68, 7, .5], [74, 32, 6, .45]].map(([t, l, s, o], i) => (
+          <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: shade(c, -22), opacity: o, transform: 'rotate(45deg)' }} />
         ))}
 
         {epic && (
@@ -159,4 +178,4 @@ function CrackingEgg({ size = 132, rarity, color }) {
   );
 }
 
-export { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS };
+export { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS };

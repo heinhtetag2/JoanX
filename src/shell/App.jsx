@@ -98,7 +98,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', previewEggRarity: 'rare', previewBgRarity: 'rare', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -488,7 +488,7 @@ function App() {
 
               <div className="tw-label">Villain dex</div>
               <div className="tw-row">
-                {[['road', 'Road map'], ['list', 'List']].map(([v, l]) => (
+                {[['road', 'Road map'], ['trail', 'Sketch trail (old)'], ['list', 'List']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.villainLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, villainLayout: v })); setStack([{ screen: 'battle', params: {} }]); setScreen('villaindex'); }}>{l}</button>
                 ))}
@@ -560,6 +560,29 @@ function App() {
                 {[['off', 'Tap only'], ['on', 'Tap + shake']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.eggShake === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggShake: v }))}>{l}</button>
                 ))}
+              </div>
+              {/* Each tier's own painted hatch backdrop lives in /assets/egg/ (EGG_HATCH_BG in
+                  Shop.jsx). Egg shape and background are picked SEPARATELY here on purpose —
+                  the point of this preview is trying an egg against a backdrop that isn't
+                  necessarily its own tier, to judge which pairings actually read well, before
+                  a real hatch (which always matches the two) ever uses that pairing. */}
+              <div className="tw-label">Preview: egg</div>
+              <div className="tw-row">
+                {[['common', 'Common'], ['rare', 'Rare'], ['epic', 'Epic']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.previewEggRarity === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, previewEggRarity: v }))}>{l}</button>
+                ))}
+              </div>
+              <div className="tw-label">Preview: background</div>
+              <div className="tw-row">
+                {[['common', 'Common'], ['rare', 'Rare'], ['epic', 'Epic'], ['forest', 'Forest (new)'], ['forest2', 'Forest 2 (new)'], ['gold', 'Gold (new)']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.previewBgRarity === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, previewBgRarity: v }))}>{l}</button>
+                ))}
+              </div>
+              {/* Grants that egg on the spot (dev-only poke to PLAYER.eggs, not a real
+                  acquisition) and jumps to the Shop's hatch overlay with both picks above. */}
+              <div className="tw-row" style={{ marginTop: 6 }}>
+                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
+                  onClick={() => { setRole('child'); setStack([{ screen: 'home', params: {} }]); setParams({ preview: 'hatch', previewEgg: tw.previewEggRarity, previewBg: tw.previewBgRarity }); setScreen('shop'); }}>▶ Preview hatch</button>
               </div>
 
             </React.Fragment>

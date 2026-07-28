@@ -1789,15 +1789,17 @@ const CHILD_REPORTS = {
 // `ack` — which guardian already handled this. Both parents' phones buzz for the same event,
 // so without it they both call the child about the same warning. The second parent should see
 // "Dad already checked this", not a fresh alarm.
+// `unread` follows the same convention as the child app's notification seed (Notifications.jsx):
+// most of today's items start unread, earlier ones have already been seen.
 const PARENT_ALERTS = [
-  { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true },
-  { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true },
-  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun' },
-  { id: 'n4', kind: 'device_off', child: 'k2', title: 'Device disconnected',  sub: 'Galaxy A14 went offline',    time: '2h',  today: true },
-  { id: 'n4b', kind: 'limited',   child: 'k2', title: 'Protection limited',   sub: 'Display-over-apps was turned off', time: '3h', today: true },
-  { id: 'n5', kind: 'streak',     child: 'k3', title: '8-day safe streak!',   sub: 'New personal best',          time: 'Yesterday', today: false },
-  { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false },
-  { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false },
+  { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true, unread: true },
+  { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true, unread: true },
+  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun', unread: true },
+  { id: 'n4', kind: 'device_off', child: 'k2', title: 'Device disconnected',  sub: 'Galaxy A14 went offline',    time: '2h',  today: true, unread: false },
+  { id: 'n4b', kind: 'limited',   child: 'k2', title: 'Protection limited',   sub: 'Display-over-apps was turned off', time: '3h', today: true, unread: true },
+  { id: 'n5', kind: 'streak',     child: 'k3', title: '8-day safe streak!',   sub: 'New personal best',          time: 'Yesterday', today: false, unread: false },
+  { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false, unread: false },
+  { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false, unread: false },
 ];
 
 // MAX_CHILDREN (A-13) — how many children one guardian account may register and manage.

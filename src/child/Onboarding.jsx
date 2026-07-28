@@ -6,7 +6,7 @@ import { Badge, Button, Icon, PairQR, PhotoAvatar, THEME } from '../core/primiti
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
-import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
+import { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
 
 // The first buddy every new child is given (for now): Hammy, the green one. Onboarding and
@@ -461,7 +461,12 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           padding box, so the wash reaches under the status bar with no pink gap */}
       {step === 4 && charReveal && eggPhase !== 'reveal' && (
         <>
-          <div className="jx-egg-bg" style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '50px 30px 0', overflow: 'hidden', '--egg-a': shade(STARTER_EGG_C, 38), '--egg-b': shade(STARTER_EGG_C, 66), '--egg-base': shade(STARTER_EGG_C, 92) }}>
+          {/* the starter egg is always common, so the painted common backdrop applies
+              unconditionally here — no tier/preview branching like the Shop needs. */}
+          <div className={EGG_HATCH_BG.common ? 'jx-fade' : 'jx-egg-bg'} style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '50px 30px 0', overflow: 'hidden',
+            ...(EGG_HATCH_BG.common
+              ? { backgroundImage: `url(${EGG_HATCH_BG.common})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+              : { '--egg-a': shade(STARTER_EGG_C, 38), '--egg-b': shade(STARTER_EGG_C, 66), '--egg-base': shade(STARTER_EGG_C, 92) }) }}>
             {/* rings + the tappable egg */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
               <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${STARTER_EGG_C}55` }} />

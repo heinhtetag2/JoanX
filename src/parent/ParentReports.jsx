@@ -226,7 +226,6 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   const nm = child.name;
   const dayName = i => (ko ? ['월', '화', '수', '목', '금', '토', '일'][i] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]);
   const t = {
-    aiSub: ko ? `${nm}의 한 주를 쉬운 말로 요약` : `A plain-language summary of ${nm}'s week`,
     respTitle: ko ? '경고에 반응하는 방식' : 'How they respond to warnings',
     respInsTitle: doingWell
       ? (ko ? '즉시 멈춤이 대부분이에요' : 'Mostly immediate stops')
@@ -541,22 +540,14 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           </div>
         </div>
 
-        {/* AI report entry (F-31) — full weekly summary, offered after the charts */}
-        <button onClick={() => ctx.nav('p_aireport', { childId: child.id })} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 20, padding: 16, marginTop: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="sparkles" size={20} color="#fff" stroke={2.3} /></div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 800, color: '#fff' }}>{L('Read the AI Safety Report')}</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.82)', marginTop: 2 }}>{t.aiSub}</div>
-          </div>
-          <Icon name="chevron-right" size={20} color="#fff" stroke={2.4} />
-        </button>
       </div>
 
       {/* floating "ask about this week" button — a guided Q&A, not a free-text chat, so
           every answer is a pre-written explanation of a number already on this screen */}
       <button onClick={() => { setChatOpen(true); setAskedQ([]); }} aria-label={L('Ask about this week')}
-        style={{ position: 'fixed', right: 20, bottom: 104, width: 52, height: 52, borderRadius: 999, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 45 }}>
-        <Icon name="sparkles" size={22} color="#fff" stroke={2.2} />
+        style={{ position: 'fixed', right: 20, bottom: 104, height: 38, padding: '0 16px 0 12px', borderRadius: 999, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', gap: 6, zIndex: 45 }}>
+        <Icon name="sparkles" size={16} color="#fff" stroke={2.2} />
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ko ? 'AI 요약' : 'AI summary'}</span>
       </button>
 
       {chatOpen && (

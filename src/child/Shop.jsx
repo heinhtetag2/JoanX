@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { activeEggs, buyEgg, canConvertPoints, CHARACTERS, convertPointsToXp, eggCount, eggSources, EXCHANGE, hatchFromInventory, maxConvertibleXp, PLAYER, POINTS, pointsForXp, rarityOf, totalEggs, xpToCap } from '../core/data.jsx';
+import { activeEggs, buyEgg, canConvertPoints, CHARACTERS, convertPointsToXp, eggById, eggCount, eggSources, EXCHANGE, hatchFromInventory, maxConvertibleXp, PLAYER, POINTS, pointsForXp, rarityOf, totalEggs, xpToCap } from '../core/data.jsx';
 import { Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment } from './shared.jsx';
-import { EggShape, EggHalf, CrackingEgg, eggColorFor, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
+import { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
 
 // ── Points & Shop ────────────────────────────────────────────────────
@@ -62,10 +62,30 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
   // The overlay opens on the EGG alone. Nothing is rolled and nothing is spent yet — the egg
   // is only consumed, and the buddy only drawn, at the reveal (hatchFromInventory). Rolling
   // here would mean an abandoned animation had already decided the character and eaten the egg.
-  const openHatch = (egg) => {
+  // `bg` is normally the same as the egg's own rarity (a real hatch's backdrop always matches
+  // its shell) — it only ever differs under the Tweaks preview below, which deliberately
+  // mismatches them so an egg shape and a backdrop can be judged against each other.
+  const openHatch = (egg, bg = egg.rarity) => {
     if (eggShake) requestMotionPermission();   // iOS 13+: must be asked from this user gesture
-    setHatch({ phase: 'egg', egg, eggRarity: egg.rarity });
+    setHatch({ phase: 'egg', egg, eggRarity: egg.rarity, bgRarity: bg });
   };
+
+  // Tweaks → "Preview hatch" jumps straight here with the egg tier and the background tier
+  // picked independently (previewEgg / previewBg params) — the point is comparing art, so the
+  // two are not forced to match like a real hatch. The egg is granted on the spot (a dev-only
+  // poke to PLAYER.eggs, not a real acquisition) so it can be checked without actually earning
+  // or buying one first.
+  React.useEffect(() => {
+    if (ctx.params?.preview !== 'hatch') return;
+    const eggRarity = ctx.params.previewEgg;
+    if (!eggById(eggRarity)) return;
+    PLAYER.eggs[eggRarity] = Math.max(1, PLAYER.eggs[eggRarity] || 0);
+    setOwned({ ...PLAYER.eggs });
+    openHatch(eggById(eggRarity), ctx.params.previewBg || eggRarity);
+    // depends on the params themselves — Tweaks jumps to this SAME 'shop' screen for every
+    // combination, so re-picking egg/background re-renders this component rather than
+    // remounting it. Deps on just `preview` would only ever open the FIRST combo picked.
+  }, [ctx.params?.preview, ctx.params?.previewEgg, ctx.params?.previewBg]);
 
   // A-2.3 — buying an egg puts an EGG in the bag. It does not hatch it: the rules live in
   // data.jsx (buyEgg), so no screen can take the points without handing over the egg. The
@@ -366,12 +386,17 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
         // epic=iris) — richer than the flat rarity accents, so even a common hatch feels warm
         // rather than grey. An epic egg celebrates epic even when it hatches a commoner buddy
         // (the buddy's own tier still shows on the gem chip).
+        // A tier with painted art gets that image instead of the drifting CSS gradient. Keyed
+        // off bgRarity, not eggRarity — they only differ under the Tweaks mix-and-match preview.
+        const bgImg = !reveal && EGG_HATCH_BG[hatch.bgRarity];
         return (
-          <div className={`jx-fade${reveal ? '' : ' jx-egg-bg'}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
+          <div className={`jx-fade${!reveal && !bgImg ? ' jx-egg-bg' : ''}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
             // Backdrop + CTA both derive from the SAME egg shell colour, so the whole reveal
             // matches the egg you opened — surface and button never clash across any tier.
             ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 76)} 0%, ${shade(eggC, 90)} 58%, #fff 100%)` }
-            : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
+            : bgImg
+              ? { backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+              : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
             {!reveal ? (
               <React.Fragment>
                 {/* rings + tappable egg — tinted to the EGG, not the buddy inside */}

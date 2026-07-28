@@ -111,12 +111,14 @@ function SafetyPillS({ ctx, lite, skin }) {
   }
 
   const ok = !lite;
-  // warm amber palette for the protected state (matches the old Lite look)
-  const bg = dark ? 'rgba(255,255,255,.16)' : THEME.warningLight;
-  const ink = dark ? '#fff' : '#602f0c';
+  // fully protected (Smart, every permission on) reads green; Lite mode keeps the
+  // warm amber it always had — same green/amber split ChildHome.jsx already uses.
+  const accent = ok ? THEME.success : THEME.warning;
+  const bg = dark ? 'rgba(255,255,255,.16)' : (ok ? THEME.successLight : THEME.warningLight);
+  const ink = dark ? '#fff' : (ok ? '#274427' : '#602f0c');
   return (
     <div onClick={() => ctx.nav('safety')} style={{ display: 'flex', alignItems: 'center', gap: 11, background: bg, borderRadius: 16, padding: '12px 14px', cursor: 'pointer' }}>
-      <div style={{ width: 36, height: 36, borderRadius: 11, background: THEME.warning, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: 36, height: 36, borderRadius: 11, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon name={ok ? 'shield-check' : 'shield'} size={20} color="#fff" stroke={2.3} />
       </div>
       <div style={{ flex: 1 }}>
