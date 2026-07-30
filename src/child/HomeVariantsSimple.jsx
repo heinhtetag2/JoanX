@@ -33,6 +33,16 @@ const HOME_STAT_B_OPTIONS = [
   { id: 'power', label: 'Battle power', icon: 'sword', color: () => THEME.danger, value: () => battlePower(CHARACTERS.find(x => x.id === PLAYER.activeCharId)).toLocaleString(), sub: 'Battle power', nav: 'battle' },
 ];
 
+// Points-gain feedback on the header pill (Tweaks: "Simulate earning +100 points") — a coin
+// shower, chosen after comparing it against a count-up, a floating "+N", a single coin
+// fly-in, and a flash burst. Those four are gone now that shower's the pick; see git history
+// for them if a future redesign wants to revisit.
+// Fixed 7-coin spread rather than random-per-play, so every run looks the same.
+// [startX, startY, delayMs] — pulled loosely wide so the coins don't all overlap one path.
+const COIN_SHOWER = [
+  [-6, 58, 0], [18, 66, 40], [-22, 72, 90], [8, 50, 130], [-14, 64, 170], [26, 58, 60], [0, 74, 210],
+];
+
 // ── duplicated helpers (suffixed _S so they never clash with the originals)
 const HOME_WINS_S = [
   { icon: 'timer',      color: () => THEME.success, bg: () => THEME.successLight, t: 'Stopped in 2s near Oak St.', s: '+30 bonus points', time: '12m' },
@@ -40,15 +50,62 @@ const HOME_WINS_S = [
   { icon: 'medal',      color: () => THEME.camping, bg: () => THEME.campingBg,    t: 'Your buddy leveled up',      s: 'New trait unlocked', time: '3h' },
 ];
 
+// Points land as a coin shower: several coins pour into the pill on staggered paths while
+// its number counts up from the old total to the new one, timed so the last coin arrives
+// right as the count settles. `ctx.params.pointsFx` is a one-shot trigger the Tweaks panel
+// writes ({ from, to, amount, key }); `key` changing is what replays it.
 function HomeActionsS({ ctx, dark }) {
   const ink = dark ? '#fff' : THEME.fg1;
   const chip = dark ? 'rgba(255,255,255,.18)' : '#fff';
+  const fx = ctx.params?.pointsFx;
+  const [playing, setPlaying] = React.useState(null);
+  const [shown, setShown] = React.useState(PLAYER.points);
+  const seenKey = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!fx || fx.key === seenKey.current) return;
+    seenKey.current = fx.key;
+    setPlaying(fx);
+    sfx.points();
+    const t = setTimeout(() => setPlaying(null), 1150);
+    return () => clearTimeout(t);
+  }, [fx]);
+
+  React.useEffect(() => {
+    if (!playing) { setShown(PLAYER.points); return undefined; }
+    const { from, to } = playing;
+    const start = performance.now(), dur = 950;
+    let raf;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      setShown(Math.round(from + (to - from) * p));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+
+  const value = playing ? shown : PLAYER.points;
+
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-      <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <SafePointIcon size={20} />
-        <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
-      </button>
+      <div style={{ position: 'relative' }}>
+        {/* remounting the pill (via `key`) is what replays jx-pop on every trigger, not
+            just the first — a CSS animation class alone would not re-run on an unchanged element */}
+        <button key={playing ? playing.key : 'still'} onClick={() => ctx.nav('shop')}
+          className={playing ? 'jx-pop' : undefined}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
+          <SafePointIcon size={20} />
+          <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
+        </button>
+        {/* coins match the pill's own icon — same SafePointIcon art, not a separate gold
+            star, so what pours in visibly matches what the pill is counting */}
+        {playing && COIN_SHOWER.map(([rx, ry, rd], i) => (
+          <span key={`${playing.key}-${i}`} className="jx-points-rain" style={{ position: 'absolute', top: 6, right: 14, pointerEvents: 'none', '--rx': `${rx}px`, '--ry': `${ry}px`, '--rd': `${rd}ms` }}>
+            <SafePointIcon size={13} />
+          </span>
+        ))}
+      </div>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <Icon name="bell" size={19} color={ink} stroke={2} />
         <span style={{ position: 'absolute', top: 9, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.danger, border: `2px solid ${dark ? shade(THEME.fg1, 10) : '#fff'}` }} />

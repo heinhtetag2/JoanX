@@ -412,6 +412,19 @@ function App() {
                 ))}
               </div>
 
+              {/* Points-gain animation style selector removed — the coin shower (with the
+                  digits counting up alongside it) is the chosen behaviour, compared against a
+                  count-up-only, a floating "+N", a single coin fly-in, and a flash burst before
+                  landing here. This just plays it. */}
+              <div className="tw-label">Points gain animation</div>
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '13px', fontSize: 14.5 }}
+                onClick={() => {
+                  const from = PLAYER.points;
+                  PLAYER.points += 100;
+                  setRole('child'); setStack([]); setScreen('home');
+                  setParams({ pointsFx: { from, to: PLAYER.points, amount: 100, key: Date.now() } });
+                }}>▶ Simulate earning points</button>
+
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two
                   things you actually need to look at it: hold it where it is, or end it. */}

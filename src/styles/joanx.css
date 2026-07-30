@@ -556,3 +556,20 @@ html, body {
   justify-content: center;
 }
 @media (prefers-reduced-motion: reduce) { .jx-story { scroll-snap-type: none; } }
+
+/* ── Points-gain feedback on the header pill ──────────────────────────
+   "Coin shower" — several coins, à la Clash Royale's reward pour, rise from below the pill on
+   staggered paths and get swallowed into it one after another instead of a single coin arriving.
+   --rx/--ry (start offset) and --rd (stagger delay) are set per-coin inline so each one takes a
+   slightly different route; the keyframe itself is shared. Runs alongside the pill's own number
+   counting up (plain React state, not CSS) and a jx-pop bounce on the pill itself. */
+@keyframes jxPointsRain {
+  0%   { transform: translate(var(--rx, 0px), var(--ry, 60px)) scale(1); opacity: 1; }
+  65%  { transform: translate(calc(var(--rx, 0px) * .15), 8px) scale(.8); opacity: 1; }
+  100% { transform: translate(0, 0) scale(.15); opacity: 0; }
+}
+.jx-points-rain { animation: jxPointsRain .8s cubic-bezier(.4,0,.2,1) both; animation-delay: var(--rd, 0s); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jx-points-rain { animation: none; }
+}
