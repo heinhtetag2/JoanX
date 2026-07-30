@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, evaluateSafeStop, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
-import { Button, Icon, PointIcon, THEME } from '../core/primitives.jsx';
+import { Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
@@ -75,7 +75,7 @@ function RewardToast({ c, secs = 2.1, result }) {
         {paid ? (
           /* the points are the headline, not a footnote */
           <div style={{ marginTop: 14, borderRadius: 18, background: THEME.goldLight, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <PointIcon size={26} />
+            <SafePointIcon size={26} />
             <span className="game-font" style={{ fontSize: 26, fontWeight: 500, color: '#8a6600', lineHeight: 1 }}>+{pts}</span>
             <span style={{ fontSize: 12.5, fontWeight: 800, color: '#9e7300' }}>{L('points')}</span>
           </div>

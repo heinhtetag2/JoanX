@@ -1,4 +1,4 @@
-import { Badge, Bar, Icon, PointIcon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Icon, SafePointIcon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { CHARACTERS, PLAYER } from '../core/data.jsx';
 import { ChildHome } from './ChildHome.jsx';
 import { L } from '../core/i18n.jsx';
@@ -26,7 +26,7 @@ function HomeActions({ ctx, dark }) {
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <PointIcon size={20} />
+        <SafePointIcon size={20} />
         <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
       </button>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>

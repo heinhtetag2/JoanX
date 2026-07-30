@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ACHIEVEMENTS, PLAYER, POINTS } from '../core/data.jsx';
-import { Badge, Bar, Button, Icon, PointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { screenBgActive, Confetti } from './shared.jsx';
 import { sfx } from '../core/sound.jsx';
@@ -95,7 +95,7 @@ function Rewards({ ctx }) {
               <div style={{ width: 64, height: 64, borderRadius: 999, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="gift" size={32} color={THEME.gold} stroke={2.3} /></div>
               <div className="game-font" style={{ fontSize: 21, fontWeight: 500 }}>{L('Daily reward claimed!')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><PointIcon size={20} />+{POINTS.dailyAccidentFreeBonus} {L('points')}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '8px 14px', borderRadius: 999, fontWeight: 600, fontSize: 15 }} className="game-font"><SafePointIcon size={20} />+{POINTS.dailyAccidentFreeBonus} {L('points')}</span>
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@ function Rewards({ ctx }) {
                   </div>
                 )}
               </div>
-              <Badge variant="gold" style={{ flexShrink: 0 }}><PointIcon size={14} />{a.reward}</Badge>
+              <Badge variant="gold" style={{ flexShrink: 0 }}><SafePointIcon size={14} />{a.reward}</Badge>
             </div>
           ))}
         </div>

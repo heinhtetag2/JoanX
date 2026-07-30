@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { activeVillains, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
-import { Badge, Button, Icon, PointIcon, THEME } from '../core/primitives.jsx';
+import { Badge, Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
@@ -285,8 +285,8 @@ function VillainTrail({ ctx }) {
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface2, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: THEME.fg2 }}>
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.goldLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#9e7300' }}>
-                <PointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
+                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
               </span>
             </div>
           </div>
@@ -463,8 +463,8 @@ function VillainRoad({ ctx }) {
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface2, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: THEME.fg2 }}>
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.goldLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#9e7300' }}>
-                <PointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
+                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
               </span>
             </div>
           </div>

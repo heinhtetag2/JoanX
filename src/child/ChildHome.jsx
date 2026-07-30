@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, PLAYER, XP_CURVE } from '../core/data.jsx';
-import { Badge, Bar, Icon, PointIcon, RARITY, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Icon, RARITY, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgFor, StatCard } from './shared.jsx';
@@ -25,7 +25,7 @@ function ChildHome({ ctx }) {
         </button>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '7px 12px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <PointIcon size={20} />
+            <SafePointIcon size={20} />
             <span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>{PLAYER.points.toLocaleString()}</span>
           </button>
           <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -39,7 +39,7 @@ function ChildHome({ ctx }) {
         {/* safety status banner */}
         <div onClick={() => ctx.nav('safety')} style={{ display: 'flex', alignItems: 'center', gap: 11, background: lite ? THEME.warningLight : THEME.successLight, borderRadius: 16, padding: '12px 14px', marginBottom: 14, cursor: 'pointer' }}>
           <div style={{ width: 36, height: 36, borderRadius: 11, background: lite ? THEME.warning : THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {lite ? <Icon name="shield" size={20} color="#fff" stroke={2.3} /> : <SafePointIcon size={24} />}
+            <Icon name={lite ? 'shield' : 'shield-check'} size={20} color="#fff" stroke={2.3} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: lite ? '#602f0c' : '#274427' }}>{lite ? L('Lite mode · Protected') : L("You're protected")}</div>

@@ -417,7 +417,7 @@ function App() {
                   count-up-only, a floating "+N", a single coin fly-in, and a flash burst before
                   landing here. This just plays it. */}
               <div className="tw-label">Points gain animation</div>
-              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '13px', fontSize: 14.5 }}
+              <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', background: THEME.successLight, borderColor: THEME.success, color: '#274427' }}
                 onClick={() => {
                   const from = PLAYER.points;
                   PLAYER.points += 100;

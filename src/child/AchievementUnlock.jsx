@@ -12,7 +12,7 @@
 // and its pill (see the green-brand direction).
 
 import React from 'react';
-import { Icon, PointIcon, THEME } from '../core/primitives.jsx';
+import { Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { shade } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
@@ -71,7 +71,7 @@ function AchievementUnlock({ a, onClose, onView }) {
         {/* the points it paid — the reward is part of the moment, not a number to
             discover later on the Rewards screen */}
         <div className="jx-content-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,.16)', borderRadius: 14, padding: '10px 16px', marginTop: 18, animationDelay: '.18s' }}>
-          <PointIcon size={20} />
+          <SafePointIcon size={20} />
           <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>+{a.reward} {L('points')}</span>
         </div>
       </div>

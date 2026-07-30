@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, PLAYER, STATS, statsFor, statMax, winPercent } from '../core/data.jsx';
-import { Badge, Bar, Button, Icon, mixHue, PointIcon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Button, Icon, mixHue, SafePointIcon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, StatCard, PointsChip, DexProgress, RarityPill } from './shared.jsx';
@@ -1108,7 +1108,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
         </div>
         <div className="game-font" style={{ fontSize: 24, fontWeight: 500, marginTop: 10 }}>{sel.name}</div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, borderRadius: 999, padding: '5px 13px', marginTop: 6 }}>
-          <PointIcon size={18} />
+          <SafePointIcon size={18} />
           <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: '#9e7300' }}>{myTotal}</span>
         </div>
       </div>
@@ -2566,7 +2566,7 @@ function BattleSelect({ variant = 'arena', ctx, owned, sel, setSel, villain, lef
         <Mascot species={sel.species} stage={sel.stage} color={sel.color} size={150} />
         <div className="t-h1">{sel.name}</div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, borderRadius: 999, padding: '7px 14px', marginTop: 8 }}>
-          <PointIcon size={19} />
+          <SafePointIcon size={19} />
           <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: THEME.fg1 }}>+120 {L('points')}</span>
         </div>
       </SysCard>

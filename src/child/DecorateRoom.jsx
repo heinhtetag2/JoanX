@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, ROOMS, themeOf } from '../core/data.jsx';
-import { Button, Icon, PointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
@@ -140,7 +140,7 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
                 <Icon name={d.icon} size={26} color={isOn ? THEME.primary : THEME.fg2} stroke={2.1} />
                 <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{L(d.name)}</div>
                 {own ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success }}>{isOn ? L('Placed') : L('Owned')}</span>
-                     : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><PointIcon size={13} />{d.price}</span>}
+                     : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><SafePointIcon size={13} />{d.price}</span>}
               </button>
             );
           })}

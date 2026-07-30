@@ -557,19 +557,27 @@ html, body {
 }
 @media (prefers-reduced-motion: reduce) { .jx-story { scroll-snap-type: none; } }
 
-/* ── Points-gain feedback on the header pill ──────────────────────────
-   "Coin shower" — several coins, à la Clash Royale's reward pour, rise from below the pill on
-   staggered paths and get swallowed into it one after another instead of a single coin arriving.
-   --rx/--ry (start offset) and --rd (stagger delay) are set per-coin inline so each one takes a
-   slightly different route; the keyframe itself is shared. Runs alongside the pill's own number
-   counting up (plain React state, not CSS) and a jx-pop bounce on the pill itself. */
-@keyframes jxPointsRain {
-  0%   { transform: translate(var(--rx, 0px), var(--ry, 60px)) scale(1); opacity: 1; }
-  65%  { transform: translate(calc(var(--rx, 0px) * .15), 8px) scale(.8); opacity: 1; }
-  100% { transform: translate(0, 0) scale(.15); opacity: 0; }
+/* ── Points-gain feedback ──────────────────────────────────────────────
+   "Coin shower" — matched against the actual Clash Royale reference again: that is not
+   scattered coins that each fly their own way and pause somewhere — it is ONE continuous
+   curved stream, tightly packed, pouring from a single spot up into the counter. So this
+   is a stream, not a scatter: every coin starts from (near enough) the SAME source point,
+   launches on a tight stagger (--bd) so many are in flight at once, and rides a gentle
+   curved arc — not a straight line — up into the pill, shrinking continuously as it goes
+   and only fully gone right as it reaches the pill. --mx/--my is the arc's bend point
+   (offset from the straight-line midpoint); --bx/--by is the pill itself.
+   Portaled to `.screen` (see PointsCoinShower in HomeVariantsSimple.jsx) so the stream can
+   cross the whole phone instead of being clipped to the header's own small box. Runs
+   alongside the pill's own number counting up (plain React state, not CSS) and a jx-pop
+   bounce on the pill as the stream lands. */
+@keyframes jxPointsBigRain {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; animation-timing-function: ease-in; }
+  55%  { transform: translate(var(--mx, 0px), var(--my, 0px)) scale(.85); opacity: 1; animation-timing-function: ease-out; }
+  88%  { transform: translate(var(--bx, 0px), var(--by, 0px)) scale(.45); opacity: 1; }
+  100% { transform: translate(var(--bx, 0px), var(--by, 0px)) scale(.12); opacity: 0; }
 }
-.jx-points-rain { animation: jxPointsRain .8s cubic-bezier(.4,0,.2,1) both; animation-delay: var(--rd, 0s); }
+.jx-points-big-rain { animation: jxPointsBigRain 1.05s cubic-bezier(.3,0,.2,1) both; animation-delay: var(--bd, 0s); }
 
 @media (prefers-reduced-motion: reduce) {
-  .jx-points-rain { animation: none; }
+  .jx-points-big-rain { animation: none; }
 }

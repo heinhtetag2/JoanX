@@ -2,17 +2,13 @@
 
 import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
-import { Button, Icon, PointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 import { VersusStage } from './BattleVersus.jsx';
 import { sfx, music } from '../core/sound.jsx';
-
-// The amber the points pill uses for text on its pale goldLight bed. THEME.gold is a FILL —
-// too pale to read as type on anything light, fine as type on the dark green card.
-const GOLD_INK = '#9e7300';
 
 function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const owned = CHARACTERS.filter(c => c.owned);
@@ -317,8 +313,8 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                     difference the whole rule exists to create. */}
                 {won && (
                   <React.Fragment>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: GOLD_INK, padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
-                      <PointIcon size={20} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.successLight, color: '#274427', padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
+                      <SafePointIcon size={20} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
                     </div>
                     {/* A-8.4 — the egg drop is deliberately NOT surfaced here. The win
                         awards it behind the scenes; the child meets it on the egg-hatch
@@ -432,7 +428,18 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                 reads as secondary to the green without reading as disabled. It carried a white
                 wash for a while to buy contrast; that was treating the symptom — the strip
                 sitting under the scrim (see the container above) was what dulled it. */}
-            <button onClick={() => ctx.nav('home')} style={{ width: '100%', marginTop: 10, background: 'transparent', border: '1.5px solid rgba(255,255,255,.92)', color: 'rgba(255,255,255,.96)', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
+            {/* A real fight (not a Tweaks preview jump, which never actually pays out) pays
+                points on EITHER outcome — even a loss has a consolation reward — so carry
+                the same coin-shower the header pill plays elsewhere into Home, timed to the
+                points that were just actually added to PLAYER.points at resolveBattle(). */}
+            <button onClick={() => {
+              const p = {};
+              if (!preview && lastReward.points > 0) {
+                const to = PLAYER.points;
+                p.pointsFx = { from: to - lastReward.points, to, amount: lastReward.points, key: Date.now() };
+              }
+              ctx.nav('home', p);
+            }} style={{ width: '100%', marginTop: 10, background: 'transparent', border: '1.5px solid rgba(255,255,255,.92)', color: 'rgba(255,255,255,.96)', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
         )}
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { activeEggs, buyEgg, canConvertPoints, CHARACTERS, convertPointsToXp, eggById, eggCount, eggSources, EXCHANGE, hatchFromInventory, maxConvertibleXp, PLAYER, POINTS, pointsForXp, rarityOf, totalEggs, xpToCap } from '../core/data.jsx';
-import { Bar, Icon, PointIcon, RARITY, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Bar, Icon, RARITY, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment } from './shared.jsx';
@@ -280,7 +280,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <span style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 700, lineHeight: 1.4 }}>{L('Turn points into EXP for a buddy.')}</span>
                 <span className="game-font" style={{ marginLeft: 'auto', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', color: THEME.fg1, borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 500 }}>
-                  <PointIcon size={15} />{EXCHANGE.pointsPerXp} = 1 EXP
+                  <SafePointIcon size={15} />{EXCHANGE.pointsPerXp} = 1 EXP
                 </span>
               </div>
 

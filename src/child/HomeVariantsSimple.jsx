@@ -1,5 +1,6 @@
 import React from 'react';
-import { Badge, Bar, Icon, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
+import { createPortal } from 'react-dom';
+import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
 import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, xpToCap } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
@@ -37,11 +38,76 @@ const HOME_STAT_B_OPTIONS = [
 // shower, chosen after comparing it against a count-up, a floating "+N", a single coin
 // fly-in, and a flash burst. Those four are gone now that shower's the pick; see git history
 // for them if a future redesign wants to revisit.
-// Fixed 7-coin spread rather than random-per-play, so every run looks the same.
-// [startX, startY, delayMs] — pulled loosely wide so the coins don't all overlap one path.
+//
+// Matched against the actual reference (a Clash Royale reward screen) again: it isn't
+// scattered coins each flying their own path — it's ONE dense, continuous stream pouring
+// from a single spot, curving up into the counter, coins shrinking the whole way so the
+// stream visually tapers INTO the icon rather than a coin arriving still full-size and
+// then popping. That means it has to escape the header's own small box: the phone frame is
+// exactly 390×844 (see index.html's .bezel) and .screen is the containing block for it (it
+// sets transform for exactly this reason), so the stream is portaled there and placed with
+// real pixel coordinates rather than positioned relative to the pill.
+//
+// PILL_POS targets the ICON inside the pill specifically, not the pill's overall box — the
+// icon sits at the pill's own left edge (padding 12px + half the 20px icon), and the pill
+// itself is right-aligned in the header behind the fixed-width 40px bell button (gap 8,
+// screen padding 18): bell's right edge sits at 390 − 18, so working back from there to the
+// icon's own left-aligned position (not the pill's right edge, and not its text) lands the
+// coins ON the icon rather than generically "somewhere in the pill's box".
+const PILL_POS = { left: 242, top: 80 };
+// SOURCE_POS — the single spot the whole stream pours from, low and left-of-center so the
+// climb up to the pill has room to curve. Real Clash Royale streams have a chest to pour
+// out of; we don't have an on-screen "source" object, so this is just a fixed point low on
+// the phone rather than tied to any visible element.
+const SOURCE_POS = { left: 150, top: 660 };
+// Fixed 11-coin stream, not random-per-play, so every run looks the same. Loosely widens
+// outward from SOURCE_POS over time, but every coin's exact spot, delay gap, and size is
+// hand-picked off any regular step — no shared spacing between left/top values, no even
+// delay gaps, sizes bouncing around instead of shrinking/growing in order. A regular
+// pattern reads as a diagram of a coin spray; this is meant to read as the real, messier
+// thing — coins that all roughly came from the same burst but didn't line up.
+// [left, top, delayMs, size]
 const COIN_SHOWER = [
-  [-6, 58, 0], [18, 66, 40], [-22, 72, 90], [8, 50, 130], [-14, 64, 170], [26, 58, 60], [0, 74, 210],
+  [140, 640, 0,   34], [185, 650, 35,  26], [110, 690, 90,  32],
+  [205, 630, 160, 30], [95,  660, 180, 36], [225, 665, 260, 24],
+  [70,  645, 300, 33], [240, 695, 380, 28], [55,  675, 420, 31],
+  [260, 620, 470, 27], [35,  700, 520, 29],
 ];
+
+// The coin stream itself, portaled to `.screen` so it can cross the whole phone instead of
+// being clipped to whatever small box the pill's own header row sits in. Each coin rides a
+// gentle curve (via --mx/--my, the arc's bend point) rather than a straight line, matching
+// the reference's fountain-like sweep rather than a flat glide.
+// `landAt` is the icon's MEASURED position (see HomeActionsS's iconRef) — falls back to the
+// PILL_POS estimate only if the ref somehow wasn't available to measure.
+function PointsCoinShower({ playKey, landAt = PILL_POS }) {
+  const portalNode = document.querySelector('.screen') || document.body;
+  return createPortal(
+    <div style={{ position: 'absolute', inset: 0, zIndex: 90, pointerEvents: 'none', overflow: 'hidden' }}>
+      {COIN_SHOWER.map(([left, top, delay, size], i) => {
+        // landAt is the icon's CENTER, but translate moves the coin span's top-left
+        // corner — without the -size/2 offset the coin's own center lands size/2 px
+        // down-right of the icon instead of on it (scale() is center-origin so it
+        // doesn't shift the center once translated there).
+        const bx = landAt.left - left - size / 2, by = landAt.top - top - size / 2;
+        // bend the midpoint left/outward off the straight line — an arc, not a glide
+        const mx = bx * 0.4 - 22, my = by * 0.55;
+        return (
+          <span key={`${playKey}-${i}`} className="jx-points-big-rain"
+            style={{
+              position: 'absolute', left, top,
+              '--mx': `${mx}px`, '--my': `${my}px`,
+              '--bx': `${bx}px`, '--by': `${by}px`,
+              '--bd': `${delay}ms`,
+            }}>
+            <SafePointIcon size={size} />
+          </span>
+        );
+      })}
+    </div>,
+    portalNode
+  );
+}
 
 // ── duplicated helpers (suffixed _S so they never clash with the originals)
 const HOME_WINS_S = [
@@ -59,25 +125,49 @@ function HomeActionsS({ ctx, dark }) {
   const chip = dark ? 'rgba(255,255,255,.18)' : '#fff';
   const fx = ctx.params?.pointsFx;
   const [playing, setPlaying] = React.useState(null);
+  const [landAt, setLandAt] = React.useState(PILL_POS);
   const [shown, setShown] = React.useState(PLAYER.points);
   const seenKey = React.useRef(null);
+  const iconRef = React.useRef(null);
 
   React.useEffect(() => {
     if (!fx || fx.key === seenKey.current) return;
     seenKey.current = fx.key;
     setPlaying(fx);
+    // Measure the ICON's real on-screen center rather than trust a hardcoded guess — a
+    // static estimate drifts with font metrics and can miss the actual icon by enough to
+    // read as "landing behind the pill" rather than "on it". `.screen` is the coin stream's
+    // own coordinate space (see PointsCoinShower); getBoundingClientRect() reports the
+    // VISUAL (post phone-scale) pixels, so the delta is divided back down by that scale to
+    // land in the same unscaled 390×844 space the stream's own `left`/`top` coordinates use.
+    const iconEl = iconRef.current, screenEl = document.querySelector('.screen');
+    if (iconEl && screenEl) {
+      const iconRect = iconEl.getBoundingClientRect();
+      const screenRect = screenEl.getBoundingClientRect();
+      const scale = screenRect.width / screenEl.offsetWidth || 1;
+      setLandAt({
+        left: (iconRect.left + iconRect.width / 2 - screenRect.left) / scale,
+        top: (iconRect.top + iconRect.height / 2 - screenRect.top) / scale,
+      });
+    }
     sfx.points();
-    const t = setTimeout(() => setPlaying(null), 1150);
+    // last coin's stagger (500ms) + its own flight (1.05s) + a little breathing room
+    // before the effect is torn down
+    const t = setTimeout(() => setPlaying(null), 1650);
     return () => clearTimeout(t);
   }, [fx]);
 
   React.useEffect(() => {
     if (!playing) { setShown(PLAYER.points); return undefined; }
     const { from, to } = playing;
-    const start = performance.now(), dur = 950;
+    // The count holds while the stream is still en route, then climbs as coins start
+    // actually arriving at the pill and settles once the last one in the stream lands.
+    const start = performance.now(), holdMs = 750, dur = 800;
     let raf;
     const tick = (now) => {
-      const p = Math.min(1, (now - start) / dur);
+      const elapsed = now - start;
+      if (elapsed < holdMs) { raf = requestAnimationFrame(tick); return; }
+      const p = Math.min(1, (elapsed - holdMs) / dur);
       setShown(Math.round(from + (to - from) * p));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
@@ -95,16 +185,13 @@ function HomeActionsS({ ctx, dark }) {
         <button key={playing ? playing.key : 'still'} onClick={() => ctx.nav('shop')}
           className={playing ? 'jx-pop' : undefined}
           style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
-          <SafePointIcon size={20} />
+          <span ref={iconRef} style={{ display: 'inline-flex' }}><SafePointIcon size={20} /></span>
           <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
         </button>
-        {/* coins match the pill's own icon — same SafePointIcon art, not a separate gold
-            star, so what pours in visibly matches what the pill is counting */}
-        {playing && COIN_SHOWER.map(([rx, ry, rd], i) => (
-          <span key={`${playing.key}-${i}`} className="jx-points-rain" style={{ position: 'absolute', top: 6, right: 14, pointerEvents: 'none', '--rx': `${rx}px`, '--ry': `${ry}px`, '--rd': `${rd}ms` }}>
-            <SafePointIcon size={13} />
-          </span>
-        ))}
+        {/* the coins themselves fly across the whole phone, not just next to the pill —
+            see PointsCoinShower, portaled to `.screen`. landAt is the icon's MEASURED
+            position (iconRef above), not a hardcoded guess. */}
+        {playing && <PointsCoinShower playKey={playing.key} landAt={landAt} />}
       </div>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <Icon name="bell" size={19} color={ink} stroke={2} />
@@ -377,7 +464,7 @@ function HomeSimpleOriginal({ ctx }) {
               <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L('Safe walking today')}
             </span>
-            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><PointIcon size={16} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
+            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><SafePointIcon size={16} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 12, color: THEME.fg2 }}>{PLAYER.safeMinutesToday} {L('min phone-free')} · {SAFE_PT_PER_MIN} {L('points per safe minute')}</div>
         </div>
