@@ -6,7 +6,13 @@
 // jx-egg-bg, jx-press, jx-float, jx-wiggle, jx-burst — live in styles/joanx.css.
 
 import React from 'react';
-import { shade } from '../core/characters.jsx';
+import { createPortal } from 'react-dom';
+import { hatchFromInventory, PLAYER } from '../core/data.jsx';
+import { Icon, RARITY, THEME } from '../core/primitives.jsx';
+import { L } from '../core/i18n.jsx';
+import { Mascot, shade } from '../core/characters.jsx';
+import { sfx } from '../core/sound.jsx';
+import { HatchCelebration } from './shared.jsx';
 
 // Each rarity gets its own shell so the three eggs are told apart at a glance,
 // not just by their price tag: plain speckles → banded → crowned with stars.
@@ -178,4 +184,138 @@ function CrackingEgg({ size = 132, rarity, color }) {
   );
 }
 
-export { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS };
+// The whole egg → crack → reveal moment as one self-contained, portaled overlay — pulled out
+// of the Shop (its original and still only OTHER caller) so a second flow (a battle win's
+// egg drop) can play the exact same hatch instead of re-building it. `egg` is the inventory
+// egg definition to hatch (an `eggById()` result); the egg is only actually spent, and the
+// buddy only drawn, at the reveal (hatchFromInventory) — same rule as the Shop's own version.
+// `onReveal(res)` fires the instant the buddy is drawn (so a caller can refresh any points/
+// owned-eggs display it's showing under this overlay); `onDone()` fires when the child
+// dismisses the reveal, which is the caller's cue that the moment is over.
+function EggHatchFlow({ egg, bgRarity, eggShake = false, gradualCrack = false, onReveal, onDone }) {
+  const [phase, setPhase] = React.useState('egg');    // 'egg' | 'cracking' | 'reveal'
+  const [result, setResult] = React.useState(null);   // { buddy, dup, xp } once revealed
+  const cracking = React.useRef(false);
+
+  const revealEgg = () => {
+    const res = hatchFromInventory(egg, PLAYER);
+    if (!res.ok) { onDone(); return; }   // nothing to hatch — don't fake a reveal
+    sfx.hatchReveal();
+    setResult(res);
+    setPhase('reveal');
+    onReveal?.(res);
+  };
+  // A tap and a shake can both crack the same egg, and each schedules a reveal — so the crack
+  // is latched. Without it, two reveals fire, and since the reveal is what SPENDS the egg,
+  // one careless double-hatch would eat two eggs and hand out two buddies for one.
+  const crackEgg = () => {
+    if (cracking.current) return;
+    cracking.current = true;
+    sfx.hatchCrack(gradualCrack);
+    setPhase('cracking');
+    // hold the reveal for the length of the chosen animation — the gradual crack
+    // runs longer on purpose, so the fissure has time to spread before the pop
+    setTimeout(revealEgg, gradualCrack ? HATCH_CRACK_MS : HATCH_MS);
+  };
+
+  // shake-to-hatch: while the egg is waiting, a firm phone shake also cracks it
+  useShakeToHatch(eggShake && phase === 'egg', crackEgg);
+
+  const reveal = phase === 'reveal';
+  const isCracking = phase === 'cracking';
+  const b = reveal ? result.buddy : null;
+  const rar = b ? RARITY[b.rarity] : null;
+  const eggC = eggColorFor(egg.rarity);   // shell colour of the egg being hatched
+  // A tier with painted art gets that image instead of the drifting CSS gradient. Kept
+  // through the reveal too — the scene shouldn't swap out from under the buddy the moment
+  // it appears, so the same backdrop carries from waiting egg through reveal.
+  const bgImg = EGG_HATCH_BG[bgRarity || egg.rarity];
+
+  return createPortal(
+    <div className={`jx-fade${!reveal && !bgImg ? ' jx-egg-bg' : ''}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(bgImg
+      ? { backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+      : reveal
+        // Backdrop + CTA both derive from the SAME egg shell colour, so the whole reveal
+        // matches the egg you opened — surface and button never clash across any tier.
+        ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 76)} 0%, ${shade(eggC, 90)} 58%, #fff 100%)` }
+        : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
+      {!reveal ? (
+        <React.Fragment>
+          {/* rings + tappable egg */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 34 }}>
+            <div className="jx-ring-slow" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
+            <div className="jx-ring" style={{ position: 'absolute', width: 190, height: 190, borderRadius: 999, border: `2px solid ${eggC}55` }} />
+            {/* quick-pop glow — the gradual crack brings its own seam-light instead */}
+            {isCracking && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 60)} 0%, transparent 68%)` }} />}
+            <button data-sfx="off" onClick={isCracking ? undefined : crackEgg} disabled={isCracking} className={`jx-press ${isCracking ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: isCracking ? 'default' : 'pointer', padding: 0 }}>
+              {isCracking && gradualCrack
+                ? <CrackingEgg size={132} rarity={egg.rarity} />
+                : <EggShape size={132} rarity={egg.rarity} />}
+            </button>
+          </div>
+          <h2 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: 0, color: THEME.fg1 }}>{L('Buddy Egg')}</h2>
+          {/* label pill doubles as a second hatch trigger, so tapping it isn't a
+              dead-end — the copy still points at the egg as the main target */}
+          <button data-sfx="off" onClick={isCracking ? undefined : crackEgg} disabled={isCracking} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#fff', boxShadow: THEME.shadowCard, borderRadius: 999, padding: '8px 15px', fontSize: 13, fontWeight: 800, color: THEME.fg2, opacity: isCracking ? .85 : 1, border: 'none', fontFamily: 'inherit', cursor: isCracking ? 'default' : 'pointer' }}>
+            <Icon name={isCracking ? 'hourglass' : 'pointer'} size={15} color={eggC} stroke={2.3} className={isCracking ? 'jx-pulse-soft' : undefined} />{L(isCracking ? 'Hatching…' : 'Tap the egg to hatch')}
+          </button>
+          {/* shake affordance — parked at the far bottom, bigger + its own copy */}
+          {eggShake && !isCracking && (
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 46px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <span className="jx-wiggle" style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 999, background: shade(eggC, 64), alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="vibrate" size={28} color={shade(eggC, -28)} stroke={2.3} />
+              </span>
+              <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Shake to hatch too')}</div>
+              <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{L('Give your phone a little shake')}</div>
+            </div>
+          )}
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          {/* the hatch celebration — shared, so every hatch flow plays the same one */}
+          <HatchCelebration color={b.color} accent={rar.fg} />
+
+          {/* status ribbon — solid white pill so it reads on any buddy tint */}
+          <div className="jx-drop-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid rgba(46,43,41,.08)', color: result.dup ? shade(THEME.gold, -40) : THEME.fg1, borderRadius: 999, padding: '6px 14px 6px 12px', fontSize: 12.5, fontWeight: 800, letterSpacing: .3, position: 'relative', marginBottom: 16 }}>
+            {result.dup
+              ? <React.Fragment><Icon name="zap" size={14} color={THEME.gold} fill={THEME.gold} stroke={1.8} />+{result.xp} XP</React.Fragment>
+              : <React.Fragment><Icon name="egg" size={14} color={b.color} stroke={2.3} />{L('New buddy!')}</React.Fragment>}
+          </div>
+
+          {/* the hatch: buddy pops out of a cracked-open shell over a soft glow */}
+          <div className="jx-gift-pop" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+            <div style={{ position: 'absolute', top: '48%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: 999, background: `radial-gradient(circle, ${shade(eggC, 74)} 0%, rgba(255,255,255,0) 66%)`, zIndex: 0 }} />
+            <div className="jx-burst" style={{ position: 'absolute', top: '48%', left: '50%', width: 210, height: 210, borderRadius: 999, border: `3px solid ${b.color}`, opacity: 0, zIndex: 0 }} />
+            {/* cracked eggshell halves under the buddy's feet */}
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 14, zIndex: 1 }}>
+              <EggHalf color={eggC} />
+              <EggHalf color={eggC} flip />
+            </div>
+            <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={2} color={b.color} size={182} /></div>
+          </div>
+
+          {/* name with an inline rarity gem chip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', marginTop: 6 }}>
+            <h1 className="game-font" style={{ fontSize: 31, fontWeight: 500, margin: 0, color: bgImg ? '#fff' : THEME.fg1, textShadow: bgImg ? '0 2px 12px rgba(0,0,0,.5)' : 'none' }}>{b.name}</h1>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1.5px solid ${rar.fg}40`, color: b.rarity === 'common' ? THEME.fg2 : rar.fg, borderRadius: 999, padding: '4px 11px', fontSize: 12, fontWeight: 800 }}>
+              <Icon name="gem" size={12} color={b.rarity === 'common' ? THEME.fg2 : rar.fg} stroke={2.4} />{L(rar.label)}
+            </span>
+          </div>
+          <p style={{ fontSize: 14.5, color: bgImg ? 'rgba(255,255,255,.92)' : THEME.fg2, textShadow: bgImg ? '0 1px 10px rgba(0,0,0,.5)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>
+            {result.dup ? `${L('You already have')} ${b.name} — ${L('turned into XP')}` : L('Added to your collection')}
+          </p>
+
+          {/* CTA — bottom-anchored, full-width pill */}
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <button onClick={onDone} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: shade(eggC, -22), color: '#fff', borderRadius: 18, padding: '16px 0', fontSize: 15.5, fontWeight: 800, boxShadow: 'none' }}>
+              {result.dup ? L('Awesome!') : L('Keep it')}
+            </button>
+          </div>
+        </React.Fragment>
+      )}
+    </div>,
+    document.querySelector('.screen') || document.body
+  );
+}
+
+export { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS, EggHatchFlow };

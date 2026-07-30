@@ -98,7 +98,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'minutes', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'minutes', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -225,7 +225,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -243,9 +243,9 @@ function App() {
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       // keyed on the preview target: Battle reads it once, as its initial phase, so
       // jumping from one preview to another has to remount rather than reconcile
-      battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
+      battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
-      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />,
+      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
@@ -409,6 +409,32 @@ function App() {
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
                 {HOME_STAT_B_OPTIONS.map(({ id, label }) => (
                   <button key={id} className={'tw-chip' + (tw.homeStatB === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, homeStatB: id }))}>{label}</button>
+                ))}
+              </div>
+
+              {/* Egg-shop entry point — where Home advertises "go buy/hatch an egg". All of
+                  these live in the SAME spot (HomeActionsS's icon cluster, left of the points
+                  pill) except 'banner', so switching between them is a fair comparison.
+                    header  — egg + count + plus badge (the original; "0 +" at zero owned)
+                    icon    — bell idiom: icon-only circle, numbered badge only when > 0
+                    label   — text-led: "Buy egg" / "Hatch ×N", no number ever stands alone
+                    dot     — icon-only + a plain presence dot, no number at all, ever
+                    stack   — real egg art peeking out from behind itself, illustrative
+                    ghost   — header's own layout, but outlined/unfilled — deliberately quiet
+                    pulse   — no badge at all, a looping ring animation is the cue
+                    shop    — a shopping-bag icon, no egg, no count ever — pure doorway
+                    ring    — radial progress ring instead of a printed number
+                    swatch  — button's own fill colour = rarest egg owned (grey = none)
+                    wordmark— plain underlined text link, no icon, no chip
+                    goal    — aspirational: shows the rarest tier still MISSING, not owned
+                    sticker — bold, bigger, rarity-coloured circle — a fun collectible, not a utility icon
+                    mini    — as small and quiet as a tap target reasonably gets
+                    banner  — a full-width card under the buddy identity block instead
+                  All fifteen nav to the same Shop. */}
+              <div className="tw-label">Home · Egg shop entry</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['off', 'Off'], ['header', 'Header pill'], ['icon', 'Icon + badge'], ['label', 'Text label'], ['dot', 'Icon + dot'], ['stack', 'Egg stack'], ['ghost', 'Ghost pill'], ['pulse', 'Pulse ring'], ['shop', 'Shop bag'], ['ring', 'Progress ring'], ['swatch', 'Colour swatch'], ['wordmark', 'Word link'], ['goal', 'Goal teaser'], ['sticker', 'Big sticker'], ['mini', 'Tiny icon'], ['banner', 'Banner card']].map(([id, label]) => (
+                  <button key={id} className={'tw-chip' + (tw.eggEntry === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggEntry: id }))}>{label}</button>
                 ))}
               </div>
 
@@ -582,6 +608,18 @@ function App() {
               <div className="tw-row">
                 {[['off', 'Tap only'], ['on', 'Tap + shake']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.eggShake === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggShake: v }))}>{l}</button>
+                ))}
+              </div>
+
+              {/* 'split' is the original Shop: an owned egg shows in "Your eggs" up top
+                  AND its tier still shows in "Buddy Eggs" below — the same tier twice.
+                  'merged' folds those into one list, one card per tier, that reads as
+                  Hatch when you own one and Buy when you don't. */}
+              <div className="tw-label">Egg shop layout</div>
+              <div className="tw-row">
+                {[['split', 'Two sections'], ['merged', 'One list']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.eggShopLayout === v ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, eggShopLayout: v })); setStack([{ screen: 'shop', params: {} }]); setScreen('shop'); }}>{l}</button>
                 ))}
               </div>
               {/* Each tier's own painted hatch backdrop lives in /assets/egg/ (EGG_HATCH_BG in

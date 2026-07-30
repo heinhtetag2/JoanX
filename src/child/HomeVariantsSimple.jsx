@@ -1,10 +1,11 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
-import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, xpToCap } from '../core/data.jsx';
+import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, totalEggs, xpToCap } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
+import { EggShape } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
 
 // JoanX — Child Home, "Simple Layout" set.
@@ -179,6 +180,175 @@ function HomeActionsS({ ctx, dark }) {
 
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      {/* Tweaks: Home · Egg shop entry → 'header'. Left of the points pill. Same pill idiom
+          as the points pill — egg + count + a small plus badge — so it reads as a sibling
+          action, not a new pattern. The shell art is the same EggShape the Shop/hatch flow
+          uses (epic tier), not a generic icon, so it reads as THE egg, not just "an egg". */}
+      {ctx.tweaks?.eggEntry === 'header' && (
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '5px 10px 5px 8px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <span style={{ display: 'inline-flex' }}><EggShape size={18} rarity="epic" /></span>
+          <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{totalEggs()}</span>
+          <span style={{ width: 20, height: 20, borderRadius: 999, background: THEME.camping, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon name="plus" size={13} color="#fff" stroke={3} />
+          </span>
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'icon'. 'header' always shows a count — at 0 eggs
+          owned that reads as "0 + " next to the points pill, an empty-looking counter right
+          beside a real balance, not an invitation. This is the bell's own idiom instead:
+          a plain icon-only circle (no number ever shown), with a small badge appearing ONLY
+          once there is something to act on — so "nothing owned yet" and "go check the shop"
+          both read cleanly, and the pill never has to display a bare zero. */}
+      {ctx.tweaks?.eggEntry === 'icon' && (
+        <button onClick={() => ctx.nav('shop')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icon name="egg" size={19} color={ink} stroke={2} />
+          {totalEggs() > 0 && (
+            <span className="game-font" style={{ position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, borderRadius: 999, background: THEME.camping, color: '#fff', fontSize: 10.5, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: `2px solid ${dark ? shade(THEME.fg1, 10) : '#fff'}` }}>
+              {totalEggs()}
+            </span>
+          )}
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'label'. Text-led instead of number-led: the pill's
+          headline is always a WORD naming the action ("Buy" / "Hatch"), never a bare count —
+          so unlike 'header' it can't be misread as an empty counter at 0, and unlike 'icon'
+          it doesn't need a badge to explain itself; the label already says what tapping does. */}
+      {ctx.tweaks?.eggEntry === 'label' && (
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: chip, padding: '7px 13px 7px 10px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <Icon name="egg" size={15} color={THEME.camping} stroke={2.3} />
+          <span className="game-font" style={{ fontSize: 13, fontWeight: 800, color: ink }}>
+            {totalEggs() > 0 ? `${L('Hatch')} ×${totalEggs()}` : L('Buy egg')}
+          </span>
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'dot'. Even more minimal than 'icon': no number is
+          ever shown, not even in a badge — just a plain presence dot (the bell's OWN dot,
+          re-tinted) meaning "something's waiting", full stop. Answers "is there anything to
+          do" without also answering "how many", which this entry point may not need to. */}
+      {ctx.tweaks?.eggEntry === 'dot' && (
+        <button onClick={() => ctx.nav('shop')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icon name="egg" size={19} color={ink} stroke={2} />
+          {totalEggs() > 0 && (
+            <span style={{ position: 'absolute', top: 9, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.camping, border: `2px solid ${dark ? shade(THEME.fg1, 10) : '#fff'}` }} />
+          )}
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'stack'. Illustrative rather than UI-chrome: the
+          eggs themselves peek out from behind each other (real EggShape art, epic-tinted),
+          reading as "here is what you actually own" rather than an abstract counter. At 0
+          it falls back to one faded common shell — an outline of the thing you're missing,
+          not a blank slot. */}
+      {ctx.tweaks?.eggEntry === 'stack' && (
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, height: 40, padding: '0 12px 0 6px', background: chip, borderRadius: 999, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <div style={{ position: 'relative', width: totalEggs() > 1 ? 30 : 20, height: 24, flexShrink: 0 }}>
+            {totalEggs() > 0
+              ? <span style={{ position: 'absolute', left: 0, top: 2 }}><EggShape size={18} rarity="epic" /></span>
+              : <span style={{ position: 'absolute', left: 0, top: 2, opacity: .38 }}><EggShape size={18} rarity="common" /></span>}
+            {totalEggs() > 1 && <span style={{ position: 'absolute', left: 11, top: 0 }}><EggShape size={18} rarity="rare" /></span>}
+          </div>
+          <span className="game-font" style={{ fontSize: 13, fontWeight: 800, color: ink }}>
+            {totalEggs() > 0 ? `×${totalEggs()}` : L('Get one')}
+          </span>
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'ghost'. Same idiom as 'header' (egg + count when
+          owned), but deliberately LOW visual weight — an outlined pill with no filled
+          background, so it recedes next to the solid points pill instead of competing with
+          it. The theory: points and notifications are things you check often; the egg shop
+          is a "pop in when curious" errand, and its entry point can look like one. Count is
+          still hidden at 0 (same fix as every other option here) — the lighter weight is
+          the one thing this variant is testing, not a reason to bring the bare zero back. */}
+      {ctx.tweaks?.eggEntry === 'ghost' && (
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'transparent', padding: '6px 11px', borderRadius: 999, border: `1.5px solid ${dark ? 'rgba(255,255,255,.4)' : THEME.border}`, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <Icon name="egg" size={15} color={ink} stroke={2.2} />
+          {totalEggs() > 0 && <span className="game-font" style={{ fontSize: 13, fontWeight: 700, color: ink, opacity: .85 }}>{totalEggs()}</span>}
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'pulse'. No badge, no number, no dot — motion IS the
+          cue. A soft ring expands out of the icon on a loop (reusing .jx-ring, already used
+          for "this is live" affordances elsewhere), and only runs while there's actually
+          something to hatch. Motion belongs on the thing being tapped, not a passive list —
+          this button is the thing being tapped, so it's fair game where a list row wouldn't be. */}
+      {ctx.tweaks?.eggEntry === 'pulse' && (
+        <button onClick={() => ctx.nav('shop')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          {totalEggs() > 0 && <span className="jx-ring" style={{ position: 'absolute', inset: -3, borderRadius: 999, border: `1.5px solid ${THEME.camping}` }} />}
+          <Icon name="egg" size={19} color={ink} stroke={2} />
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'shop'. Represents the ACTION, not the object — a
+          shopping-bag icon rather than an egg, and no count anywhere, ever. This is the most
+          literal read of "there's no saved-egg count to show, it's just buy and hatch": the
+          entry point doesn't try to summarize inventory at all, it's just a doorway. */}
+      {ctx.tweaks?.eggEntry === 'shop' && (
+        <button onClick={() => ctx.nav('shop')} style={{ width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icon name="shopping-bag" size={18} color={ink} stroke={2.1} />
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'ring'. A radial progress ring instead of a number —
+          empty (just the track) at 0 owned, filled all the way round once you have one ready.
+          Reads at a glance the way a fitness ring does, without printing a digit at all. */}
+      {ctx.tweaks?.eggEntry === 'ring' && (
+        <button onClick={() => ctx.nav('shop')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <svg width={40} height={40} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
+            <circle cx={20} cy={20} r={17} fill="none" stroke={dark ? 'rgba(255,255,255,.18)' : THEME.border} strokeWidth={2.5} />
+            {totalEggs() > 0 && (
+              <circle cx={20} cy={20} r={17} fill="none" stroke={THEME.camping} strokeWidth={2.5} strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 17} strokeDashoffset={0} />
+            )}
+          </svg>
+          <Icon name="egg" size={16} color={ink} stroke={2} />
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'swatch'. Status by COLOR rather than by count — the
+          button's own fill is tinted to the rarest egg you're holding (grey when you have
+          none), so a glance answers "is there something good waiting" without a digit. */}
+      {ctx.tweaks?.eggEntry === 'swatch' && (() => {
+        const rar = PLAYER.eggs.epic > 0 ? RARITY.epic : PLAYER.eggs.rare > 0 ? RARITY.rare : PLAYER.eggs.common > 0 ? RARITY.common : null;
+        return (
+          <button onClick={() => ctx.nav('shop')} style={{ width: 40, height: 40, borderRadius: 999, background: rar ? rar.bg : chip, border: rar ? `1.5px solid ${rar.fg}55` : 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Icon name="egg" size={18} color={rar ? rar.fg : ink} stroke={2.2} />
+          </button>
+        );
+      })()}
+      {/* Tweaks: Home · Egg shop entry → 'wordmark'. The leanest possible footprint — plain
+          text, no icon, no chip background — a quiet link rather than a button competing
+          visually with the points pill and the bell. */}
+      {ctx.tweaks?.eggEntry === 'wordmark' && (
+        <button onClick={() => ctx.nav('shop')} style={{ background: 'none', border: 'none', padding: '6px 2px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <span className="game-font" style={{ fontSize: 13, fontWeight: 800, color: ink, opacity: .7, textDecoration: 'underline', textUnderlineOffset: 3 }}>{L('Eggs')}</span>
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'goal'. Aspirational instead of inventory-based: it
+          shows the rarest tier still missing (grayed, as a thing to chase) rather than what's
+          already owned — reframes the entry as "here's what's next", not "here's a tally". */}
+      {ctx.tweaks?.eggEntry === 'goal' && (
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: chip, padding: '6px 12px 6px 8px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <span style={{ display: 'inline-flex', filter: PLAYER.eggs.epic > 0 ? 'none' : 'grayscale(1) opacity(.55)' }}><EggShape size={16} rarity="epic" /></span>
+          <span className="game-font" style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>
+            {PLAYER.eggs.epic > 0 ? L('Epic ready!') : L('Chase the Epic egg')}
+          </span>
+        </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'sticker'. The opposite instinct from 'ghost' — bold
+          and bigger rather than quiet, a solid rarity-coloured circle (grey at 0 owned)
+          leaning into "fun collectible" rather than "utility icon", no text at all. */}
+      {ctx.tweaks?.eggEntry === 'sticker' && (() => {
+        const rar = PLAYER.eggs.epic > 0 ? RARITY.epic : PLAYER.eggs.rare > 0 ? RARITY.rare : PLAYER.eggs.common > 0 ? RARITY.common : null;
+        return (
+          <button onClick={() => ctx.nav('shop')} style={{ width: 46, height: 46, borderRadius: 999, background: rar ? rar.fg : (dark ? 'rgba(255,255,255,.22)' : THEME.surface2), border: 'none', boxShadow: rar ? `0 4px 12px ${rar.fg}55` : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Icon name="egg" size={21} color={rar ? '#fff' : THEME.fg3} stroke={2.2} />
+          </button>
+        );
+      })()}
+      {/* Tweaks: Home · Egg shop entry → 'mini'. The opposite instinct from 'sticker' — as
+          small and quiet as a tappable target can reasonably be, no badge, no text, on the
+          theory the egg shop is a background errand that shouldn't visually compete with
+          points/notifications at all. */}
+      {ctx.tweaks?.eggEntry === 'mini' && (
+        <button onClick={() => ctx.nav('shop')} style={{ width: 26, height: 26, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Icon name="egg" size={13} color={ink} stroke={2.2} />
+        </button>
+      )}
       <div style={{ position: 'relative' }}>
         {/* remounting the pill (via `key`) is what replays jx-pop on every trigger, not
             just the first — a CSS animation class alone would not re-run on an unchanged element */}
@@ -291,6 +461,31 @@ function SafetyPillS({ ctx, lite, skin }) {
         <div style={{ fontSize: 12, color: ink, opacity: .85 }}>{lite ? L('Phone pauses while you walk') : L('Active while walking · 47 min safe today')}</div>
       </div>
       <Icon name="chevron-right" size={18} color={ink} stroke={2.5} />
+    </div>
+  );
+}
+
+// Tweaks: Home · Egg shop entry → 'banner'. Same card idiom as SafetyPillS just above it
+// (icon chip + title/subtitle + chevron) rather than a new visual pattern, and — unlike the
+// header pill option — it doesn't compete for space with the points pill and bell.
+function EggShopBannerS({ ctx }) {
+  const eggs = totalEggs();
+  // Same treatment as the "Your eggs" row in Shop.jsx (rarity-tinted gradient card,
+  // 64×80 egg box, EggShape size 56) — this is the one place on Home that should
+  // look exactly like the real card it leads to, not a smaller reference to it.
+  const rar = RARITY.epic;
+  return (
+    <div onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 14, background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}40`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, cursor: 'pointer' }}>
+      <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <EggShape size={56} rarity="epic" />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{eggs > 0 ? `${eggs} ${L('eggs waiting to hatch')}` : L('Get your first egg')}</div>
+        <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>{L('Tap to open the shop')}</div>
+      </div>
+      <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 999, background: rar.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="chevron-right" size={16} color="#fff" stroke={2.8} />
+      </span>
     </div>
   );
 }
@@ -693,6 +888,8 @@ function HomeSimpleFocus({ ctx }) {
 
       {/* safety + stats */}
       <div style={{ padding: '18px 18px 0' }}>
+        {/* Tweaks: Home · Egg shop entry → 'banner' */}
+        {ctx.tweaks?.eggEntry === 'banner' && <div style={{ marginBottom: 14 }}><EggShopBannerS ctx={ctx} /></div>}
         <div style={{ marginBottom: 14 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           {/* 2nd card is swappable — Tweaks: Home · 2nd stat card. 'points' (the original) just

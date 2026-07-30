@@ -1,16 +1,18 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 import { VersusStage } from './BattleVersus.jsx';
+import { EggHatchFlow, requestMotionPermission } from './EggHatch.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
-function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
+function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false, eggHatch = 'pop' }) {
+  const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const owned = CHARACTERS.filter(c => c.owned);
   // Arriving from a character's own fight button (CharacterDetail's swords icon) means
   // the fighter is already chosen — that buddy. We land on it pre-selected and with the
@@ -49,6 +51,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
   const [stageUp, setStageUp] = React.useState(null);            // A-3.3: the win evolved the buddy
   // (no storyChapter state — the chapter a first win opens is not announced on this screen)
   const [lastReward, setLastReward] = React.useState(BATTLE_REWARDS.firstClear);
+  // A-8.4 — the egg this win actually paid (a rarity id, e.g. 'common'), or null on a fight
+  // that dropped none. Held so "Battle again"/"Back home" can route through the hatch first.
+  const [lastEgg, setLastEgg] = React.useState(null);
+  // Gates the CTAs behind the hatch when a win just paid an egg — { egg, next, params } | null.
+  // `next`/`params` are the nav() this screen was about to make; the hatch's onDone fires it.
+  const [hatchQueued, setHatchQueued] = React.useState(null);
   // A-8.2 — the villain fought and the power/odds it was rolled against, frozen at roll time
   const [lastFoe, setLastFoe] = React.useState(null);
   const [lastMath, setLastMath] = React.useState({ base: 0, bonus: 0, odds: 0 });
@@ -138,6 +146,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
       setWasImproved(res.improved);         // A-8.1 — a new personal best against this villain
       setStageUp(res.stageUp);              // A-3.3 — battle XP carried the buddy into a new stage
       setLastReward(res.reward);
+      setLastEgg(res.eggWon);
       setUsedCount(PLAYER.battlesToday);
       setWon(w);
       // The clash SHOWS the outcome — winner drives through, loser is knocked back — so it has
@@ -160,6 +169,19 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
         // alone in the arena, which is the payoff the five blows were building to.
         setTimeout(() => setPhase('result'), 5050),
       );
+    }
+  };
+
+  // A-8.4 — the result screen's two exit CTAs ("Battle again" / "Back home") both go through
+  // here rather than calling ctx.nav() directly: a win that just paid an egg detours through
+  // the hatch (queued, not navigated away from immediately), and the hatch's own onDone is
+  // what actually fires the nav once the child has met the buddy that egg was hiding.
+  const goTo = (next, params = {}) => {
+    if (lastEgg) {
+      if (eggShake) requestMotionPermission();   // iOS 13+: must be asked from this user gesture
+      setHatchQueued({ egg: eggById(lastEgg), next, params });
+    } else {
+      ctx.nav(next, params);
     }
   };
 
@@ -419,7 +441,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                 the two CTAs stand on, so a full-strength green now has something to be
                 full-strength against. */}
             {left > 0
-              ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => ctx.nav('villaindex')}>{L('Battle again')} · {left}</Button>
+              ? <Button variant="play" size="lg" fullWidth icon="swords" onClick={() => goTo('villaindex')}>{L('Battle again')} · {left}</Button>
               : <Button variant="play" size="lg" fullWidth icon="calendar-check" disabled>{L("That's your battle for today")}</Button>}
             {/* "Back home" is a ghost — genuinely no fill, so the green CTA above keeps the
                 whole of the attention. What it must NOT be is bare text with nothing to hold
@@ -438,7 +460,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                 const to = PLAYER.points;
                 p.pointsFx = { from: to - lastReward.points, to, amount: lastReward.points, key: Date.now() };
               }
-              ctx.nav('home', p);
+              goTo('home', p);
             }} style={{ width: '100%', marginTop: 10, background: 'transparent', border: '1.5px solid rgba(255,255,255,.92)', color: 'rgba(255,255,255,.96)', borderRadius: 20, padding: '15px', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Back home')}</button>
           </div>
         )}
@@ -448,6 +470,15 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
             character screen is what the old manual "Evolve" button did wrong. */}
         {result && stageUp && (
           <StageUpMoment character={sel} stage={stageUp} color={sel.color} onDone={() => setStageUp(null)} />
+        )}
+
+        {/* A-8.4 — the egg this win paid is met HERE, not silently on the way out: both exit
+            CTAs above route through goTo(), which detours through the same hatch flow the
+            Shop uses (EggHatchFlow) whenever `lastEgg` is set, then fires the nav they were
+            actually headed to once the child dismisses the reveal. */}
+        {hatchQueued && (
+          <EggHatchFlow egg={hatchQueued.egg} eggShake={eggShake} gradualCrack={gradualCrack}
+            onDone={() => { const { next, params } = hatchQueued; setHatchQueued(null); ctx.nav(next, params); }} />
         )}
       </div>
     );

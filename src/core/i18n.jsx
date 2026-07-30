@@ -162,6 +162,7 @@ const KO = {
   'to': '까지',
   'Safe points': '안전 포인트', 'Points today': '오늘 포인트', 'Day streak': '연속 일수', 'Safe days': '안전 일수',
   'Eggs to hatch': '부화할 알', 'Bonus today': '오늘 보너스',
+  'eggs waiting to hatch': '개의 알이 부화를 기다려요', 'Get your first egg': '첫 알을 받아보세요', 'Tap to open the shop': '눌러서 상점 열기',
   'Minutes protected': '보호받은 시간', 'Minutes this week': '이번 주 안전 시간', 'Collection XP': '컬렉션 경험치',
   'XP to max level': '만렙까지 경험치', 'Battle power': '배틀 파워',
   'Safe walking today': '오늘의 안전 걷기',
