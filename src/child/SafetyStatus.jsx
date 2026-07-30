@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FEATURES } from '../core/data.jsx';
-import { Badge, Icon, THEME } from '../core/primitives.jsx';
+import { Badge, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 
@@ -20,7 +20,7 @@ function SafetyStatus({ ctx }) {
           <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 14px' }}>
             <div className="jx-ring" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: lite ? THEME.warning : THEME.success }} />
             <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: lite ? THEME.warning : THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: lite ? '0 10px 24px rgba(177,97,32,.4)' : '0 10px 24px rgba(75,129,79,.4)' }}>
-              <Icon name={lite ? 'shield' : 'shield-check'} size={52} color="#fff" stroke={2.1} />
+              {lite ? <Icon name="shield" size={52} color="#fff" stroke={2.1} /> : <SafePointIcon size={62} />}
             </div>
           </div>
           <div className="game-font" style={{ fontSize: 20, fontWeight: 500 }}>{lite ? L('Lite mode active') : L('Active & protected')}</div>

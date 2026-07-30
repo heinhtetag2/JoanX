@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { buyItem, CHARACTERS, DECOR, decorForRoom, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
-import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
+import { BottomSheet, Icon, PointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 
@@ -271,7 +271,7 @@ function RoomSlotSheet({ slot, onClose, ed }) {
                   <Icon name={d.icon} size={26} color={isOn ? THEME.brand : THEME.fg2} stroke={2.1} />
                   <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{L(d.name)}</div>
                   {own ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success }}>{isOn ? L('Placed') : L('Owned')}</span>
-                       : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><Icon name="star" size={10} color={THEME.gold} fill={THEME.gold} stroke={2} />{d.price}</span>}
+                       : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><PointIcon size={13} />{d.price}</span>}
                 </button>
               );
             })}

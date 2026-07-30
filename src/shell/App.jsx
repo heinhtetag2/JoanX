@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_STAT_B_OPTIONS, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
@@ -98,7 +98,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', previewEggRarity: 'rare', previewBgRarity: 'rare', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'minutes', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -225,7 +225,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -401,6 +401,16 @@ function App() {
 
               {/* Child avatar selector removed — the default 'silhouette' is the chosen behaviour;
                   tw.childAvatar stays defaulted so ctx.tweaks keeps getting it. */}
+
+              {/* Home's second stat card sat right under the points pill in the header showing
+                  the SAME points number twice. These swap it for something that isn't already
+                  on screen — pick one here to compare against the original before it ships. */}
+              <div className="tw-label">Home · 2nd stat card</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {HOME_STAT_B_OPTIONS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.homeStatB === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, homeStatB: id }))}>{label}</button>
+                ))}
+              </div>
 
               <div className="tw-label">Preview the safety moment</div>
               {/* Once it is running the escalation moves on its own, so the panel offers the two

@@ -130,6 +130,21 @@ function Icon({ name, size = 20, color = '#2b2926', stroke = 1.8, fill = 'none',
     style={{ display: 'inline-flex', flexShrink: 0, ...style }} />;
 }
 
+// Points icon — finished art for the in-app currency (public/assets/point/star.png),
+// swapped in wherever the drawn lucide star meant "points" rather than level/rating/decoration.
+function PointIcon({ size = 20, style }) {
+  return <img src="/assets/point/star.png" alt="" draggable="false"
+    style={{ width: size, height: size, objectFit: 'contain', display: 'inline-flex', flexShrink: 0, ...style }} />;
+}
+
+// Safety-status icon — finished art for the "you're protected" shield (public/assets/safety/safepoint.svg),
+// swapped in for the drawn lucide shield-check ONLY in the smart-mode (non-lite) protected state; lite
+// mode keeps the drawn warning shield since this art is painted for the green/success state.
+function SafePointIcon({ size = 20, style }) {
+  return <img src="/assets/safety/safepoint.svg" alt="" draggable="false"
+    style={{ width: size, height: size, objectFit: 'contain', display: 'inline-flex', flexShrink: 0, ...style }} />;
+}
+
 // A profile photo with a graceful fallback. `src` is a static image (e.g. a default placeholder
 // dropped in public/assets/avatars/); if it's absent or fails to load, `fallback` is rendered
 // instead — the colored initial for a parent, the buddy mascot for a child — so a screen looks
@@ -499,4 +514,4 @@ function SealCheck({ size = 24, bg = THEME.success, tick = '#fff', style }) {
   );
 }
 
-export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, RARITY, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

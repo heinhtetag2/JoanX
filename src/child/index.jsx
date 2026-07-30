@@ -35,4 +35,4 @@ export { AchievementUnlock } from './AchievementUnlock.jsx';
 export { LiteBlock } from './LiteBlock.jsx';
 export { CharDetailVariant } from './CharacterVariants.jsx';
 export { HOME_LAYOUTS, HomeVariant } from './HomeVariants.jsx';
-export { HomeVariantSimple } from './HomeVariantsSimple.jsx';
+export { HomeVariantSimple, HOME_STAT_B_OPTIONS } from './HomeVariantsSimple.jsx';

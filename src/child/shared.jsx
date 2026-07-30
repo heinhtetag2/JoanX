@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, moodForStage, PLAYER, stageOf } from '../core/data.jsx';
-import { Icon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
+import { Icon, PointIcon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
@@ -158,7 +158,7 @@ function DexProgress(props) {
 function PointsChip({ pts }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', borderRadius: 999, padding: '6px 12px', boxShadow: THEME.shadowCard }}>
-      <Icon name="star" size={14} color={THEME.gold} fill={THEME.gold} stroke={2} />
+      <PointIcon size={18} />
       <span className="game-font" style={{ fontSize: 13, fontWeight: 500 }}>{pts.toLocaleString()}</span>
     </div>
   );

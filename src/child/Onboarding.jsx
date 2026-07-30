@@ -505,9 +505,12 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       {/* 3e · hatched — congrats reveal */}
       {step === 4 && charReveal && eggPhase === 'reveal' && (
         <>
-          {/* reveal wears the starter egg's own sand wash (matches the pre-reveal egg screen and
-              the Shop's common-tier hatch) — not the brand-green root behind it */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: `radial-gradient(120% 80% at 50% 34%, ${shade(STARTER_EGG_C, 76)} 0%, ${shade(STARTER_EGG_C, 90)} 58%, #fff 100%)` }} />
+          {/* reveal carries the same painted backdrop as the waiting egg screen — the scene
+              shouldn't swap out from under the buddy the moment it appears. Falls back to the
+              starter egg's own sand wash if that tier has no painted art. */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, ...(EGG_HATCH_BG.common
+            ? { backgroundImage: `url(${EGG_HATCH_BG.common})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : { background: `radial-gradient(120% 80% at 50% 34%, ${shade(STARTER_EGG_C, 76)} 0%, ${shade(STARTER_EGG_C, 90)} 58%, #fff 100%)` }) }} />
           <div style={{ flex: 1, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
             {/* confetti burst raining from the top on reveal */}
             {[{ l: '18%', c: THEME.gold, d: 0, w: 7, h: 11 }, { l: '30%', c: THEME.primary, d: .12, w: 8, h: 8 }, { l: '44%', c: THEME.heart, d: .04, w: 6, h: 12 }, { l: '56%', c: THEME.camping, d: .18, w: 9, h: 9 }, { l: '68%', c: THEME.gold, d: .08, w: 7, h: 11 }, { l: '80%', c: THEME.success, d: .22, w: 6, h: 10 }, { l: '24%', c: THEME.primary, d: .3, w: 6, h: 6 }, { l: '74%', c: THEME.heart, d: .26, w: 7, h: 7 }].map((p, i) => (
@@ -542,10 +545,10 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={b.stage} color={b.color} size={188} /></div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, position: 'relative', marginTop: 8 }}>
-              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0 }}>{b.name}</h1>
+              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0, color: EGG_HATCH_BG.common ? '#fff' : THEME.fg1, textShadow: EGG_HATCH_BG.common ? '0 2px 12px rgba(0,0,0,.5)' : 'none' }}>{b.name}</h1>
               <Badge variant={b.rarity === 'epic' ? 'epic' : b.rarity === 'rare' ? 'primary' : 'default'}>{L(b.rarity === 'epic' ? 'Epic' : b.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
             </div>
-            <p style={{ fontSize: 15, color: THEME.fg2, lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
+            <p style={{ fontSize: 15, color: EGG_HATCH_BG.common ? 'rgba(255,255,255,.92)' : THEME.fg2, textShadow: EGG_HATCH_BG.common ? '0 1px 10px rgba(0,0,0,.5)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>

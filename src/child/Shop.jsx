@@ -3,7 +3,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { activeEggs, buyEgg, canConvertPoints, CHARACTERS, convertPointsToXp, eggById, eggCount, eggSources, EXCHANGE, hatchFromInventory, maxConvertibleXp, PLAYER, POINTS, pointsForXp, rarityOf, totalEggs, xpToCap } from '../core/data.jsx';
-import { Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
+import { Bar, Icon, PointIcon, RARITY, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment } from './shared.jsx';
@@ -157,7 +157,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
         {/* balance */}
         <div style={{ borderRadius: 22, padding: '20px 18px', background: 'linear-gradient(160deg,#fff2d1,#fff 78%)', boxShadow: THEME.shadowCard, marginBottom: 14, textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Icon name="star" size={30} color={THEME.gold} fill={THEME.gold} stroke={2} />
+            <SafePointIcon size={36} />
             <span className="game-font" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1 }}>{pts.toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L('Your points')}</div>
@@ -280,7 +280,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <span style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 700, lineHeight: 1.4 }}>{L('Turn points into EXP for a buddy.')}</span>
                 <span className="game-font" style={{ marginLeft: 'auto', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', color: THEME.fg1, borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 500 }}>
-                  <Icon name="star" size={12} color={THEME.gold} fill={THEME.gold} stroke={2} />{EXCHANGE.pointsPerXp} = 1 EXP
+                  <PointIcon size={15} />{EXCHANGE.pointsPerXp} = 1 EXP
                 </span>
               </div>
 
@@ -388,14 +388,16 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
         // (the buddy's own tier still shows on the gem chip).
         // A tier with painted art gets that image instead of the drifting CSS gradient. Keyed
         // off bgRarity, not eggRarity — they only differ under the Tweaks mix-and-match preview.
-        const bgImg = !reveal && EGG_HATCH_BG[hatch.bgRarity];
+        // Kept through the reveal too — the scene shouldn't swap out from under the buddy the
+        // moment it appears, so the same backdrop carries from waiting egg through reveal.
+        const bgImg = EGG_HATCH_BG[hatch.bgRarity];
         return (
-          <div className={`jx-fade${!reveal && !bgImg ? ' jx-egg-bg' : ''}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(reveal
-            // Backdrop + CTA both derive from the SAME egg shell colour, so the whole reveal
-            // matches the egg you opened — surface and button never clash across any tier.
-            ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 76)} 0%, ${shade(eggC, 90)} 58%, #fff 100%)` }
-            : bgImg
-              ? { backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          <div className={`jx-fade${!reveal && !bgImg ? ' jx-egg-bg' : ''}`} style={{ position: 'absolute', inset: 0, zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', ...(bgImg
+            ? { backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : reveal
+              // Backdrop + CTA both derive from the SAME egg shell colour, so the whole reveal
+              // matches the egg you opened — surface and button never clash across any tier.
+              ? { background: `radial-gradient(120% 80% at 50% 34%, ${shade(eggC, 76)} 0%, ${shade(eggC, 90)} 58%, #fff 100%)` }
               : { '--egg-a': shade(eggC, 38), '--egg-b': shade(eggC, 66), '--egg-base': shade(eggC, 92) }) }}>
             {!reveal ? (
               <React.Fragment>
@@ -452,14 +454,16 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop' }) {
                   <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={2} color={b.color} size={182} /></div>
                 </div>
 
-                {/* name with an inline rarity gem chip */}
+                {/* name with an inline rarity gem chip — white + a dark drop shadow over the
+                    painted backdrop (same treatment as Onboarding's slide text), plain dark
+                    text on the flat-tint fallback */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', marginTop: 6 }}>
-                  <h1 className="game-font" style={{ fontSize: 31, fontWeight: 500, margin: 0 }}>{b.name}</h1>
+                  <h1 className="game-font" style={{ fontSize: 31, fontWeight: 500, margin: 0, color: bgImg ? '#fff' : THEME.fg1, textShadow: bgImg ? '0 2px 12px rgba(0,0,0,.5)' : 'none' }}>{b.name}</h1>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1.5px solid ${rar.fg}40`, color: b.rarity === 'common' ? THEME.fg2 : rar.fg, borderRadius: 999, padding: '4px 11px', fontSize: 12, fontWeight: 800 }}>
                     <Icon name="gem" size={12} color={b.rarity === 'common' ? THEME.fg2 : rar.fg} stroke={2.4} />{L(rar.label)}
                   </span>
                 </div>
-                <p style={{ fontSize: 14.5, color: THEME.fg2, lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>
+                <p style={{ fontSize: 14.5, color: bgImg ? 'rgba(255,255,255,.92)' : THEME.fg2, textShadow: bgImg ? '0 1px 10px rgba(0,0,0,.5)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>
                   {hatch.dup ? `${L('You already have')} ${b.name} — ${L('turned into XP')}` : L('Added to your collection')}
                 </p>
 

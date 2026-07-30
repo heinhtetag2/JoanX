@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge, Bar, Icon, PhotoAvatar, RARITY, SealCheck, THEME } from '../core/primitives.jsx';
-import { CHARACTERS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions } from '../core/data.jsx';
+import { Badge, Bar, Icon, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
+import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, xpToCap } from '../core/data.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
@@ -11,6 +11,27 @@ import { sfx } from '../core/sound.jsx';
 // HomeVariants.jsx). Kept fully independent — its own helper copies and
 // components — so we can simplify/modify this set without touching the
 // originals. Routed via App.jsx ("Home layout" → Simple row, ids "simple-*").
+
+// Focus home's 2nd stat card (Tweaks: Home · 2nd stat card) — candidates for the slot next to
+// Day streak. 'points' is the original, which just repeats the header's points pill; the rest
+// each surface a number that isn't already shown anywhere else on this screen, so picking one
+// is a straight swap, not a redesign.
+const HOME_STAT_B_OPTIONS = [
+  { id: 'points', label: 'Safe points (current)', icon: 'award', color: () => THEME.gold, value: () => PLAYER.points.toLocaleString(), sub: 'Safe points', nav: 'rewards' },
+  { id: 'eggs', label: 'Eggs to hatch', icon: 'egg', color: () => THEME.camping, value: () => Object.values(PLAYER.eggs).reduce((a, b) => a + b, 0), sub: 'Eggs to hatch', nav: 'shop' },
+  { id: 'badges', label: 'Badges earned', icon: 'medal', color: () => THEME.gold, value: () => PLAYER.achievementsDone.length, sub: 'Badges earned', nav: 'rewards' },
+  { id: 'friends', label: 'Friends', icon: 'users', color: () => THEME.primary, value: () => FRIENDS.length, sub: 'Friends', nav: 'friends' },
+  { id: 'bonus', label: 'Bonus today', icon: 'gift', color: () => THEME.success, value: () => `+${PLAYER.bonusPointsToday}`, sub: 'Bonus today', nav: 'rewards' },
+  { id: 'battles', label: 'Battles left', icon: 'swords', color: () => THEME.danger, value: () => Math.max(0, battlesPerDay() - PLAYER.battlesToday), sub: 'Battles left', nav: 'villaindex' },
+  // Round 2 — the first batch mostly reads as small counts (2 eggs, 3 friends). These
+  // instead pull real cumulative/derived numbers that already exist in the data model, so
+  // the card carries the same "big number" weight as the points pill it's replacing.
+  { id: 'minutes', label: 'Minutes protected (lifetime)', icon: 'timer', color: () => THEME.mountain, value: () => PLAYER.safeMinutes.toLocaleString(), sub: 'Minutes protected', nav: 'streak' },
+  { id: 'weekMinutes', label: 'Minutes this week', icon: 'calendar-check', color: () => THEME.primary, value: () => (CHILD_REPORTS[PLAYER.childId]?.safeWalkMin ?? 0).toLocaleString(), sub: 'Minutes this week', nav: 'streak' },
+  { id: 'collectionXp', label: 'Collection XP', icon: 'zap', color: () => THEME.gold, value: () => CHARACTERS.filter(x => x.owned).reduce((n, x) => n + x.xp, 0).toLocaleString(), sub: 'Collection XP', nav: 'collection' },
+  { id: 'xpToMax', label: 'XP to max level', icon: 'trending-up', color: () => THEME.camping, value: () => xpToCap(CHARACTERS.find(x => x.id === PLAYER.activeCharId)).toLocaleString(), sub: 'XP to max level', nav: 'shop' },
+  { id: 'power', label: 'Battle power', icon: 'sword', color: () => THEME.danger, value: () => battlePower(CHARACTERS.find(x => x.id === PLAYER.activeCharId)).toLocaleString(), sub: 'Battle power', nav: 'battle' },
+];
 
 // ── duplicated helpers (suffixed _S so they never clash with the originals)
 const HOME_WINS_S = [
@@ -25,7 +46,7 @@ function HomeActionsS({ ctx, dark }) {
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <Icon name="star" size={16} color={dark ? '#ffe08a' : THEME.gold} fill={dark ? '#ffe08a' : THEME.gold} stroke={2} />
+        <SafePointIcon size={20} />
         <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
       </button>
       <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -299,7 +320,7 @@ function HomeSimpleOriginal({ ctx }) {
               <span style={{ width: 30, height: 30, borderRadius: 10, background: tint(c.color, .88), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="footprints" size={17} color={shade(c.color, -28)} stroke={2.3} /></span>
               {L('Safe walking today')}
             </span>
-            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><Icon name="star" size={13} color={THEME.gold} fill={THEME.gold} stroke={2} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
+            <span className="game-font" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', padding: '5px 11px', borderRadius: 999, fontWeight: 500, fontSize: 13 }}><PointIcon size={16} />+{(PLAYER.safeMinutesToday * SAFE_PT_PER_MIN).toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 12, color: THEME.fg2 }}>{PLAYER.safeMinutesToday} {L('min phone-free')} · {SAFE_PT_PER_MIN} {L('points per safe minute')}</div>
         </div>
@@ -530,7 +551,12 @@ function HomeSimpleFocus({ ctx }) {
       <div style={{ padding: '18px 18px 0' }}>
         <div style={{ marginBottom: 14 }}><SafetyPillS ctx={ctx} lite={lite} /></div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-          {[['award', THEME.gold, PLAYER.points.toLocaleString(), L('Safe points'), 'rewards'], ['flame', THEME.joy, PLAYER.streak, L('Day streak'), 'streak']].map((s, i) => (
+          {/* 2nd card is swappable — Tweaks: Home · 2nd stat card. 'points' (the original) just
+              repeats the header's points pill, which is the whole reason this is swappable. */}
+          {(() => {
+            const statB = HOME_STAT_B_OPTIONS.find(o => o.id === ctx.tweaks?.homeStatB) || HOME_STAT_B_OPTIONS[0];
+            return [[statB.icon, statB.color(), statB.value(), L(statB.sub), statB.nav], ['flame', THEME.joy, PLAYER.streak, L('Day streak'), 'streak']];
+          })().map((s, i) => (
             <button key={i} onClick={() => ctx.nav(s[4])} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '11px 14px', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', gap: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
               <Icon name={s[0]} size={18} color={s[1]} stroke={2.4} />
               <div>
@@ -789,4 +815,4 @@ function HomeVariantSimple({ variant, ctx }) {
   }
 }
 
-export { HomeVariantSimple };
+export { HomeVariantSimple, HOME_STAT_B_OPTIONS };

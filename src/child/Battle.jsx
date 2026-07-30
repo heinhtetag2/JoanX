@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
-import { Button, Icon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Button, Icon, PointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
@@ -318,7 +318,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic' }) {
                 {won && (
                   <React.Fragment>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: THEME.goldLight, color: GOLD_INK, padding: '8px 16px', borderRadius: 999, fontWeight: 600, fontSize: 15, marginTop: 12 }} className="game-font">
-                      <Icon name="star" size={16} color={THEME.gold} fill={THEME.gold} stroke={2} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
+                      <PointIcon size={20} /> +{lastReward.points} {L('points')} · +{lastReward.xp} XP
                     </div>
                     {/* A-8.4 — the egg drop is deliberately NOT surfaced here. The win
                         awards it behind the scenes; the child meets it on the egg-hatch
