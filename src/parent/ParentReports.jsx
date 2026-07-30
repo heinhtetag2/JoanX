@@ -246,9 +246,14 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
 
   // top KPI cards (horizontally scrollable). A delta is "good" when it moves the
   // right way for its metric — for Avg. response, lower (a minus) is the win.
+  // "Ignored" reads off the same week of reactions as the donut/bars below (ignoredTotal /
+  // totalReacts), not a separate stat — so this card and "How they respond to warnings" can
+  // never drift apart. There's no last-week ignored count to diff against, so unlike the other
+  // KPI cards this one has no delta/trend badge — that's better than a fabricated one.
+  const ignoredPct = Math.round((ignoredTotal / totalReacts) * 100);
   const kpis = [
     { icon: 'circle-check-big', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Stopped when warned', c: THEME.success, bg: THEME.successLight },
-    { icon: 'flame', v: rep.streak + 'd', delta: rep.deltas.streak, l: 'Safe streak', c: THEME.joy, bg: THEME.joyBg },
+    { icon: 'bell-off', v: ignoredPct + '%', l: 'Ignored', c: THEME.danger, bg: THEME.dangerLight },
   ].map(k => {
     const positive = String(k.delta).trim().startsWith('+');
     const good = k.l === 'Avg. response' ? !positive : positive;
@@ -393,7 +398,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
                   <div style={{ width: 30, height: 30, borderRadius: 999, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon name={k.icon} size={15} color={k.c} stroke={2.3} />
                   </div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>
+                  {k.delta && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>}
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: k.c, marginTop: 10 }}>{k.v}</div>
                 <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L(k.l)}</div>
