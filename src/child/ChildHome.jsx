@@ -23,16 +23,10 @@ function ChildHome({ ctx }) {
             <div className="game-font" style={{ fontSize: 21, fontWeight: 500, color: THEME.fg1 }}>{PLAYER.name}</div>
           </div>
         </button>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '7px 12px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <SafePointIcon size={20} />
-            <span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>{PLAYER.points.toLocaleString()}</span>
-          </button>
-          <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Icon name="bell" size={19} color={THEME.fg1} stroke={2} />
-            <span style={{ position: 'absolute', top: 9, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.danger, border: '2px solid #fff' }} />
-          </button>
-        </div>
+        <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '7px 12px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <SafePointIcon size={20} />
+          <span className="game-font" style={{ fontSize: 15, fontWeight: 500 }}>{PLAYER.points.toLocaleString()}</span>
+        </button>
       </div>
 
       <div style={{ padding: '8px 16px 0' }}>

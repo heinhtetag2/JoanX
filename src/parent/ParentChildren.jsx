@@ -12,12 +12,28 @@ import { BRAND, ParentHead } from './shared.jsx';
 // screen ("Connect device"), so the card itself just shows status — no button.
 function ParentChildren({ ctx }) {
   const ko = getLang() === 'ko';
-  const atCap = CHILDREN.length >= MAX_CHILDREN;   // A-13 · account is full at MAX_CHILDREN
+  // first-run — no children added yet. Gated on the demo flag itself, not CHILDREN.length,
+  // so the Tweaks toggle can preview it regardless of the prototype's seeded data.
+  const kids = ctx.demo?.empty ? [] : CHILDREN;
+  const atCap = kids.length >= MAX_CHILDREN;   // A-13 · account is full at MAX_CHILDREN
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead sub={ko ? `자녀 ${CHILDREN.length}/${MAX_CHILDREN}명 · ${CHILDREN.filter(c => c.online).length}명 연결됨` : `${CHILDREN.length}/${MAX_CHILDREN} children · ${CHILDREN.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => !atCap && ctx.nav('p_addchild', { direct: true })} disabled={atCap} aria-disabled={atCap} title={atCap ? L('Child limit reached') : undefined} style={{ height: 40, padding: '0 15px 0 12px', borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'inline-flex', alignItems: 'center', gap: 5, cursor: atCap ? 'default' : 'pointer', opacity: atCap ? 0.4 : 1, fontFamily: 'inherit' }}><Icon name="plus" size={18} color="#fff" stroke={2.7} /><span style={{ color: '#fff', fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>{L('Add a child')}</span></button>} />
+      <ParentHead sub={ko ? `자녀 ${kids.length}/${MAX_CHILDREN}명 · ${kids.filter(c => c.online).length}명 연결됨` : `${kids.length}/${MAX_CHILDREN} children · ${kids.filter(c => c.online).length} connected`} title={L('Children')} right={<button onClick={() => !atCap && ctx.nav('p_addchild', { direct: true })} disabled={atCap} aria-disabled={atCap} title={atCap ? L('Child limit reached') : undefined} style={{ height: 40, padding: '0 15px 0 12px', borderRadius: 999, background: BRAND.primary, border: 'none', boxShadow: BRAND.shadowPrimary, display: 'inline-flex', alignItems: 'center', gap: 5, cursor: atCap ? 'default' : 'pointer', opacity: atCap ? 0.4 : 1, fontFamily: 'inherit' }}><Icon name="plus" size={18} color="#fff" stroke={2.7} /><span style={{ color: '#fff', fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>{L('Add a child')}</span></button>} />
       <div style={{ padding: '8px 16px 0' }}>
-        {CHILDREN.map((k, ki) => {
+        {kids.length === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '30px 24px', background: '#fff', borderRadius: 20, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
+            <div style={{ width: 76, height: 76, borderRadius: 999, background: BRAND.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <Icon name="user-plus" size={34} color={BRAND.primary} stroke={2} />
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800 }}>{ko ? '아직 등록된 자녀가 없어요' : 'No children yet'}</div>
+            {/* no second CTA here — the header's own "자녀 추가" button is right above this
+                card, so a repeat button would just be the same action said twice on one screen */}
+            <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.5, marginTop: 6, maxWidth: 240 }}>
+              {ko ? '자녀를 추가하면 기기를 연결하고 걷기 안전을 보호할 수 있어요.' : "Add a child to connect their device and start protecting their walks."}
+            </div>
+          </div>
+        )}
+        {kids.map((k, ki) => {
           const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
           // onboarding consent at a glance: how many required permissions the child
           // left off. Same source Rules & settings reads (cfg.grants), default all-on.

@@ -579,7 +579,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           })()}
 
           {active === 'buddies' && buddiesGrid}
-          {active === 'badges' && <BadgeGrid />}
+          {active === 'badges' && <BadgeGrid ctx={ctx} />}
         </div>
       </div>
     );
@@ -610,7 +610,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           })}
         </div>
 
-        {side === 'badges' ? <BadgeGrid /> : (<>
+        {side === 'badges' ? <BadgeGrid ctx={ctx} /> : (<>
           {/* entry points — kept across every variant: the dex (every character) and
               My Room (the house those characters are placed in) */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>

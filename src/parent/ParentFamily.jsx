@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { FAMILY_INVITE, FAMILY_LOG, FAMILY_ROLES, MAX_GUARDIANS, familyFull, guardianCan, guardianMe, guardianOwner, guardians, removeGuardian } from '../core/data.jsx';
-import { Button, Icon, PairQR, THEME, screenBgFor } from '../core/primitives.jsx';
+import { Button, Icon, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
@@ -114,13 +114,13 @@ function ParentFamily({ ctx }) {
 }
 
 // ── The invite ───────────────────────────────────────────────────────
-// The link is the primary path: the realistic case is that the other parent is at work, not
+// The link is the only path: the realistic case is that the other parent is at work, not
 // standing next to you, and a QR would force a co-presence that buys no security — the link is
-// single-use and expiring, and joining still needs the invitee's own phone verification.
-// The QR and the code are the same invite, for when the two of them ARE together.
+// single-use and expiring, and joining still needs the invitee's own phone verification. (A QR
+// toggle used to sit alongside this — same invite, for when the two of them ARE together — but
+// one path is enough, so it's gone.)
 function ParentInvite({ ctx }) {
   const [sent, setSent] = React.useState(false);
-  const [scanMode, setScanMode] = React.useState(false);   // link/code ▸ QR
   const code = FAMILY_INVITE.code;
 
   return (
@@ -129,43 +129,21 @@ function ParentInvite({ ctx }) {
 
       <div style={{ padding: '8px 18px 0', textAlign: 'center' }}>
         <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>
-          {L(scanMode
-            ? 'If you are together, let them scan this from their own phone.'
-            : 'Send this to the other parent. They install JoanX, open the link, and verify their own phone number.')}
+          {L('Send this to the other parent. They install JoanX, open the link, and verify their own phone number.')}
         </p>
 
-        {scanMode ? (
-          /* QR — the in-person path. The SAME PairQR the child's connect screen shows, in the
-             same white card, so a parent who has already seen one pairing screen recognises
-             this one. (It used to be a lucide qr-code glyph on a black tile — a different
-             object entirely, and it looked like a different app.) */
-          <React.Fragment>
-            <div style={{ ...card, alignSelf: 'center', width: 250, margin: '0 auto 0', padding: 22, display: 'flex', justifyContent: 'center' }}>
-              <PairQR size={206} />
-            </div>
-            <div style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 700, marginTop: 14 }}>{L('Joins automatically once scanned.')}</div>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            {/* the code, in the same grouped band the child pairing step uses */}
-            <div style={{ ...card, padding: '22px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 6 }}>
-                <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: BRAND.primaryDark, paddingLeft: 5 }}>{code.slice(0, 3)}</span>
-                <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: BRAND.primaryDark, paddingLeft: 5 }}>{code.slice(3)}</span>
-              </div>
-              <div style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>{FAMILY_INVITE.link}</div>
-            </div>
+        {/* the code, in the same grouped band the child pairing step uses */}
+        <div style={{ ...card, padding: '22px 18px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 6 }}>
+            <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: BRAND.primaryDark, paddingLeft: 5 }}>{code.slice(0, 3)}</span>
+            <span className="game-font" style={{ fontSize: 36, fontWeight: 500, letterSpacing: 5, color: BRAND.primaryDark, paddingLeft: 5 }}>{code.slice(3)}</span>
+          </div>
+          <div style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>{FAMILY_INVITE.link}</div>
+        </div>
 
-            <Button variant="primary" fullWidth icon={sent ? 'check' : 'share-2'} onClick={() => setSent(true)} style={{ ...brandBtn, marginBottom: 10 }}>
-              {L(sent ? 'Invite sent' : 'Share the invite link')}
-            </Button>
-          </React.Fragment>
-        )}
-
-        <button onClick={() => setScanMode(s => !s)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, margin: '14px 0 0', padding: '9px 16px', background: '#fff', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: BRAND.primaryDark, fontSize: 13, fontWeight: 800 }}>
-          <Icon name={scanMode ? 'link' : 'scan-line'} size={16} color={BRAND.primary} stroke={2.3} />
-          {L(scanMode ? 'Send a link instead' : 'Show a QR instead')}
-        </button>
+        <Button variant="primary" fullWidth icon={sent ? 'check' : 'share-2'} onClick={() => setSent(true)} style={{ ...brandBtn, marginBottom: 10 }}>
+          {L(sent ? 'Invite sent' : 'Share the invite link')}
+        </Button>
 
         {/* the two facts that make this safe, said plainly rather than hidden in a policy */}
         <div style={{ marginTop: 22, textAlign: 'left', ...card, padding: 16, marginBottom: 18 }}>

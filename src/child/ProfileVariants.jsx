@@ -13,6 +13,7 @@ import { Badge, Icon, THEME, Toggle } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgActive, screenBgFor, ScreenHeader, StatCard } from './shared.jsx';
+import { notifSeed } from './Notifications.jsx';
 import { sfx } from '../core/sound.jsx';
 
 // ── shared state ─────────────────────────────────────────────────────
@@ -125,6 +126,7 @@ function Parents({ st, card, label }) {
 }
 
 function Account({ ctx, st, card, label }) {
+  const unreadNotifs = notifSeed(st.c).filter(n => n.unread).length;
   return (
     <>
       <div style={label}>{L('Account')}</div>
@@ -138,6 +140,11 @@ function Account({ ctx, st, card, label }) {
           <Badge variant={st.lite ? 'warning' : 'primary'}>{st.lite ? L('Lite') : L('Smart')}</Badge>
           <Icon name="lock" size={15} color={THEME.fg3} stroke={2.3} />
         </div>
+        <Sep />
+        <Row icon="bell" label={L('Notifications')} onClick={() => ctx.nav('notifications')}>
+          {unreadNotifs > 0 && <span style={{ minWidth: 18, height: 18, borderRadius: 999, padding: '0 6px', background: THEME.primary, color: '#fff', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 2 }}>{unreadNotifs}</span>}
+          <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+        </Row>
         <Sep />
         <Row icon="life-buoy" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
         <Sep />

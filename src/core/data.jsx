@@ -321,11 +321,15 @@ const LINK = {
 // Every member signs in as THEMSELVES (own phone number). Sharing one login is the tempting
 // shortcut and it breaks three things at once: push reaches one device, no change can be
 // attributed, and no alert can show who already responded.
+// Seeded with just the owner, one seat short of MAX_GUARDIANS — a fresh family, not yet
+// full, so "Invite a parent" (ParentInvite: code, link, QR) is the reachable default on
+// ParentFamily, rather than the "family is full" state. FAMILY_LOG below still carries a
+// couple of older entries from Min-jun, from back when he was the second guardian — kept
+// as flavor for the activity list, not a claim that he's a current member.
 const FAMILY = {
   id: 'f1',
   members: [
     { id: 'm1', name: 'Ji-won',  relation: 'Mum', phone: '010-1234-5678', role: 'owner',    since: '2026-03-14', me: true },
-    { id: 'm2', name: 'Min-jun', relation: 'Dad', phone: '010-9876-5432', role: 'guardian', since: '2026-06-02' },
   ],
 };
 
@@ -1710,16 +1714,42 @@ const ROOMS = [
    fallback if the file is ever missing. The two abstract achievements (streak,
    collector) now carry their own art too. Any future row without `img` simply
    falls back to the drawn medallion + lucide `icon`. */
+/* `claimed` marks whether an earned badge's points have been paid out yet — a
+   normal field on the row itself (not a side ledger) since ACHIEVEMENTS is
+   already the single source of truth Badges and Rewards both read. Rows earned
+   in the seed backstory come pre-claimed; `a11` is left unclaimed so the
+   Collection → Badges screen has something to claim on first load. See
+   claimAchievement() below for the payout. */
 const ACHIEVEMENTS = [
-  { id: 'a1', icon: 'footprints',   tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',   done: true,  reward: 50,  img: 'badge-first-steps.png' },
-  { id: 'a3', icon: 'timer',        tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  reward: 80,  img: 'badge-quick-reflex.png' },
+  { id: 'a1', icon: 'footprints',   tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',   done: true,  claimed: true,  reward: 50,  img: 'badge-first-steps.png' },
+  { id: 'a3', icon: 'timer',        tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  claimed: true,  reward: 80,  img: 'badge-quick-reflex.png' },
   { id: 'a4', icon: 'shield-check', tier: 'common', name: 'Zone Dodger',   desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150, img: 'badge-zone-dodger.png' },
-  { id: 'a5', icon: 'gem',          tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: true,  reward: 200, img: 'badge-collector.png' },
-  { id: 'a6', icon: 'sunrise',      tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: true,  reward: 130, img: 'badge-early-walker.png' },
+  { id: 'a5', icon: 'gem',          tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: true,  claimed: true,  reward: 200, img: 'badge-collector.png' },
+  { id: 'a6', icon: 'sunrise',      tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: true,  claimed: true,  reward: 130, img: 'badge-early-walker.png' },
   { id: 'a7', icon: 'signpost',     tier: 'rare',   name: 'Crossing Pro',  desc: 'Cross at 10 crosswalks',       done: false, progress: 7, total: 10, reward: 110, img: 'badge-crossing-pro.png' },
-  { id: 'a9', icon: 'hard-hat',     tier: 'common', name: 'Helmet Hero',   desc: 'Helmet on for 7 rides',        done: true,  reward: 100, img: 'badge-helmet-hero.png' },
-  { id: 'a11', icon: 'route',       tier: 'rare',   name: 'Safe Route',    desc: 'Take the safe route 5 times',  done: true,  reward: 120, img: 'badge-safe-route.png' },
+  { id: 'a9', icon: 'hard-hat',     tier: 'common', name: 'Helmet Hero',   desc: 'Helmet on for 7 rides',        done: true,  claimed: true,  reward: 100, img: 'badge-helmet-hero.png' },
+  { id: 'a11', icon: 'route',       tier: 'rare',   name: 'Safe Route',    desc: 'Take the safe route 5 times',  done: true,  claimed: false, reward: 120, img: 'badge-safe-route.png' },
 ];
+
+// Pays out a badge's reward the moment a child taps Claim, and flips it to
+// claimed so the CTA doesn't show twice. Mirrors the daily-reward claim in
+// Rewards.jsx — same gesture, same "can't double-spend" guard.
+const claimAchievement = (id, player = PLAYER) => {
+  const a = ACHIEVEMENTS.find(x => x.id === id);
+  if (!a || !a.done || a.claimed) return false;
+  a.claimed = true;
+  player.points += a.reward;
+  return true;
+};
+
+// Tweaks-only: puts every earned badge back into the unclaimed state (and
+// refunds the points claiming it paid out) so the claim flow can be replayed
+// without editing seed data by hand.
+const resetAchievementClaims = (player = PLAYER) => {
+  ACHIEVEMENTS.forEach(a => {
+    if (a.done && a.claimed) { a.claimed = false; player.points -= a.reward; }
+  });
+};
 
 
 // child reaction log (feeds parent report)
@@ -2585,7 +2615,7 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '
 // Off by default, for the same reason the child's is (see PLAYER.prefs).
 const PARENT_PREFS = { sound: false };
 
-export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

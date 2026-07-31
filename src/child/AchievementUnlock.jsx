@@ -2,8 +2,11 @@
 //
 // The celebration the child sees the instant a badge is earned. A badge that
 // appears silently in the Collection is a reward no one noticed — so the earn
-// is its own full-screen moment: the medallion drops in, points are paid, and
-// the child is invited straight to the shelf it now sits on.
+// is its own full-screen moment: the medallion drops in, and tapping Claim
+// pays the points right here (claimAchievement — the same call the Badges
+// detail sheet uses) before handing off to the shelf it now sits on. A child
+// who never taps still gets paid — the auto-dismiss timeout claims silently
+// on its way out, so walking away never forfeits the reward.
 //
 // It reuses the Badges layer for the medallion (BadgeArt + tierOf), so the badge
 // shown here is the SAME object the grid and the detail sheet render — never a
@@ -12,6 +15,7 @@
 // and its pill (see the green-brand direction).
 
 import React from 'react';
+import { claimAchievement } from '../core/data.jsx';
 import { Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { shade } from '../core/characters.jsx';
@@ -24,22 +28,47 @@ import { sfx } from '../core/sound.jsx';
 // never becomes a screen you wait on.
 const UNLOCK_MS = 4200;
 
+// How long the claimed state holds on screen (button swaps to a checkmark,
+// a second confetti burst fires) before the moment hands off. Short — the
+// tap itself is the payoff, not a screen to linger on.
+const CLAIM_HOLD_MS = 550;
+
 // One earned badge, celebrated. `a` is an ACHIEVEMENTS row (the same shape the
-// grid uses); `onClose` dismisses; `onView` jumps to the Badges shelf.
+// grid uses); `onClose` dismisses; `onView` jumps to the Badges shelf. Two
+// entry points land here: a Tweaks preview (badge not yet claimed — the tap
+// itself pays it out) and the Badges detail sheet's Claim button (already
+// paid by the time this mounts — `a.claimed` seeds the claimed state so the
+// screen opens straight into its celebrated look, second confetti and all).
 function AchievementUnlock({ a, onClose, onView }) {
   const t = tierOf(a);
+  const [claimed, setClaimed] = React.useState(!!a.claimed);
   // the fanfare — keyed to the badge, so previewing a different one replays it
   React.useEffect(() => { sfx.achievement(); }, [a.id]);
-  // auto-dismiss so a preview (or a real unlock left untouched) doesn't sit forever
+  // auto-dismiss so a preview (or a real unlock left untouched) doesn't sit
+  // forever — claims silently on the way out so the reward isn't lost just
+  // because the child didn't tap in time.
   React.useEffect(() => {
-    const id = setTimeout(() => onClose && onClose(), UNLOCK_MS);
+    const id = setTimeout(() => { claimAchievement(a.id); onClose && onClose(); }, UNLOCK_MS);
     return () => clearTimeout(id);
   }, [a, onClose]);
+
+  // Tapping Claim pays the badge out right here — a coin chime and a second
+  // confetti burst confirm it landed, then the moment hands off. Only rendered
+  // while unclaimed (see the button below), so there's no double-payout path.
+  const claim = () => {
+    claimAchievement(a.id);
+    sfx.claim();
+    setClaimed(true);
+    setTimeout(() => onClose && onClose(), CLAIM_HOLD_MS);
+  };
 
   return (
     <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', color: '#fff',
       background: `radial-gradient(circle at 50% 38%, ${shade(THEME.brand, 20)} 0%, ${THEME.brand} 58%, ${shade(THEME.brand, -26)} 100%)` }}>
       <Confetti n={26} />
+      {/* a second, smaller burst confirms the tap itself paid out — distinct from
+          the entrance confetti above, which plays regardless of claim state */}
+      {claimed && <Confetti n={16} />}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px' }}>
         {/* kicker — names the moment before the badge reads, so the child knows
@@ -68,20 +97,27 @@ function AchievementUnlock({ a, onClose, onView }) {
           <p className="jx-content-in" style={{ fontSize: 14, color: 'rgba(255,255,255,.9)', lineHeight: 1.5, margin: '12px 0 0', maxWidth: 260, animationDelay: '.12s' }}>{L(a.desc)}</p>
         )}
 
-        {/* the points it paid — the reward is part of the moment, not a number to
-            discover later on the Rewards screen */}
-        <div className="jx-content-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,.16)', borderRadius: 14, padding: '10px 16px', marginTop: 18, animationDelay: '.18s' }}>
+        {/* the points it pays — re-keyed on `claimed` so the chip re-plays its
+            pop the instant the tap lands, the same beat as the coin chime */}
+        <div key={claimed ? 'claimed' : 'pending'} className={claimed ? 'jx-pop' : 'jx-content-in'} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,.16)', borderRadius: 14, padding: '10px 16px', marginTop: 18, animationDelay: '.18s' }}>
           <SafePointIcon size={20} />
           <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>+{a.reward} {L('points')}</span>
         </div>
       </div>
 
       {/* two exits — collect and stay where you are, or go look at the shelf it
-          joined. Collect leads as the solid action; View badges is the ghost. */}
+          joined. Claim is the solid action while the badge is still unpaid
+          (the Tweaks-preview path); View badges is the ghost. Once claimed
+          — including arriving here already paid via the Badges sheet — the
+          Claim button is gone entirely: there's nothing left to claim, so
+          nothing pretends there is. View badges (or the auto-dismiss timer)
+          is the only way out from here. */}
       <div style={{ padding: '0 22px calc(env(safe-area-inset-bottom) + 22px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button onClick={onClose} style={{ width: '100%', padding: '15px 28px', borderRadius: 16, border: 'none', background: '#fff', color: THEME.brand, fontFamily: 'inherit', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
-          {L('Claim')}
-        </button>
+        {!claimed && (
+          <button onClick={claim} style={{ width: '100%', padding: '15px 28px', borderRadius: 16, border: 'none', background: '#fff', color: THEME.brand, fontFamily: 'inherit', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+            {L('Claim')}
+          </button>
+        )}
         {onView && (
           <button onClick={onView} style={{ width: '100%', padding: '15px 28px', borderRadius: 16, border: '1.5px solid rgba(255,255,255,.6)', background: 'transparent', color: '#fff', fontFamily: 'inherit', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
             {L('View badges')}

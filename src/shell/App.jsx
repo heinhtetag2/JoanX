@@ -1,7 +1,7 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, HOME_STAT_B_OPTIONS, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
-import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions } from '../core/data.jsx';
+import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
@@ -88,6 +88,10 @@ function App() {
   // mirrored into state, so flipping the child's own Profile → Sound effects row can't leave
   // this panel showing the opposite; the tick just forces the re-render after our own click.
   const [, setSoundTick] = React.useState(0);
+  // Same "mutate the shared object, tick to re-render" trick as sound above —
+  // resetAchievementClaims() flips ACHIEVEMENTS rows in place, and any Badges
+  // screen already mounted underneath the panel needs a nudge to pick it up.
+  const [, setBadgeTick] = React.useState(0);
   const soundOn = PLAYER.prefs.sound !== false;
   const changeSound = (v) => {
     PLAYER.prefs.sound = v; PARENT_PREFS.sound = v;
@@ -98,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'original', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -159,6 +163,8 @@ function App() {
 
   // switch the active character line (classic / korean) for every Mascot
   React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
+  // EggShape (EggHatch.jsx) reads this the same way Mascot reads JX_CHAR_STYLE
+  React.useEffect(() => { window.JX_RARE_EGG_STYLE = tw.rareEggStyle; setBump(b => b + 1); }, [tw.rareEggStyle]);
 
   // DexProgress reads this at render time, like Mascot reads JX_CHAR_STYLE
   React.useEffect(() => { window.JX_DEX_HEADER = tw.dexHeader; setBump(b => b + 1); }, [tw.dexHeader]);
@@ -230,8 +236,14 @@ function App() {
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
     setBuddy, lang, setLang: changeLang,
+    // Any screen can trigger the same full-screen "new badge earned" celebration
+    // Tweaks previews — the Badges detail sheet uses this so its Claim button
+    // hands off to the real moment instead of a second, smaller animation.
+    celebrateAchievement: (a) => setUnlock(a),
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
-    finishParentOnboarding: () => { setParentOnboarded(true); setParams({}); setPScreen('p_addchild'); },   // first-run: show the add-child form
+    // first-run: show the add-child form — UNLESS this guardian just joined an existing family
+    // (invite code), where a child already exists and Reports is the honest landing screen.
+    finishParentOnboarding: (opts) => { setParentOnboarded(true); setParams({}); setPScreen(opts?.joined ? 'p_reports' : 'p_addchild'); },
   };
 
   // render active child/parent screen
@@ -402,41 +414,17 @@ function App() {
               {/* Child avatar selector removed — the default 'silhouette' is the chosen behaviour;
                   tw.childAvatar stays defaulted so ctx.tweaks keeps getting it. */}
 
-              {/* Home's second stat card sat right under the points pill in the header showing
-                  the SAME points number twice. These swap it for something that isn't already
-                  on screen — pick one here to compare against the original before it ships. */}
-              <div className="tw-label">Home · 2nd stat card</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {HOME_STAT_B_OPTIONS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.homeStatB === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, homeStatB: id }))}>{label}</button>
-                ))}
-              </div>
+              {/* Home's 2nd stat card selector removed — the default 'xpToMax' (XP to max level)
+                  is the chosen behaviour, compared against Safe points, Eggs to hatch, Badges
+                  earned, Friends, Bonus today, Battles left, Minutes protected/this week,
+                  Collection XP and Battle power. tw.homeStatB stays defaulted so Home keeps
+                  getting it. */}
 
-              {/* Egg-shop entry point — where Home advertises "go buy/hatch an egg". All of
-                  these live in the SAME spot (HomeActionsS's icon cluster, left of the points
-                  pill) except 'banner', so switching between them is a fair comparison.
-                    header  — egg + count + plus badge (the original; "0 +" at zero owned)
-                    icon    — bell idiom: icon-only circle, numbered badge only when > 0
-                    label   — text-led: "Buy egg" / "Hatch ×N", no number ever stands alone
-                    dot     — icon-only + a plain presence dot, no number at all, ever
-                    stack   — real egg art peeking out from behind itself, illustrative
-                    ghost   — header's own layout, but outlined/unfilled — deliberately quiet
-                    pulse   — no badge at all, a looping ring animation is the cue
-                    shop    — a shopping-bag icon, no egg, no count ever — pure doorway
-                    ring    — radial progress ring instead of a printed number
-                    swatch  — button's own fill colour = rarest egg owned (grey = none)
-                    wordmark— plain underlined text link, no icon, no chip
-                    goal    — aspirational: shows the rarest tier still MISSING, not owned
-                    sticker — bold, bigger, rarity-coloured circle — a fun collectible, not a utility icon
-                    mini    — as small and quiet as a tap target reasonably gets
-                    banner  — a full-width card under the buddy identity block instead
-                  All fifteen nav to the same Shop. */}
-              <div className="tw-label">Home · Egg shop entry</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['off', 'Off'], ['header', 'Header pill'], ['icon', 'Icon + badge'], ['label', 'Text label'], ['dot', 'Icon + dot'], ['stack', 'Egg stack'], ['ghost', 'Ghost pill'], ['pulse', 'Pulse ring'], ['shop', 'Shop bag'], ['ring', 'Progress ring'], ['swatch', 'Colour swatch'], ['wordmark', 'Word link'], ['goal', 'Goal teaser'], ['sticker', 'Big sticker'], ['mini', 'Tiny icon'], ['banner', 'Banner card']].map(([id, label]) => (
-                  <button key={id} className={'tw-chip' + (tw.eggEntry === id ? ' on' : '')} onClick={() => setTw(s => ({ ...s, eggEntry: id }))}>{label}</button>
-                ))}
-              </div>
+              {/* Egg-shop entry point selector removed — the default 'header' (Header pill: egg +
+                  count + plus badge) is the chosen behaviour, compared against fifteen other
+                  treatments (icon+badge, text label, dot, stack, ghost, pulse, shop bag, progress
+                  ring, colour swatch, word link, goal teaser, big sticker, tiny icon, banner card,
+                  poking+badge). tw.eggEntry stays defaulted so HomeActionsS keeps getting it. */}
 
               {/* Points-gain animation style selector removed — the coin shower (with the
                   digits counting up alongside it) is the chosen behaviour, compared against a
@@ -493,6 +481,18 @@ function App() {
               {unlock && (
                 <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', padding: '10px', marginTop: 6 }} onClick={() => setUnlock(null)}>■ Dismiss unlock</button>
               )}
+
+              <div className="tw-label">Badge claim (Collection → Badges)</div>
+              {/* The claim flow itself lives on the badge sheet, not here — this just
+                  re-arms it. Refunds the points too, so replaying the test doesn't
+                  quietly inflate the points balance every time. */}
+              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', padding: '10px' }}
+                onClick={() => { resetAchievementClaims(); setBadgeTick(n => n + 1); }}>
+                ↺ Reset badge claims
+              </button>
+              <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 6, lineHeight: 1.4 }}>
+                Marks every earned badge unclaimed again — open Collection → Badges and tap one to see the Claim button.
+              </div>
 
               <div className="tw-label">Story</div>
               <div className="tw-row">
@@ -622,6 +622,18 @@ function App() {
                     onClick={() => { setTw(s => ({ ...s, eggShopLayout: v })); setStack([{ screen: 'shop', params: {} }]); setScreen('shop'); }}>{l}</button>
                 ))}
               </div>
+              {/* 'original' — flat shell, two nearly-invisible dark-on-dark flecks. 'revamp'
+                  gives the shell the same multi-stop-gradient treatment epic's shell already
+                  gets (kept in green, not epic's violet), and the flecks a bright fill + thin
+                  rim so they actually read next to it — everywhere EggShape draws a rare egg
+                  (Shop, Home, Battle egg drops), not just this screen. */}
+              <div className="tw-label">Rare egg style</div>
+              <div className="tw-row">
+                {[['original', 'Original'], ['revamp', 'Revamp']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.rareEggStyle === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, rareEggStyle: v }))}>{l}</button>
+                ))}
+              </div>
               {/* Each tier's own painted hatch backdrop lives in /assets/egg/ (EGG_HATCH_BG in
                   Shop.jsx). Egg shape and background are picked SEPARATELY here on purpose —
                   the point of this preview is trying an egg against a backdrop that isn't
@@ -653,9 +665,14 @@ function App() {
             <React.Fragment>
               <div className="tw-label">Flow</div>
               <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setParentOnboarded(false); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
-              <div className="tw-row" style={{ marginTop: 8 }}>
+              <div className="tw-row" style={{ marginTop: 8, flexWrap: 'wrap' }}>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_addchild'); setStack([]); }}>Pairing / Add child</button>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
+                {/* jumps straight to AuthFlow's 'invite' phase — the second guardian's join path
+                    (Have an invite code? on the auth landing), skipping the splash/slides a real
+                    first run always sees. Ends on Reports, not Add-child (finishParentOnboarding
+                    routes on { joined: true }), since the family/child already exist. */}
+                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(false); setParams({ authStep: 3, authPhase: 'invite' }); setStack([]); }}>Join family (invite code)</button>
               </div>
 
               <div className="tw-label">Impact / fall alert (C7)</div>
@@ -687,8 +704,10 @@ function App() {
 
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['loading', 'Loading']].map(([k, l]) => (
-                  <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); }}>{l}</button>
+                {/* 'empty' — no children added yet: Children shows the add-first-child card,
+                    Reports shows the no-data-yet card instead of its dashboard. */}
+                {[['loading', 'Loading'], ['empty', 'First-run']].map(([k, l]) => (
+                  <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); setStack([]); }}>{l}</button>
                 ))}
                 <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Device offline →</button>
               </div>

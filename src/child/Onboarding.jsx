@@ -28,8 +28,9 @@ const pBrandBtn = { background: P_BRAND.primary, boxShadow: 'none' };
 // this, the same way the Shop tints its hatch from the egg being opened (eggColorFor).
 const STARTER_EGG_C = eggColorFor('common');
 
-// PairQR now lives in the design system (core/primitives) — the parent app's guardian invite
-// shows the same object, and two hand-rolled QRs would drift.
+// PairQR lives in the design system (core/primitives) rather than here, so any future
+// screen that needs a QR (this pairing step is the only one today) reuses the same object
+// instead of a hand-rolled one that could drift.
 
 // ── Onboarding / permissions ─────────────────────────────────────────
 // Smart mode is the only mode now. The flow is:

@@ -7,6 +7,7 @@ import { L, setLang } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
 import { BadgeArt, collectionIntent } from './Badges.jsx';
+import { notifSeed } from './Notifications.jsx';
 import { sfx } from '../core/sound.jsx';
 
 // ── Trophy shelf (Profile) ───────────────────────────────────────────
@@ -52,6 +53,7 @@ function TrophyShelf({ onOpen }) {
 // ── Profile / settings (child) ───────────────────────────────────────
 function Profile({ ctx }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
+  const unreadNotifs = notifSeed(c).filter(n => n.unread).length;
   // device prefs are held on PLAYER so a toggle persists across navigation, not lost on unmount
   const [prefs, setPrefs] = React.useState({ ...PLAYER.prefs });
   const setPref = (k, v) => { PLAYER.prefs[k] = v; setPrefs(p => ({ ...p, [k]: v })); };
@@ -149,6 +151,11 @@ function Profile({ ctx }) {
         {/* account */}
         <div style={sectionLabel}>{L('Account')}</div>
         <div style={groupCard}>
+          <Row icon="bell" label={L('Notifications')} onClick={() => ctx.nav('notifications')}>
+            {unreadNotifs > 0 && <span style={{ minWidth: 18, height: 18, borderRadius: 999, padding: '0 6px', background: THEME.brand, color: '#fff', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 2 }}>{unreadNotifs}</span>}
+            <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+          </Row>
+          <Sep />
           <Row icon="megaphone" label={L('Notices')} onClick={() => ctx.nav('notices')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>
           <Sep />
           <Row icon="help-circle" label={L('Help & support')} onClick={() => ctx.nav('help')}><Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} /></Row>

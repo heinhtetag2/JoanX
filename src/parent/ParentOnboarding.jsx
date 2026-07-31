@@ -7,7 +7,10 @@ import { AuthFlow } from '../core/auth.jsx';
 import { BRAND, brandBtn } from './shared.jsx';
 
 function ParentOnboarding({ ctx }) {
-  const [step, setStep] = React.useState(0);           // 0 splash · 1–2 slides · 3 auth
+  // authStep/authPhase are a Tweaks-preview hook only (jump straight to a given AuthFlow phase,
+  // skipping the splash/slides a real first run always sees) — ctx.params is cleared by
+  // finishParentOnboarding, so they never linger past this screen.
+  const [step, setStep] = React.useState(ctx.params?.authStep ?? 0);           // 0 splash · 1–2 slides · 3 auth
 
   // The splash had no way out — no timer, no tap target, no button — so "Replay onboarding"
   // stranded the parent on the logo. A splash is a beat, not a step: hold it, then move on.
@@ -26,7 +29,9 @@ function ParentOnboarding({ ctx }) {
   const onbStyle = 'image';
   const slideBg = slide ? '/assets/onboarding/intro.png' : null;
 
-  const finish = () => ctx.finishParentOnboarding();
+  // A joined guardian lands on Reports — the family and its child(ren) already exist, so the
+  // add-child wizard every OTHER first run gets would be asking them to redo work already done.
+  const finish = (mode) => ctx.finishParentOnboarding({ joined: mode === 'join' });
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: screenBgFor(BRAND.primary), display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
@@ -87,7 +92,7 @@ function ParentOnboarding({ ctx }) {
 
       {/* 3 · sign in (F-33) — phone + SMS, Google on Android / Apple on iOS. Parent app only:
           the child device has no account, it pairs to this one. */}
-      {step === 3 && <AuthFlow accent={BRAND.ink} btnStyle={brandBtn} hero="/assets/onboarding/intro.png" onDone={finish} />}
+      {step === 3 && <AuthFlow accent={BRAND.ink} btnStyle={brandBtn} hero="/assets/onboarding/intro.png" initialPhase={ctx.params?.authPhase} onDone={finish} />}
 
     </div>
   );

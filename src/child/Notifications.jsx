@@ -136,4 +136,4 @@ function Notifications({ ctx }) {
   );
 }
 
-export { Notifications };
+export { Notifications, notifSeed };

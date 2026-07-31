@@ -7,10 +7,11 @@
 // something, and the grant engine already knows how to pay for it.
 
 import React from 'react';
-import { ACHIEVEMENTS } from '../core/data.jsx';
-import { Bar, BottomSheet, Icon, THEME } from '../core/primitives.jsx';
+import { ACHIEVEMENTS, claimAchievement } from '../core/data.jsx';
+import { Bar, BottomSheet, Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { shade } from '../core/characters.jsx';
+import { sfx } from '../core/sound.jsx';
 
 /* ── tier styling ──────────────────────────────────────────────────────
    Keyed by the RARITIES vocabulary so a Rare badge and a Rare buddy are the
@@ -89,28 +90,48 @@ function BadgeArt({ a, size = 76, locked }) {
 
 /* One badge in the grid: medallion, name, and either the tier or the progress
    toward it. The whole tile is the tap target — a badge is a thing you pick
-   up, not a row with a chevron. */
+   up, not a row with a chevron. An earned-but-unclaimed badge swaps the tier
+   label for a gold "Claim" cue and a plain dot on the medallion, so the reward
+   is visible from the grid without opening the sheet — tapping still opens
+   BadgeSheet, where the actual Claim button lives. */
 function BadgeTile({ a, onPick }) {
   const locked = !a.done;
+  const unclaimed = a.done && !a.claimed;
   const t = tierOf(a);
   return (
     <button onClick={() => onPick(a)} className="jx-press"
-      style={{ background: '#fff', border: 'none', borderRadius: 18, padding: '14px 8px 11px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'inherit' }}>
+      style={{ position: 'relative', background: '#fff', border: 'none', borderRadius: 18, padding: '14px 8px 11px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'inherit' }}>
+      {unclaimed && <span style={{ position: 'absolute', top: 10, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.gold }} />}
       <BadgeArt a={a} locked={locked} />
       <span style={{ fontSize: 12, fontWeight: 800, color: locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2, textAlign: 'center' }}>{L(a.name)}</span>
       {locked && a.total
         ? <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg3 }}>{a.progress}/{a.total}</span>
-        : <span style={{ fontSize: 10.5, fontWeight: 800, color: locked ? THEME.fg3 : t.ring }}>{L(locked ? 'Locked' : t.label)}</span>}
+        : unclaimed
+          ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold }}>{L('Claim')}</span>
+          : <span style={{ fontSize: 10.5, fontWeight: 800, color: locked ? THEME.fg3 : t.ring }}>{L(locked ? 'Locked' : t.label)}</span>}
     </button>
   );
 }
 
 /* The detail a tap opens: the badge at display size, what it takes to earn it,
-   and what it pays. Earned badges say so; locked ones show the bar so the
-   child can see how close they are — the reason to keep walking. */
-function BadgeSheet({ a, onClose }) {
+   and what it pays. Locked badges show the bar so the child can see how close
+   they are. Earned-and-unclaimed badges offer a Claim button that pays the
+   badge out immediately, then hands straight off to the same full-screen
+   AchievementUnlock celebration the real earn-moment uses (via
+   ctx.celebrateAchievement) — one tap, one big payoff, not a second claim
+   inside a small sheet. */
+function BadgeSheet({ a, ctx, onClose }) {
   const locked = !a.done;
   const t = tierOf(a);
+  const canClaim = a.done && !a.claimed;
+
+  const claim = () => {
+    if (!claimAchievement(a.id)) return;
+    sfx.claim();
+    onClose();
+    ctx?.celebrateAchievement?.(a);
+  };
+
   return (
     <BottomSheet title={L('Achievement')} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '4px 4px 8px' }}>
@@ -133,10 +154,16 @@ function BadgeSheet({ a, onClose }) {
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, background: THEME.goldLight, borderRadius: 14, padding: '11px 16px', width: '100%' }}>
-          <Icon name="award" size={16} color={THEME.gold} stroke={2.3} />
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#7a5a12' }}>{locked ? L('Earn to get') : L('Earned')} +{a.reward} {L('points')}</span>
-        </div>
+        {canClaim ? (
+          <Button variant="gold" fullWidth icon="award" onClick={claim} style={{ marginTop: 16 }}>
+            {L('Claim')} +{a.reward} {L('points')}
+          </Button>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, background: THEME.goldLight, borderRadius: 14, padding: '11px 16px', width: '100%' }}>
+            <Icon name="award" size={16} color={THEME.gold} stroke={2.3} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#7a5a12' }}>{locked ? L('Earn to get') : L('Earned')} +{a.reward} {L('points')}</span>
+          </div>
+        )}
       </div>
     </BottomSheet>
   );
@@ -144,7 +171,7 @@ function BadgeSheet({ a, onClose }) {
 
 /* The grid. Earned badges sort first: the case should open on what the child
    has, not on a wall of grey. Within each half the authored order stands. */
-function BadgeGrid() {
+function BadgeGrid({ ctx }) {
   const [picked, setPicked] = React.useState(null);
   const list = [...ACHIEVEMENTS].sort((x, y) => (y.done ? 1 : 0) - (x.done ? 1 : 0));
   return (
@@ -152,7 +179,7 @@ function BadgeGrid() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
         {list.map(a => <BadgeTile key={a.id} a={a} onPick={setPicked} />)}
       </div>
-      {picked && <BadgeSheet a={picked} onClose={() => setPicked(null)} />}
+      {picked && <BadgeSheet a={picked} ctx={ctx} onClose={() => setPicked(null)} />}
     </>
   );
 }

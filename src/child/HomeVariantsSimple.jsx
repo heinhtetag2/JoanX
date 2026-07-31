@@ -349,24 +349,49 @@ function HomeActionsS({ ctx, dark }) {
           <Icon name="egg" size={13} color={ink} stroke={2.2} />
         </button>
       )}
+      {/* Tweaks: Home · Egg shop entry → 'badge'. Figma reference (node 219:309): the egg's
+          own real art pokes out past the pill's left edge instead of sitting inside it, and a
+          small solid "+" circle — rarity-tinted, matching the poking art rather than a fixed
+          brand colour — closes the right end in place of a printed count-only chip. Picking
+          'badge' also re-skins the points pill just to its right (below) the same way, so the
+          two chips read as one matched pair the way the Figma header does, not two idioms. */}
+      {ctx.tweaks?.eggEntry === 'badge' && (
+        <button onClick={() => ctx.nav('shop')} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4, background: chip, padding: '6px 5px 6px 17px', borderRadius: '8px 17px 17px 8px', boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <span style={{ position: 'absolute', left: -4, top: '50%', transform: 'translateY(-50%)', display: 'inline-flex' }}><EggShape size={22} rarity="epic" /></span>
+          <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{totalEggs()}</span>
+          <span style={{ width: 20, height: 20, borderRadius: 999, background: THEME.rEpic, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon name="plus" size={12} color="#fff" stroke={3} />
+          </span>
+        </button>
+      )}
       <div style={{ position: 'relative' }}>
         {/* remounting the pill (via `key`) is what replays jx-pop on every trigger, not
             just the first — a CSS animation class alone would not re-run on an unchanged element */}
         <button key={playing ? playing.key : 'still'} onClick={() => ctx.nav('shop')}
           className={playing ? 'jx-pop' : undefined}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
-          <span ref={iconRef} style={{ display: 'inline-flex' }}><SafePointIcon size={20} /></span>
-          <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
+          style={ctx.tweaks?.eggEntry === 'badge'
+            ? { display: 'flex', alignItems: 'center', gap: 4, background: chip, padding: '6px 5px 6px 17px', borderRadius: '8px 17px 17px 8px', boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }
+            : { display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
+          {ctx.tweaks?.eggEntry === 'badge' ? (
+            <>
+              <span ref={iconRef} style={{ position: 'absolute', left: -4, top: '50%', transform: 'translateY(-50%)', display: 'inline-flex' }}><SafePointIcon size={22} /></span>
+              <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
+              <span style={{ width: 20, height: 20, borderRadius: 999, background: THEME.brand, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name="plus" size={12} color="#fff" stroke={3} />
+              </span>
+            </>
+          ) : (
+            <>
+              <span ref={iconRef} style={{ display: 'inline-flex' }}><SafePointIcon size={20} /></span>
+              <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
+            </>
+          )}
         </button>
         {/* the coins themselves fly across the whole phone, not just next to the pill —
             see PointsCoinShower, portaled to `.screen`. landAt is the icon's MEASURED
             position (iconRef above), not a hardcoded guess. */}
         {playing && <PointsCoinShower playKey={playing.key} landAt={landAt} />}
       </div>
-      <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <Icon name="bell" size={19} color={ink} stroke={2} />
-        <span style={{ position: 'absolute', top: 9, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.danger, border: `2px solid ${dark ? shade(THEME.fg1, 10) : '#fff'}` }} />
-      </button>
     </div>
   );
 }

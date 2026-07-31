@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentReports
 
 import React from 'react';
-import { CHILDREN, CHILD_REPORTS, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
+import { CHILDREN, CHILD_REPORTS, FEATURES, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
 import { Icon, PhotoAvatar, THEME, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
@@ -183,6 +183,41 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // first-run — no child added yet, so there's nothing to report on. Gated on the demo
+  // flag itself (like `loading` above), not CHILDREN.length, so the Tweaks toggle can
+  // preview it regardless of the prototype's seeded data.
+  if (ctx.demo?.empty) {
+    const ko = ctx.lang === 'ko';
+    return (
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
+        <ParentHead stacked sub={L("This week's progress")} title={L('Reports')} />
+        <div style={{ padding: '8px 20px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: '#fff', borderRadius: 22, padding: '36px 24px', marginTop: 8 }}>
+            <div style={{ width: 84, height: 84, borderRadius: 999, background: BRAND.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Icon name="line-chart" size={38} color={BRAND.primary} stroke={2} />
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: THEME.fg1 }}>{ko ? '아직 리포트가 없어요' : 'No reports yet'}</div>
+            <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.5, margin: '8px 0 20px', maxWidth: 260 }}>
+              {ko ? '자녀를 추가하면 걷기 활동과 경고 반응이 매주 리포트로 정리돼요.' : 'Add a child and their weekly walking activity and warning responses will show up here.'}
+            </div>
+            <button onClick={() => ctx.nav('p_addchild', { direct: true })} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: BRAND.primary, color: '#fff', border: 'none', borderRadius: 999, padding: '13px 24px', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 800, cursor: 'pointer', boxShadow: BRAND.shadowPrimary }}>
+              <Icon name="plus" size={16} color="#fff" stroke={2.6} />{ko ? '자녀 추가하기' : 'Add a child'}
+            </button>
+          </div>
+
+          {/* same reassurance card Children shows — trust copy shouldn't wait for there to be data to show it around */}
+          <div style={{ display: 'flex', gap: 12, background: THEME.primaryLight, borderRadius: 18, padding: 16, marginTop: 14 }}>
+            <Icon name="shield-check" size={20} color={THEME.primary} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.primaryDark }}>{L('Privacy first')}</div>
+              <div style={{ fontSize: 12.5, color: THEME.primaryDark, lineHeight: 1.45, marginTop: 3, opacity: .9 }}>{FEATURES.dangerZones ? L("JoanX never reads messages or listens. Location is used only in Smart mode while walking, and stored separately from your child's identity.") : L("JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.")}</div>
+            </div>
+          </div>
         </div>
       </div>
     );

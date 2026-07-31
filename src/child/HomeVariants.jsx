@@ -19,7 +19,7 @@ const HOME_WINS = [
   { icon: 'medal',      color: () => THEME.camping, bg: () => THEME.campingBg,    t: 'Your buddy leveled up',      s: 'New trait unlocked', time: '3h' },
 ];
 
-// header controls reused across most variants (points + bell)
+// header controls reused across most variants (points)
 function HomeActions({ ctx, dark }) {
   const ink = dark ? '#fff' : THEME.fg1;
   const chip = dark ? 'rgba(255,255,255,.18)' : '#fff';
@@ -28,10 +28,6 @@ function HomeActions({ ctx, dark }) {
       <button onClick={() => ctx.nav('shop')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
         <SafePointIcon size={20} />
         <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{PLAYER.points.toLocaleString()}</span>
-      </button>
-      <button onClick={() => ctx.nav('notifications')} style={{ position: 'relative', width: 40, height: 40, borderRadius: 999, background: chip, border: 'none', boxShadow: dark ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <Icon name="bell" size={19} color={ink} stroke={2} />
-        <span style={{ position: 'absolute', top: 9, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.danger, border: `2px solid ${dark ? shade(THEME.fg1, 10) : '#fff'}` }} />
       </button>
     </div>
   );

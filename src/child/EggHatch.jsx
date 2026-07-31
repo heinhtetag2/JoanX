@@ -43,11 +43,22 @@ const STAR = 'polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 
 // A soft egg. `rarity` adds that tier's ornament; omit it for the plain shell.
 function EggShape({ size = 120, color, rarity }) {
   const epic = rarity === 'epic' && !color;
+  // Tweaks → "Rare egg style" — read off window.JX_RARE_EGG_STYLE the same way Mascot
+  // reads window.JX_CHAR_STYLE: EggShape is called from half a dozen screens (Shop, Home,
+  // Battle, Onboarding) that don't all thread ctx.tweaks down to a leaf shape component,
+  // and this is a dev preview knob, not real app state, so App.jsx sets the global on
+  // change and bumps a counter to force the re-render that picks it up.
+  const revamp = rarity === 'rare' && !color && window.JX_RARE_EGG_STYLE === 'revamp';
   const c = color || eggColorFor(rarity);
-  // epic gets an iridescent body — violet into magenta into deep indigo — so it
-  // reads as legendary next to the flat common/rare shells
+  // epic gets an iridescent body — violet into magenta into deep indigo — so it reads as
+  // legendary next to the flat common shell. Revamp gives rare the same move — a multi-stop
+  // gradient instead of one flat hue plus a shade — kept inside a single green family
+  // instead of epic's violet-to-magenta sweep, so the shell alone already looks a rung
+  // above common before any fleck sits on top of it.
   const shell = epic
     ? 'radial-gradient(130% 95% at 30% 20%, #fdf6ff 0%, #d8a9f0 26%, #a97fe4 48%, #7a4fd0 72%, #4a2a8f 100%)'
+    : revamp
+    ? `radial-gradient(125% 92% at 30% 22%, #eafbe9 0%, #a3e0ae 20%, ${c} 52%, ${shade(c, -24)} 78%, ${shade(c, -46)} 100%)`
     : `radial-gradient(120% 90% at 32% 26%, #fff 0%, ${c} 60%, ${shade(c, -22)} 100%)`;
   return (
     <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
@@ -57,15 +68,24 @@ function EggShape({ size = 120, color, rarity }) {
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '50% 50% 48% 48% / 62% 62% 38% 38%', background: shell,
         boxShadow: epic
           ? 'inset -7px -10px 18px rgba(40,16,80,.45), inset 6px 8px 20px rgba(255,214,255,.35), 0 12px 26px rgba(74,42,143,.34)'
+          : revamp
+          ? `inset -6px -9px 15px ${shade(c, -34)}66, inset 5px 6px 12px rgba(255,255,255,.3), 0 10px 22px rgba(46,43,41,.16)`
           : `inset -6px -9px 15px ${shade(c, -30)}55, 0 10px 22px rgba(46,43,41,.16)` }}>
 
-        {/* rare — small flat gem flecks: the exact same recipe as common's speckles below
-            (a few single-shade shapes, no gradient, no rotation-heavy composition) so it
-            stays exactly as simple, just diamonds instead of dots. That's the whole rung up
-            from common — plain became gem-cut — without repeating the earlier attempts'
-            mistake of layering gradients/textures onto a shell this small. */}
-        {rarity === 'rare' && [[28, 26, 8, .6], [54, 68, 7, .5], [74, 32, 6, .45]].map(([t, l, s, o], i) => (
+        {/* rare, original — small flat gem flecks: the exact same recipe as common's
+            speckles below (a few single-shade shapes, no gradient), just diamonds instead
+            of dots. */}
+        {rarity === 'rare' && !revamp && [[28, 26, 8, .6], [54, 68, 7, .5], [74, 32, 6, .45]].map(([t, l, s, o], i) => (
           <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: shade(c, -22), opacity: o, transform: 'rotate(45deg)' }} />
+        ))}
+
+        {/* rare, revamp — the same flecks, but bright instead of a shade darker than the
+            shell (the old dark-on-dark pairing is nearly invisible at 56px), a thin rim
+            for definition instead of a blur/glow, and one more of them scattered the way
+            common's speckles are — a family resemblance between the two plainest tiers,
+            not a different technique bolted on. */}
+        {rarity === 'rare' && revamp && [[24, 30, 13, .95], [46, 68, 10, .85], [68, 24, 9, .8], [58, 50, 7, .7]].map(([t, l, s, o], i) => (
+          <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: shade(c, 62), opacity: o, transform: 'rotate(45deg)', boxShadow: `0 0 0 1px ${shade(c, -26)}55` }} />
         ))}
 
         {epic && (

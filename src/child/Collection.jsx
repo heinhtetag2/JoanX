@@ -103,7 +103,7 @@ function Collection({ ctx }) {
           })}
         </div>
 
-        {side === 'badges' && <BadgeGrid />}
+        {side === 'badges' && <BadgeGrid ctx={ctx} />}
 
         {side === 'buddies' && (<>
         {/* entry points into the two things that live off the collection: the dex
