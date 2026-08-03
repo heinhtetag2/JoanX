@@ -395,12 +395,15 @@ function EggHatchFlow({ egg, bgRarity, eggShake = false, gradualCrack = false, o
 
           {/* name with an inline rarity gem chip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', marginTop: 6 }}>
-            <h1 className="game-font" style={{ fontSize: 31, fontWeight: 500, margin: 0, color: bgImg ? '#fff' : THEME.fg1, textShadow: bgImg ? '0 2px 12px rgba(0,0,0,.5)' : 'none' }}>{b.name}</h1>
+            {/* dark ink even over the painted backdrops — white read fine on the darker
+                epic art but washed out against the paler common/rare scenes. A soft white
+                halo (not a dark drop-shadow) is what keeps it legible either way. */}
+            <h1 className="game-font" style={{ fontSize: 31, fontWeight: 500, margin: 0, color: THEME.fg1, textShadow: bgImg ? '0 1px 3px rgba(255,255,255,.8), 0 0 14px rgba(255,255,255,.6)' : 'none' }}>{b.name}</h1>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1.5px solid ${rar.fg}40`, color: b.rarity === 'common' ? THEME.fg2 : rar.fg, borderRadius: 999, padding: '4px 11px', fontSize: 12, fontWeight: 800 }}>
               <Icon name="gem" size={12} color={b.rarity === 'common' ? THEME.fg2 : rar.fg} stroke={2.4} />{L(rar.label)}
             </span>
           </div>
-          <p style={{ fontSize: 14.5, color: bgImg ? 'rgba(255,255,255,.92)' : THEME.fg2, textShadow: bgImg ? '0 1px 10px rgba(0,0,0,.5)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>
+          <p style={{ fontSize: 14.5, color: THEME.fg2, textShadow: bgImg ? '0 1px 3px rgba(255,255,255,.8), 0 0 12px rgba(255,255,255,.6)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>
             {result.dup ? `${L('You already have')} ${b.name} — ${L('turned into XP')}` : L('Added to your collection')}
           </p>
 

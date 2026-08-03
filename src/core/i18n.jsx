@@ -160,7 +160,7 @@ const KO = {
   'Evolving': '성장 중', 'Level': '레벨', 'Stage': '단계',
   '180 XP to Stage 3 — keep walking safely!': '단계 3까지 180 XP — 계속 안전하게 걸어요!',
   'to': '까지',
-  'Safe points': '안전 포인트', 'Points today': '오늘 포인트', 'Day streak': '연속 일수', 'Safe days': '안전 일수',
+  'Safe points': '안전 포인트', 'Points today': '오늘 포인트', 'Total points': '전체 포인트', 'Day streak': '연속 일수', 'Safe days': '안전 일수',
   'Eggs to hatch': '부화할 알', 'Bonus today': '오늘 보너스',
   'eggs waiting to hatch': '개의 알이 부화를 기다려요', 'Get your first egg': '첫 알을 받아보세요', 'Tap to open the shop': '눌러서 상점 열기',
   'Minutes protected': '보호받은 시간', 'Minutes this week': '이번 주 안전 시간', 'Collection XP': '컬렉션 경험치',

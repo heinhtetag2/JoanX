@@ -515,4 +515,17 @@ function SealCheck({ size = 24, bg = THEME.success, tick = '#fff', style }) {
   );
 }
 
-export { Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+// System-assigned avatar palette (parent-side "which kid is this" tinting — child
+// switcher, Children list, add-child flow). Deliberately NOT the child's own buddy
+// color: that's picked by the child and can change any time they re-customize their
+// character, which would silently reshuffle a parent's learned "orange = Mina"
+// association. Hashed off the child's permanent `id` instead of list position, so it
+// can't shift if another child is added or removed either.
+const AVATAR_PAL = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'];
+const avatarPalFor = (id) => {
+  let h = 0;
+  for (let i = 0; i < String(id).length; i++) h = (h * 31 + String(id).charCodeAt(i)) >>> 0;
+  return AVATAR_PAL[h % AVATAR_PAL.length];
+};
+
+export { AVATAR_PAL, Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, avatarPalFor, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

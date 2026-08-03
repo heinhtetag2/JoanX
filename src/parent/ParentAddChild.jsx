@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { APP_CATEGORIES, CHILDREN, MAX_CHILDREN, PARENT_PROFILE } from '../core/data.jsx';
-import { Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle, formatPhone, screenBgFor } from '../core/primitives.jsx';
+import { Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle, avatarPalFor, formatPhone, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip, shade } from '../core/characters.jsx';
 import { BRAND, brandBtn } from './shared.jsx';
@@ -124,7 +124,7 @@ function ParentAddChild({ ctx }) {
                 device change (new phone), gated behind a confirm sheet */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[...CHILDREN.filter(k => !k.online), ...CHILDREN.filter(k => k.online)].map(k => {
-                const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(k) % 6];
+                const pal = avatarPalFor(k.id);
                 const linked = k.online;
                 return (
                   <button key={k.id} onClick={() => (linked ? setSwapId(k.id) : (setPickedId(k.id), setWiz(3)))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 13, background: '#fff', borderRadius: 18, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
@@ -165,7 +165,7 @@ function ParentAddChild({ ctx }) {
               <div className="jx-sheet-up" style={{ position: 'relative', background: '#fff', borderRadius: '30px 30px 0 0', padding: '10px 24px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -16px 44px rgba(20,18,16,0.28)' }}>
                 <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 16px' }} />
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-                  <MascotChip species={swapChild.avatar} color={swapChild.color} size={64} bg={`var(--color-interactives-avatar-${['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][CHILDREN.indexOf(swapChild) % 6]}-default)`} />
+                  <MascotChip species={swapChild.avatar} color={swapChild.color} size={64} bg={`var(--color-interactives-avatar-${avatarPalFor(swapChild.id)}-default)`} />
                 </div>
                 <h1 className="game-font" style={{ fontSize: 21, fontWeight: 500, margin: '0 8px 8px', lineHeight: 1.25, textAlign: 'center' }}>{L('Connect a new device?')}</h1>
                 <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 2px 16px', textAlign: 'center' }}>

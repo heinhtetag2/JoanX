@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, FEATURES, MAX_CHILDREN, PERMISSIONS } from '../core/data.jsx';
-import { Icon, PhotoAvatar, THEME, screenBgFor } from '../core/primitives.jsx';
+import { Icon, PhotoAvatar, THEME, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -33,8 +33,8 @@ function ParentChildren({ ctx }) {
             </div>
           </div>
         )}
-        {kids.map((k, ki) => {
-          const pal = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'][ki % 6];  // distinct avatar palette per child
+        {kids.map((k) => {
+          const pal = avatarPalFor(k.id);  // stable per child id — not list position, not their (re-customizable) buddy color
           // onboarding consent at a glance: how many required permissions the child
           // left off. Same source Rules & settings reads (cfg.grants), default all-on.
           const grants = k.cfg?.grants || Object.fromEntries(PERMISSIONS.map(p => [p.id, true]));
@@ -44,10 +44,13 @@ function ParentChildren({ ctx }) {
           <div key={k.id} onClick={() => ctx.nav('p_settings', { child: k })} style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 12, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ position: 'relative' }}>
-                {/* child photo first, then the standard child avatar — a child face for
-                    every card, never the buddy character. Mascot only if both are absent. */}
-                <PhotoAvatar src={k.photo} size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
-                  <PhotoAvatar src="/assets/avatars/avatar-child.png" size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={<MascotChip species={k.avatar} color={k.color} size={46} bg={`var(--color-interactives-avatar-${pal}-default)`} />} />} />
+                {/* child photo, else the same default child illustration every profile-less
+                    kid uses (by design). One uniform brand-color ring for every card — the
+                    name text beside it is what identifies who's who. */}
+                <div style={{ width: 46, height: 46, borderRadius: 999, boxShadow: `0 0 0 2px #fff, 0 0 0 3.5px ${BRAND.primary}` }}>
+                  <PhotoAvatar src={k.photo} size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
+                    <PhotoAvatar src="/assets/avatars/avatar-child.png" size={46} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={<MascotChip species={k.avatar} color={k.color} size={46} bg={`var(--color-interactives-avatar-${pal}-default)`} />} />} />
+                </div>
                 <span style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 999, background: k.online ? THEME.success : THEME.fg3, border: '2.5px solid #fff' }} />
               </div>
               <div style={{ flex: 1 }}>

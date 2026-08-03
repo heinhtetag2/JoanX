@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
 import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, totalEggs, xpToCap } from '../core/data.jsx';
-import { L } from '../core/i18n.jsx';
+import { getLang, L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
 import { EggShape } from './EggHatch.jsx';
@@ -17,6 +17,67 @@ import { sfx } from '../core/sound.jsx';
 // Focus home's egg-shop entry — the painted 3-egg badge dropped into /assets/egg/,
 // floating beside the buddy's level/stage line (Home · Focus layout only).
 const EGG_SHOP_ICON = '/assets/egg/eggshopicon.png';
+
+// Tweaks: Home · Egg badge shine — ten candidates for the effect behind/around the
+// badge above, kept as a Tweaks row (not a single hand-picked answer) after several
+// rounds of "too loud" (rotating ray-burst), "too plain" (flat gradient dot), and "too
+// glassy" (bright off-center highlight) — better to line them up and compare than
+// guess at one more in isolation. 'rays' revisits the ray-burst idea as thin flat SVG
+// lines in brand green instead of a thick glossy repeating-conic-gradient wedge — the
+// wedge version is what read as a generic reward-icon; a line is JoanX's own vocabulary
+// (see the flat egg ribbons/flecks elsewhere in EggHatch.jsx).
+const EGG_SHINE_STYLES = ['radial', 'ring', 'halo', 'ripple', 'iconPulse', 'iconFloat', 'fadeDot', 'shimmer', 'rays', 'none'];
+const EGG_RAY_ANGLES = Array.from({ length: 10 }, (_, i) => (360 / 10) * i);
+
+function EggShopBadgeS({ ctx }) {
+  const style = ctx.tweaks?.eggShineStyle || 'radial';
+  const iconClass = style === 'iconPulse' ? ' jx-pulse-soft' : style === 'iconFloat' ? ' jx-egg-idle' : '';
+  return (
+    <button onClick={() => ctx.nav('shop')} aria-label={L('Open the egg shop')} className={'jx-press' + iconClass} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', width: 62, height: 62, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
+      {/* radial — the current default: a white-to-brand-green radial gradient, breathing */}
+      {style === 'radial' && (
+        <span className="jx-egg-shine" style={{ position: 'absolute', inset: '-18%', borderRadius: '50%', background: `radial-gradient(circle, #fff 0%, ${THEME.brand}99 38%, ${THEME.brand}00 70%)`, filter: 'blur(2px)', pointerEvents: 'none' }} />
+      )}
+      {/* ring — a plain flat stroke, no fill, breathing */}
+      {style === 'ring' && (
+        <span className="jx-egg-shine" style={{ position: 'absolute', inset: '-16%', borderRadius: '50%', border: `3px solid ${THEME.brand}`, pointerEvents: 'none' }} />
+      )}
+      {/* halo — a soft blurred glow ring via box-shadow, breathing */}
+      {style === 'halo' && (
+        <span className="jx-egg-halo" style={{ position: 'absolute', inset: '-10%', pointerEvents: 'none' }} />
+      )}
+      {/* ripple — two rings expanding outward and fading, staggered like a sonar ping */}
+      {style === 'ripple' && (
+        <React.Fragment>
+          <span className="jx-egg-ripple" style={{ position: 'absolute', inset: 0, borderRadius: '50%', color: THEME.brand, pointerEvents: 'none' }} />
+          <span className="jx-egg-ripple delay" style={{ position: 'absolute', inset: 0, borderRadius: '50%', color: THEME.brand, pointerEvents: 'none' }} />
+        </React.Fragment>
+      )}
+      {/* fadeDot — a tiny corner presence dot, breathing opacity only (no glow layer) */}
+      {style === 'fadeDot' && (
+        <span className="jx-egg-dot" style={{ position: 'absolute', top: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: THEME.brand, border: '2px solid #fff', pointerEvents: 'none' }} />
+      )}
+      {/* shimmer — a slow, dim light bar crossing the art, then a long pause before the next pass */}
+      {style === 'shimmer' && (
+        <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', pointerEvents: 'none' }}>
+          <span className="jx-egg-shimmer" style={{ position: 'absolute', top: '-20%', left: '46%', width: 10, height: '140%', background: 'linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%)' }} />
+        </span>
+      )}
+      {/* rays — thin flat lines radiating out from behind the icon, slow rotation. The
+          reward-coin reference's rays as a flat vector line instead of a glossy wedge. */}
+      {style === 'rays' && (
+        <svg viewBox="0 0 100 100" className="jx-egg-rays" style={{ position: 'absolute', inset: '-60%', pointerEvents: 'none' }}>
+          {EGG_RAY_ANGLES.map((deg) => (
+            <line key={deg} x1="50" y1="50" x2="50" y2="4" stroke={THEME.brand} strokeWidth="2.2" strokeLinecap="round" opacity=".5" transform={`rotate(${deg} 50 50)`} />
+          ))}
+        </svg>
+      )}
+      {/* iconPulse / iconFloat / none — no background layer; the icon itself carries the
+          motion (or nothing does, for 'none' — the control case). */}
+      <img src={EGG_SHOP_ICON} alt="" style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
+    </button>
+  );
+}
 
 // Focus home's 2nd stat card (Tweaks: Home · 2nd stat card) — candidates for the slot next to
 // Day streak. 'points' is the original, which just repeats the header's points pill; the rest
@@ -134,6 +195,14 @@ function HomeActionsS({ ctx, dark }) {
   const [shown, setShown] = React.useState(PLAYER.points);
   const seenKey = React.useRef(null);
   const iconRef = React.useRef(null);
+  // tapping the points pill used to jump straight to the Shop — now it pops a quick
+  // today/total breakdown first (same idea as a game's post-match score callout), so
+  // the number means something before the child commits to leaving the screen for it.
+  const [showBreakdown, setShowBreakdown] = React.useState(false);
+  // bumped on every tap so the pill's key changes and jx-pop replays each time (a
+  // static class alone would only ever play once, on mount) — the popover then
+  // reads as popping out of that bounce rather than sliding in on its own.
+  const [bounceKey, setBounceKey] = React.useState(0);
 
   React.useEffect(() => {
     if (!fx || fx.key === seenKey.current) return;
@@ -371,11 +440,17 @@ function HomeActionsS({ ctx, dark }) {
       <div style={{ position: 'relative' }}>
         {/* remounting the pill (via `key`) is what replays jx-pop on every trigger, not
             just the first — a CSS animation class alone would not re-run on an unchanged element */}
-        <button key={playing ? playing.key : 'still'} onClick={() => ctx.nav('shop')}
-          className={playing ? 'jx-pop' : undefined}
+        {/* the pill body is a div, not a button, because the "+" below needs to be its
+            OWN button (a real nested <button> inside a <button> is invalid HTML). Tapping
+            it now toggles the today/total breakdown below instead of jumping to the Shop —
+            that's still one tap away, via "Total points" in the popover. The tap itself also
+            bounces the pill (bounceKey remount, same jx-pop the coin shower uses), so the
+            popover reads as popping out of that bounce, not just appearing beside it. */}
+        <div key={playing ? playing.key : `still-${bounceKey}`} onClick={() => { setShowBreakdown(v => !v); setBounceKey(k => k + 1); }}
+          className={playing || bounceKey > 0 ? 'jx-pop' : undefined}
           style={ctx.tweaks?.eggEntry === 'badge'
-            ? { display: 'flex', alignItems: 'center', gap: 4, background: chip, padding: '6px 5px 6px 17px', borderRadius: '8px 17px 17px 8px', boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }
-            : { display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '7px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
+            ? { display: 'flex', alignItems: 'center', gap: 4, background: chip, padding: '6px 5px 6px 17px', borderRadius: '8px 17px 17px 8px', boxShadow: dark ? 'none' : THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }
+            : { display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '5px 5px 5px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
           {ctx.tweaks?.eggEntry === 'badge' ? (
             <>
               <span ref={iconRef} style={{ position: 'absolute', left: -4, top: '50%', transform: 'translateY(-50%)', display: 'inline-flex' }}><SafePointIcon size={22} /></span>
@@ -388,13 +463,54 @@ function HomeActionsS({ ctx, dark }) {
             <>
               <span ref={iconRef} style={{ display: 'inline-flex' }}><SafePointIcon size={20} /></span>
               <span className="game-font" style={{ fontSize: 15, fontWeight: 500, color: ink }}>{value.toLocaleString()}</span>
+              {/* same "+" close as the drops pill just to its left, but its OWN tap target:
+                  it jumps down to today's tasks (where more points are actually earned)
+                  instead of opening the shop like the rest of the pill does. stopPropagation
+                  keeps that tap from also firing the parent div's shop nav. */}
+              <button onClick={(e) => { e.stopPropagation(); document.getElementById('today-tasks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                aria-label={L("Today's tasks")}
+                style={{ width: 20, height: 20, borderRadius: 999, background: THEME.brand, border: 'none', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+                <Icon name="plus" size={12} color="#fff" stroke={3} />
+              </button>
             </>
           )}
-        </button>
+        </div>
         {/* the coins themselves fly across the whole phone, not just next to the pill —
             see PointsCoinShower, portaled to `.screen`. landAt is the icon's MEASURED
             position (iconRef above), not a hardcoded guess. */}
         {playing && <PointsCoinShower playKey={playing.key} landAt={landAt} />}
+
+        {/* points tip — one plain-language line (what points are FOR), not a stats
+            breakdown. A two-row "today / total" ledger read as a mini dashboard bolted
+            onto a header pill; games like Clash Royale just explain the currency in a
+            single sentence with the currency name picked out in its own colour, so the
+            popover answers "what do I do with these" instead of restating the number
+            that's already sitting right there in the pill. Same tail-square trick
+            AppIntro's tooltip uses, pointing up since this pill sits at the very top of
+            the screen. The whole bubble is the door into the Shop now that it's a tip
+            rather than a readout. */}
+        {showBreakdown && (
+          <React.Fragment>
+            <div onClick={() => setShowBreakdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 45 }} />
+            {/* pops rather than rises now, on a short delay after the pill's own jx-pop bounce
+                starts — same overshoot keyframe as the pill, anchored at the tail (top right,
+                under the pill), so it reads as one continuous motion: the pill bounces, and
+                the tip springs out of it. */}
+            <button onClick={() => { setShowBreakdown(false); ctx.nav('shop'); }} className="jx-pop"
+              style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 206, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '13px 15px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right', animationDelay: '70ms', animationFillMode: 'backwards' }}>
+              {/* tail sits under the pill's NUMBER (not the trailing "+" button) — the pill is
+                  right-anchored the same as this popover, so the offset is measured in from
+                  its shared right edge: "+" button (20) + gap (5) ≈ 25, then roughly centered
+                  on the number itself. */}
+              <div style={{ position: 'absolute', top: -6, right: 46, width: 12, height: 12, background: '#fff', borderRadius: 3, transform: 'rotate(45deg)' }} />
+              <p style={{ fontSize: 13, lineHeight: 1.55, color: THEME.fg1, fontWeight: 600, margin: 0, position: 'relative' }}>
+                {getLang() === 'ko'
+                  ? <><span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Points')}</span>로 알을 부화하고 새 버디를 모아보세요!</>
+                  : <>{'Use '}<span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Points')}</span>{' to hatch eggs and collect new buddies!'}</>}
+              </p>
+            </button>
+          </React.Fragment>
+        )}
       </div>
     </div>
   );
@@ -571,7 +687,9 @@ function TodayTasksS({ accent, ctx }) {
   }, [cheer]);
 
   return (
-    <div style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
+    // id is the header points pill's "+" scroll target (HomeActionsS) — only one
+    // instance of this card is ever mounted at a time, so the id can't collide.
+    <div id="today-tasks" style={{ background: '#fff', borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: THEME.shadowCard }}>
       {/* the same celebration the egg hatch plays — one 'you did it' moment, learned once */}
       {cheer && <HatchCelebration screen color={accent} accent={THEME.gold} />}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -915,15 +1033,10 @@ function HomeSimpleFocus({ ctx }) {
         <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
 
         {/* egg shop entry — the painted 3-egg badge, floating beside the level/stage line.
-            Tried a rotating ray-burst here first (reward-coin style) — too loud, reads as
-            generic "gacha icon" stock decor. A single flat radial-gradient circle read as
-            a sticker instead of light. This layers an off-center highlight (as if catching
-            light from upper-left, like the egg art's own painted sheen) with a soft
-            box-shadow bloom around it — falloff reads as glow, not a coloured disc. */}
-        <button onClick={() => ctx.nav('shop')} aria-label={L('Open the egg shop')} className="jx-press" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', width: 62, height: 62, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
-          <span className="jx-egg-shine" style={{ position: 'absolute', inset: '-14%', borderRadius: '50%', background: `radial-gradient(circle at 38% 34%, #fff 0%, ${THEME.brand}cc 26%, ${THEME.brand}00 66%)`, boxShadow: `0 0 12px 3px ${THEME.brand}4d, 0 0 22px 8px ${THEME.brand}26`, pointerEvents: 'none' }} />
-          <img src={EGG_SHOP_ICON} alt="" style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
-        </button>
+            Tweaks: Home · Egg badge shine picks which effect (EggShopBadgeS above) it wears.
+            Hidden by default (Tweaks: Home · Egg badge) — one too many "go hatch an egg"
+            entry points alongside the header pill and the Shop screen itself. */}
+        {ctx.tweaks?.eggBadge === 'on' && <EggShopBadgeS ctx={ctx} />}
       </div>
 
       {/* safety + stats */}

@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -238,7 +238,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -663,6 +663,29 @@ function App() {
                 {[['drawn', 'Drawn'], ['image', 'Painted']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.commonEggArt === v ? ' on' : '')}
                     onClick={() => setTw(s => ({ ...s, commonEggArt: v }))}>{l}</button>
+                ))}
+              </div>
+              {/* The Home · Focus layout's egg-shop badge (EggShopBadgeS, HomeVariantsSimple.jsx)
+                  next to the level/stage line. Landed here as a Tweaks row rather than a single
+                  hand-picked answer — a rotating ray-burst, a flat gradient dot, and a bright
+                  off-center highlight were each tried and rejected in turn ("too loud" / "too
+                  plain" / "too glassy") before it became clear these needed to sit side by side. */}
+              {/* Hidden on Home by default — a floating badge next to the buddy's level/stage
+                  line read as one decoration too many once the header egg entry and the Shop's
+                  own screen already cover "go hatch an egg". Kept here (not deleted) so the
+                  shine-style comparison above still has something to preview against. */}
+              <div className="tw-label">Egg badge</div>
+              <div className="tw-row">
+                {[['off', 'Hidden'], ['on', 'Shown']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.eggBadge === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, eggBadge: v }))}>{l}</button>
+                ))}
+              </div>
+              <div className="tw-label">Egg badge shine</div>
+              <div className="tw-row">
+                {[['radial', 'Radial'], ['ring', 'Ring'], ['halo', 'Halo'], ['ripple', 'Ripple'], ['iconPulse', 'Icon pulse'], ['iconFloat', 'Icon float'], ['fadeDot', 'Fade dot'], ['shimmer', 'Shimmer'], ['rays', 'Rays'], ['none', 'None']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.eggShineStyle === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, eggShineStyle: v }))}>{l}</button>
                 ))}
               </div>
               {/* Each tier's own painted hatch backdrop lives in /assets/egg/ (EGG_HATCH_BG in

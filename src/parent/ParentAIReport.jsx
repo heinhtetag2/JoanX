@@ -110,7 +110,7 @@ function ParentAIReport({ ctx }) {
         <div style={{ background: tone.bg, borderRadius: 22, padding: 18, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <PhotoAvatar src={child.photo} size={46} style={{ flexShrink: 0, background: `var(--color-interactives-avatar-${pal}-default)` }}
-              fallback={<MascotChip species={pal} color={child.color} size={46} />} />
+              fallback={<MascotChip species={child.avatar} color={child.color} size={46} />} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 16.5, fontWeight: 800, color: tone.ink, lineHeight: 1.25 }}>{verdict}</div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: tone.ink, opacity: .78, marginTop: 2 }}>{takeaway}</div>

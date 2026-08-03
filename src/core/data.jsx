@@ -1752,6 +1752,19 @@ const resetAchievementClaims = (player = PLAYER) => {
 };
 
 
+// Acceptance ("stopped when warned") is always immediate+delayed over the week's total
+// warnings — never a hand-typed number sitting next to the reactions array it must agree
+// with. It used to be authored separately per child and quietly drifted from the reactions
+// breakdown (Mina read 88% up top while immediate+delayed in her own reactions summed to
+// 94%) — every screen that shows both an acceptance % and a response-mix breakdown
+// (ParentReports, ParentAIReport, ParentWeeklyDetail) reads off this same function now, so
+// they can't contradict each other again.
+const acceptanceFor = (reactions) => {
+  const stopped = reactions.reduce((a, d) => a + d.immediate + d.delayed, 0);
+  const total = reactions.reduce((a, d) => a + d.immediate + d.delayed + d.ignored, 0) || 1;
+  return Math.round((stopped / total) * 100);
+};
+
 // child reaction log (feeds parent report)
 const REACTIONS_7D = [
   { day: 'Mon', immediate: 4, delayed: 2, ignored: 1 },
@@ -1768,7 +1781,7 @@ const RISK_TREND = [9, 8, 7, 5, 6, 4, 3];
 
 const PARENT_METRICS = {
   riskReduction: 41,        // % fewer risk events vs first week
-  acceptance: 88,           // % of warnings the child accepted (stopped)
+  acceptance: acceptanceFor(REACTIONS_7D),   // % of warnings the child accepted (stopped) — derived, see acceptanceFor
   safeWalkMin: 312,         // total safe-walking minutes this week
   avgResponse: 2.4,         // avg seconds to stop
 };
@@ -1777,39 +1790,149 @@ const PARENT_METRICS = {
 // parent switches child in the header. Keyed by child id (see CHILDREN below).
 // `delta` strings carry their own sign; the dashboard colors them by whether
 // the direction is good for that metric (for avgResponse, lower is better).
+const K1_REACTIONS = [ // Mina
+  { day: 'Mon', immediate: 4, delayed: 2, ignored: 1 }, { day: 'Tue', immediate: 5, delayed: 1, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 2, ignored: 0 }, { day: 'Thu', immediate: 6, delayed: 1, ignored: 0 },
+  { day: 'Fri', immediate: 5, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 7, delayed: 0, ignored: 0 },
+  { day: 'Sun', immediate: 6, delayed: 1, ignored: 0 },
+];
+const K2_REACTIONS = [ // Leo
+  { day: 'Mon', immediate: 2, delayed: 3, ignored: 3 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 2 },
+  { day: 'Wed', immediate: 2, delayed: 3, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 2, ignored: 1 },
+  { day: 'Fri', immediate: 3, delayed: 2, ignored: 3 }, { day: 'Sat', immediate: 4, delayed: 1, ignored: 2 },
+  { day: 'Sun', immediate: 3, delayed: 2, ignored: 2 },
+];
+const K3_REACTIONS = [ // Yuna
+  { day: 'Mon', immediate: 5, delayed: 1, ignored: 0 }, { day: 'Tue', immediate: 6, delayed: 0, ignored: 0 },
+  { day: 'Wed', immediate: 4, delayed: 1, ignored: 0 }, { day: 'Thu', immediate: 7, delayed: 0, ignored: 0 },
+  { day: 'Fri', immediate: 6, delayed: 1, ignored: 0 }, { day: 'Sat', immediate: 5, delayed: 0, ignored: 0 },
+  { day: 'Sun', immediate: 7, delayed: 0, ignored: 0 },
+];
+
+// Three weeks of history behind the current one, so the Reports week-switcher (F-?) has
+// somewhere real to go — each child's report is a WALK BACKWARD from the numbers above,
+// consistent with their character arc (Mina steadily improving, Leo backsliding, Yuna
+// already strong and pulling further ahead). `buildWeeks` derives acceptance % and every
+// delta from the raw numbers instead of hand-typing them, so a week's card can never
+// disagree with its own reaction log — this also reproduces the three children's
+// pre-existing current-week deltas (+6%/+12%/-0.3s/+2, etc.) exactly, byte for byte.
+const K1_W1_REACTIONS = [
+  { day: 'Mon', immediate: 4, delayed: 1, ignored: 1 }, { day: 'Tue', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 1, ignored: 1 }, { day: 'Thu', immediate: 5, delayed: 1, ignored: 0 },
+  { day: 'Fri', immediate: 4, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 5, delayed: 1, ignored: 0 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 1 },
+];
+const K1_W2_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Tue', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 3, delayed: 2, ignored: 2 }, { day: 'Sat', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 1 },
+];
+const K1_W3_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 2, ignored: 2 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 1, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 3, delayed: 2, ignored: 2 }, { day: 'Sat', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 2 },
+];
+const K2_W1_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 2, ignored: 2 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Wed', immediate: 2, delayed: 2, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 2, delayed: 2, ignored: 2 }, { day: 'Sat', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 2, ignored: 2 },
+];
+const K2_W2_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 2, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Sat', immediate: 3, delayed: 2, ignored: 2 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 1 },
+];
+const K2_W3_REACTIONS = [
+  { day: 'Mon', immediate: 4, delayed: 1, ignored: 1 }, { day: 'Tue', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 0 },
+  { day: 'Fri', immediate: 3, delayed: 2, ignored: 1 }, { day: 'Sat', immediate: 3, delayed: 2, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 2 },
+];
+const K3_W1_REACTIONS = [
+  { day: 'Mon', immediate: 4, delayed: 1, ignored: 0 }, { day: 'Tue', immediate: 4, delayed: 0, ignored: 1 },
+  { day: 'Wed', immediate: 3, delayed: 1, ignored: 0 }, { day: 'Thu', immediate: 5, delayed: 0, ignored: 0 },
+  { day: 'Fri', immediate: 4, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 3, delayed: 0, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 0 },
+];
+const K3_W2_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 1, ignored: 1 }, { day: 'Tue', immediate: 4, delayed: 1, ignored: 0 },
+  { day: 'Wed', immediate: 3, delayed: 1, ignored: 1 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 4, delayed: 1, ignored: 0 }, { day: 'Sat', immediate: 3, delayed: 1, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 1 },
+];
+const K3_W3_REACTIONS = [
+  { day: 'Mon', immediate: 3, delayed: 1, ignored: 1 }, { day: 'Tue', immediate: 3, delayed: 1, ignored: 1 },
+  { day: 'Wed', immediate: 2, delayed: 1, ignored: 1 }, { day: 'Thu', immediate: 4, delayed: 1, ignored: 1 },
+  { day: 'Fri', immediate: 3, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 2, delayed: 2, ignored: 1 },
+  { day: 'Sun', immediate: 3, delayed: 1, ignored: 1 },
+];
+
+// Percentage-point diff (acceptance), relative % change (safe-walk minutes), signed
+// seconds (avg. response — lower is better, but the delta shows the raw diff and the
+// UI decides what "good" means), and a signed integer (streak days).
+const deltaPP  = (curr, prev) => { const d = Math.round(curr - prev); return (d >= 0 ? '+' : '') + d + '%'; };
+const deltaRel = (curr, prev) => { const d = Math.round(((curr - prev) / prev) * 100); return (d >= 0 ? '+' : '') + d + '%'; };
+const deltaSec = (curr, prev) => { const d = Math.round((curr - prev) * 10) / 10; return (d >= 0 ? '+' : '') + d + 's'; };
+const deltaInt = (curr, prev) => { const d = Math.round(curr - prev); return (d >= 0 ? '+' : '') + d; };
+
+// `entries` runs oldest → newest; each delta compares a week against the one right
+// before it. Returns newest → oldest (weeks[0] is always the current week), which is
+// the order the Reports week-switcher steps through.
+const buildWeeks = (entries) => entries.map((e, i) => {
+  const prev = entries[i - 1];
+  const acceptance = acceptanceFor(e.reactions);
+  return {
+    start: e.start, end: e.end, reactions: e.reactions, risk: e.risk,
+    safeWalkMin: e.safeWalkMin, avgResponse: e.avgResponse, streak: e.streak, acceptance,
+    deltas: prev ? {
+      acceptance: deltaPP(acceptance, acceptanceFor(prev.reactions)),
+      walk: deltaRel(e.safeWalkMin, prev.safeWalkMin),
+      resp: deltaSec(e.avgResponse, prev.avgResponse),
+      streak: deltaInt(e.streak, prev.streak),
+    } : null,
+  };
+}).reverse();
+
 const CHILD_REPORTS = {
   k1: { // Mina — steady improvement (smart mode)
-    acceptance: 88, safeWalkMin: 312, avgResponse: 2.4, streak: 5,
+    acceptance: acceptanceFor(K1_REACTIONS), safeWalkMin: 312, avgResponse: 2.4, streak: 5,
     deltas: { acceptance: '+6%', walk: '+12%', resp: '-0.3s', streak: '+2' },
-    reactions: [
-      { day: 'Mon', immediate: 4, delayed: 2, ignored: 1 }, { day: 'Tue', immediate: 5, delayed: 1, ignored: 1 },
-      { day: 'Wed', immediate: 3, delayed: 2, ignored: 0 }, { day: 'Thu', immediate: 6, delayed: 1, ignored: 0 },
-      { day: 'Fri', immediate: 5, delayed: 1, ignored: 1 }, { day: 'Sat', immediate: 7, delayed: 0, ignored: 0 },
-      { day: 'Sun', immediate: 6, delayed: 1, ignored: 0 },
-    ],
+    reactions: K1_REACTIONS,
     risk: [9, 8, 7, 5, 6, 4, 3],
+    weeks: buildWeeks([
+      { start: '2026-07-07', end: '2026-07-13', reactions: K1_W3_REACTIONS, risk: [15, 14, 13, 12, 13, 11, 10], safeWalkMin: 225, avgResponse: 3.3, streak: 1 },
+      { start: '2026-07-14', end: '2026-07-20', reactions: K1_W2_REACTIONS, risk: [13, 12, 11, 10, 11, 9, 8],   safeWalkMin: 250, avgResponse: 3.0, streak: 2 },
+      { start: '2026-07-21', end: '2026-07-27', reactions: K1_W1_REACTIONS, risk: [11, 10, 9, 8, 9, 7, 6],      safeWalkMin: 279, avgResponse: 2.7, streak: 3 },
+      { start: '2026-07-28', end: '2026-08-03', reactions: K1_REACTIONS,    risk: [9, 8, 7, 5, 6, 4, 3],        safeWalkMin: 312, avgResponse: 2.4, streak: 5 },
+    ]),
   },
   k2: { // Leo — needs attention (lite mode, often offline)
-    acceptance: 61, safeWalkMin: 174, avgResponse: 4.3, streak: 2,
+    acceptance: acceptanceFor(K2_REACTIONS), safeWalkMin: 174, avgResponse: 4.3, streak: 2,
     deltas: { acceptance: '-4%', walk: '+3%', resp: '+0.5s', streak: '-1' },
-    reactions: [
-      { day: 'Mon', immediate: 2, delayed: 3, ignored: 3 }, { day: 'Tue', immediate: 3, delayed: 2, ignored: 2 },
-      { day: 'Wed', immediate: 2, delayed: 3, ignored: 2 }, { day: 'Thu', immediate: 4, delayed: 2, ignored: 1 },
-      { day: 'Fri', immediate: 3, delayed: 2, ignored: 3 }, { day: 'Sat', immediate: 4, delayed: 1, ignored: 2 },
-      { day: 'Sun', immediate: 3, delayed: 2, ignored: 2 },
-    ],
+    reactions: K2_REACTIONS,
     risk: [11, 12, 10, 13, 11, 12, 10],
+    weeks: buildWeeks([
+      { start: '2026-07-07', end: '2026-07-13', reactions: K2_W3_REACTIONS, risk: [8, 9, 7, 10, 8, 9, 7],   safeWalkMin: 205, avgResponse: 3.1, streak: 5 },
+      { start: '2026-07-14', end: '2026-07-20', reactions: K2_W2_REACTIONS, risk: [9, 10, 8, 11, 9, 10, 8], safeWalkMin: 185, avgResponse: 3.5, streak: 4 },
+      { start: '2026-07-21', end: '2026-07-27', reactions: K2_W1_REACTIONS, risk: [10, 11, 9, 12, 10, 11, 9], safeWalkMin: 169, avgResponse: 3.8, streak: 3 },
+      { start: '2026-07-28', end: '2026-08-03', reactions: K2_REACTIONS,    risk: [11, 12, 10, 13, 11, 12, 10], safeWalkMin: 174, avgResponse: 4.3, streak: 2 },
+    ]),
   },
   k3: { // Yuna — doing great (smart mode, long streak)
-    acceptance: 94, safeWalkMin: 268, avgResponse: 1.8, streak: 8,
+    acceptance: acceptanceFor(K3_REACTIONS), safeWalkMin: 268, avgResponse: 1.8, streak: 8,
     deltas: { acceptance: '+9%', walk: '+15%', resp: '-0.6s', streak: '+3' },
-    reactions: [
-      { day: 'Mon', immediate: 5, delayed: 1, ignored: 0 }, { day: 'Tue', immediate: 6, delayed: 0, ignored: 0 },
-      { day: 'Wed', immediate: 4, delayed: 1, ignored: 0 }, { day: 'Thu', immediate: 7, delayed: 0, ignored: 0 },
-      { day: 'Fri', immediate: 6, delayed: 1, ignored: 0 }, { day: 'Sat', immediate: 5, delayed: 0, ignored: 0 },
-      { day: 'Sun', immediate: 7, delayed: 0, ignored: 0 },
-    ],
+    reactions: K3_REACTIONS,
     risk: [6, 5, 5, 4, 3, 3, 2],
+    weeks: buildWeeks([
+      { start: '2026-07-07', end: '2026-07-13', reactions: K3_W3_REACTIONS, risk: [12, 11, 10, 10, 9, 8, 8], safeWalkMin: 180, avgResponse: 3.2, streak: 2 },
+      { start: '2026-07-14', end: '2026-07-20', reactions: K3_W2_REACTIONS, risk: [10, 9, 8, 8, 7, 6, 6],    safeWalkMin: 205, avgResponse: 2.8, streak: 3 },
+      { start: '2026-07-21', end: '2026-07-27', reactions: K3_W1_REACTIONS, risk: [8, 7, 6, 6, 5, 4, 4],     safeWalkMin: 233, avgResponse: 2.4, streak: 5 },
+      { start: '2026-07-28', end: '2026-08-03', reactions: K3_REACTIONS,    risk: [6, 5, 5, 4, 3, 3, 2],     safeWalkMin: 268, avgResponse: 1.8, streak: 8 },
+    ]),
   },
 };
 
@@ -1840,7 +1963,7 @@ const PARENT_ALERTS = [
 const MAX_CHILDREN = 5;
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5, photo: '/assets/avatars/avatar-child.png',
+  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
     pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
     cfg: {
       mode: 'smart',
@@ -1853,7 +1976,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, photo: '/assets/avatars/avatar-leo.png',
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2,
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
@@ -1865,7 +1988,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, photo: '/assets/avatars/avatar-yuna.png',
+  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8,
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },

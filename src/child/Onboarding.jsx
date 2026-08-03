@@ -549,10 +549,13 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={b.stage} color={b.color} size={188} /></div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, position: 'relative', marginTop: 8 }}>
-              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0, color: EGG_HATCH_BG.common ? '#fff' : THEME.fg1, textShadow: EGG_HATCH_BG.common ? '0 2px 12px rgba(0,0,0,.5)' : 'none' }}>{b.name}</h1>
+              {/* dark ink even over the painted backdrop, same call as EggHatch.jsx's
+                  reveal — a soft white halo instead of a dark drop-shadow keeps it legible
+                  without going white-on-white against the paler scenes */}
+              <h1 className="game-font" style={{ fontSize: 30, fontWeight: 500, margin: 0, color: THEME.fg1, textShadow: EGG_HATCH_BG.common ? '0 1px 3px rgba(255,255,255,.8), 0 0 14px rgba(255,255,255,.6)' : 'none' }}>{b.name}</h1>
               <Badge variant={b.rarity === 'epic' ? 'epic' : b.rarity === 'rare' ? 'primary' : 'default'}>{L(b.rarity === 'epic' ? 'Epic' : b.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
             </div>
-            <p style={{ fontSize: 15, color: EGG_HATCH_BG.common ? 'rgba(255,255,255,.92)' : THEME.fg2, textShadow: EGG_HATCH_BG.common ? '0 1px 10px rgba(0,0,0,.5)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
+            <p style={{ fontSize: 15, color: THEME.fg2, textShadow: EGG_HATCH_BG.common ? '0 1px 3px rgba(255,255,255,.8), 0 0 12px rgba(255,255,255,.6)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>

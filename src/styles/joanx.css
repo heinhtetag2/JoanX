@@ -101,8 +101,8 @@ html, body {
 .jx-press:hover { filter: brightness(.97); }
 .jx-press:active { transform: scale(.9); }
 
-@keyframes jxRise { from { transform: translateY(14px); } to { transform: translateY(0); } }
-.jx-rise { animation: jxRise .4s cubic-bezier(.4,0,.2,1) both; }
+@keyframes jxRise { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.jx-rise { animation: jxRise .32s cubic-bezier(.16,1,.3,1) both; }
 
 @keyframes jxOverlayUp { from { transform: translateY(34px); } to { transform: translateY(0); } }
 .jx-overlay-up { animation: jxOverlayUp .42s cubic-bezier(.16,1,.3,1) both; }
@@ -347,6 +347,34 @@ html, body {
    a gentle opacity/scale breathe instead — presence, not a light show. */
 @keyframes jxEggShine { 0%,100% { transform: scale(.94); opacity: .6; } 50% { transform: scale(1.08); opacity: 1; } }
 .jx-egg-shine { animation: jxEggShine 3.2s ease-in-out infinite; }
+
+/* Egg badge shine — Tweaks: Home · Egg badge shine (HomeVariantsSimple.jsx,
+   EggShopBadgeS). jx-egg-shine above ('radial'/'ring') plus these four cover the rest
+   of the candidate set: a soft blurred halo, a sonar-style ripple pair, a tiny fading
+   presence dot, and a slow dim shimmer. */
+@keyframes jxEggHalo { 0%,100% { box-shadow: 0 0 0 3px rgba(75,129,79,.35); opacity: .6; } 50% { box-shadow: 0 0 0 7px rgba(75,129,79,.5); opacity: 1; } }
+.jx-egg-halo { border-radius: 50%; filter: blur(2px); animation: jxEggHalo 2.8s ease-in-out infinite; }
+
+@keyframes jxEggRipple { 0% { transform: scale(.7); opacity: .8; border-width: 2px; } 100% { transform: scale(1.7); opacity: 0; border-width: .5px; } }
+.jx-egg-ripple { border: 2px solid currentColor; animation: jxEggRipple 2.4s ease-out infinite; }
+.jx-egg-ripple.delay { animation-delay: 1.2s; }
+
+@keyframes jxEggDot { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+.jx-egg-dot { animation: jxEggDot 1.8s ease-in-out infinite; }
+
+@keyframes jxEggShimmer {
+  0% { transform: translateX(-40px) rotate(18deg); opacity: 0; }
+  10% { opacity: .5; }
+  35% { transform: translateX(40px) rotate(18deg); opacity: 0; }
+  100% { transform: translateX(40px) rotate(18deg); opacity: 0; }
+}
+.jx-egg-shimmer { animation: jxEggShimmer 5s ease-in-out infinite; }
+
+/* Rays — thin flat SVG lines rotating slowly behind the icon (the reward-coin sunburst
+   reference, redrawn as a line instead of a glossy repeating-conic-gradient wedge). Slow
+   and steady, not a spinner — a shine, not a loading state. */
+@keyframes jxEggRaysSpin { to { transform: rotate(360deg); } }
+.jx-egg-rays { animation: jxEggRaysSpin 18s linear infinite; transform-origin: 50% 50%; }
 
 /* Quick side-to-side wiggle — hints a "shake the phone" gesture */
 @keyframes jxWiggle { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-13deg); } 40% { transform: rotate(11deg); } 60% { transform: rotate(-9deg); } 80% { transform: rotate(7deg); } }

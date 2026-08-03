@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHILDREN, CHILD_REPORTS, FEATURES, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
-import { Icon, PhotoAvatar, THEME, screenBgFor } from '../core/primitives.jsx';
+import { Icon, PhotoAvatar, THEME, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -14,24 +14,31 @@ function ChildChip({ selected, onPick }) {
   const idx = Math.min(selected, CHILDREN.length - 1);
   const k = CHILDREN[idx];
   if (!k) return null;
-  // A real child face in the switcher, never the buddy character: the child's own
-  // photo first, then the shared default child photo, and only a mascot if both are
-  // missing — the same fallback chain the Children list uses.
-  const PAL = ['ocean', 'sakura', 'tropic', 'moss', 'pebble', 'iris'];
-  const kidFace = (c, i, size, selectedBg) => {
-    const pal = PAL[i % PAL.length];
+  // A real child face in the switcher: the child's own photo, falling back to the
+  // same default child illustration every profile-less kid uses (by design — a
+  // consistent default look, not a per-kid mascot swap, which would mix a photo-
+  // style face with a cartoon animal for different kids and look inconsistent).
+  // The ring is one uniform brand color for every child now — the name label next
+  // to it (added below) is what actually identifies who's who, so the ring doesn't
+  // need to carry that job or vary per kid.
+  const kidFace = (c, size, selectedBg) => {
+    const pal = avatarPalFor(c.id);
     return (
-      <PhotoAvatar src={c.photo} size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
-        <PhotoAvatar src="/assets/avatars/avatar-child.png" size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }}
-          fallback={<MascotChip species={c.avatar} color={c.color} size={size} bg={selectedBg} />} />} />
+      <div style={{ width: size, height: size, borderRadius: 999, boxShadow: `0 0 0 2px #fff, 0 0 0 3.5px ${BRAND.primary}`, flexShrink: 0 }}>
+        <PhotoAvatar src={c.photo} size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }} fallback={
+          <PhotoAvatar src="/assets/avatars/avatar-child.png" size={size} style={{ background: `var(--color-interactives-avatar-${pal}-default)` }}
+            fallback={<MascotChip species={c.avatar} color={c.color} size={size} bg={selectedBg} />} />} />
+      </div>
     );
   };
   return (
     <div style={{ position: 'relative' }}>
-      {/* the child's name already headlines the page, so the switcher is just a face +
-          chevron — no second "Mina" sitting right beside the title. */}
-      <button onClick={() => setOpen(o => !o)} aria-label={k.name} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fff', padding: '6px 8px 6px 6px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-        {kidFace(k, idx, 32, BRAND.primaryLight)}
+      {/* the collapsed chip now names the child instead of relying on the page title
+          or a memorized ring color to confirm who's selected — the switcher's whole
+          job is identification, so it shouldn't require opening it to be sure. */}
+      <button onClick={() => setOpen(o => !o)} aria-label={k.name} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', padding: '6px 12px 6px 8px', borderRadius: 999, boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+        {kidFace(k, 32, BRAND.primaryLight)}
+        <span style={{ fontSize: 13.5, fontWeight: 800, color: THEME.fg1 }}>{k.name}</span>
         <Icon name="chevron-down" size={15} color={THEME.fg2} stroke={2.4} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }} />
       </button>
       {open && (
@@ -44,7 +51,7 @@ function ChildChip({ selected, onPick }) {
               const on = i === idx;
               return (
                 <button key={c.id} onClick={() => { onPick(i); setOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: on ? BRAND.primaryLight : 'transparent', border: 'none', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                  {kidFace(c, i, 30, on ? '#fff' : THEME.surface2)}
+                  {kidFace(c, 30, on ? '#fff' : THEME.surface2)}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1 }}>{c.name}</div>
                     <div style={{ fontSize: 11, color: THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L('Age')} {c.age} · {c.device}</div>
@@ -154,6 +161,20 @@ function ChatAvatar() {
 // Shimmer placeholder used by the Reports loading skeleton.
 const RSk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
 
+// "2026-07-21" → "Jul 21–27" / "7월 21일 – 27일" (cross-month ranges spell out both
+// months). Used by the week switcher and anywhere copy names the report's date range.
+const EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const formatWeekRange = (startISO, endISO, ko) => {
+  const s = new Date(startISO + 'T00:00:00'), e = new Date(endISO + 'T00:00:00');
+  const sameMonth = s.getMonth() === e.getMonth();
+  if (ko) return sameMonth
+    ? `${s.getMonth() + 1}월 ${s.getDate()}–${e.getDate()}일`
+    : `${s.getMonth() + 1}월 ${s.getDate()}일 – ${e.getMonth() + 1}월 ${e.getDate()}일`;
+  return sameMonth
+    ? `${EN_MONTHS[s.getMonth()]} ${s.getDate()}–${e.getDate()}`
+    : `${EN_MONTHS[s.getMonth()]} ${s.getDate()} – ${EN_MONTHS[e.getMonth()]} ${e.getDate()}`;
+};
+
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
 function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // which child's report is in view (header chip switches this)
@@ -161,6 +182,11 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
   const [chatOpen, setChatOpen] = React.useState(false);       // "Ask about this week" drawer
   const [askedQ, setAskedQ] = React.useState([]);               // chatQuestions indices asked so far, in order — the running thread
+  // which week of history is in view — 0 is always the current week, higher steps
+  // backward. Reset on every child switch so it can't leave you looking at week n-3
+  // for a kid whose history doesn't even go that far.
+  const [weekIdx, setWeekIdx] = React.useState(0);
+  React.useEffect(() => { setWeekIdx(0); }, [sel]);
 
   // loading — KPI + chart shimmer while the week's report is fetched
   if (ctx.demo?.loading) {
@@ -224,14 +250,24 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   }
 
   const child = CHILDREN[Math.min(sel, CHILDREN.length - 1)] || CHILDREN[0];
-  // per-child report data, falling back to the global demo metrics
-  const rep = CHILD_REPORTS[child.id] || {
+  const ko = ctx.lang === 'ko';
+  // per-child report history — weeks[0] is always the current week, weeks[1..] step
+  // backward (see buildWeeks in data.jsx). Falls back to a single-week shape for any
+  // child missing report data, same as before the week switcher existed.
+  const weeksList = CHILD_REPORTS[child.id]?.weeks;
+  const clampedWeekIdx = weeksList ? Math.min(weekIdx, weeksList.length - 1) : 0;
+  const rep = (weeksList && weeksList[clampedWeekIdx]) || CHILD_REPORTS[child.id] || {
     acceptance: PARENT_METRICS.acceptance, safeWalkMin: PARENT_METRICS.safeWalkMin,
     avgResponse: PARENT_METRICS.avgResponse, streak: child.streak || 0,
     deltas: { acceptance: '+6%', walk: '+12%', resp: '-0.3s', streak: '+2' },
     reactions: REACTIONS_7D, risk: RISK_TREND,
   };
   const reactions = rep.reactions, risk = rep.risk;
+  // the range/label copy leans on — "this week" when weekIdx is 0, the concrete
+  // date range otherwise, so a parent browsing history never reads a stale "this week".
+  const isCurrentWeek = clampedWeekIdx === 0;
+  const weekRangeLabel = rep.start && rep.end ? formatWeekRange(rep.start, rep.end, ko) : null;
+  const weekLabel = isCurrentWeek ? (ko ? '이번 주' : 'this week') : (weekRangeLabel || (ko ? '그 주' : 'that week'));
 
   // data-viz palette (tuned for charts / color-blindness at 40–60)
   const SERIES = { good: 'var(--color-data-green-50)', mid: 'var(--color-data-yellow-40)', bad: 'var(--color-data-red-50)', trend: 'var(--color-data-blue-40)', rate: 'var(--color-data-yellow-40)' };
@@ -257,7 +293,6 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
 
   // is this child trending well? (drives copy + accent tone)
   const doingWell = rep.acceptance >= 75;
-  const ko = ctx.lang === 'ko';
   const nm = child.name;
   const dayName = i => (ko ? ['월', '화', '수', '목', '금', '토', '일'][i] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]);
   const t = {
@@ -279,16 +314,27 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
     ? { bg: THEME.successLight, ink: '#274427', icon: THEME.success, name: 'lightbulb' }
     : { bg: THEME.goldLight, ink: '#5b4a1e', icon: THEME.gold, name: 'alert-circle' };
 
-  // top KPI cards (horizontally scrollable). A delta is "good" when it moves the
-  // right way for its metric — for Avg. response, lower (a minus) is the win.
-  // "Ignored" reads off the same week of reactions as the donut/bars below (ignoredTotal /
-  // totalReacts), not a separate stat — so this card and "How they respond to warnings" can
-  // never drift apart. There's no last-week ignored count to diff against, so unlike the other
-  // KPI cards this one has no delta/trend badge — that's better than a fabricated one.
-  const ignoredPct = Math.round((ignoredTotal / totalReacts) * 100);
+  // top KPI cards. Counts, not percentages — the response-mix chart further down
+  // already shows this same split as a %, so repeating it here just makes the
+  // parent reconcile two numbers for one fact. A raw count ("44 of 47 warnings")
+  // is a different, complementary read instead of a duplicate one.
+  // "Ignored" reads off the same week of reactions as the donut/bars below
+  // (ignoredTotal), not a separate stat — so this card and "How they respond to
+  // warnings" can never drift apart. There's no last-week ignored count to diff
+  // against, so unlike the other KPI cards this one has no delta/trend badge —
+  // that's better than a fabricated one.
+  const stoppedCount = stopsTotal + delayedTotal;
+  const kpiSub = ko ? `${weekLabel} 경고 ${totalReacts}건 중` : `out of ${totalReacts} warnings ${weekLabel}`;
+  // Two more cards beyond the response split — safe walking time and streak are
+  // both already tracked (see gridStats below, and `deltas.walk`/`deltas.streak`
+  // in data.jsx) but previously only surfaced in the 'ring' Tweaks variant. They
+  // round the grid out to a 2×2 that covers response, time-on-task and consistency,
+  // not just one axis of the week.
   const kpis = [
-    { icon: 'circle-check-big', v: rep.acceptance + '%', delta: rep.deltas.acceptance, l: 'Stopped when warned', c: THEME.success, bg: THEME.successLight },
-    { icon: 'bell-off', v: ignoredPct + '%', l: 'Ignored', c: THEME.danger, bg: THEME.dangerLight },
+    { img: '/assets/reports/icon-stopped.png', v: stoppedCount, delta: rep.deltas?.acceptance, l: 'Stopped when warned', sub: kpiSub, c: THEME.success },
+    { img: '/assets/reports/icon-ignored.png', v: ignoredTotal, l: 'Ignored', sub: kpiSub, c: THEME.danger },
+    { img: '/assets/reports/icon-walking.png', v: rep.safeWalkMin + 'm', delta: rep.deltas?.walk, l: 'Safe walking', sub: ko ? `${weekLabel} 총 시간` : `total ${weekLabel}`, c: THEME.mountain },
+    { img: '/assets/reports/icon-streak.png', v: rep.streak + 'd', delta: rep.deltas?.streak, l: 'Safe streak', sub: ko ? '연속 목표 달성' : 'days in a row', c: THEME.gold },
   ].map(k => {
     const positive = String(k.delta).trim().startsWith('+');
     const good = k.l === 'Avg. response' ? !positive : positive;
@@ -318,7 +364,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   const activityFoot = [
     { l: ko ? '가장 안전한 날' : 'Safest day', v: dayName(bestDayIdx), c: SERIES.trend },
     { l: ko ? '주의가 많던 날' : 'Most alerts', v: dayName(riskiestIdx), c: '#8fb0dd' },
-    { l: ko ? '이번 주 안전 멈춤' : 'Safe stops', v: stopsTotal, c: '#4f9d89' },
+    { l: ko ? '안전 멈춤' : 'Safe stops', v: stopsTotal, c: '#4f9d89' },
   ];
 
   // "Ask about this week" — canned Q&A behind the floating chat button. Every answer
@@ -337,27 +383,48 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
       icon: 'shield-check', c: THEME.success, bg: THEME.successLight,
       q: ko ? '경고 수용률은 어떻게 계산되나요?' : 'How is the acceptance rate calculated?',
       a: ko
-        ? `이번 주 경고 ${totalReacts}건 중 ${stopsTotal + delayedTotal}건에서 멈췄어요 — 수용률 ${rep.acceptance}% (지난주보다 ${rep.deltas.acceptance}). 그중 ${stopsTotal}건은 즉시 멈춤이었어요.`
-        : `Out of ${totalReacts} warnings this week, ${nm} stopped for ${stopsTotal + delayedTotal} of them — an acceptance rate of ${rep.acceptance}% (${rep.deltas.acceptance} vs last week). ${stopsTotal} of those were immediate stops.`,
+        ? `${weekLabel} 경고 ${totalReacts}건 중 ${stopsTotal + delayedTotal}건에서 멈췄어요 — 수용률 ${rep.acceptance}%${rep.deltas ? ` (지난주보다 ${rep.deltas.acceptance})` : ''}. 그중 ${stopsTotal}건은 즉시 멈춤이었어요.`
+        : `Out of ${totalReacts} warnings ${weekLabel}, ${nm} stopped for ${stopsTotal + delayedTotal} of them — an acceptance rate of ${rep.acceptance}%${rep.deltas ? ` (${rep.deltas.acceptance} vs the week before)` : ''}. ${stopsTotal} of those were immediate stops.`,
     },
     {
       icon: 'flame', c: THEME.joy, bg: THEME.joyBg,
       q: ko ? '안전 연속 기록은 무슨 뜻인가요?' : 'What does the safe streak mean?',
       a: ko
-        ? `${nm}는 ${rep.streak}일 연속 하루 안전 목표를 지켰어요 (지난주보다 ${rep.deltas.streak}). 위험한 순간 없이 하루를 마치면 기록이 이어져요.`
-        : `${nm} has kept a ${rep.streak}-day streak of hitting the daily safety goal (${rep.deltas.streak} vs last week). It continues each day they finish with no risky moments.`,
+        ? `${nm}는 ${rep.streak}일 연속 하루 안전 목표를 지켰어요${rep.deltas ? ` (지난주보다 ${rep.deltas.streak})` : ''}. 위험한 순간 없이 하루를 마치면 기록이 이어져요.`
+        : `${nm} has kept a ${rep.streak}-day streak of hitting the daily safety goal${rep.deltas ? ` (${rep.deltas.streak} vs the week before)` : ''}. It continues each day they finish with no risky moments.`,
     },
     {
       icon: 'lightbulb', c: tone.icon, bg: tone.bg,
-      q: ko ? '이번 주 뭘 도와주면 될까요?' : 'What should I help with this week?',
+      q: ko ? '뭘 도와주면 될까요?' : 'What should I help with?',
       a: t.insightBody,
     },
   ];
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead stacked sub={L("This week's progress")} title={<span>{nm} <span style={{ fontSize: 19 }}>{doingWell ? '🌱' : '💪'}</span></span>} right={<ChildChip selected={sel} onPick={setSel} />} />
+      <ParentHead stacked sub={isCurrentWeek ? L("This week's progress") : (ko ? `${weekRangeLabel} 진행 상황` : `${weekRangeLabel} progress`)} title={<span>{nm} <span style={{ fontSize: 19 }}>{doingWell ? '🌱' : '💪'}</span></span>} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
+
+        {/* Week switcher — the report's actual date range, with chevrons to step
+            through this child's history. weekIdx 0 is always "now"; a parent has no
+            other way to tell which 7 days the numbers below describe, or to look back. */}
+        {weeksList && weeksList.length > 1 && (
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, marginBottom: 14 }}>
+            <button onClick={() => setWeekIdx(i => Math.min(weeksList.length - 1, i + 1))} disabled={clampedWeekIdx >= weeksList.length - 1} aria-label={ko ? '이전 주' : 'Previous week'}
+              style={{ width: 40, borderRadius: 14, border: 'none', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: clampedWeekIdx >= weeksList.length - 1 ? 'default' : 'pointer', opacity: clampedWeekIdx >= weeksList.length - 1 ? .35 : 1, boxShadow: THEME.shadowCard }}>
+              <Icon name="chevron-left" size={17} color={THEME.fg2} stroke={2.4} />
+            </button>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#fff', borderRadius: 14, padding: '7px 14px', boxShadow: THEME.shadowCard }}>
+              <Icon name="calendar" size={13} color={THEME.fg2} stroke={2.3} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{weekRangeLabel}</span>
+              {isCurrentWeek && <span style={{ fontSize: 10, fontWeight: 800, color: BRAND.primary, background: BRAND.primaryLight, borderRadius: 999, padding: '2px 7px', flexShrink: 0 }}>{ko ? '이번 주' : 'Now'}</span>}
+            </div>
+            <button onClick={() => setWeekIdx(i => Math.max(0, i - 1))} disabled={clampedWeekIdx === 0} aria-label={ko ? '다음 주' : 'Next week'}
+              style={{ width: 40, borderRadius: 14, border: 'none', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: clampedWeekIdx === 0 ? 'default' : 'pointer', opacity: clampedWeekIdx === 0 ? .35 : 1, boxShadow: THEME.shadowCard }}>
+              <Icon name="chevron-right" size={17} color={THEME.fg2} stroke={2.4} />
+            </button>
+          </div>
+        )}
 
         {/* Highlight strip — the one-line "so, how's the week going?" the header used to
             leave blank. Tone-aware: a warm-green win when the child is trending well, a
@@ -369,7 +436,9 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
-              {doingWell ? (ko ? `이번 주, 좋은 흐름이에요` : `On a roll this week`) : (ko ? `조금만 더 도와주면 돼요` : `Could use a nudge this week`)}
+              {doingWell
+                ? (isCurrentWeek ? (ko ? `이번 주, 좋은 흐름이에요` : `On a roll this week`) : (ko ? `${weekRangeLabel}, 좋은 흐름이었어요` : `On a roll ${weekRangeLabel}`))
+                : (isCurrentWeek ? (ko ? `조금만 더 도와주면 돼요` : `Could use a nudge this week`) : (ko ? `${weekRangeLabel}엔 도움이 필요했어요` : `Could've used a nudge ${weekRangeLabel}`))}
             </div>
             <div style={{ fontSize: 12, fontWeight: 600, color: tone.ink, opacity: .82, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {ko
@@ -430,13 +499,12 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
             {kpis.map((k, i) => (
               <div key={i} style={{ background: '#fff', borderRadius: 18, padding: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 999, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon name={k.icon} size={15} color={k.c} stroke={2.3} />
-                  </div>
+                  <img src={k.img} alt="" width={27} height={27} style={{ display: 'block', flexShrink: 0 }} />
                   {k.delta && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: 11, fontWeight: 700, color: k.good ? THEME.success : THEME.danger }}>{k.delta}<Icon name={k.good ? 'trending-up' : 'trending-down'} size={11} color={k.good ? THEME.success : THEME.danger} stroke={2.6} /></span>}
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: k.c, marginTop: 10 }}>{k.v}</div>
                 <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L(k.l)}</div>
+                {k.sub && <div style={{ fontSize: 10.5, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{k.sub}</div>}
               </div>
             ))}
           </div>
@@ -446,16 +514,27 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
             gridlines and connected rounded bars, and a bottom insight (reference layout) */}
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>{t.respTitle}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              {/* shield-alert over a plain warning glyph — this card is the RESPONSE to a
+                  safety warning, not the warning itself, and "shield" already reads as
+                  JoanX's own safety mark elsewhere on this screen (shield-check on the
+                  "Safe stops" KPI) — so it ties back to that vocabulary instead of
+                  introducing an unrelated warning-sign icon. */}
+              <Icon name="shield-alert" size={17} color={THEME.fg2} stroke={2.2} />
+              <div style={{ fontSize: 15, fontWeight: 800 }}>{t.respTitle}</div>
+            </div>
             <button onClick={() => ctx.nav('p_response', { childId: child.id })} aria-label={t.respTitle} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
 
-          {/* per-series summary — just dot + label + the week's share, no range band or warn flag */}
+          {/* per-series summary — dot + label + the week's share, plus a one-line
+              definition (same copy ParentResponseDetail already uses for these three
+              terms) so "Immediate / Delayed / Ignored" doesn't require a trip to the
+              detail page just to know what they mean. */}
           <div style={{ display: 'flex', gap: 18, marginTop: 18 }}>
             {[
-              { label: 'Immediate', c: RESP.immediate, val: stopsTotal },
-              { label: 'Delayed',   c: RESP.delayed,   val: delayedTotal },
-              { label: 'Ignored',   c: RESP.ignored,   val: ignoredTotal },
+              { label: 'Immediate', c: RESP.immediate, val: stopsTotal, desc: ko ? '경고와 동시에 바로 멈췄어요' : 'Stopped the moment they were warned' },
+              { label: 'Delayed',   c: RESP.delayed,   val: delayedTotal, desc: ko ? '경고 후 잠시 뒤에 멈췄어요' : 'Stopped, but a moment later' },
+              { label: 'Ignored',   c: RESP.ignored,   val: ignoredTotal, desc: ko ? '경고에도 계속 걸었어요' : 'Kept walking despite the warning' },
             ].map(s => {
               const pct = Math.round((s.val / totalReacts) * 100);
               return (
@@ -467,6 +546,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
                   <div style={{ marginTop: 7 }}>
                     <span style={{ fontSize: 21, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{pct}%</span>
                   </div>
+                  <div style={{ fontSize: 10.5, color: THEME.fg3, fontWeight: 600, marginTop: 3, lineHeight: 1.3 }}>{s.desc}</div>
                 </div>
               );
             })}
@@ -540,7 +620,10 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
         {/* activity card — inline stats + bars-and-line chart + CTA */}
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <Icon name="calendar-days" size={17} color={THEME.fg2} stroke={2.2} />
+              <span style={{ fontSize: 15, fontWeight: 800 }}>{L('Weekly activity')}</span>
+            </div>
             <button onClick={() => ctx.nav('p_weekactivity', { childId: child.id })} aria-label={L('Weekly activity')} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
           <div style={{ display: 'flex', gap: 22, marginBottom: 18, alignItems: 'flex-start' }}>
@@ -598,7 +681,7 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <ChatAvatar />
               <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.5, fontWeight: 500 }}>
-                {ko ? `안녕하세요! ${nm}의 이번 주에 대해 궁금한 걸 아래에서 골라보세요.` : `Hi! Pick anything below to learn more about ${nm}'s week.`}
+                {ko ? `안녕하세요! ${nm}의 ${weekLabel}에 대해 궁금한 걸 아래에서 골라보세요.` : `Hi! Pick anything below to learn more about ${nm}'s ${isCurrentWeek ? 'week' : `week of ${weekRangeLabel}`}.`}
               </div>
             </div>
 
