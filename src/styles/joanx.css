@@ -67,6 +67,21 @@ html, body {
 @keyframes jxPop { 0% { transform: scale(.72); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .jx-pop { animation: jxPop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
+/* A calmer bounce for the points-pill tap. jx-pop's back-ease curve already overshoots
+   past 100% on its own (that's what makes it springy) — stacking that with a keyframe
+   that ALSO explicitly overshoots at 60% double-bounces at small sizes and reads as a
+   stutter rather than one clean spring. This keeps only one source of overshoot (the
+   curve), so the motion settles in a single smooth arc. */
+@keyframes jxPillBounce { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+.jx-pill-bounce { animation: jxPillBounce .38s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* the points-tip popover: fades and grows from the pill's tail corner (set
+   transform-origin inline to wherever the tail sits) on a plain ease-out — no overshoot
+   of its own, since the pill's bounce already supplies the "punch" and a second bouncing
+   element right next to it would read as chaotic rather than connected. */
+@keyframes jxTipPop { 0% { opacity: 0; transform: scale(.85) translateY(-4px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+.jx-tip-pop { animation: jxTipPop .3s cubic-bezier(.22,.9,.32,1) both; }
+
 /* the VS badge spins in like a struck medal turning to face you. It starts with the plates
    and overlaps their whole slide, so it still reads as one screen animating rather than a
    slide followed by a separate effect — but it does NOT copy their curve, which is the one

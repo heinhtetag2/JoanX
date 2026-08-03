@@ -438,16 +438,19 @@ function HomeActionsS({ ctx, dark }) {
         </button>
       )}
       <div style={{ position: 'relative' }}>
-        {/* remounting the pill (via `key`) is what replays jx-pop on every trigger, not
-            just the first — a CSS animation class alone would not re-run on an unchanged element */}
+        {/* remounting the pill (via `key`) is what replays the bounce on every trigger, not
+            just the first — a CSS animation class alone would not re-run on an unchanged
+            element. Tap uses jx-pill-bounce (single overshoot, from the curve only) rather
+            than jx-pop (coin-shower use, below) — jx-pop's curve AND keyframe both overshoot,
+            which double-bounces at this size and reads as a stutter, not a clean spring. */}
         {/* the pill body is a div, not a button, because the "+" below needs to be its
             OWN button (a real nested <button> inside a <button> is invalid HTML). Tapping
             it now toggles the today/total breakdown below instead of jumping to the Shop —
             that's still one tap away, via "Total points" in the popover. The tap itself also
-            bounces the pill (bounceKey remount, same jx-pop the coin shower uses), so the
-            popover reads as popping out of that bounce, not just appearing beside it. */}
+            bounces the pill, so the popover reads as popping out of that bounce, not just
+            appearing beside it. */}
         <div key={playing ? playing.key : `still-${bounceKey}`} onClick={() => { setShowBreakdown(v => !v); setBounceKey(k => k + 1); }}
-          className={playing || bounceKey > 0 ? 'jx-pop' : undefined}
+          className={playing ? 'jx-pop' : (bounceKey > 0 ? 'jx-pill-bounce' : undefined)}
           style={ctx.tweaks?.eggEntry === 'badge'
             ? { display: 'flex', alignItems: 'center', gap: 4, background: chip, padding: '6px 5px 6px 17px', borderRadius: '8px 17px 17px 8px', boxShadow: dark ? 'none' : THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }
             : { display: 'flex', alignItems: 'center', gap: 5, background: chip, padding: '5px 5px 5px 12px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
@@ -492,12 +495,13 @@ function HomeActionsS({ ctx, dark }) {
         {showBreakdown && (
           <React.Fragment>
             <div onClick={() => setShowBreakdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 45 }} />
-            {/* pops rather than rises now, on a short delay after the pill's own jx-pop bounce
-                starts — same overshoot keyframe as the pill, anchored at the tail (top right,
-                under the pill), so it reads as one continuous motion: the pill bounces, and
-                the tip springs out of it. */}
-            <button onClick={() => { setShowBreakdown(false); ctx.nav('shop'); }} className="jx-pop"
-              style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 206, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '13px 15px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right', animationDelay: '70ms', animationFillMode: 'backwards' }}>
+            {/* fades + grows from the tail corner (top right, under the pill) on a plain
+                ease-out — jx-tip-pop, not another bounce, so it doesn't fight the pill's
+                own overshoot right next to it. A short delay after the pill's bounce starts
+                is what makes it read as one continuous motion: the pill bounces, the tip
+                settles out of it right after. */}
+            <button onClick={() => { setShowBreakdown(false); ctx.nav('shop'); }} className="jx-tip-pop"
+              style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 206, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '13px 15px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right', animationDelay: '60ms' }}>
               {/* tail sits under the pill's NUMBER (not the trailing "+" button) — the pill is
                   right-anchored the same as this popover, so the offset is measured in from
                   its shared right edge: "+" button (20) + gap (5) ≈ 25, then roughly centered
