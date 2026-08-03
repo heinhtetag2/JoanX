@@ -325,17 +325,13 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // that's better than a fabricated one.
   const stoppedCount = stopsTotal + delayedTotal;
   const kpiSub = ko ? `${weekLabel} 경고 ${totalReacts}건 중` : `out of ${totalReacts} warnings ${weekLabel}`;
-  // Stopped card shows the ratio as the headline number itself ("44/47") instead of
-  // a bare count plus a separate "out of 47 warnings" line — the old pairing repeated
-  // "warned"/"warnings" across two lines and made the reader do the division themselves.
-  const stoppedRatio = `${stoppedCount}/${totalReacts}`;
   // Two more cards beyond the response split — safe walking time and streak are
   // both already tracked (see gridStats below, and `deltas.walk`/`deltas.streak`
   // in data.jsx) but previously only surfaced in the 'ring' Tweaks variant. They
   // round the grid out to a 2×2 that covers response, time-on-task and consistency,
   // not just one axis of the week.
   const kpis = [
-    { img: '/assets/reports/icon-stopped.png', v: stoppedRatio, delta: rep.deltas?.acceptance, l: 'Stopped when warned', sub: weekLabel, c: THEME.success },
+    { img: '/assets/reports/icon-stopped.png', v: stoppedCount, delta: rep.deltas?.acceptance, l: 'Stopped when warned', sub: kpiSub, c: THEME.success },
     { img: '/assets/reports/icon-ignored.png', v: ignoredTotal, l: 'Ignored', sub: kpiSub, c: THEME.danger },
     { img: '/assets/reports/icon-walking.png', v: rep.safeWalkMin + 'm', delta: rep.deltas?.walk, l: 'Safe walking', sub: ko ? `${weekLabel} 총 시간` : `total ${weekLabel}`, c: THEME.mountain },
     { img: '/assets/reports/icon-streak.png', v: rep.streak + 'd', delta: rep.deltas?.streak, l: 'Safe streak', sub: ko ? '연속 목표 달성' : 'days in a row', c: THEME.gold },
