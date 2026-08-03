@@ -14,6 +14,10 @@ import { sfx } from '../core/sound.jsx';
 // components — so we can simplify/modify this set without touching the
 // originals. Routed via App.jsx ("Home layout" → Simple row, ids "simple-*").
 
+// Focus home's egg-shop entry — the painted 3-egg badge dropped into /assets/egg/,
+// floating beside the buddy's level/stage line (Home · Focus layout only).
+const EGG_SHOP_ICON = '/assets/egg/eggshopicon.png';
+
 // Focus home's 2nd stat card (Tweaks: Home · 2nd stat card) — candidates for the slot next to
 // Day streak. 'points' is the original, which just repeats the header's points pill; the rest
 // each surface a number that isn't already shown anywhere else on this screen, so picking one
@@ -903,12 +907,23 @@ function HomeSimpleFocus({ ctx }) {
       </div>
 
       {/* buddy identity */}
-      <div style={{ textAlign: 'center', padding: '18px 24px 0' }}>
+      <div style={{ position: 'relative', textAlign: 'center', padding: '18px 24px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <span className="game-font" style={{ fontSize: 22, fontWeight: 500, color: THEME.fg1 }}>{c.name}</span>
           <Badge variant="gold"><Icon name="trending-up" size={11} color="#9e7300" stroke={2.6} />{L('Evolving')}</Badge>
         </div>
         <div style={{ fontSize: 12.5, color: THEME.fg2, fontWeight: 600, marginTop: 2 }}>{L('Level')} {c.level} · {L('Stage')} {c.stage}</div>
+
+        {/* egg shop entry — the painted 3-egg badge, floating beside the level/stage line.
+            Tried a rotating ray-burst here first (reward-coin style) — too loud, reads as
+            generic "gacha icon" stock decor. A single flat radial-gradient circle read as
+            a sticker instead of light. This layers an off-center highlight (as if catching
+            light from upper-left, like the egg art's own painted sheen) with a soft
+            box-shadow bloom around it — falloff reads as glow, not a coloured disc. */}
+        <button onClick={() => ctx.nav('shop')} aria-label={L('Open the egg shop')} className="jx-press" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', width: 62, height: 62, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
+          <span className="jx-egg-shine" style={{ position: 'absolute', inset: '-14%', borderRadius: '50%', background: `radial-gradient(circle at 38% 34%, #fff 0%, ${THEME.brand}cc 26%, ${THEME.brand}00 66%)`, boxShadow: `0 0 12px 3px ${THEME.brand}4d, 0 0 22px 8px ${THEME.brand}26`, pointerEvents: 'none' }} />
+          <img src={EGG_SHOP_ICON} alt="" style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
+        </button>
       </div>
 
       {/* safety + stats */}

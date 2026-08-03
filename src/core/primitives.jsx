@@ -492,11 +492,12 @@ function StatusBar({ dark }) {
   );
 }
 
-// Section header row with optional action
-function SectionHead({ title, action, onAction }) {
+// Section header row with optional action. `color` lets a screen sitting on dark/full-bleed
+// art (e.g. the egg shop's crystal backdrop) light the title white instead of the default ink.
+function SectionHead({ title, action, onAction, color = THEME.fg1 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: THEME.fg1, margin: 0, lineHeight: 1.3, letterSpacing: '-0.2px' }}>{title}</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color, margin: 0, lineHeight: 1.3, letterSpacing: '-0.2px' }}>{title}</h2>
       {action && <button onClick={onAction} style={{ background: 'none', border: 'none', color: THEME.primary, fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2 }}>{action}<Icon name="chevron-right" size={14} color={THEME.primary} stroke={2.5} /></button>}
     </div>
   );

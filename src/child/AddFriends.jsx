@@ -49,8 +49,8 @@ function AddFriends({ ctx, layout = 'list' }) {
     </div>
   );
   const addedTag = <span style={{ fontSize: 12.5, fontWeight: 800, color: THEME.success, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="check" size={14} color={THEME.success} stroke={3} />{L('Added')}</span>;
-  const softAdd = (f) => added[f.id] ? addedTag : <Button variant="secondary" size="sm" onClick={() => addSug(f)} style={{ background: BRAND.light, color: BRAND.main }}><Icon name="user-plus" size={16} color={BRAND.main} stroke={2.4} />{L('Add')}</Button>;
-  const filledAdd = (f) => added[f.id] ? addedTag : <Button variant="primary" size="sm" onClick={() => addSug(f)} style={{ background: BRAND.main, boxShadow: 'none' }}><Icon name="user-plus" size={16} color="#fff" stroke={2.4} />{L('Add')}</Button>;
+  const softAdd = (f) => added[f.id] ? addedTag : <Button variant="secondary" size="sm" onClick={() => addSug(f)} style={{ background: BRAND.light, color: BRAND.main, borderRadius: 999 }}><Icon name="user-plus" size={16} color={BRAND.main} stroke={2.4} />{L('Add')}</Button>;
+  const filledAdd = (f) => added[f.id] ? addedTag : <Button variant="primary" size="sm" onClick={() => addSug(f)} style={{ background: BRAND.main, boxShadow: 'none', borderRadius: 999 }}><Icon name="user-plus" size={16} color="#fff" stroke={2.4} />{L('Add')}</Button>;
   const textAdd = (f) => added[f.id] ? addedTag : <button onClick={() => addSug(f)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: BRAND.main, fontSize: 13.5, fontWeight: 800 }}>{L('Add')}</button>;
   const codeInput = (compact) => (
     <div style={{ display: 'flex', gap: 8 }}>

@@ -1,7 +1,7 @@
 // JoanX — child app · Shop
 
 import React from 'react';
-import { activeEggs, buyEgg, eggById, eggCount, eggSources, PLAYER, totalEggs } from '../core/data.jsx';
+import { activeEggs, buyEgg, eggById, eggCount, PLAYER, totalEggs } from '../core/data.jsx';
 import { Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { ScreenHeader } from './shared.jsx';
@@ -84,6 +84,18 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
 
   const closeHatch = () => setHatch(null);
 
+  // egg cards used to sit as flat white boxes on the crystal backdrop — a mismatch once
+  // the art itself carries the color. This is a frosted-glass panel instead: it picks up
+  // the purple/teal light behind it (blur + a soft rarity-tinted rim) rather than blocking
+  // it out, so the list reads as part of the shop rather than a form pasted over the art.
+  const glassCard = (rar, accent, opacity = 1) => ({
+    position: 'relative',
+    background: 'linear-gradient(150deg, rgba(255,255,255,0.20), rgba(255,255,255,0.05) 75%)',
+    backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+    border: `1.5px solid ${rar.fg}${accent ? '99' : '3d'}`, borderRadius: 20, padding: 16,
+    boxShadow: `0 10px 30px rgba(10,6,35,0.38), inset 0 1px 0 rgba(255,255,255,0.24)${accent ? `, 0 0 0 1px ${rar.fg}22` : ''}`,
+    opacity,
+  });
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -93,7 +105,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
           frame's top/bottom borders stay glued to the actual screen edges no matter how far
           the list below scrolls — a background painted into the scrolling content itself
           would drag the bottom border up into the middle of the screen after one swipe. */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/egg/egg-bg-shop.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/egg/eggbackgroundsop.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
       {/* content sits centered in the frame's open middle — between the egg-nest crown at
           the top and the crystal pedestal at the bottom — rather than pinned under the
           header the way a long scrolling list would be. With only the egg cards left on
@@ -109,8 +121,8 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
           <React.Fragment>
             {/* one card per tier — the SAME card reads as "hatch what you have" or "buy
                 what you don't", so a tier never shows up twice on this screen. */}
-            <SectionHead title={L('Buddy Eggs')} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+            <SectionHead title={L('Buddy Eggs')} color="#fff" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
               {activeEggs().map(egg => {
                 const rar = RARITY[egg.rarity];
                 const n = owned[egg.id] || 0;
@@ -119,22 +131,21 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                 const unbuyable = egg.price == null;             // reward-only
                 const afford = !unbuyable && pts >= egg.price;
                 const on = !unbuyable && !locked && afford;      // fully purchasable now
-                // A-2.1 — every way this egg can be earned, read off the grant table.
-                const earnable = eggSources(egg.id).filter(s => s.key !== 'purchase');
                 return (
-                  <div key={egg.id} style={{ background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}${canHatch || unbuyable ? '55' : '22'}`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, opacity: locked && !canHatch ? .78 : 1 }}>
+                  <div key={egg.id} style={glassCard(rar, canHatch || unbuyable, locked && !canHatch ? .78 : 1)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked && !canHatch ? 'grayscale(.5)' : 'none' }}>
+                      <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', filter: locked && !canHatch ? 'grayscale(.5)' : 'none' }}>
+                        <div style={{ position: 'absolute', width: 56, height: 56, borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${rar.fg}4a, transparent 72%)` }} />
                         <EggShape size={56} rarity={egg.rarity} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <span style={{ fontSize: 15, fontWeight: 800 }}>{L(egg.name)}</span>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{L(egg.name)}</span>
                           {canHatch
                             ? (n > 1 && <span style={{ fontSize: 11, fontWeight: 800, color: rar.fg, background: '#fff', border: `1.5px solid ${rar.fg}40`, padding: '1px 7px', borderRadius: 999 }}>×{n}</span>)
                             : <span style={{ fontSize: 10, fontWeight: 800, color: rar.fg, background: rar.bg, padding: '2px 7px', borderRadius: 999 }}>{L(rar.label)}</span>}
                         </div>
-                        <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>
+                        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.72)', marginTop: 2, lineHeight: 1.35 }}>
                           {canHatch ? L('Earned — ready to hatch') : locked ? `${L('Unlocks at Lv')} ${egg.minLevel}` : L('Hatch a random new buddy')}
                         </div>
                       </div>
@@ -148,24 +159,12 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                           <Icon name="gift" size={13} color={THEME.gold} stroke={2.3} />{L('Reward')}
                         </span>
                       ) : (
-                        <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? rar.fg : THEME.surface2, color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? rar.fg : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                           <Icon name={locked ? 'lock' : 'star'} size={13} color={on ? '#fff' : THEME.fg3} fill={locked ? 'none' : (on ? '#fff' : THEME.fg3)} stroke={2} />
                           {egg.price.toLocaleString()}
                         </button>
                       )}
                     </div>
-
-                    {/* how else to get one — only relevant while there's none to hatch yet */}
-                    {!canHatch && earnable.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 12, paddingTop: 11, borderTop: `1px solid ${rar.fg}1f` }}>
-                        <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg3, alignSelf: 'center', marginRight: 2 }}>{L('Also earn from')}</span>
-                        {earnable.map(s => (
-                          <span key={s.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 3.5, background: '#fff', border: `1px solid ${rar.fg}2e`, color: THEME.fg2, borderRadius: 999, padding: '3.5px 9px', fontSize: 10.5, fontWeight: 800 }}>
-                            <Icon name={s.icon} size={11} color={rar.fg} stroke={2.4} />{L(s.label)}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -178,22 +177,23 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                 by walking never gets lost in a notification the child swiped away. */}
             {totalEggs() > 0 && (
               <React.Fragment>
-                <SectionHead title={L('Your eggs')} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+                <SectionHead title={L('Your eggs')} color="#fff" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
                   {activeEggs().filter(egg => (owned[egg.id] || 0) > 0).map(egg => {
                     const rar = RARITY[egg.rarity];
                     const n = owned[egg.id];
                     return (
-                      <div key={egg.id} style={{ display: 'flex', alignItems: 'center', gap: 14, background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}40`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard }}>
-                        <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div key={egg.id} style={{ display: 'flex', alignItems: 'center', gap: 14, ...glassCard(rar, true) }}>
+                        <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                          <div style={{ position: 'absolute', width: 56, height: 56, borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${rar.fg}4a, transparent 72%)` }} />
                           <EggShape size={56} rarity={egg.rarity} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <span style={{ fontSize: 15, fontWeight: 800 }}>{L(egg.name)}</span>
+                            <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{L(egg.name)}</span>
                             {n > 1 && <span style={{ fontSize: 11, fontWeight: 800, color: rar.fg, background: '#fff', border: `1.5px solid ${rar.fg}40`, padding: '1px 7px', borderRadius: 999 }}>×{n}</span>}
                           </div>
-                          <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>{L('Earned — ready to hatch')}</div>
+                          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.72)', marginTop: 2, lineHeight: 1.35 }}>{L('Earned — ready to hatch')}</div>
                         </div>
                         <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: rar.fg, color: '#fff', borderRadius: 999, padding: '9px 15px', fontSize: 13, fontWeight: 800 }}>
                           {L('Hatch')}
@@ -206,33 +206,31 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
             )}
 
             {/* buddy eggs — one per rarity, priced + gated by EGGS (A-2 / F-15) */}
-            <SectionHead title={L('Buddy Eggs')} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+            <SectionHead title={L('Buddy Eggs')} color="#fff" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
               {activeEggs().map(egg => {
                 const rar = RARITY[egg.rarity];
                 const locked = PLAYER.level < egg.minLevel;      // level gate
                 const unbuyable = egg.price == null;             // reward-only
                 const afford = !unbuyable && pts >= egg.price;
                 const on = !unbuyable && !locked && afford;      // fully purchasable now
-                // A-2.1 — every way this egg can be earned, read off the grant table.
-                // Nothing is hand-listed here, so adding a grant rule surfaces it.
-                const earnable = eggSources(egg.id).filter(s => s.key !== 'purchase');
                 // the epic egg is a prize, not a dead item — never dim it. Only a
                 // level-locked egg should read as unavailable.
                 return (
-                  <div key={egg.id} style={{ background: `linear-gradient(120deg, ${rar.bg}, #fff 80%)`, border: `1.5px solid ${rar.fg}${unbuyable ? '55' : '22'}`, borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, opacity: locked ? .78 : 1 }}>
+                  <div key={egg.id} style={glassCard(rar, unbuyable, locked ? .78 : 1)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                       {/* the eggs in this list sit still — the float belongs to the hatch flow, where
                           the egg is the thing you tap, not to a price list you are reading down */}
-                      <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked ? 'grayscale(.5)' : 'none' }}>
+                      <div style={{ width: 64, height: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', filter: locked ? 'grayscale(.5)' : 'none' }}>
+                        <div style={{ position: 'absolute', width: 56, height: 56, borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${rar.fg}4a, transparent 72%)` }} />
                         <EggShape size={56} rarity={egg.rarity} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <span style={{ fontSize: 15, fontWeight: 800 }}>{L(egg.name)}</span>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{L(egg.name)}</span>
                           <span style={{ fontSize: 10, fontWeight: 800, color: rar.fg, background: rar.bg, padding: '2px 7px', borderRadius: 999 }}>{L(rar.label)}</span>
                         </div>
-                        <div style={{ fontSize: 11.5, color: THEME.fg2, marginTop: 2, lineHeight: 1.35 }}>
+                        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.72)', marginTop: 2, lineHeight: 1.35 }}>
                           {locked ? `${L('Unlocks at Lv')} ${egg.minLevel}` : L('Hatch a random new buddy')}
                         </div>
                       </div>
@@ -242,25 +240,12 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                           <Icon name="gift" size={13} color={THEME.gold} stroke={2.3} />{L('Reward')}
                         </span>
                       ) : (
-                        <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? rar.fg : THEME.surface2, color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? rar.fg : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                           <Icon name={locked ? 'lock' : 'star'} size={13} color={on ? '#fff' : THEME.fg3} fill={locked ? 'none' : (on ? '#fff' : THEME.fg3)} stroke={2} />
                           {egg.price.toLocaleString()}
                         </button>
                       )}
                     </div>
-
-                    {/* how else to get one — the earn routes, so a reward-only egg reads as
-                        a goal with a path rather than a locked item with a shrug */}
-                    {earnable.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 12, paddingTop: 11, borderTop: `1px solid ${rar.fg}1f` }}>
-                        <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.fg3, alignSelf: 'center', marginRight: 2 }}>{L('Also earn from')}</span>
-                        {earnable.map(s => (
-                          <span key={s.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 3.5, background: '#fff', border: `1px solid ${rar.fg}2e`, color: THEME.fg2, borderRadius: 999, padding: '3.5px 9px', fontSize: 10.5, fontWeight: 800 }}>
-                            <Icon name={s.icon} size={11} color={rar.fg} stroke={2.4} />{L(s.label)}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 );
               })}

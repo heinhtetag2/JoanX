@@ -102,11 +102,23 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'original', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
   setLang(lang);  // make L() reflect the active language for this render
+  // Dev-preview knobs that leaf components (Mascot, EggShape, DexProgress) read straight off
+  // these globals during their own render, the same way `lang` feeds L() above. Assigned here,
+  // synchronously in App's render body, NOT in a useEffect — an effect only runs after the
+  // first paint commits, so on mount (incl. a hard refresh) children rendered this same pass
+  // would still see last page-load's value (or undefined) and momentarily draw the wrong
+  // line/style before the effect corrected it a frame later. Setting it inline means the very
+  // first paint already reads correctly, no flash.
+  window.JX_CHAR_STYLE = tw.charStyle;
+  window.JX_RARE_EGG_STYLE = tw.rareEggStyle;
+  window.JX_EPIC_EGG_STYLE = tw.epicEggStyle;
+  window.JX_COMMON_EGG_ART = tw.commonEggArt;
+  window.JX_DEX_HEADER = tw.dexHeader;
   const changeLang = (l) => setLangState(l);
   React.useEffect(() => {
     const fit = () => {
@@ -161,13 +173,8 @@ function App() {
     } catch { /* storage unavailable — a refresh will just fall back to the seed buddy */ }
   }, [tw.species, tw.color, tw.name, tw.stage, tw.charStyle, bump]);
 
-  // switch the active character line (classic / korean) for every Mascot
-  React.useEffect(() => { window.JX_CHAR_STYLE = tw.charStyle; setBump(b => b + 1); }, [tw.charStyle]);
-  // EggShape (EggHatch.jsx) reads this the same way Mascot reads JX_CHAR_STYLE
-  React.useEffect(() => { window.JX_RARE_EGG_STYLE = tw.rareEggStyle; setBump(b => b + 1); }, [tw.rareEggStyle]);
-
-  // DexProgress reads this at render time, like Mascot reads JX_CHAR_STYLE
-  React.useEffect(() => { window.JX_DEX_HEADER = tw.dexHeader; setBump(b => b + 1); }, [tw.dexHeader]);
+  // JX_CHAR_STYLE / JX_RARE_EGG_STYLE / JX_EPIC_EGG_STYLE / JX_COMMON_EGG_ART / JX_DEX_HEADER
+  // are now set synchronously up near `setLang(lang)`, not here — see the comment there.
 
   // Each character style has its own buddy roster (name + brand colour per species). When
   // the style or the selected buddy changes, adopt that buddy's name and colour so the
@@ -624,14 +631,38 @@ function App() {
               </div>
               {/* 'original' — flat shell, two nearly-invisible dark-on-dark flecks. 'revamp'
                   gives the shell the same multi-stop-gradient treatment epic's shell already
-                  gets (kept in green, not epic's violet), and the flecks a bright fill + thin
-                  rim so they actually read next to it — everywhere EggShape draws a rare egg
-                  (Shop, Home, Battle egg drops), not just this screen. */}
+                  gets, plus a cream ribbon band and leaf-shaped flecks. 'painted' (default)
+                  swaps the CSS shell for the painted PNG in /assets/egg-types/rare.png, same
+                  move as "Common egg art" / "Epic egg style" → Painted — everywhere EggShape
+                  draws a rare egg (Shop, Home, Battle egg drops), not just this screen. */}
               <div className="tw-label">Rare egg style</div>
               <div className="tw-row">
-                {[['original', 'Original'], ['revamp', 'Revamp']].map(([v, l]) => (
+                {[['original', 'Original'], ['revamp', 'Revamp'], ['painted', 'Painted']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.rareEggStyle === v ? ' on' : '')}
                     onClick={() => setTw(s => ({ ...s, rareEggStyle: v }))}>{l}</button>
+                ))}
+              </div>
+              {/* 'original' — the specular gold sweep + glow-filtered star flecks epic has always
+                  had. 'revamp' flattens it the same way rare's revamp did: a solid gold band with
+                  one fold line, faceted flecks with no blur. 'painted' (default) swaps the CSS
+                  shell for the painted PNG in /assets/egg-types/epic.png, same move as "Common
+                  egg art" → Painted — everywhere EggShape draws an epic egg. */}
+              <div className="tw-label">Epic egg style</div>
+              <div className="tw-row">
+                {[['original', 'Original'], ['revamp', 'Revamp'], ['painted', 'Painted']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.epicEggStyle === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, epicEggStyle: v }))}>{l}</button>
+                ))}
+              </div>
+              {/* 'drawn' — the original flat CSS shell. 'image' — the painted PNG dropped
+                  into /assets/egg-types/ (EggShape, EggHatch.jsx), swapped in everywhere a
+                  common egg is drawn (Shop, Home, Battle, Onboarding) so the two can be
+                  compared side by side before picking one. */}
+              <div className="tw-label">Common egg art</div>
+              <div className="tw-row">
+                {[['drawn', 'Drawn'], ['image', 'Painted']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.commonEggArt === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, commonEggArt: v }))}>{l}</button>
                 ))}
               </div>
               {/* Each tier's own painted hatch backdrop lives in /assets/egg/ (EGG_HATCH_BG in

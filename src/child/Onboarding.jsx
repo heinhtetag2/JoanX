@@ -475,9 +475,12 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               {eggPhase === 'cracking' && !gradualCrack && <div className="jx-burst" style={{ position: 'absolute', width: 210, height: 210, borderRadius: 999, background: `radial-gradient(circle, ${shade(STARTER_EGG_C, 60)} 0%, transparent 68%)` }} />}
               <button data-sfx="off" onClick={eggPhase === 'cracking' ? undefined : crackEgg} disabled={eggPhase === 'cracking'} className={`jx-press ${eggPhase === 'cracking' ? (gradualCrack ? '' : 'jx-egg-hatch') : 'jx-egg-idle'}`} aria-label={L('Tap the egg to hatch')} style={{ background: 'none', border: 'none', cursor: eggPhase === 'cracking' ? 'default' : 'pointer', padding: 0 }}>
                 {/* the common starter egg — its own sand shell, not the buddy's colour (that
-                    would give the surprise away), and matching the wash behind it */}
+                    would give the surprise away), and matching the wash behind it. No `color`
+                    prop here (rarity="common" already resolves it via eggColorFor) — passing
+                    one anyway used to trip EggShape's painted-image guard and drop the
+                    cracking egg back to the flat CSS shell mid-hatch. */}
                 {eggPhase === 'cracking' && gradualCrack
-                  ? <CrackingEgg size={132} rarity="common" color={STARTER_EGG_C} />
+                  ? <CrackingEgg size={132} rarity="common" />
                   : <EggShape size={132} rarity="common" />}
               </button>
             </div>

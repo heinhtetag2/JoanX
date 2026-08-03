@@ -24,13 +24,40 @@ const EGG_SKIN = {
 };
 const eggColorFor = (rarity) => EGG_SKIN[rarity] || '#e6a94b';
 
+// The hatch flow's UI chrome (ring, tap-pill icon, shake affordance, burst glow, cracked
+// shell halves, CTA button) all tint off ONE colour, on the assumption it matches the egg
+// on screen — true for the flat CSS shells above, which are drawn from EGG_SKIN itself.
+// The painted PNGs were painted independently and don't all land back on that hue: rare's
+// (/assets/egg-types/rare.png) is sky blue, not EGG_SKIN.rare's leaf green, so a ring/button
+// tinted green around a blue egg reads as a mismatch. When the painted art is showing, pull
+// the chrome colour from THEME.primary instead — the app's own ocean blue, close to the
+// egg's blue and already the brand's accent, so this doesn't just fix the clash but also
+// ties the hatch flow back to the rest of the app's palette.
+function eggAccentFor(rarity) {
+  if (rarity === 'rare' && window.JX_RARE_EGG_STYLE === 'painted') return THEME.primary;
+  return eggColorFor(rarity);
+}
+
+// A painted (not CSS-drawn) common egg — dropped into /assets/egg-types/ so it can be
+// compared against the original flat shell before replacing it outright. Tweaks →
+// "Common egg art" flips window.JX_COMMON_EGG_ART the same way "Rare egg style" flips
+// window.JX_RARE_EGG_STYLE below.
+const COMMON_EGG_IMG = '/assets/egg-types/common.png';
+// Same move, for epic — Tweaks → "Epic egg style" → "Painted" flips
+// window.JX_EPIC_EGG_STYLE to 'painted' the same way "Common egg art" flips
+// window.JX_COMMON_EGG_ART above.
+const EPIC_EGG_IMG = '/assets/egg-types/epic.png';
+// Same move, for rare — Tweaks → "Rare egg style" → "Painted" flips
+// window.JX_RARE_EGG_STYLE to 'painted' the same way epic's does above.
+const RARE_EGG_IMG = '/assets/egg-types/rare.png';
+
 // Painted hatch backdrops, one per egg tier — shared by the Shop (buying/hatching
 // an owned egg) and Onboarding (the first buddy's egg). /assets/egg/ is the standard
 // drop folder for this art; a tier missing from this map just keeps the drifting
 // jx-egg-bg CSS gradient, so adding one here is the whole job.
 const EGG_HATCH_BG = {
   common: '/assets/egg/egg-bg-common.png',
-  rare: '/assets/egg/egg-bg-forest2.png',
+  rare: '/assets/egg/bgbgrare.png',
   epic: '/assets/egg/egg-bg-epic2.png',
   // new candidates not yet assigned to a tier — kept as their own keys so Tweaks →
   // Preview: background can try them against any egg before one gets picked for a tier.
@@ -49,6 +76,34 @@ function EggShape({ size = 120, color, rarity }) {
   // and this is a dev preview knob, not real app state, so App.jsx sets the global on
   // change and bumps a counter to force the re-render that picks it up.
   const revamp = rarity === 'rare' && !color && window.JX_RARE_EGG_STYLE === 'revamp';
+  // Tweaks → "Epic egg style" — same wiring as rare's revamp toggle above. 'revamp' swaps
+  // the specular gold sweep + glow-filtered star flecks for the same flat-card move rare
+  // got: a solid band with one fold line, faceted flecks with no blur/drop-shadow.
+  const epicRevamp = rarity === 'epic' && !color && window.JX_EPIC_EGG_STYLE === 'revamp';
+  // Tweaks → "Common egg art" — same wiring, swaps the flat-drawn common shell for the
+  // painted PNG. Kept as an early return so every caller (Shop, Home, Battle, Onboarding,
+  // CrackingEgg) picks it up for free, same as revamp above.
+  if ((!rarity || rarity === 'common') && !color && window.JX_COMMON_EGG_ART === 'image') {
+    return (
+      <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
+        <img src={COMMON_EGG_IMG} alt="" style={{ position: 'absolute', top: '50%', left: '50%', width: size * 1.55, height: size * 1.55, transform: 'translate(-50%, -50%)', objectFit: 'contain', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+  if (rarity === 'epic' && !color && window.JX_EPIC_EGG_STYLE === 'painted') {
+    return (
+      <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
+        <img src={EPIC_EGG_IMG} alt="" style={{ position: 'absolute', top: '50%', left: '50%', width: size * 1.55, height: size * 1.55, transform: 'translate(-50%, -50%)', objectFit: 'contain', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+  if (rarity === 'rare' && !color && window.JX_RARE_EGG_STYLE === 'painted') {
+    return (
+      <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
+        <img src={RARE_EGG_IMG} alt="" style={{ position: 'absolute', top: '50%', left: '50%', width: size * 1.55, height: size * 1.55, transform: 'translate(-50%, -50%)', objectFit: 'contain', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
   const c = color || eggColorFor(rarity);
   // epic gets an iridescent body — violet into magenta into deep indigo — so it reads as
   // legendary next to the flat common shell. Revamp gives rare the same move — a multi-stop
@@ -62,8 +117,9 @@ function EggShape({ size = 120, color, rarity }) {
     : `radial-gradient(120% 90% at 32% 26%, #fff 0%, ${c} 60%, ${shade(c, -22)} 100%)`;
   return (
     <div style={{ position: 'relative', width: size, height: size * 1.28 }}>
-      {/* epic — an aura pooled behind the shell */}
-      {epic && <div style={{ position: 'absolute', inset: '-14%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(191,127,247,.45) 0%, rgba(191,127,247,0) 68%)', filter: 'blur(2px)', pointerEvents: 'none' }} />}
+      {/* epic, original — an aura pooled behind the shell. Dropped in revamp along with
+          the other glow/blur decor below — the flat card language doesn't pool light. */}
+      {epic && !epicRevamp && <div style={{ position: 'absolute', inset: '-14%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(191,127,247,.45) 0%, rgba(191,127,247,0) 68%)', filter: 'blur(2px)', pointerEvents: 'none' }} />}
 
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '50% 50% 48% 48% / 62% 62% 38% 38%', background: shell,
         boxShadow: epic
@@ -79,26 +135,49 @@ function EggShape({ size = 120, color, rarity }) {
           <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: shade(c, -22), opacity: o, transform: 'rotate(45deg)' }} />
         ))}
 
-        {/* rare, revamp — the same flecks, but bright instead of a shade darker than the
-            shell (the old dark-on-dark pairing is nearly invisible at 56px), a thin rim
-            for definition instead of a blur/glow, and one more of them scattered the way
-            common's speckles are — a family resemblance between the two plainest tiers,
-            not a different technique bolted on. */}
-        {rarity === 'rare' && revamp && [[24, 30, 13, .95], [46, 68, 10, .85], [68, 24, 9, .8], [58, 50, 7, .7]].map(([t, l, s, o], i) => (
-          <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: shade(c, 62), opacity: o, transform: 'rotate(45deg)', boxShadow: `0 0 0 1px ${shade(c, -26)}55` }} />
-        ))}
+        {/* rare, revamp — a cream ribbon banding the shell (the one loud read that says
+            "special" without reaching for a glow or a sparkle) plus a scatter of leaf
+            flecks instead of diamonds. Flat fills only — a solid band with a single fold
+            line, single-shade leaves — so it reads as JoanX's own flat card language
+            rather than a glossy 3D render. */}
+        {rarity === 'rare' && revamp && (
+          <React.Fragment>
+            <div style={{ position: 'absolute', top: '45%', left: '-12%', width: '124%', height: '13%', transform: 'rotate(-6deg)', background: '#f2e6c8', boxShadow: `inset 0 -3px 0 #d9c79c` }} />
+            {[[22, 28, 11, .92], [66, 20, 8, .8], [30, 70, 7, .7], [72, 64, 9, .85]].map(([t, l, s, o], i) => (
+              <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s * 1.3, borderRadius: '0 100% 0 100%', background: shade(c, 34), opacity: o, transform: 'rotate(45deg)' }} />
+            ))}
+          </React.Fragment>
+        )}
 
         {epic && (
           <React.Fragment>
-            {/* magenta iridescence sweeping the lower shell */}
+            {/* magenta iridescence sweeping the lower shell — shell coloring, not decor,
+                so it stays in both variants the same way rare's gradient shell does. */}
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(80% 60% at 78% 82%, rgba(255,106,193,.55) 0%, rgba(255,106,193,0) 62%)' }} />
-            {/* jewelled gold band with a bright specular run */}
-            <div style={{ position: 'absolute', top: '45%', left: '-12%', width: '124%', height: '11%', transform: 'rotate(-7deg)', background: 'linear-gradient(90deg,#8a6200 0%,#e0ac1f 18%,#fff3b0 42%,#ffffff 52%,#fff3b0 62%,#e0ac1f 84%,#8a6200 100%)', boxShadow: '0 1px 0 rgba(255,255,255,.5) inset, 0 3px 7px rgba(40,16,80,.35)' }} />
-            <div style={{ position: 'absolute', top: '47.5%', left: '-12%', width: '124%', height: '1.6%', transform: 'rotate(-7deg)', background: 'rgba(255,255,255,.85)', opacity: .7 }} />
-            {/* graded star flecks — a few bright, a few faint, none uniform */}
-            {[[20, 24, 13, 1], [30, 72, 9, .95], [63, 20, 8, .85], [70, 68, 12, 1], [82, 42, 7, .7], [52, 84, 6, .6], [88, 74, 5, .5]].map(([t, l, s, o], i) => (
-              <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: '#fff6c9', opacity: o, clipPath: STAR, filter: i % 3 === 0 ? 'drop-shadow(0 0 3px #ffe680)' : 'none' }} />
-            ))}
+
+            {!epicRevamp && (
+              <React.Fragment>
+                {/* jewelled gold band with a bright specular run */}
+                <div style={{ position: 'absolute', top: '45%', left: '-12%', width: '124%', height: '11%', transform: 'rotate(-7deg)', background: 'linear-gradient(90deg,#8a6200 0%,#e0ac1f 18%,#fff3b0 42%,#ffffff 52%,#fff3b0 62%,#e0ac1f 84%,#8a6200 100%)', boxShadow: '0 1px 0 rgba(255,255,255,.5) inset, 0 3px 7px rgba(40,16,80,.35)' }} />
+                <div style={{ position: 'absolute', top: '47.5%', left: '-12%', width: '124%', height: '1.6%', transform: 'rotate(-7deg)', background: 'rgba(255,255,255,.85)', opacity: .7 }} />
+                {/* graded star flecks — a few bright, a few faint, none uniform */}
+                {[[20, 24, 13, 1], [30, 72, 9, .95], [63, 20, 8, .85], [70, 68, 12, 1], [82, 42, 7, .7], [52, 84, 6, .6], [88, 74, 5, .5]].map(([t, l, s, o], i) => (
+                  <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: '#fff6c9', opacity: o, clipPath: STAR, filter: i % 3 === 0 ? 'drop-shadow(0 0 3px #ffe680)' : 'none' }} />
+                ))}
+              </React.Fragment>
+            )}
+
+            {/* epic, revamp — same flat-card move as rare's ribbon: a solid gold band with
+                one fold line instead of a specular sweep, and faceted flecks (a thin rim,
+                no blur/drop-shadow) instead of glow-filtered stars. */}
+            {epicRevamp && (
+              <React.Fragment>
+                <div style={{ position: 'absolute', top: '45%', left: '-12%', width: '124%', height: '12%', transform: 'rotate(-7deg)', background: '#e0ac1f', boxShadow: 'inset 0 -3px 0 #8a6200' }} />
+                {[[20, 26, 10, .95], [64, 20, 8, .85], [30, 70, 9, .8], [72, 66, 7, .75], [50, 50, 6, .6]].map(([t, l, s, o], i) => (
+                  <div key={i} style={{ position: 'absolute', top: `${t}%`, left: `${l}%`, width: s, height: s, background: '#fff6c9', opacity: o, transform: 'rotate(45deg)', boxShadow: '0 0 0 1px #6b4b0055' }} />
+                ))}
+              </React.Fragment>
+            )}
           </React.Fragment>
         )}
 
@@ -172,7 +251,7 @@ const HATCH_CRACK_MS = 2400;
 // not an instant swap. Same EggShape underneath, so the shell art is unchanged;
 // this only layers the crack + light and swaps the animation timing.
 function CrackingEgg({ size = 132, rarity, color }) {
-  const c = color || eggColorFor(rarity);
+  const c = color || eggAccentFor(rarity);
   const w = size, h = size * 1.28;
   // a jagged seam down the shell, plus two short branches that spread off it
   const seam = 'M50 6 L45 24 L55 40 L44 58 L57 76 L46 95 L52 116';
@@ -245,7 +324,7 @@ function EggHatchFlow({ egg, bgRarity, eggShake = false, gradualCrack = false, o
   const isCracking = phase === 'cracking';
   const b = reveal ? result.buddy : null;
   const rar = b ? RARITY[b.rarity] : null;
-  const eggC = eggColorFor(egg.rarity);   // shell colour of the egg being hatched
+  const eggC = eggAccentFor(egg.rarity);   // shell/chrome colour of the egg being hatched
   // A tier with painted art gets that image instead of the drifting CSS gradient. Kept
   // through the reveal too — the scene shouldn't swap out from under the buddy the moment
   // it appears, so the same backdrop carries from waiting egg through reveal.
@@ -325,12 +404,13 @@ function EggHatchFlow({ egg, bgRarity, eggShake = false, gradualCrack = false, o
             {result.dup ? `${L('You already have')} ${b.name} — ${L('turned into XP')}` : L('Added to your collection')}
           </p>
 
-          {/* CTA — bottom-anchored, full-width pill */}
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <button onClick={onDone} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: shade(eggC, -22), color: '#fff', borderRadius: 18, padding: '16px 0', fontSize: 15.5, fontWeight: 800, boxShadow: 'none' }}>
-              {result.dup ? L('Awesome!') : L('Keep it')}
-            </button>
-          </div>
+          {/* CTA — a round close button sitting right under the content instead of
+              pinned to the screen edge: the reveal is a moment to dismiss, not a form
+              to submit, so it ends where the content ends. aria-label carries the real
+              action (Keep it / Awesome!) since the icon alone doesn't say it. */}
+          <button onClick={onDone} className="jx-press" aria-label={result.dup ? L('Awesome!') : L('Keep it')} style={{ marginTop: 22, width: 40, height: 40, flexShrink: 0, border: 'none', cursor: 'pointer', background: `${shade(eggC, -22)}b3`, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', position: 'relative' }}>
+            <Icon name="x" size={18} color="#fff" stroke={2.6} />
+          </button>
         </React.Fragment>
       )}
     </div>,
@@ -338,4 +418,4 @@ function EggHatchFlow({ egg, bgRarity, eggShake = false, gradualCrack = false, o
   );
 }
 
-export { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS, EggHatchFlow };
+export { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, COMMON_EGG_IMG, EPIC_EGG_IMG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS, EggHatchFlow };
