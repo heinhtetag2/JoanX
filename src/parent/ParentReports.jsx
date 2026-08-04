@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentReports
 
 import React from 'react';
-import { CHILDREN, CHILD_REPORTS, FEATURES, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
+import { CHILDREN, CHILD_REPORTS, FEATURES, PARENT_ALERTS, PARENT_METRICS, PERMISSIONS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
 import { Icon, PhotoAvatar, THEME, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
@@ -148,6 +148,19 @@ function StdBarChart({ data, series, line, yMax, yStep, height = 168, barW = 9, 
   );
 }
 
+// Icon/color per PARENT_ALERTS kind — mirrors ParentActivity's own KIND map (that one's
+// module-private, so this is a small deliberate duplicate, same as this file's own RESP/SERIES
+// palettes) so the alerts preview here reads visually identical to the full feed it links to.
+const ALERT_KIND = {
+  warning:    { icon: 'triangle-alert', bg: THEME.warningLight, fg: THEME.warning },
+  ignored:    { icon: 'octagon-alert',  bg: THEME.dangerLight,  fg: THEME.danger },
+  safe:       { icon: 'shield-check',   bg: THEME.successLight, fg: THEME.success },
+  streak:     { icon: 'flame',          bg: THEME.goldLight,    fg: THEME.gold },
+  device_off: { icon: 'wifi-off',       bg: THEME.surface2,     fg: THEME.fg2 },
+  device_on:  { icon: 'wifi',           bg: THEME.surface2,     fg: THEME.fg2 },
+  limited:    { icon: 'shield-alert',   bg: THEME.warningLight, fg: THEME.warning },
+};
+
 // Small round avatar chip for the bot side of the chat drawer — same gradient as the FAB
 // that opens it, so the icon that started the conversation keeps "speaking" inside it.
 function ChatAvatar() {
@@ -176,7 +189,7 @@ const formatWeekRange = (startISO, endISO, ko) => {
 };
 
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
-function ParentReports({ ctx, kpiStyle = 'cards' }) {
+function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
   const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
@@ -187,6 +200,11 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
   // for a kid whose history doesn't even go that far.
   const [weekIdx, setWeekIdx] = React.useState(0);
   React.useEffect(() => { setWeekIdx(0); }, [sel]);
+  // [homeExtras] "Send a cheer" confirmation — local-only (no backend in this prototype,
+  // same ADR-003 no-persist rule everything else here follows), resets when the child
+  // switches so a cheer sent to Mina doesn't read as already-sent when you flip to Leo.
+  const [cheerSent, setCheerSent] = React.useState(false);
+  React.useEffect(() => { setCheerSent(false); }, [sel]);
 
   // loading — KPI + chart shimmer while the week's report is fetched
   if (ctx.demo?.loading) {
@@ -263,6 +281,21 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
     reactions: REACTIONS_7D, risk: RISK_TREND,
   };
   const reactions = rep.reactions, risk = rep.risk;
+  // [homeExtras] 4-week trend — oldest→newest acceptance rate, so a parent can see the
+  // trajectory in one glance instead of paging the week switcher back three times to
+  // piece it together themselves. weeksList is already newest-first (see comment above).
+  const trendWeeks = weeksList && weeksList.length > 1 ? weeksList.slice().reverse() : null;
+  // [homeExtras] Riskiest rule window — which of this child's own schedule windows
+  // (School commute / After school / Playground / At home) their warning & ignored
+  // events cluster in, computed from PARENT_ALERTS' `window` tag (see data.jsx). Tells a
+  // parent WHICH rule to tighten instead of just how many warnings happened overall.
+  const riskWindow = (() => {
+    const tally = {};
+    PARENT_ALERTS.filter(a => a.child === child.id && (a.kind === 'warning' || a.kind === 'ignored') && a.window)
+      .forEach(a => { tally[a.window] = (tally[a.window] || 0) + 1; });
+    const entries = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+    return entries.length ? { label: entries[0][0], count: entries[0][1] } : null;
+  })();
   // the range/label copy leans on — "this week" when weekIdx is 0, the concrete
   // date range otherwise, so a parent browsing history never reads a stale "this week".
   const isCurrentWeek = clampedWeekIdx === 0;
@@ -334,7 +367,13 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
     { img: '/assets/reports/icon-stopped.png', v: stoppedCount, delta: rep.deltas?.acceptance, l: 'Stopped when warned', sub: kpiSub, c: THEME.success },
     { img: '/assets/reports/icon-ignored.png', v: ignoredTotal, l: 'Ignored', sub: kpiSub, c: THEME.danger },
     { img: '/assets/reports/icon-walking.png', v: rep.safeWalkMin + 'm', delta: rep.deltas?.walk, l: 'Safe walking', sub: ko ? `${weekLabel} 총 시간` : `total ${weekLabel}`, c: THEME.mountain },
-    { img: '/assets/reports/icon-streak.png', v: rep.streak + 'd', delta: rep.deltas?.streak, l: 'Safe streak', sub: ko ? '연속 목표 달성' : 'days in a row', c: THEME.gold },
+    {
+      img: '/assets/reports/icon-streak.png', v: rep.streak + 'd', delta: rep.deltas?.streak, l: 'Safe streak', sub: ko ? '연속 목표 달성' : 'days in a row', c: THEME.gold,
+      // [homeExtras] personal-best badge — child.bestStreak is a tracked record distinct
+      // from the current streak, so this reads "new record" only when actually true, and
+      // "best: Nd" as a quiet target the rest of the time — never a fabricated "beat it!".
+      badge: homeExtras === 'on' ? (rep.streak >= child.bestStreak ? (ko ? '🏆 최고 기록!' : '🏆 New best!') : (ko ? `최고 ${child.bestStreak}일` : `Best: ${child.bestStreak}d`)) : null,
+    },
   ].map(k => {
     const positive = String(k.delta).trim().startsWith('+');
     const good = k.l === 'Avg. response' ? !positive : positive;
@@ -405,6 +444,31 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
       <ParentHead stacked sub={isCurrentWeek ? L("This week's progress") : (ko ? `${weekRangeLabel} 진행 상황` : `${weekRangeLabel} progress`)} title={<span>{nm} <span style={{ fontSize: 19 }}>{doingWell ? '🌱' : '💪'}</span></span>} right={<ChildChip selected={sel} onPick={setSel} />} />
       <div style={{ padding: '8px 20px 0' }}>
 
+        {/* [homeExtras] Other kids at a glance — a faster path than opening the switcher
+            dropdown when you just want to eyeball how everyone's doing, not necessarily
+            switch. Each chip still switches on tap, same as a dropdown row would. */}
+        {homeExtras === 'on' && CHILDREN.length > 1 && (
+          <div className="no-sb" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto' }}>
+            {CHILDREN.map((c, i) => {
+              if (i === Math.min(sel, CHILDREN.length - 1)) return null;
+              const r = (CHILD_REPORTS[c.id]?.weeks?.[0]) || CHILD_REPORTS[c.id];
+              const acc = r?.acceptance ?? PARENT_METRICS.acceptance;
+              const pal = avatarPalFor(c.id);
+              return (
+                <button key={c.id} onClick={() => setSel(i)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: 'none', borderRadius: 999, padding: '6px 13px 6px 6px', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <PhotoAvatar src={c.photo} size={28} style={{ borderRadius: 999, background: `var(--color-interactives-avatar-${pal}-default)` }}
+                    fallback={<PhotoAvatar src="/assets/avatars/avatar-child.png" size={28} style={{ borderRadius: 999, background: `var(--color-interactives-avatar-${pal}-default)` }}
+                      fallback={<MascotChip species={c.avatar} color={c.color} size={28} bg={THEME.surface2} />} />} />
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg1, lineHeight: 1.15 }}>{c.name}</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: acc >= 75 ? THEME.success : THEME.gold, lineHeight: 1.2, marginTop: 1 }}>{acc}%</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Week switcher — the report's actual date range, with chevrons to step
             through this child's history. weekIdx 0 is always "now"; a parent has no
             other way to tell which 7 days the numbers below describe, or to look back. */}
@@ -428,10 +492,14 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
 
         {/* Highlight strip — the one-line "so, how's the week going?" the header used to
             leave blank. Tone-aware: a warm-green win when the child is trending well, a
-            soft amber nudge when it needs a look. The emoji + bold headline give the
-            screen a lead voice before the numbers start. Tappable — jumps straight to
-            this child's Rules & settings. */}
-        <button onClick={() => ctx.nav('p_settings', { child })} aria-label={L('Rules & settings')}
+            soft amber nudge when it needs a look. No "AI" badge here — that tag stays on
+            ParentAIReport's own hero, where it labels a whole page of generated narrative;
+            slapping it on every rule-based blurb waters it down. This card is still a plain-
+            language read of the numbers below it though, so tapping it goes straight to the
+            fuller AI result page (ParentAIReport) — the finished write-up, not the chat
+            entry point — rather than Rules & settings, which nothing about this card was
+            actually about. */}
+        <button onClick={() => ctx.nav('p_aireport', { childId: child.id })} aria-label={L('AI Safety Report')}
           style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
@@ -448,6 +516,90 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
           </div>
           <Icon name="chevron-right" size={18} color={tone.ink} stroke={2.4} style={{ opacity: .55, flexShrink: 0 }} />
         </button>
+
+        {/* Live status — "is protection on right now", the one thing on this screen that's
+            true as of this moment rather than a weekly retrospective. Sits below the
+            highlight strip: header → date range → "how's the week going" → "is it actually
+            working right now" → the numbers. Taps through to the device list (Children).
+            One card, one thin divider between the status row and the permission row (not
+            two nested colored boxes) — matches how the response-mix and recent-alerts cards
+            below use dividers between sections rather than stacking blocks. The permission
+            row reads the same onboarding-consent data Children already shows (cfg.grants) —
+            a missing permission silently limits warnings, which matters just as much as
+            "online" does to whether protection is actually working, so it's one tap away
+            instead of requiring a trip to a different tab to discover. */}
+        {(() => {
+          const grants = child.cfg?.grants || Object.fromEntries(PERMISSIONS.map(p => [p.id, true]));
+          const consentOff = PERMISSIONS.filter(p => !grants[p.id]).length;
+          const allConsented = consentOff === 0;
+          return (
+            <div style={{ background: '#fff', borderRadius: 18, padding: '13px 15px', marginBottom: 14 }}>
+              <button onClick={() => ctx.nav('p_children')} aria-label={L('Children')}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 999, background: child.online ? THEME.successLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* link-2, not shield-check — shield is reserved for the permission row
+                      below, so an online + fully-consented child doesn't show the same icon
+                      twice in one card. Matches ParentChildren's own online/offline glyph. */}
+                  <Icon name={child.online ? 'link-2' : 'link-2-off'} size={18} color={child.online ? THEME.success : THEME.fg3} stroke={2.3} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.fg1 }}>
+                    {child.online ? (ko ? '지금 보호 중이에요' : 'Protection is active') : (ko ? '기기가 오프라인이에요' : 'Device is offline')}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {child.device} · {child.online ? `${L('Last seen')} ${child.lastSeen}` : L('Open to connect')}
+                  </div>
+                </div>
+                {child.online && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                    <Icon name="battery-medium" size={14} color={child.battery < 50 ? THEME.warning : THEME.fg2} stroke={2.3} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>{child.battery}%</span>
+                  </span>
+                )}
+              </button>
+              <button onClick={() => ctx.nav('p_settings', { child })} aria-label={L('Rules & settings')}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', marginTop: 11, paddingTop: 11, border: 'none', borderTop: `1px solid ${THEME.border}`, background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                <Icon name={allConsented ? 'shield-check' : 'shield-alert'} size={14} color={allConsented ? THEME.success : THEME.warning} stroke={2.3} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: allConsented ? THEME.success : THEME.warning }}>
+                  {allConsented
+                    ? (ko ? '온보딩 동의 모두 완료' : 'All setup permissions on')
+                    : (ko ? `온보딩 ${consentOff}개 미동의 · 안전 경고 제한` : `${consentOff} setup permission${consentOff > 1 ? 's' : ''} off · warnings limited`)}
+                </span>
+                <Icon name="chevron-right" size={13} color={THEME.fg3} stroke={2.4} style={{ flexShrink: 0 }} />
+              </button>
+            </div>
+          );
+        })()}
+
+        {/* [homeExtras] 4-week trend + "send a cheer" — one compact row rather than two more
+            full cards. The sparkline answers "is this really improving" without paging the
+            week switcher three times; the cheer button is the one action on this whole screen
+            that talks back to the child instead of just reporting on them. Local-only state
+            (no backend), matching this prototype's no-persist rule elsewhere. */}
+        {homeExtras === 'on' && trendWeeks && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#fff', borderRadius: 18, padding: '13px 15px', marginBottom: 14 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .3 }}>{ko ? '4주 추이 · 수용률' : '4-week trend · acceptance'}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginTop: 6 }}>
+                <svg width={92} height={30} viewBox="0 0 92 30" style={{ flexShrink: 0, overflow: 'visible' }}>
+                  <polyline points={trendWeeks.map((w, i) => `${(i / (trendWeeks.length - 1)) * 84 + 4},${28 - (w.acceptance / 100) * 24}`).join(' ')} fill="none" stroke={BRAND.primary} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  {trendWeeks.map((w, i) => {
+                    const last = i === trendWeeks.length - 1;
+                    return <circle key={i} cx={(i / (trendWeeks.length - 1)) * 84 + 4} cy={28 - (w.acceptance / 100) * 24} r={last ? 3.4 : 2.2} fill={last ? BRAND.primary : '#fff'} stroke={BRAND.primary} strokeWidth={last ? 0 : 1.6} />;
+                  })}
+                </svg>
+                <span style={{ fontSize: 19, fontWeight: 800, color: THEME.fg1, lineHeight: 1 }}>{trendWeeks[trendWeeks.length - 1].acceptance}%</span>
+              </div>
+            </div>
+            <button onClick={() => setCheerSent(true)} disabled={cheerSent} aria-label={ko ? '응원 보내기' : 'Send encouragement'}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: cheerSent ? THEME.successLight : '#fff', border: `1.5px solid ${cheerSent ? 'transparent' : THEME.border}`, borderRadius: 999, padding: '9px 14px', fontFamily: 'inherit', cursor: cheerSent ? 'default' : 'pointer', flexShrink: 0 }}>
+              <span style={{ fontSize: 15, lineHeight: 1 }}>{cheerSent ? '✅' : '🎉'}</span>
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: cheerSent ? THEME.success : THEME.fg1, whiteSpace: 'nowrap' }}>
+                {cheerSent ? (ko ? '응원 보냄' : 'Sent!') : (ko ? '응원 보내기' : 'Send cheer')}
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* KPI block — Tweaks: 'cards' (2×2 white cards) or flat 'ring' (ring + stat grid, no card bg) */}
         {kpiStyle === 'ring' ? (
@@ -505,10 +657,63 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
                 <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: k.c, marginTop: 10 }}>{k.v}</div>
                 <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 4 }}>{L(k.l)}</div>
                 {k.sub && <div style={{ fontSize: 10.5, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{k.sub}</div>}
+                {k.badge && <div style={{ fontSize: 10.5, color: THEME.gold, fontWeight: 800, marginTop: 4 }}>{k.badge}</div>}
               </div>
             ))}
           </div>
         )}
+
+        {/* [homeExtras] Recent alerts — the KPI grid says "3 ignored"; this says when and
+            where, which is what a parent actually needs to bring up with their kid. Reads
+            straight off PARENT_ALERTS (same source as the full Activity feed this links to),
+            filtered to the selected child, newest first. Each row also names the rule window
+            (School commute / After school / …) it happened in when one's tagged, and the
+            footer surfaces the riskWindow aggregate computed above — not more hardcoded
+            flavor text, an actual tally over this child's own alerts. */}
+        {homeExtras === 'on' && (() => {
+          const childAlerts = PARENT_ALERTS.filter(a => a.child === child.id).slice(0, 3);
+          if (!childAlerts.length) return null;
+          return (
+            <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <Icon name="bell" size={17} color={THEME.fg2} stroke={2.2} />
+                  <div style={{ fontSize: 15, fontWeight: 800 }}>{ko ? '최근 알림' : 'Recent alerts'}</div>
+                </div>
+                <button onClick={() => ctx.nav('p_activity')} aria-label={ko ? '전체 보기' : 'See all'} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                {childAlerts.map((a, i) => {
+                  const k = ALERT_KIND[a.kind] || ALERT_KIND.safe;
+                  return (
+                    <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 0', borderTop: i === 0 ? 'none' : `1px solid ${THEME.border}` }}>
+                      <span style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 999, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon name={k.icon} size={16} color={k.fg} stroke={2.3} />
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(a.title)}</div>
+                        <div style={{ fontSize: 11.5, color: THEME.fg3, fontWeight: 600, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(a.sub)}{a.window ? ` · ${L(a.window)}` : ''}</div>
+                      </div>
+                      <span style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600, flexShrink: 0 }}>{L(a.time)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {riskWindow && (
+                <button onClick={() => ctx.nav('p_settings', { child })} aria-label={L('Rules & settings')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', borderTop: `1px solid ${THEME.border}`, marginTop: 6, paddingTop: 12, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <Icon name="clock" size={15} color={THEME.warning} stroke={2.3} style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 12, color: THEME.fg2, fontWeight: 600, lineHeight: 1.4 }}>
+                    {ko
+                      ? <span>위험 순간은 주로 <b style={{ color: THEME.fg1 }}>{L(riskWindow.label)}</b> 시간대에 나타나요</span>
+                      : <span>Risky moments cluster during <b style={{ color: THEME.fg1 }}>{L(riskWindow.label)}</b></span>}
+                  </span>
+                  <Icon name="chevron-right" size={15} color={THEME.fg3} stroke={2.4} style={{ flexShrink: 0 }} />
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {/* response mix card — per-series stats up top, a right %-axis chart with dashed
             gridlines and connected rounded bars, and a bottom insight (reference layout) */}
@@ -665,12 +870,19 @@ function ParentReports({ ctx, kpiStyle = 'cards' }) {
 
       </div>
 
-      {/* floating "ask about this week" button — a guided Q&A, not a free-text chat, so
-          every answer is a pre-written explanation of a number already on this screen */}
-      <button onClick={() => { setChatOpen(true); setAskedQ([]); }} aria-label={L('Ask about this week')}
+      {/* floating "AI Assistant" button — a guided chat, not a straight jump to a static
+          report: it's a conversation (canned Q&A for now, no live LLM call in this
+          prototype) so a parent can ask a follow-up instead of only reading one fixed
+          page. Opens straight into a result rather than an empty question-picker — the
+          first question (risk-moments trend, the one with the chart) is pre-asked, so the
+          drawer greets you with an answer already there; the other three stay below as
+          follow-ups. [homeExtras] additionally offers the fuller AI report screen
+          (ParentAIReport) as the destination instead — that page still exists and is
+          still reachable, just not what this button opens by default anymore. */}
+      <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([0]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
         style={{ position: 'fixed', right: 20, bottom: 104, height: 38, padding: '0 16px 0 12px', borderRadius: 999, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', gap: 6, zIndex: 45 }}>
         <Icon name="sparkles" size={16} color="#fff" stroke={2.2} />
-        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ko ? 'AI 요약' : 'AI summary'}</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ko ? 'AI 어시스턴트' : 'AI Assistant'}</span>
       </button>
 
       {chatOpen && (

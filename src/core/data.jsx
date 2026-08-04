@@ -1944,14 +1944,19 @@ const CHILD_REPORTS = {
 // "Dad already checked this", not a fresh alarm.
 // `unread` follows the same convention as the child app's notification seed (Notifications.jsx):
 // most of today's items start unread, earlier ones have already been seen.
+// `window` — which of the child's own cfg.rules windows (by its `t` label) was active when a
+// walking-related event happened, so a parent can see *when* risk clusters, not just how much.
+// Only set on events actually tied to a walking window (warning/ignored/safe); left off device
+// and streak events, which aren't a window's business. Hand-authored per entry, same as every
+// other field here — there's no live clock or geofence behind this prototype's mock data.
 const PARENT_ALERTS = [
-  { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true, unread: true },
-  { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true, unread: true },
-  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun', unread: true },
+  { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true, unread: true, window: 'After school' },
+  { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true, unread: true, window: 'At home' },
+  { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun', unread: true, window: 'Playground' },
   { id: 'n4', kind: 'device_off', child: 'k2', title: 'Device disconnected',  sub: 'Galaxy A14 went offline',    time: '2h',  today: true, unread: false },
   { id: 'n4b', kind: 'limited',   child: 'k2', title: 'Protection limited',   sub: 'Display-over-apps was turned off', time: '3h', today: true, unread: true },
   { id: 'n5', kind: 'streak',     child: 'k3', title: '8-day safe streak!',   sub: 'New personal best',          time: 'Yesterday', today: false, unread: false },
-  { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false, unread: false },
+  { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false, unread: false, window: 'School commute' },
   { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false, unread: false },
 ];
 
@@ -1963,7 +1968,7 @@ const PARENT_ALERTS = [
 const MAX_CHILDREN = 5;
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5,
+  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5, bestStreak: 9,
     pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
     cfg: {
       mode: 'smart',
@@ -1976,7 +1981,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2,
+  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, bestStreak: 6,
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
@@ -1988,7 +1993,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8,
+  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, bestStreak: 8,
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },
