@@ -495,11 +495,10 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
             soft amber nudge when it needs a look. No "AI" badge here — that tag stays on
             ParentAIReport's own hero, where it labels a whole page of generated narrative;
             slapping it on every rule-based blurb waters it down. This card is still a plain-
-            language read of the numbers below it though, so tapping it goes straight to the
-            fuller AI result page (ParentAIReport) — the finished write-up, not the chat
-            entry point — rather than Rules & settings, which nothing about this card was
-            actually about. */}
-        <button onClick={() => ctx.nav('p_aireport', { childId: child.id })} aria-label={L('AI Safety Report')}
+            language read of the numbers below it though, so tapping it opens the same AI
+            Assistant the floating button does — same destination, same result-first chat —
+            rather than Rules & settings, which nothing about this card was actually about. */}
+        <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
           style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
@@ -874,12 +873,12 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
           report: it's a conversation (canned Q&A for now, no live LLM call in this
           prototype) so a parent can ask a follow-up instead of only reading one fixed
           page. Opens straight into a result rather than an empty question-picker — the
-          first question (risk-moments trend, the one with the chart) is pre-asked, so the
-          drawer greets you with an answer already there; the other three stay below as
-          follow-ups. [homeExtras] additionally offers the fuller AI report screen
-          (ParentAIReport) as the destination instead — that page still exists and is
+          drawer greets you, then leads with the assistant's own summary (risk-moments
+          trend, the one with the chart), not a fake pre-asked question; the other three
+          questions stay below as follow-ups. [homeExtras] additionally offers the fuller AI
+          report screen (ParentAIReport) as the destination instead — that page still exists and is
           still reachable, just not what this button opens by default anymore. */}
-      <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([0]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
+      <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
         style={{ position: 'fixed', right: 20, bottom: 104, height: 38, padding: '0 16px 0 12px', borderRadius: 999, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, boxShadow: BRAND.shadowPrimary, display: 'flex', alignItems: 'center', gap: 6, zIndex: 45 }}>
         <Icon name="sparkles" size={16} color="#fff" stroke={2.2} />
         <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ko ? 'AI 어시스턴트' : 'AI Assistant'}</span>
@@ -893,7 +892,25 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <ChatAvatar />
               <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.5, fontWeight: 500 }}>
-                {ko ? `안녕하세요! ${nm}의 ${weekLabel}에 대해 궁금한 걸 아래에서 골라보세요.` : `Hi! Pick anything below to learn more about ${nm}'s ${isCurrentWeek ? 'week' : `week of ${weekRangeLabel}`}.`}
+                {ko ? `안녕하세요! ${nm}의 ${weekLabel}을 살펴봤어요.` : `Hi! I took a look at ${nm}'s ${isCurrentWeek ? 'week' : `week of ${weekRangeLabel}`}.`}
+              </div>
+            </div>
+
+            {/* lead AI summary — chatQuestions[0]'s content, shown proactively rather than
+                as a fake "you asked this" exchange. Earlier this was faked via a pre-filled
+                askedQ, which rendered a right-aligned bubble in the "sent by you" color as
+                if the parent had typed it — misleading, since they never did. This is just
+                the assistant talking, unprompted, the same way the greeting above is. */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              <ChatAvatar />
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.55, fontWeight: 500 }}>
+                  {chatQuestions[0].a}
+                </div>
+                <div style={{ background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 16, padding: 12 }}>
+                  <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14} height={130}
+                    tooltip={(d, i) => ({ title: dayName(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
+                </div>
               </div>
             </div>
 
@@ -925,9 +942,12 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
               );
             })}
 
-            {/* suggested-question badges — only the ones not asked yet, chip-style like a chat suggestion row */}
+            {/* suggested-question badges — only the ones not asked yet, chip-style like a chat suggestion row.
+                Excludes index 0 permanently (not just while unasked) — it's already shown above as the
+                lead summary, so leaving it in the chip row would let a parent tap it and see the exact
+                same content appear twice. */}
             {(() => {
-              const remaining = chatQuestions.map((cq, i) => ({ ...cq, i })).filter(cq => !askedQ.includes(cq.i));
+              const remaining = chatQuestions.map((cq, i) => ({ ...cq, i })).filter(cq => cq.i !== 0 && !askedQ.includes(cq.i));
               if (!remaining.length) return null;
               return (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 2 }}>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { CHILDREN, NOTICES, LEGAL_DOCS, PARENT_PROFILE } from '../core/data.jsx';
 import { Badge, Bar, BottomSheet, Button, Icon, Input, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
-import { L, setLang } from '../core/i18n.jsx';
+import { L, getLang, setLang } from '../core/i18n.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
 // ── FAQ — grouped Q&A used by the Help / FAQ parent pages ────────────
@@ -63,6 +63,57 @@ const INQUIRY_CONSENT = {
 // groups above so the answers never drift out of sync.
 const POPULAR_FAQS = [FAQ_GROUPS[0].items[0], FAQ_GROUPS[3].items[0], FAQ_GROUPS[0].items[1], FAQ_GROUPS[2].items[0]];
 
+// [inquiryStyle="kr"] — categories a Korean CS flow routes an inquiry by (Toss/Kakao/Naver
+// support all lead with this, not a free-text box) and which FAQ_GROUPS entries most likely
+// answer each one, so the deflection step never invents a question that isn't already
+// covered elsewhere in Help. 'billing' has no matching FAQ topic yet — its items list is
+// empty on purpose, and the FAQ step handles that gracefully rather than showing nothing.
+// Labels are English canonical strings run through L() at render time (same convention
+// as every other string in this file) — NOT translated here at module-load time, since
+// that would freeze them to whatever language was active on first import instead of
+// tracking the live language toggle.
+const INQUIRY_CATEGORIES = [
+  { id: 'account', icon: 'user',          label: 'Account & security',       items: FAQ_GROUPS[0].items },
+  { id: 'billing', icon: 'credit-card',   label: 'Billing & subscription',   items: [] },
+  { id: 'bug',      icon: 'bug',          label: 'Report a bug',             items: FAQ_GROUPS[1].items },
+  { id: 'feature',  icon: 'lightbulb',    label: 'Feature suggestion',       items: FAQ_GROUPS[2].items },
+  { id: 'safety',   icon: 'shield-check', label: 'Child safety',             items: FAQ_GROUPS[1].items },
+  { id: 'etc',      icon: 'more-horizontal', label: 'Other',                 items: POPULAR_FAQS },
+];
+
+// Mock ticket history — the "recent inquiries" peek real Korean CS support always leads
+// with, so a returning parent sees their open tickets before starting a new one. Static/
+// display-only in this prototype, same as other non-interactive rows elsewhere in this
+// file (e.g. the read-only sign-in "Connected" badge). Titles/status run through L().
+// Each ticket's `thread` is the full back-and-forth, not just one Q&A — Korean 1:1-inquiry
+// flows (Toss, Kakao) keep a ticket open for follow-up replies rather than locking it after
+// a single answer, and sendKrReply() below appends to this same array.
+const RECENT_TICKETS = [
+  { title: 'Warnings arrive too late', status: 'answered', time: '3d ago', thread: [
+    { from: 'parent', text: "My son already looked back down by the time the warning went off — feels like it's a beat behind.", time: '3d ago' },
+    { from: 'support', text: "That's expected — JoanX waits about 10 seconds of continuous walking + screen use before warning, so it doesn't false-alarm on a quick glance. If it still feels late for your son, try Strict sensitivity in his Rules & settings — it shortens that window.", time: '2d ago' },
+  ] },
+  { title: "My child's device won't connect", status: 'pending', time: 'Just now', thread: [
+    { from: 'parent', text: "Paired the app but my daughter's phone still shows 'Not connected' after restarting both devices.", time: 'Just now' },
+  ] },
+  // demo ticket with a screenshot already attached — shows the paperclip hint in the
+  // list row and the file chip inside the bubble without needing to send a new inquiry
+  { title: 'App keeps crashing after update', status: 'pending', time: '1h ago', thread: [
+    { from: 'parent', text: 'It crashes every time I open the Reports tab since the last update.', time: '1h ago', files: ['Screenshot_2026-08-04.png'] },
+  ] },
+];
+
+// Small round bot avatar for the KR compose thread — brand-gradient circle, same visual
+// language as ParentReports' own ChatAvatar (that one's module-private to that file, so
+// this is a small deliberate duplicate rather than a cross-file import for one component).
+function KrAvatar() {
+  return (
+    <div style={{ width: 26, height: 26, borderRadius: 999, flexShrink: 0, background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="headphones" size={13} color="#fff" stroke={2.3} />
+    </div>
+  );
+}
+
 // Self-contained accordion: tap a question to reveal its answer.
 function FaqAccordion({ items }) {
   const [open, setOpen] = React.useState(null);
@@ -88,8 +139,11 @@ function FaqAccordion({ items }) {
 }
 
 // ── Settings detail pages (one screen per row) ───────────────────────
-function ParentDetail({ ctx }) {
+function ParentDetail({ ctx, inquiryStyle = 'form' }) {
   const page = ctx.params?.page || 'account';
+  const ko = getLang() === 'ko';   // [inquiryStyle="kr"] — the sentences with an interpolated
+  // category name (L() can't template) branch on this directly, matching ParentReports' own
+  // ko-ternary convention for dynamic strings.
   const [twoFA, setTwoFA] = React.useState(true);
   const [faceId, setFaceId] = React.useState(true);
   const [analytics, setAnalytics] = React.useState(true);
@@ -103,6 +157,41 @@ function ParentDetail({ ctx }) {
   const [inqAgree, setInqAgree] = React.useState(false);       // 1:1 inquiry — privacy consent
   const [inqDoc, setInqDoc] = React.useState(false);           // 1:1 inquiry — consent document sheet
   const [inqSent, setInqSent] = React.useState(false);         // 1:1 inquiry — submitted state
+  // [inquiryStyle="kr"] Korean-CS-style 1:1 inquiry — category picker → FAQ deflection →
+  // chat-thread compose, kept as its own state block (not reused with the inq* fields
+  // above) so switching the Tweaks toggle mid-session can't leave one style's half-typed
+  // draft bleeding into the other's.
+  const [krStep, setKrStep] = React.useState('category');      // 'category' | 'faq' | 'compose'
+  const [krCategory, setKrCategory] = React.useState(null);
+  const [krMsg, setKrMsg] = React.useState('');
+  const [krAgree, setKrAgree] = React.useState(false);
+  const [krDoc, setKrDoc] = React.useState(false);
+  const [krSent, setKrSent] = React.useState(false);
+  const [krTicket, setKrTicket] = React.useState(null);         // 1:1 inquiry (kr) — recent ticket opened for its reply thread
+  const [krReplyMsg, setKrReplyMsg] = React.useState('');       // 1:1 inquiry (kr) — follow-up message being typed in an open ticket
+  const [krFiles, setKrFiles] = React.useState([]);             // 1:1 inquiry (kr) — demo screenshot filenames attached to the compose message
+  // Mutates the ticket's own thread array in place (same PARENT_PROFILE-style local mutation
+  // used elsewhere in this file) and reopens the ticket, mirroring how replying to a resolved
+  // Toss/Kakao-style inquiry puts it back into "awaiting reply" rather than starting a new one.
+  const sendKrReply = () => {
+    if (!krReplyMsg.trim() || !krTicket) return;
+    krTicket.thread = [...krTicket.thread, { from: 'parent', text: krReplyMsg.trim(), time: 'Just now' }];
+    krTicket.status = 'pending';
+    krTicket.time = 'Just now';
+    setKrReplyMsg('');
+    setKrTicket({ ...krTicket });
+  };
+  const addKrFile = () => setKrFiles(f => f.length < 5 ? [...f, `Screenshot_${f.length + 1}.png`] : f);
+  const removeKrFile = i => setKrFiles(f => f.filter((_, j) => j !== i));
+  // Submitting turns the draft into a real ticket at the front of RECENT_TICKETS (same
+  // shared-array mutation as sendKrReply above) so it actually shows up in "Recent
+  // inquiries" instead of vanishing once the confirmation screen is dismissed.
+  const submitKrInquiry = () => {
+    RECENT_TICKETS.unshift({ title: krMsg.trim(), status: 'pending', time: 'Just now', thread: [
+      { from: 'parent', text: krMsg.trim(), time: 'Just now', files: krFiles },
+    ] });
+    setKrSent(true);
+  };
   const activeNotice = NOTICES.find(n => n.id === ctx.params?.noticeId) || NOTICES[0];
   const activeLegal = LEGAL_DOCS.find(d => d.id === ctx.params?.legalId) || LEGAL_DOCS[0];
   // Account editing — one field at a time via a bottom sheet; `rev` bumps to
@@ -532,10 +621,196 @@ function ParentDetail({ ctx }) {
     ) },
   };
 
-  const p = PAGES[page] || PAGES.account;
+  // [inquiryStyle="kr"] Korean-CS-style 1:1 inquiry — category picker → FAQ deflection →
+  // chat-thread compose → sent. Overrides PAGES.inquiry entirely rather than branching
+  // inside it, since title/back/body all vary by krStep in a way the static PAGES map
+  // (one fixed shape per page) doesn't model. Every other page is untouched.
+  let krPage = null;
+  if (page === 'inquiry' && inquiryStyle === 'kr') {
+    if (krSent) {
+      krPage = { title: L('1:1 Inquiry'), sub: null, body: (
+        <div style={{ textAlign: 'center', padding: '28px 12px' }}>
+          <div style={{ width: 64, height: 64, borderRadius: 999, background: BRAND.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="check" size={30} color={BRAND.primary} stroke={2.6} /></div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>{L('Your inquiry has been received')}</div>
+          <Badge variant="warning" style={{ marginBottom: 14 }}>{L('Awaiting reply')}</Badge>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L("We'll reply by email within a day. You can check its progress from your inquiry history.")}</div>
+          <Button variant="primary" fullWidth style={brandBtn} onClick={() => { setKrSent(false); setKrMsg(''); setKrAgree(false); setKrFiles([]); setKrStep('category'); setKrCategory(null); ctx.nav('p_account'); }}>{L('Done')}</Button>
+        </div>
+      ) };
+    } else if (krStep === 'compose' && krCategory) {
+      krPage = { title: L('1:1 Inquiry'), sub: L(krCategory.label), onBack: () => setKrStep('faq'), body: (
+        <React.Fragment>
+          {/* thread — a greeting bubble, chat-style, rather than a cold form heading */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 18 }}>
+            <KrAvatar />
+            <div style={{ maxWidth: '86%', background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.5, fontWeight: 500 }}>
+              {ko ? `안녕하세요! '${L(krCategory.label)}' 관련해서 궁금하신 점을 편하게 남겨주세요.` : `Hi! Feel free to share your question about ${L(krCategory.label).toLowerCase()}.`}
+            </div>
+          </div>
+
+          {label(L('Your message'))}
+          {card(
+            <textarea value={krMsg} onChange={e => setKrMsg(e.target.value)} placeholder={L('Write your question here')} rows={5}
+              style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: 14, color: THEME.fg1, lineHeight: 1.55, padding: '14px', boxSizing: 'border-box' }} />
+          )}
+          {label(L('Screenshots'))}
+          {card(
+            <button onClick={addKrFile} disabled={krFiles.length >= 5} className="jx-press" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', border: 'none', background: 'none', cursor: krFiles.length >= 5 ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              <Icon name="plus" size={18} color={THEME.fg2} stroke={2.4} />
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Add file')}</span>
+              <Icon name="paperclip" size={18} color={THEME.fg3} stroke={2.2} />
+            </button>
+          , krFiles.length ? 10 : 8)}
+          {krFiles.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+              {krFiles.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '6px 6px 6px 10px' }}>
+                  <Icon name="image" size={13} color={THEME.fg2} stroke={2.2} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: THEME.fg1 }}>{f}</span>
+                  <button onClick={() => removeKrFile(i)} aria-label={L('Remove')} className="jx-press" style={{ width: 18, height: 18, borderRadius: 999, border: 'none', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <Icon name="x" size={11} color={THEME.fg2} stroke={2.6} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {card(
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+              <button onClick={() => setKrAgree(!krAgree)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                <div style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${krAgree ? BRAND.primary : THEME.border}`, background: krAgree ? BRAND.primary : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{krAgree && <Icon name="check" size={14} color="#fff" stroke={3} />}</div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: BRAND.primary, flexShrink: 0 }}>[{L('Required')}]</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{L(INQUIRY_CONSENT.label)}</span>
+              </button>
+              <button onClick={() => setKrDoc(true)} aria-label={L('View')} className="jx-press" style={{ padding: 4, border: 'none', background: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex' }}>
+                <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.4} />
+              </button>
+            </div>
+          )}
+          <Button variant="primary" fullWidth icon="send" style={brandBtn} disabled={!krMsg.trim() || !krAgree} onClick={krMsg.trim() && krAgree ? submitKrInquiry : undefined}>{L('Send')}</Button>
+        </React.Fragment>
+      ) };
+    } else if (krTicket) {
+      const t = krTicket;
+      const waitingOnSupport = t.thread[t.thread.length - 1].from === 'parent';
+      krPage = { title: L('1:1 Inquiry'), sub: L(t.title), onBack: () => setKrTicket(null), body: (
+        <React.Fragment>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
+            <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>
+          </div>
+          {/* the full thread, not just one Q&A — a Korean-style 1:1 inquiry stays open for
+              follow-ups, so replying below reopens it rather than starting a new ticket */}
+          {t.thread.map((m, i) => m.from === 'parent' ? (
+            <div key={i} style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 18 }}>
+              <div style={{ maxWidth: '86%' }}>
+                <div style={{ background: BRAND.primaryLight, borderRadius: '16px 4px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: BRAND.primaryDark, lineHeight: 1.5, fontWeight: 500 }}>{L(m.text)}</div>
+                {m.files?.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6, justifyContent: 'flex-end' }}>
+                    {m.files.map((f, j) => (
+                      <div key={j} style={{ width: 96, borderRadius: 12, overflow: 'hidden', background: '#fff', border: `1px solid ${THEME.border}` }}>
+                        <div style={{ width: '100%', aspectRatio: '9/16', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon name="image" size={22} color={THEME.fg3} stroke={1.8} />
+                        </div>
+                        <div style={{ padding: '5px 7px', fontSize: 10, fontWeight: 600, color: THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 4, textAlign: 'right' }}>{L(m.time)}</div>
+              </div>
+            </div>
+          ) : (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 18 }}>
+              <KrAvatar />
+              <div style={{ maxWidth: '86%' }}>
+                <div style={{ background: THEME.surface2, borderRadius: '4px 16px 16px 16px', padding: '10px 13px', fontSize: 13.5, color: THEME.fg1, lineHeight: 1.5, fontWeight: 500 }}>{L(m.text)}</div>
+                {m.files?.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                    {m.files.map((f, j) => (
+                      <div key={j} style={{ width: 96, borderRadius: 12, overflow: 'hidden', background: '#fff', border: `1px solid ${THEME.border}` }}>
+                        <div style={{ width: '100%', aspectRatio: '9/16', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon name="image" size={22} color={THEME.fg3} stroke={1.8} />
+                        </div>
+                        <div style={{ padding: '5px 7px', fontSize: 10, fontWeight: 600, color: THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: THEME.fg3, marginTop: 4, marginLeft: 4 }}>{L(m.time)}</div>
+              </div>
+            </div>
+          ))}
+          {waitingOnSupport && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: THEME.fg3, fontSize: 12.5, padding: '2px 4px', marginBottom: 18 }}>
+              <Icon name="clock" size={15} color={THEME.fg3} stroke={2.2} />
+              {L("We'll reply by email within a day.")}
+            </div>
+          )}
+          {/* spacer so the last bubble can scroll clear of the fixed reply bar below */}
+          <div style={{ height: 64 }} />
+          <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, display: 'flex', alignItems: 'center', gap: 8, background: '#fff', borderRadius: 999, boxShadow: THEME.shadowCard, padding: '6px 6px 6px 16px', zIndex: 40 }}>
+            <input value={krReplyMsg} onChange={e => setKrReplyMsg(e.target.value)} placeholder={L('Write a follow-up message')}
+              onKeyDown={e => { if (e.key === 'Enter') sendKrReply(); }}
+              style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: 13.5, color: THEME.fg1 }} />
+            <button onClick={sendKrReply} disabled={!krReplyMsg.trim()} aria-label={L('Send')} className="jx-press"
+              style={{ width: 34, height: 34, borderRadius: 999, border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', background: krReplyMsg.trim() ? BRAND.primary : THEME.surface2, cursor: krReplyMsg.trim() ? 'pointer' : 'default' }}>
+              <Icon name="send" size={15} color={krReplyMsg.trim() ? '#fff' : THEME.fg3} stroke={2.3} />
+            </button>
+          </div>
+        </React.Fragment>
+      ) };
+    } else if (krStep === 'faq' && krCategory) {
+      krPage = { title: L('1:1 Inquiry'), sub: L(krCategory.label), onBack: () => setKrStep('category'), body: (
+        <React.Fragment>
+          {banner('help-circle', null, ko
+            ? `'${L(krCategory.label)}' 관련해서 자주 묻는 질문이에요. 원하는 답을 여기서 먼저 확인해보세요.`
+            : `Frequently asked questions about ${L(krCategory.label).toLowerCase()}. Check if your answer is already here.`)}
+          {krCategory.items.length > 0 ? <FaqAccordion items={krCategory.items} /> : (
+            <div style={{ textAlign: 'center', padding: '20px 12px', color: THEME.fg3, fontSize: 13 }}>{L("There aren't any FAQs for this topic yet.")}</div>
+          )}
+          <Button variant="outline" fullWidth onClick={() => setKrStep('compose')}>{L("Didn't find what you needed")}</Button>
+        </React.Fragment>
+      ) };
+    } else {
+      krPage = { title: L('1:1 Inquiry'), sub: L('Ask us anything'), body: (
+        <React.Fragment>
+          {label(L('Recent inquiries'))}
+          {card(RECENT_TICKETS.map((t, i) => {
+            const hasFiles = t.thread.some(m => m.files?.length > 0);
+            return (
+              <button key={i} onClick={() => { setKrTicket(t); setKrReplyMsg(''); }} style={{ ...rowStyle(i, true), width: '100%', border: 'none', background: 'none', fontFamily: 'inherit', textAlign: 'left' }}>
+                <Icon name="message-square" size={18} color={THEME.fg2} stroke={2.2} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(t.title)}</div>
+                  <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {L(t.time)}
+                    {hasFiles && <Icon name="paperclip" size={11} color={THEME.fg3} stroke={2.4} />}
+                  </div>
+                </div>
+                <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>
+                {chev}
+              </button>
+            );
+          }))}
+          {label(L('What can we help with?'))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+            {INQUIRY_CATEGORIES.map(c => (
+              <button key={c.id} onClick={() => { setKrCategory(c); setKrStep('faq'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, background: '#fff', borderRadius: 16, boxShadow: THEME.shadowCard, padding: '14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 999, background: BRAND.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name={c.icon} size={16} color={BRAND.primary} stroke={2.2} />
+                </div>
+                <span style={{ fontSize: 13.5, fontWeight: 700 }}>{L(c.label)}</span>
+              </button>
+            ))}
+          </div>
+        </React.Fragment>
+      ) };
+    }
+  }
+
+  const p = krPage || PAGES[page] || PAGES.account;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
-      <ParentHead sub={p.sub} title={p.title} onBack={ctx.params?.asTab ? undefined : () => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')} />
+      <ParentHead sub={p.sub} title={p.title} onBack={ctx.params?.asTab ? undefined : (p.onBack || (() => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')))} />
       <div style={{ padding: '8px 16px 0' }}>{p.body}</div>
 
       {/* the inquiry consent document — a sheet, not a page, so the message already typed
@@ -552,6 +827,24 @@ function ParentDetail({ ctx }) {
           </div>
           <div style={{ fontSize: 12.5, color: THEME.fg3, lineHeight: 1.55, fontWeight: 600 }}>{L(INQUIRY_CONSENT.note)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>
           <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} onClick={() => { setInqAgree(true); setInqDoc(false); }}>{L('Agree')}</Button>
+        </BottomSheet>
+      )}
+
+      {/* [inquiryStyle="kr"] same consent document, same content — the KR compose step has
+          its own agree/doc state (krAgree/krDoc) so switching styles mid-session can't leave
+          one flow's consent silently ticked on the other. */}
+      {krDoc && (
+        <BottomSheet title={L(INQUIRY_CONSENT.label)} onClose={() => setKrDoc(false)}>
+          <div style={{ background: THEME.surface2, borderRadius: 14, padding: '4px 14px', marginBottom: 14 }}>
+            {INQUIRY_CONSENT.rows.map(([k, v], i) => (
+              <div key={k} style={{ padding: '12px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: BRAND.primary, marginBottom: 4 }}>{L(k)}</div>
+                <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.55 }}>{L(v)}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: THEME.fg3, lineHeight: 1.55, fontWeight: 600 }}>{L(INQUIRY_CONSENT.note)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>
+          <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} onClick={() => { setKrAgree(true); setKrDoc(false); }}>{L('Agree')}</Button>
         </BottomSheet>
       )}
 

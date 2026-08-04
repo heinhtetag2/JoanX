@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -277,7 +277,7 @@ function App() {
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
       p_family: <ParentFamily ctx={ctx} />, p_invite: <ParentInvite ctx={ctx} />,
-      p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} />,
+      p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} inquiryStyle={tw.inquiryStyle} />,
       // Profile tab — the parent account/profile page (identity + security), shown as a tab root
       p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} />,
       // center tab-bar scan button — the global connect flow (scan/code, then child picker)
@@ -775,6 +775,20 @@ function App() {
                   <button key={k} className={'tw-chip' + (demo[k] ? ' on' : '')} onClick={() => { setDemo(d => ({ ...d, [k]: !d[k] })); setStack([]); }}>{l}</button>
                 ))}
                 <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Device offline →</button>
+              </div>
+
+              {/* 1:1 Inquiry — 'form' is the shipped static form (email/message/screenshot/
+                  consent). 'kr' is a Korean-CS-style flow instead: category picker → FAQ
+                  deflection (reuses the same FaqAccordion + FAQ_GROUPS data, so answers can't
+                  drift from Help) → a chat-thread compose step, plus a small recent-tickets
+                  peek at the top — the shape real Korean CS (Toss/Kakao/Naver-style) support
+                  actually takes, rather than a Western contact-us form. */}
+              <div className="tw-label">1:1 Inquiry style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['form', 'Current (form)'], ['kr', 'New (Korean CS flow)']].map(([id, label]) => (
+                  <button key={id} className={'tw-chip' + (tw.inquiryStyle === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, inquiryStyle: id })); setParentOnboarded(true); setPScreen('p_detail'); setParams({ page: 'inquiry' }); setStack([]); }}>{label}</button>
+                ))}
+                <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_detail'); setParams({ page: 'inquiry' }); setStack([]); }}>Open 1:1 Inquiry →</button>
               </div>
             </React.Fragment>
           )}

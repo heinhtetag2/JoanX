@@ -744,6 +744,32 @@ const KO = {
   'We’ll reply to your email as soon as we can.': '가능한 한 빨리 이메일로 답변드릴게요.',
   'Please enter your message': '문의 내용을 입력해 주세요',
 
+  // ── 1:1 inquiry — [inquiryStyle="kr"] Korean-CS-style flow (category → FAQ → chat compose) ──
+  'Recent inquiries': '최근 문의', 'What can we help with?': '무엇을 도와드릴까요?',
+  'Account & security': '계정/보안', 'Billing & subscription': '결제/구독',
+  'Report a bug': '버그 신고', 'Feature suggestion': '기능 제안',
+  'Child safety': '자녀 안전', 'Other': '기타',
+  'Warnings arrive too late': '경고가 너무 늦게 와요',
+  "My child's device won't connect": '자녀 기기 연결이 안돼요',
+  '3d ago': '3일 전', 'Just now': '방금 전',
+  'Answered': '답변 완료', 'In progress': '처리중',
+  "There aren't any FAQs for this topic yet.": '아직 이 주제의 자주 묻는 질문이 없어요.',
+  "Didn't find what you needed": '원하는 답을 찾지 못했어요',
+  'Your inquiry has been received': '문의가 접수됐어요', 'Awaiting reply': '답변 대기중',
+  "We'll reply by email within a day. You can check its progress from your inquiry history.": '보통 하루 안에 이메일로 답변드려요. 문의 내역에서 진행 상황을 확인할 수 있어요.',
+  "We'll reply by email within a day.": '보통 하루 안에 이메일로 답변드려요.',
+  '2d ago': '2일 전',
+  "My son already looked back down by the time the warning went off — feels like it's a beat behind.":
+    '경고가 울렸을 때 이미 아이가 고개를 내렸더라고요 — 한 박자 늦는 느낌이에요.',
+  "That's expected — JoanX waits about 10 seconds of continuous walking + screen use before warning, so it doesn't false-alarm on a quick glance. If it still feels late for your son, try Strict sensitivity in his Rules & settings — it shortens that window.":
+    '정상이에요 — 조안X는 걷기와 화면 사용이 약 10초간 이어질 때 경고해요. 잠깐 본 것만으로 오작동하지 않도록 하기 위해서예요. 그래도 늦게 느껴진다면, 자녀의 규칙 설정에서 민감도를 \'엄격\'으로 바꿔보세요 — 그 시간을 줄여줘요.',
+  "Paired the app but my daughter's phone still shows 'Not connected' after restarting both devices.":
+    '앱은 연결했는데 두 기기를 재시작해도 딸의 폰에 계속 \'연결 안됨\'이라고 떠요.',
+  '1h ago': '1시간 전',
+  'App keeps crashing after update': '업데이트 후 앱이 계속 꺼져요',
+  'It crashes every time I open the Reports tab since the last update.':
+    '최근 업데이트 이후로 리포트 탭을 열면 매번 앱이 꺼져요.',
+
   // ── parent: help detail ──
   "We're here to help": '도움이 필요하신가요', 'Popular questions': '자주 묻는 질문',
   'How does Smart mode work?': '스마트 모드는 어떻게 작동하나요?', 'Is my child’s location private?': '자녀의 위치는 비공개인가요?',
