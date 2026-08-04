@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -272,7 +272,7 @@ function App() {
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
     else body = ({
-      p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
+      p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} highlightStrip={tw.highlightStrip} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
@@ -285,7 +285,7 @@ function App() {
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
       p_response: <ParentResponseDetail ctx={ctx} />,
       p_weekactivity: <ParentWeeklyDetail ctx={ctx} />,
-    })[pScreen] || <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} />;
+    })[pScreen] || <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} highlightStrip={tw.highlightStrip} />;
   }
 
   const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
@@ -762,6 +762,15 @@ function App() {
                   <div className="tw-row" style={{ flexWrap: 'wrap' }}>
                     {[['off', 'Current'], ['on', 'New (status + alerts)']].map(([id, label]) => (
                       <button key={id} className={'tw-chip' + (tw.homeExtras === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, homeExtras: id })); setParentOnboarded(true); setPScreen('p_reports'); setStack([]); }}>{label}</button>
+                    ))}
+                  </div>
+
+                  {/* the "이번 주, 좋은 흐름이에요" / "On a roll this week" card — tone-aware
+                      one-liner + risk/stops/acceptance summary, above the live-status card */}
+                  <div className="tw-label">Weekly highlight strip</div>
+                  <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                    {[['on', 'Shown'], ['off', 'Hidden']].map(([id, label]) => (
+                      <button key={id} className={'tw-chip' + (tw.highlightStrip === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, highlightStrip: id })); setParentOnboarded(true); setPScreen('p_reports'); setStack([]); }}>{label}</button>
                     ))}
                   </div>
                 </>

@@ -189,7 +189,7 @@ const formatWeekRange = (startISO, endISO, ko) => {
 };
 
 // ── Reports dashboard — clean analytics layout (numbers + gridded charts) ──
-function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
+function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightStrip = 'on' }) {
   // which child's report is in view (header chip switches this)
   const [sel, setSel] = React.useState(0);
   const [respActive, setRespActive] = React.useState(null);   // selected day in the response-mix chart — null until a bar is tapped (tooltip is click-only)
@@ -498,23 +498,25 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off' }) {
             language read of the numbers below it though, so tapping it opens the same AI
             Assistant the floating button does — same destination, same result-first chat —
             rather than Rules & settings, which nothing about this card was actually about. */}
-        <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
-          style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-          <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
-              {doingWell
-                ? (isCurrentWeek ? (ko ? `이번 주, 좋은 흐름이에요` : `On a roll this week`) : (ko ? `${weekRangeLabel}, 좋은 흐름이었어요` : `On a roll ${weekRangeLabel}`))
-                : (isCurrentWeek ? (ko ? `조금만 더 도와주면 돼요` : `Could use a nudge this week`) : (ko ? `${weekRangeLabel}엔 도움이 필요했어요` : `Could've used a nudge ${weekRangeLabel}`))}
+        {highlightStrip === 'on' && (
+          <button onClick={() => homeExtras === 'on' ? ctx.nav('p_aireport', { childId: child.id }) : (setChatOpen(true), setAskedQ([]))} aria-label={ko ? 'AI 어시스턴트' : 'AI Assistant'}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: tone.bg, borderRadius: 18, padding: '12px 14px', marginBottom: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+            <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, lineHeight: 1 }}>{doingWell ? '🎉' : '👀'}</span>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 800, color: tone.ink, letterSpacing: '-0.2px' }}>
+                {doingWell
+                  ? (isCurrentWeek ? (ko ? `이번 주, 좋은 흐름이에요` : `On a roll this week`) : (ko ? `${weekRangeLabel}, 좋은 흐름이었어요` : `On a roll ${weekRangeLabel}`))
+                  : (isCurrentWeek ? (ko ? `조금만 더 도와주면 돼요` : `Could use a nudge this week`) : (ko ? `${weekRangeLabel}엔 도움이 필요했어요` : `Could've used a nudge ${weekRangeLabel}`))}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: tone.ink, opacity: .82, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {ko
+                  ? `위험 순간 ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · 안전 멈춤 ${stopsTotal}회 · 수용 ${rep.acceptance}%`
+                  : `Risky moments ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · ${stopsTotal} safe stops · ${rep.acceptance}% accepted`}
+              </div>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: tone.ink, opacity: .82, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {ko
-                ? `위험 순간 ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · 안전 멈춤 ${stopsTotal}회 · 수용 ${rep.acceptance}%`
-                : `Risky moments ${riskReduction >= 0 ? '↓' : '↑'}${Math.abs(riskReduction)}% · ${stopsTotal} safe stops · ${rep.acceptance}% accepted`}
-            </div>
-          </div>
-          <Icon name="chevron-right" size={18} color={tone.ink} stroke={2.4} style={{ opacity: .55, flexShrink: 0 }} />
-        </button>
+            <Icon name="chevron-right" size={18} color={tone.ink} stroke={2.4} style={{ opacity: .55, flexShrink: 0 }} />
+          </button>
+        )}
 
         {/* Live status — "is protection on right now", the one thing on this screen that's
             true as of this moment rather than a weekly retrospective. Sits below the
