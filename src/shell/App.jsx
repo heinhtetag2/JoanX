@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -264,7 +264,7 @@ function App() {
       // jumping from one preview to another has to remount rather than reconcile
       battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
-      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} />,
+      shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} eggCardRadius={tw.eggCardRadius} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
       myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
@@ -633,6 +633,15 @@ function App() {
                     onClick={() => { setTw(s => ({ ...s, eggShopLayout: v })); setStack([{ screen: 'shop', params: {} }]); setScreen('shop'); }}>{l}</button>
                 ))}
               </div>
+              {/* Live slider, not chips — this is a fine-tune-against-the-art task (matching
+                  the egg card corners to the curvature of the eggbackgroundsop.png frame),
+                  not a pick-one-of-a-few-styles choice, so a stepped range beats discrete chips. */}
+              <div className="tw-label">Shop card radius ({tw.eggCardRadius}px)</div>
+              <div className="tw-row">
+                <input type="range" min={0} max={40} step={1} value={tw.eggCardRadius}
+                  onChange={e => setTw(s => ({ ...s, eggCardRadius: +e.target.value }))}
+                  style={{ width: '100%' }} />
+              </div>
               {/* 'original' — flat shell, two nearly-invisible dark-on-dark flecks. 'revamp'
                   gives the shell the same multi-stop-gradient treatment epic's shell already
                   gets, plus a cream ribbon band and leaf-shaped flecks. 'painted' (default)
@@ -806,10 +815,14 @@ function App() {
                   deflection (reuses the same FaqAccordion + FAQ_GROUPS data, so answers can't
                   drift from Help) → a chat-thread compose step, plus a small recent-tickets
                   peek at the top — the shape real Korean CS (Toss/Kakao/Naver-style) support
-                  actually takes, rather than a Western contact-us form. */}
+                  actually takes, rather than a Western contact-us form. 'board' is a third
+                  shape again: All/Me tabs over a flat Q&A board (ParentDetail.jsx's
+                  BOARD_QUESTIONS) — a tag picker on compose, a tag badge on every row, and
+                  ONE question + ONE answer per ticket with no reply thread at all, so it
+                  reads as browsing a public FAQ board rather than a private support chat. */}
               <div className="tw-label">1:1 Inquiry style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['form', 'Current (form)'], ['kr', 'New (Korean CS flow)']].map(([id, label]) => (
+                {[['form', 'Current (form)'], ['kr', 'Korean CS flow'], ['board', 'New (Q&A board)']].map(([id, label]) => (
                   <button key={id} className={'tw-chip' + (tw.inquiryStyle === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, inquiryStyle: id })); setParentOnboarded(true); setPScreen('p_detail'); setParams({ page: 'inquiry' }); setStack([]); }}>{label}</button>
                 ))}
                 <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_detail'); setParams({ page: 'inquiry' }); setStack([]); }}>Open 1:1 Inquiry →</button>

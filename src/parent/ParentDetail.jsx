@@ -104,6 +104,25 @@ const RECENT_TICKETS = [
   ] },
 ];
 
+// [inquiryStyle="board"] mock Q&A board — flat single-question/single-answer tickets
+// (no reply thread at all, unlike RECENT_TICKETS above), each tagged by an
+// INQUIRY_CATEGORIES id so the compose tag-picker and every list row share one taxonomy.
+// `mine: true` marks this device's own questions for the Me tab; the `mine: false` rows
+// simulate other parents' public questions so the All tab reads as a real board instead
+// of an empty one on first look. Same shared-array mutation convention as RECENT_TICKETS
+// — submitBoardInquiry() below unshifts a new ticket straight into this array.
+const BOARD_QUESTIONS = [
+  // same wording as RECENT_TICKETS' answer to this exact question above (down to "for your
+  // son") so it can reuse that string's existing Korean translation in i18n.jsx rather than
+  // needing an almost-identical second KO entry for a reworded copy.
+  { id: 1, tag: 'safety', q: 'Warnings arrive too late', a: "That's expected — JoanX waits about 10 seconds of continuous walking + screen use before warning, so it doesn't false-alarm on a quick glance. If it still feels late for your son, try Strict sensitivity in his Rules & settings — it shortens that window.", status: 'answered', time: '3d ago', mine: true },
+  { id: 2, tag: 'account', q: "My child's device won't connect", a: null, status: 'pending', time: 'Just now', mine: true },
+  { id: 3, tag: 'bug', q: 'App keeps crashing after update', a: null, status: 'pending', time: '1h ago', mine: true, files: ['Screenshot_2026-08-04.png'] },
+  { id: 4, tag: 'billing', q: 'Can I switch from monthly to yearly billing?', a: 'Yes — open Billing & subscription and choose Switch plan. It takes effect at your next renewal date, and we prorate any remaining days.', status: 'answered', time: '5h ago', mine: false },
+  { id: 5, tag: 'feature', q: 'Any plans for a tablet version?', a: null, status: 'pending', time: '6h ago', mine: false },
+  { id: 6, tag: 'safety', q: 'Does Strict sensitivity drain the battery faster?', a: 'A little — Strict mode samples motion more often. Most families still see well under 5% extra battery use per day.', status: 'answered', time: '1d ago', mine: false },
+];
+
 // Small round bot avatar for the KR compose thread — brand-gradient circle, same visual
 // language as ParentReports' own ChatAvatar (that one's module-private to that file, so
 // this is a small deliberate duplicate rather than a cross-file import for one component).
@@ -221,6 +240,27 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
       { from: 'parent', text: krMsg.trim(), time: 'Just now', files: krFiles },
     ] });
     setKrSent(true);
+  };
+  // [inquiryStyle="board"] Q&A community-board — All/Me tabs over BOARD_QUESTIONS, a
+  // tag picker on compose, one question + one answer per ticket (no reply thread — see
+  // BOARD_QUESTIONS above). Own state block, same isolation reasoning as the kr* block
+  // above so switching Tweaks styles mid-session never bleeds a half-typed draft from
+  // one flow into another.
+  const [boardTab, setBoardTab] = React.useState('all');        // 'all' | 'me'
+  const [boardFilter, setBoardFilter] = React.useState('all');   // 1:1 inquiry (board) — category chip filter, 'all' or an INQUIRY_CATEGORIES id
+  const [boardView, setBoardView] = React.useState(null);        // 1:1 inquiry (board) — ticket being read
+  const [boardCompose, setBoardCompose] = React.useState(false); // 1:1 inquiry (board) — new-question step
+  const [boardTag, setBoardTag] = React.useState(null);          // 1:1 inquiry (board) — tag picked for the draft
+  const [boardMsg, setBoardMsg] = React.useState('');
+  const [boardAgree, setBoardAgree] = React.useState(false);
+  const [boardDoc, setBoardDoc] = React.useState(false);
+  const [boardSent, setBoardSent] = React.useState(false);
+  // Submitting turns the draft into a real (unanswered) ticket at the front of
+  // BOARD_QUESTIONS, same shared-array mutation as submitKrInquiry above, so it shows up
+  // in both "Me" right away and in "All" for other parents browsing the same board.
+  const submitBoardInquiry = () => {
+    BOARD_QUESTIONS.unshift({ id: Date.now(), tag: boardTag.id, q: boardMsg.trim(), a: null, status: 'pending', time: 'Just now', mine: true });
+    setBoardSent(true);
   };
   const activeNotice = NOTICES.find(n => n.id === ctx.params?.noticeId) || NOTICES[0];
   const activeLegal = LEGAL_DOCS.find(d => d.id === ctx.params?.legalId) || LEGAL_DOCS[0];
@@ -893,7 +933,189 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
     }
   }
 
-  const p = krPage || PAGES[page] || PAGES.account;
+  // [inquiryStyle="board"] Q&A community-board — All/Me tabs over BOARD_QUESTIONS, a tag
+  // picker on compose, and a single question + single answer per ticket (no reply thread,
+  // unlike the "kr" style above) so this reads as browsing a public FAQ board rather than
+  // a private support chat. Overrides PAGES.inquiry the same way krPage does, for the same
+  // reason — title/back/body all vary by step in a way the static PAGES map doesn't model.
+  let boardPage = null;
+  if (page === 'inquiry' && inquiryStyle === 'board') {
+    const tagOf = id => INQUIRY_CATEGORIES.find(c => c.id === id) || INQUIRY_CATEGORIES[INQUIRY_CATEGORIES.length - 1];
+    if (boardSent) {
+      boardPage = { title: L('1:1 Inquiry'), sub: null, body: (
+        <div style={{ textAlign: 'center', padding: '28px 12px' }}>
+          <div style={{ width: 64, height: 64, borderRadius: 999, background: BRAND.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="check" size={30} color={BRAND.primary} stroke={2.6} /></div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>{L('Your inquiry has been received')}</div>
+          <Badge variant="warning" style={{ marginBottom: 14 }}>{L('Awaiting reply')}</Badge>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L("We'll reply by email within a day. You can check its progress from your inquiry history.")}</div>
+          <Button variant="primary" fullWidth style={brandBtn} onClick={() => { setBoardSent(false); setBoardCompose(false); setBoardTag(null); setBoardMsg(''); setBoardAgree(false); setBoardTab('me'); }}>{L('Done')}</Button>
+        </div>
+      ) };
+    } else if (boardCompose) {
+      // tag-first compose — picking a tag is the first thing a parent does here (unlike
+      // the free-text-only shipped form), so every question that lands on the board
+      // already carries a category to browse/filter by.
+      boardPage = { title: L('1:1 Inquiry'), sub: L('New question'), onBack: () => setBoardCompose(false), body: (
+        <React.Fragment>
+          {label(L('Tag'))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+            {INQUIRY_CATEGORIES.map(c => {
+              const on = boardTag?.id === c.id;
+              return (
+                <button key={c.id} onClick={() => setBoardTag(c)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 8, background: on ? BRAND.primaryLight : '#fff', borderRadius: 14, boxShadow: on ? 'none' : THEME.shadowCard, border: `1.5px solid ${on ? BRAND.primary : 'transparent'}`, padding: '11px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <Icon name={c.icon} size={15} color={on ? BRAND.primary : THEME.fg2} stroke={2.3} />
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: on ? BRAND.primaryDark : THEME.fg1 }}>{L(c.label)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {label(L('Your question'))}
+          {card(
+            <textarea value={boardMsg} onChange={e => setBoardMsg(e.target.value)} placeholder={L('Write your question here')} rows={5}
+              style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: 14, color: THEME.fg1, lineHeight: 1.55, padding: '14px', boxSizing: 'border-box' }} />
+          )}
+
+          {card(
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+              <button onClick={() => setBoardAgree(!boardAgree)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                <div style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${boardAgree ? BRAND.primary : THEME.border}`, background: boardAgree ? BRAND.primary : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{boardAgree && <Icon name="check" size={14} color="#fff" stroke={3} />}</div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: BRAND.primary, flexShrink: 0 }}>[{L('Required')}]</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{L(INQUIRY_CONSENT.label)}</span>
+              </button>
+              <button onClick={() => setBoardDoc(true)} aria-label={L('View')} className="jx-press" style={{ padding: 4, border: 'none', background: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex' }}>
+                <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.4} />
+              </button>
+            </div>
+          )}
+
+          <Button variant="primary" fullWidth icon="send" style={brandBtn} disabled={!boardTag || !boardMsg.trim() || !boardAgree} onClick={boardTag && boardMsg.trim() && boardAgree ? submitBoardInquiry : undefined}>{L('Send')}</Button>
+        </React.Fragment>
+      ) };
+    } else if (boardView) {
+      // Q&A only — the question as plain text, then either the single answer or an
+      // "awaiting reply" state. No bubbles, no reply box: this style never opens a thread.
+      const t = boardView;
+      const tag = tagOf(t.tag);
+      boardPage = { title: L('1:1 Inquiry'), sub: L(tag.label), onBack: () => setBoardView(null), body: (
+        <React.Fragment>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: BRAND.primary, background: BRAND.primaryLight, borderRadius: 999, padding: '3px 9px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Icon name={tag.icon} size={11} color={BRAND.primary} stroke={2.4} />{L(tag.label)}
+            </span>
+            <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>
+          </div>
+
+          {label(L('Question'))}
+          {card(
+            <div style={{ padding: '14px' }}>
+              <div style={{ fontSize: 14.5, color: THEME.fg1, lineHeight: 1.55, fontWeight: 600 }}>{L(t.q)}</div>
+              {t.files?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                  {t.files.map((f, j) => (
+                    <div key={j} style={{ width: 96, borderRadius: 12, overflow: 'hidden', background: THEME.surface2, border: `1px solid ${THEME.border}` }}>
+                      <div style={{ width: '100%', aspectRatio: '9/16', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="image" size={22} color={THEME.fg3} stroke={1.8} /></div>
+                      <div style={{ padding: '5px 7px', fontSize: 10, fontWeight: 600, color: THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 8 }}>{L(t.time)}</div>
+            </div>
+          )}
+
+          {label(L('Answer'))}
+          {/* plain text, no avatar — this style is deliberately Q&A, not a chat thread
+              (that's what the "kr" style above is for), so nothing here should read as a
+              chat participant. */}
+          {t.a ? card(
+            <div style={{ padding: '14px', fontSize: 14, color: THEME.fg1, lineHeight: 1.55, fontWeight: 500 }}>{L(t.a)}</div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: THEME.fg3, fontSize: 12.5, padding: '2px 4px' }}>
+              <Icon name="clock" size={15} color={THEME.fg3} stroke={2.2} />
+              {L("We'll reply by email within a day.")}
+            </div>
+          )}
+        </React.Fragment>
+      ) };
+    } else {
+      // the tag filter only applies on "All" — "My inquiries" is this device's own handful
+      // of tickets, not a big public board to narrow down, so the filter chip row is hidden
+      // there (below) and ignored here rather than silently carrying over a tag picked
+      // while on "All" and hiding rows with no visible reason why.
+      const rows = BOARD_QUESTIONS.filter(t => (boardTab === 'all' || t.mine) && (boardTab === 'me' || boardFilter === 'all' || t.tag === boardFilter));
+      boardPage = { title: L('1:1 Inquiry'), sub: L('Ask us anything'), body: (
+        <React.Fragment>
+          {/* All/My inquiries — the same track-and-pill segmented control as the Language
+              toggle on the Account page, so this reads as the app's own tab language rather
+              than a one-off control. "전체" (All) is every parent's question on the board;
+              "내 문의" (My inquiries) filters down to this device's own (mine: true). A bare
+              "나" (Me) reads as an unfinished label in Korean CS UI — Toss/Kakao/Naver-style
+              1:1-inquiry boards always spell out "내 문의" rather than a single pronoun, so
+              this uses its own dedicated string instead of the generic 'Me' key (which other
+              screens may reuse for an actual person/profile label). */}
+          <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 999, padding: 3, marginBottom: 18 }}>
+            {[['all', L('All')], ['me', L('My inquiries')]].map(([v, l]) => (
+              <button key={v} onClick={() => setBoardTab(v)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, padding: '9px 0', borderRadius: 999, background: boardTab === v ? '#fff' : 'transparent', color: boardTab === v ? BRAND.primary : THEME.fg2, boxShadow: boardTab === v ? THEME.shadowCard : 'none' }}>{l}</button>
+            ))}
+          </div>
+
+          {/* Category filter — a real board (unlike the 6-row demo set) can carry many
+              tags across many parents' questions, so this scrolling chip row narrows
+              "All" down to one INQUIRY_CATEGORIES tag at a time, reusing that same
+              taxonomy rather than a separate filter list. "My inquiries" is only ever this
+              device's own handful of tickets, so the same filter row there would be
+              narrowing an already-short list for no real benefit — hidden on that tab. */}
+          {boardTab === 'all' && (
+            <div className="no-sb" style={{ display: 'flex', gap: 8, overflowX: 'auto', margin: '0 -16px 16px', padding: '2px 16px' }}>
+              {[{ id: 'all', icon: null, label: 'All' }, ...INQUIRY_CATEGORIES].map(c => {
+                const on = boardFilter === c.id;
+                return (
+                  <button key={c.id} onClick={() => setBoardFilter(c.id)} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, border: 'none', borderRadius: 999, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit', background: on ? BRAND.primary : THEME.surface2 }}>
+                    {c.icon && <Icon name={c.icon} size={13} color={on ? '#fff' : THEME.fg2} stroke={2.3} />}
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: on ? '#fff' : THEME.fg1, whiteSpace: 'nowrap' }}>{L(c.label)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {rows.length > 0 ? card(rows.map((t, i) => {
+            // no tag pill on the row itself — the filter chips right above already group
+            // these by category, so repeating the tag on every row of what's otherwise a
+            // public list of other parents' already-answered questions is redundant. The
+            // tag still shows once you open a specific inquiry (see boardView below).
+            return (
+              <button key={t.id} onClick={() => setBoardView(t)} style={{ ...rowStyle(i, true), width: '100%', border: 'none', background: 'none', fontFamily: 'inherit', textAlign: 'left' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(t.q)}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                    <span style={{ fontSize: 11.5, color: THEME.fg3 }}>{L(t.time)}</span>
+                    {t.files?.length > 0 && <Icon name="paperclip" size={11} color={THEME.fg3} stroke={2.4} />}
+                  </div>
+                </div>
+                <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>
+                {chev}
+              </button>
+            );
+          })) : (
+            <div style={{ textAlign: 'center', padding: '32px 12px', color: THEME.fg3, fontSize: 13 }}>{L(boardTab === 'me' ? "You haven't asked anything yet." : boardFilter !== 'all' ? 'No questions in this category yet.' : 'No questions yet.')}</div>
+          )}
+
+          {/* spacer so the last row (or the empty-state line) can scroll clear of the
+              fixed "Ask a new question" button below, rather than the button just
+              trailing the list — a long board otherwise pushes it past the fold, same
+              fixed-bar convention the KR reply bar below uses. */}
+          <div style={{ height: 76 }} />
+          <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+            <Button variant="primary" fullWidth icon="plus" style={brandBtn} onClick={() => { setBoardTag(null); setBoardMsg(''); setBoardAgree(false); setBoardCompose(true); }}>{L('Ask a new question')}</Button>
+          </div>
+        </React.Fragment>
+      ) };
+    }
+  }
+
+  const p = krPage || boardPage || PAGES[page] || PAGES.account;
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={p.sub} title={p.title} onBack={ctx.params?.asTab ? undefined : (p.onBack || (() => p.back ? ctx.nav('p_detail', { page: p.back }) : ctx.nav('p_account')))} />
@@ -931,6 +1153,24 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
           </div>
           <div style={{ fontSize: 12.5, color: THEME.fg3, lineHeight: 1.55, fontWeight: 600 }}>{L(INQUIRY_CONSENT.note)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>
           <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} onClick={() => { setKrAgree(true); setKrDoc(false); }}>{L('Agree')}</Button>
+        </BottomSheet>
+      )}
+
+      {/* [inquiryStyle="board"] same consent document again — its own agree/doc state
+          (boardAgree/boardDoc), isolated from the inq and kr state blocks the same way
+          those two are isolated from each other. */}
+      {boardDoc && (
+        <BottomSheet title={L(INQUIRY_CONSENT.label)} onClose={() => setBoardDoc(false)}>
+          <div style={{ background: THEME.surface2, borderRadius: 14, padding: '4px 14px', marginBottom: 14 }}>
+            {INQUIRY_CONSENT.rows.map(([k, v], i) => (
+              <div key={k} style={{ padding: '12px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: BRAND.primary, marginBottom: 4 }}>{L(k)}</div>
+                <div style={{ fontSize: 13, color: THEME.fg2, lineHeight: 1.55 }}>{L(v)}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: THEME.fg3, lineHeight: 1.55, fontWeight: 600 }}>{L(INQUIRY_CONSENT.note)} <span style={{ color: THEME.fg3, fontWeight: 700 }}>{L('Documents provided by Joan Company.')}</span></div>
+          <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} onClick={() => { setBoardAgree(true); setBoardDoc(false); }}>{L('Agree')}</Button>
         </BottomSheet>
       )}
 

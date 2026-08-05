@@ -488,17 +488,38 @@ function HomeActionsS({ ctx, dark }) {
             <React.Fragment>
               <div onClick={() => setShowShopTip(false)} style={{ position: 'fixed', inset: 0, zIndex: 45 }} />
               <button onClick={() => { setShowShopTip(false); setShopBounceKey(k => k + 1); setTimeout(() => ctx.nav('shop'), 260); }} className="jx-tip-pop"
-                style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 200, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '13px 15px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right' }}>
+                style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 178, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '12px 14px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right' }}>
                 {/* tail centered under the market-stall icon, same corner-square trick as
                     the points tip — this pill is right-anchored too, so the offset is
                     measured in from the shared right edge: icon (23) + gap (6) + roughly
                     half the icon's own width. */}
                 <div style={{ position: 'absolute', top: -6, right: 26, width: 12, height: 12, background: '#fff', borderRadius: 3, transform: 'rotate(45deg)' }} />
-                <p style={{ fontSize: 13, lineHeight: 1.55, color: THEME.fg1, fontWeight: 600, margin: 0, position: 'relative' }}>
-                  {getLang() === 'ko'
-                    ? <><span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>에서 알을 사고 부화해서 새 버디를 만나보세요!</>
-                    : <>{'Buy eggs in the '}<span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>{' and hatch new buddies!'}</>}
-                </p>
+                {/* a little common/rare/epic cluster sits next to the copy — same fan-of-three
+                    arrangement as the Shop's own hero art, so "알" isn't just a word to a kid
+                    who hasn't opened the Shop yet: it's the actual shapes and tiers they're
+                    about to go tap on, same painted art the Shop/hatch flow already uses
+                    (EggShape), not a new asset invented just for this tooltip. Rare sits
+                    centered/forward (bigger, higher z-index, no tilt) with common and epic
+                    tucked behind it at an outward tilt, mirroring the reference pose. */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                  {/* common.png is the gold-spotted shell and rare.png is the blue one — the
+                      rarity names don't match their on-screen color, so the left/center/right
+                      slots below are picked by ART COLOR (blue, gold, purple) to match the
+                      reference pose, not by rarity order. */}
+                  <div style={{ position: 'relative', width: 36, height: 22, flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', left: 0, top: 4, transform: 'rotate(-14deg)', zIndex: 1 }}><EggShape size={12} rarity="rare" /></div>
+                    <div style={{ position: 'absolute', left: 21, top: 4, transform: 'rotate(14deg)', zIndex: 1 }}><EggShape size={12} rarity="epic" /></div>
+                    <div style={{ position: 'absolute', left: 10, top: 0, zIndex: 2 }}><EggShape size={15} rarity="common" /></div>
+                  </div>
+                  {/* trimmed from the original three-line "buy eggs and hatch them to meet a
+                      new buddy" copy — the egg cluster now carries the "buy → hatch" idea
+                      visually, so the text only needs to say what's new. */}
+                  <p style={{ fontSize: 13, lineHeight: 1.4, color: THEME.fg1, fontWeight: 600, margin: 0 }}>
+                    {getLang() === 'ko'
+                      ? <><span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>에서 알을 부화해보세요!</>
+                      : <>{'Hatch eggs in the '}<span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>!</>}
+                  </p>
+                </div>
               </button>
             </React.Fragment>
           )}

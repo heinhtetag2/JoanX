@@ -17,7 +17,7 @@ import { sfx } from '../core/sound.jsx';
 // `eggShake` gates the shake-to-hatch gesture and the affordance that teaches it. Off by
 // default: the tap is the whole interaction for now, and a block of copy explaining a second
 // way to do the thing you just did competes with the egg it sits under.
-function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged' }) {
+function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged', eggCardRadius = 20 }) {
   const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const [pts, setPts] = React.useState(PLAYER.points);
   const [owned, setOwned] = React.useState(() => ({ ...PLAYER.eggs }));
@@ -95,7 +95,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
     position: 'relative',
     background: 'linear-gradient(150deg, rgba(8,10,22,0.52), rgba(8,10,22,0.38) 75%)',
     backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)',
-    border: `1.5px solid ${rar.fg}${accent ? '99' : '3d'}`, borderRadius: 20, padding: 16,
+    border: `1.5px solid ${rar.fg}${accent ? '99' : '3d'}`, borderRadius: eggCardRadius, padding: 16,
     boxShadow: `inset 0 1px 0 rgba(255,255,255,0.14)${accent ? `, 0 0 0 1px ${rar.fg}22` : ''}`,
     opacity,
   });
@@ -337,10 +337,14 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
           Sits above the scroll container (not inside it) so it stays put while the egg list
           scrolls underneath. */}
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '0 24px calc(env(safe-area-inset-bottom) + 72px)', display: 'flex', justifyContent: 'center' }}>
-        {/* raised clear of the gold leaf trim along the very bottom edge, and a darker
-            glass fill (was rgba(255,255,255,.12), nearly invisible on the green backdrop)
-            so the label holds real contrast instead of relying on the art behind it */}
-        <button onClick={() => ctx.nav('home')} style={{ background: 'rgba(0,0,0,.34)', border: '1px solid rgba(255,255,255,.28)', color: '#fff', borderRadius: 999, padding: '12px 32px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Close')}</button>
+        {/* raised clear of the gold leaf trim along the very bottom edge. A dark glass fill
+            (rgba(0,0,0,.34)) still read as just another dark patch of the crystal/nest art
+            behind it — same problem the earlier white-on-white attempt had, mirrored. Flipped
+            to the same solid off-white pill the egg cards themselves use for their own
+            secondary state (Shop's "not buyable" pill, THEME.fg3 on white) — it's the one
+            color in this screen that never appears in the backdrop art, so it reads as a
+            control rather than more scenery, in any lighting the art ships in. */}
+        <button onClick={() => ctx.nav('home')} style={{ background: 'rgba(255,255,255,.92)', border: 'none', color: THEME.fg1, borderRadius: 999, padding: '12px 32px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Close')}</button>
       </div>
 
       {/* egg hatch overlay (A-2 / F-15) — the shared flow (EggHatchFlow, EggHatch.jsx),

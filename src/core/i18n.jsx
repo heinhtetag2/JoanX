@@ -772,6 +772,22 @@ const KO = {
   'It crashes every time I open the Reports tab since the last update.':
     '최근 업데이트 이후로 리포트 탭을 열면 매번 앱이 꺼져요.',
 
+  // ── 1:1 inquiry — [inquiryStyle="board"] Q&A community-board flow (All/Me tabs, tags) ──
+  'All': '전체', 'My inquiries': '내 문의',
+  'New question': '새 질문', 'Tag': '태그', 'Your question': '문의할 내용',
+  'Ask a new question': '새 질문하기', 'Question': '질문', 'Answer': '답변',
+  "You haven't asked anything yet.": '아직 문의한 내역이 없어요.',
+  'No questions yet.': '아직 등록된 질문이 없어요.',
+  'No questions in this category yet.': '이 카테고리에는 아직 질문이 없어요.',
+  '5h ago': '5시간 전', '6h ago': '6시간 전', '1d ago': '1일 전',
+  'Can I switch from monthly to yearly billing?': '월간 결제에서 연간 결제로 바꿀 수 있나요?',
+  'Yes — open Billing & subscription and choose Switch plan. It takes effect at your next renewal date, and we prorate any remaining days.':
+    '네 — 결제/구독에서 요금제 변경을 선택하세요. 다음 결제일부터 적용되고, 남은 기간은 일할 계산돼요.',
+  'Any plans for a tablet version?': '태블릿 버전 출시 계획이 있나요?',
+  'Does Strict sensitivity drain the battery faster?': '엄격 민감도를 쓰면 배터리가 더 빨리 닳나요?',
+  'A little — Strict mode samples motion more often. Most families still see well under 5% extra battery use per day.':
+    '조금요 — 엄격 모드는 움직임을 더 자주 측정해요. 대부분의 가정에서는 하루 배터리 사용량이 5% 미만으로 늘어나는 정도예요.',
+
   // ── parent: help detail ──
   "We're here to help": '도움이 필요하신가요', 'Popular questions': '자주 묻는 질문',
   'How does Smart mode work?': '스마트 모드는 어떻게 작동하나요?', 'Is my child’s location private?': '자녀의 위치는 비공개인가요?',
