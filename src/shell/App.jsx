@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -427,11 +427,13 @@ function App() {
                   Collection XP and Battle power. tw.homeStatB stays defaulted so Home keeps
                   getting it. */}
 
-              {/* Egg-shop entry point selector removed — the default 'header' (Header pill: egg +
-                  count + plus badge) is the chosen behaviour, compared against fifteen other
-                  treatments (icon+badge, text label, dot, stack, ghost, pulse, shop bag, progress
-                  ring, colour swatch, word link, goal teaser, big sticker, tiny icon, banner card,
-                  poking+badge). tw.eggEntry stays defaulted so HomeActionsS keeps getting it. */}
+              {/* Egg-shop entry point selector removed — the default 'market' (Figma reference,
+                  node 277:1891: market-stall art + "Shop", no egg count, sitting after the
+                  points pill) is the chosen behaviour, compared against sixteen other treatments
+                  (header pill, icon+badge, text label, dot, stack, ghost, pulse, shop bag,
+                  progress ring, colour swatch, word link, goal teaser, big sticker, tiny icon,
+                  banner card, poking+badge). tw.eggEntry stays defaulted so HomeActionsS keeps
+                  getting it. */}
 
               {/* Points-gain animation style selector removed — the coin shower (with the
                   digits counting up alongside it) is the chosen behaviour, compared against a
@@ -621,10 +623,12 @@ function App() {
               {/* 'split' is the original Shop: an owned egg shows in "Your eggs" up top
                   AND its tier still shows in "Buddy Eggs" below — the same tier twice.
                   'merged' folds those into one list, one card per tier, that reads as
-                  Hatch when you own one and Buy when you don't. */}
+                  Hatch when you own one and Buy when you don't. 'carousel' is that same
+                  merged model blown up big and snap-scrolled sideways, one tier filling
+                  most of the screen at a time instead of three squeezed abreast. */}
               <div className="tw-label">Egg shop layout</div>
               <div className="tw-row">
-                {[['split', 'Two sections'], ['merged', 'One list']].map(([v, l]) => (
+                {[['split', 'Two sections'], ['merged', 'One list'], ['carousel', 'Big scroll']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.eggShopLayout === v ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, eggShopLayout: v })); setStack([{ screen: 'shop', params: {} }]); setScreen('shop'); }}>{l}</button>
                 ))}

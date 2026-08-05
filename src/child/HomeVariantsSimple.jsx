@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, THEME } from '../core/primitives.jsx';
+import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, ShopIcon, THEME } from '../core/primitives.jsx';
 import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, totalEggs, xpToCap } from '../core/data.jsx';
 import { getLang, L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
@@ -121,6 +121,10 @@ const HOME_STAT_B_OPTIONS = [
 // icon's own left-aligned position (not the pill's right edge, and not its text) lands the
 // coins ON the icon rather than generically "somewhere in the pill's box".
 const PILL_POS = { left: 242, top: 80 };
+// module-scope (not component state) so it survives HomeActionsS remounting when the
+// child navigates away and back to Home — the "Shop" tip should still only self-open
+// once per app session, not once per mount.
+let shopTipShown = false;
 // SOURCE_POS — the single spot the whole stream pours from, low and left-of-center so the
 // climb up to the pill has room to curve. Real Clash Royale streams have a chest to pour
 // out of; we don't have an on-screen "source" object, so this is just a fixed point low on
@@ -203,6 +207,21 @@ function HomeActionsS({ ctx, dark }) {
   // static class alone would only ever play once, on mount) — the popover then
   // reads as popping out of that bounce rather than sliding in on its own.
   const [bounceKey, setBounceKey] = React.useState(0);
+  // unlike the points pill's tap-to-reveal tip, this one explains itself ONCE — a
+  // first-time visitor sees "Shop" and a market-stall icon with no idea what's inside,
+  // so it self-opens on the first Home mount this session (see shopTipShown below).
+  // After that first look the button is just a plain doorway again: tapping it always
+  // goes straight to the Shop, same as every other eggEntry variant's button does.
+  const [showShopTip, setShowShopTip] = React.useState(false);
+  const [shopBounceKey, setShopBounceKey] = React.useState(0);
+
+  React.useEffect(() => {
+    if (shopTipShown) return;
+    shopTipShown = true;
+    setShowShopTip(true);
+    const t = setTimeout(() => setShowShopTip(false), 4500);
+    return () => clearTimeout(t);
+  }, []);
 
   React.useEffect(() => {
     if (!fx || fx.key === seenKey.current) return;
@@ -436,6 +455,54 @@ function HomeActionsS({ ctx, dark }) {
             <Icon name="plus" size={12} color="#fff" stroke={3} />
           </span>
         </button>
+      )}
+      {/* Tweaks: Home · Egg shop entry → 'market'. Figma reference (node 277:1891): the egg
+          count is dropped entirely — this is a plain doorway to the Shop (the little market-
+          stall art + "Shop"), not an inventory readout. Sits AFTER the points pill (order: 2)
+          rather than before it like every other entry above, matching the Figma header's
+          points-then-shop order — everything else here still reads left-to-right in source
+          order, only this variant needs the flip. Padding/icon size are copied straight from
+          the points pill just to its left — vertical padding is trimmed as the icon grows
+          (2px vs the points pill's 5px) so the pill's OUTER height still matches even though
+          this icon now runs bigger (26px vs the coin's 20px) to read at the same visual
+          weight as the coin's own ring art. Text skips game-font — that face has no Hangul
+          glyphs, so "가게" falls back to the system font, which reads heavier than Fredoka
+          at the same numeric weight; 600 is the system font's closest match to how bold
+          the points pill's digits actually look, not a literal weight-500 copy. */}
+      {ctx.tweaks?.eggEntry === 'market' && (
+        <div style={{ position: 'relative', order: 2 }}>
+          {/* the tip explains itself on its own (self-opens once, see the effect above) —
+              tapping the button itself always goes straight to the Shop, same as every
+              other eggEntry variant's button. Same remount-to-replay bounce trick as the
+              points pill just to its left (jx-pill-bounce off a key change), so tapping
+              this one feels like the same interaction, not a dead plain link — the nav
+              itself is held back one beat (the bounce's own duration) so the screen
+              doesn't swap out from under the animation before it's had a chance to play. */}
+          <button key={`shop-still-${shopBounceKey}`} className={shopBounceKey > 0 ? 'jx-pill-bounce' : undefined}
+            onClick={() => { setShowShopTip(false); setShopBounceKey(k => k + 1); setTimeout(() => ctx.nav('shop'), 260); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: chip, padding: '3px 14px 3px 10px', borderRadius: 999, boxShadow: dark ? 'none' : THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <ShopIcon size={23} />
+            <span style={{ fontSize: 15, fontWeight: 600, color: ink }}>{L('Shop')}</span>
+          </button>
+          {showShopTip && (
+            <React.Fragment>
+              <div onClick={() => setShowShopTip(false)} style={{ position: 'fixed', inset: 0, zIndex: 45 }} />
+              <button onClick={() => { setShowShopTip(false); setShopBounceKey(k => k + 1); setTimeout(() => ctx.nav('shop'), 260); }} className="jx-tip-pop"
+                style={{ position: 'absolute', top: 'calc(100% + 14px)', right: 0, width: 200, textAlign: 'left', background: '#fff', border: 'none', borderRadius: 16, padding: '13px 15px', boxShadow: THEME.shadowXl, zIndex: 46, cursor: 'pointer', fontFamily: 'inherit', transformOrigin: 'top right' }}>
+                {/* tail centered under the market-stall icon, same corner-square trick as
+                    the points tip — this pill is right-anchored too, so the offset is
+                    measured in from the shared right edge: icon (23) + gap (6) + roughly
+                    half the icon's own width. */}
+                <div style={{ position: 'absolute', top: -6, right: 26, width: 12, height: 12, background: '#fff', borderRadius: 3, transform: 'rotate(45deg)' }} />
+                <p style={{ fontSize: 13, lineHeight: 1.55, color: THEME.fg1, fontWeight: 600, margin: 0, position: 'relative' }}>
+                  {getLang() === 'ko'
+                    ? <><span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>에서 알을 사고 부화해서 새 버디를 만나보세요!</>
+                    : <>{'Buy eggs in the '}<span style={{ color: THEME.brand, fontWeight: 800 }}>{L('Shop')}</span>{' and hatch new buddies!'}</>}
+                </p>
+              </button>
+            </React.Fragment>
+          )}
+        </div>
       )}
       <div style={{ position: 'relative' }}>
         {/* remounting the pill (via `key`) is what replays the bounce on every trigger, not

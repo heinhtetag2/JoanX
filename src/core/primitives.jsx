@@ -145,6 +145,14 @@ function SafePointIcon({ size = 20, style }) {
     style={{ width: size, height: size, objectFit: 'contain', display: 'inline-flex', flexShrink: 0, ...style }} />;
 }
 
+// Shop icon — finished art for the Home header's Shop button (public/assets/shop/shop-stall.png),
+// matched to the Figma header (node 277:1891). Swapped in wherever the drawn lucide
+// shopping-bag meant "go to the shop".
+function ShopIcon({ size = 20, style }) {
+  return <img src="/assets/shop/shop-stall.png" alt="" draggable="false"
+    style={{ width: size, height: size, objectFit: 'contain', display: 'inline-flex', flexShrink: 0, ...style }} />;
+}
+
 // A profile photo with a graceful fallback. `src` is a static image (e.g. a default placeholder
 // dropped in public/assets/avatars/); if it's absent or fails to load, `fallback` is rendered
 // instead — the colored initial for a parent, the buddy mascot for a child — so a screen looks
@@ -528,4 +536,4 @@ const avatarPalFor = (id) => {
   return AVATAR_PAL[h % AVATAR_PAL.length];
 };
 
-export { AVATAR_PAL, Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, SectionHead, SelectField, StatusBar, THEME, Toggle, avatarPalFor, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };
+export { AVATAR_PAL, Badge, Bar, BottomSheet, Button, Calendar, DateField, Icon, Input, Modal, PairQR, PhotoAvatar, PointIcon, RARITY, SafePointIcon, SealCheck, SectionHead, SelectField, ShopIcon, StatusBar, THEME, Toggle, avatarPalFor, formatPhone, isNeon, mixHue, pastelHue, screenBgFor };

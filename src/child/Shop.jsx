@@ -96,7 +96,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
     background: 'linear-gradient(150deg, rgba(8,10,22,0.52), rgba(8,10,22,0.38) 75%)',
     backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)',
     border: `1.5px solid ${rar.fg}${accent ? '99' : '3d'}`, borderRadius: 20, padding: 16,
-    boxShadow: `0 10px 30px rgba(10,6,35,0.38), inset 0 1px 0 rgba(255,255,255,0.14)${accent ? `, 0 0 0 1px ${rar.fg}22` : ''}`,
+    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.14)${accent ? `, 0 0 0 1px ${rar.fg}22` : ''}`,
     opacity,
   });
 
@@ -113,8 +113,10 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
           the top and the crystal pedestal at the bottom — rather than pinned under the
           header the way a long scrolling list would be. With only the egg cards left on
           this screen there's little enough content that it reads as placed IN the art,
-          not laid over it. */}
-      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          not laid over it. 'carousel' cards run taller than the merged/split rows, so the
+          same centering leaves a bigger gap above the "Points" title than it does for
+          those — nudged up with a smaller top pad rather than turning off centering. */}
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: eggShopLayout === 'carousel' ? 96 : 102, paddingBottom: 60, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       {/* No header at all — this screen has nothing "behind" it worth a back chevron; it's
           a state the child jumps INTO from Home/the point pill, not a place navigated deeper
           into. Exit is the bottom Close button below, same as the battle preview / walking
@@ -135,8 +137,55 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
         </div>
         {/* Tweaks: "Egg shop layout" — 'merged' folds the two lists below into one
             (each tier is either "own it → Hatch" or "don't → Buy", never both at once);
-            'split' is the original two-section layout, kept for comparison. */}
-        {eggShopLayout === 'merged' ? (
+            'carousel' is the same merged one-card-per-tier model, just blown up big and
+            snap-scrolled sideways instead of squeezed three-abreast — one tier fills most
+            of the screen at a time, swipe for the next; 'split' is the original two-section
+            layout, kept for comparison. */}
+        {eggShopLayout === 'carousel' ? (
+          <div className="no-sb" style={{ display: 'flex', gap: 14, overflowX: 'auto', scrollSnapType: 'x mandatory', margin: '0 -16px', padding: '2px 16px 10px' }}>
+            {activeEggs().map(egg => {
+              const rar = RARITY[egg.rarity];
+              const n = owned[egg.id] || 0;
+              const canHatch = n > 0;
+              const locked = PLAYER.level < egg.minLevel;
+              const unbuyable = egg.price == null;
+              const afford = !unbuyable && pts >= egg.price;
+              const on = !unbuyable && !locked && afford;
+              const desc = canHatch ? L('Earned — ready to hatch') : locked ? `${L('Unlocks at Lv')} ${egg.minLevel}` : L('Hatch a random new buddy');
+              return (
+                <div key={egg.id} style={{ ...glassCard(rar, canHatch || unbuyable, locked && !canHatch ? .78 : 1), flexShrink: 0, width: '74%', scrollSnapAlign: 'center', padding: '26px 18px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontSize: 19, fontWeight: 800, color: '#fff', textAlign: 'center' }}>{L(egg.name)}</span>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 1.4 }}>{desc}</div>
+                  <div style={{ position: 'relative', width: '100%', height: 168, margin: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: locked && !canHatch ? 'grayscale(.5)' : 'none' }}>
+                    <EggShape size={140} rarity={egg.rarity} />
+                    {canHatch && n > 1 && (
+                      <span style={{ position: 'absolute', top: 4, right: '18%', fontSize: 12, fontWeight: 800, color: rar.fg, background: '#fff', border: `1.5px solid ${rar.fg}40`, padding: '2px 8px', borderRadius: 999 }}>×{n}</span>
+                    )}
+                  </div>
+
+                  {canHatch ? (
+                    <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.gold, color: '#fff', borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, boxShadow: '0 3px 10px rgba(209,153,0,.4)' }}>
+                      {L('Hatch')}
+                    </button>
+                  ) : unbuyable ? (
+                    <span style={{ width: '100%', textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '13px 0', fontSize: 14, fontWeight: 800 }}>
+                      <Icon name="gift" size={15} color={THEME.gold} stroke={2.3} />{L('Reward')}
+                    </span>
+                  ) : locked ? (
+                    <span style={{ width: '100%', textAlign: 'center', background: 'rgba(255,255,255,0.85)', color: THEME.fg3, borderRadius: 999, padding: '13px 0', fontSize: 14, fontWeight: 800 }}>
+                      {`${L('Lv')}.${egg.minLevel}`}
+                    </span>
+                  ) : (
+                    <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? THEME.gold : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: on ? '0 3px 10px rgba(209,153,0,.4)' : 'none' }}>
+                      <SafePointIcon size={16} />
+                      {egg.price.toLocaleString()}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : eggShopLayout === 'merged' ? (
           <React.Fragment>
             {/* three cards side by side, not stacked rows — title on top, the egg sitting in
                 its own framed slot, price pill anchored at the bottom. Same "hatch what you
@@ -287,7 +336,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
       {/* Close — the one exit, pinned to the bottom like the battle preview's Close button.
           Sits above the scroll container (not inside it) so it stays put while the egg list
           scrolls underneath. */}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '0 24px calc(env(safe-area-inset-bottom) + 96px)', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '0 24px calc(env(safe-area-inset-bottom) + 72px)', display: 'flex', justifyContent: 'center' }}>
         {/* raised clear of the gold leaf trim along the very bottom edge, and a darker
             glass fill (was rgba(255,255,255,.12), nearly invisible on the green backdrop)
             so the label holds real contrast instead of relying on the art behind it */}

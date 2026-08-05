@@ -368,7 +368,7 @@ const KO = {
   'English': 'English', '한국어': '한국어',
 
   // ── points / shop ──
-  'Points': '포인트', 'Your points': '내 포인트', 'Min safe': '안전 분',
+  'Points': '포인트', 'Your points': '내 포인트', 'Min safe': '안전 분', 'Shop': '가게',
   'Win battles': '배틀 승리', 'Keep streaks': '연속 유지', 'Daily reward': '매일 보상',
   'Mystery Buddy Box': '미스터리 친구 상자', 'Get a random new buddy': '랜덤으로 새 친구를 받아요',
   'Opened': '열었어요', 'Outfits': '의상', 'Owned': '내 것', 'Unlock rooms': '방 열기',
