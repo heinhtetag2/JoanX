@@ -318,7 +318,7 @@ const LINK = {
 // Both guardians see identical data by construction rather than by syncing: reports, points
 // and settings are family-scoped, so there is nothing to reconcile between two devices.
 //
-// Every member signs in as THEMSELVES (own phone number). Sharing one login is the tempting
+// Every member signs in as THEMSELVES (own email). Sharing one login is the tempting
 // shortcut and it breaks three things at once: push reaches one device, no change can be
 // attributed, and no alert can show who already responded.
 // Seeded with just the owner, one seat short of MAX_GUARDIANS — a fresh family, not yet
@@ -329,7 +329,7 @@ const LINK = {
 const FAMILY = {
   id: 'f1',
   members: [
-    { id: 'm1', name: 'Ji-won',  relation: 'Mum', phone: '010-1234-5678', role: 'owner',    since: '2026-03-14', me: true },
+    { id: 'm1', name: 'Ji-won',  relation: 'Mum', email: 'ji-won@email.com', role: 'owner',    since: '2026-03-14', me: true },
   ],
 };
 
@@ -1516,24 +1516,26 @@ const claimRewards = (extra = {}, player = PLAYER, rnd = Math.random) => {
 };
 
 // ── Parent account sign-in (F-33) ────────────────────────────────────
-// Phone number is the account's identity, and a password is its key. The SMS code proves
-// the number is really yours, so it is spent where that question is actually asked — at
+// Email is the account's identity, and a password is its key. The verification code proves
+// the email is really yours, so it is spent where that question is actually asked — at
 // sign-up, and at a password reset — not on every log-in. A returning guardian types their
-// number and password; nothing is texted. Social sign-in is there to satisfy platform
-// policy and save typing: Google on Android, Sign in with Apple on iOS. Those hand back an
-// identity the provider already verified, so they set no password of their own.
-// Email is out of MVP scope — note it is *disabled* here, not deleted: the flow renders
-// whatever methods are enabled for the platform, so adding it later is this flag plus its
-// form, not a rebuild of the screen.
+// email and password; nothing is sent. Social sign-in is there to satisfy platform policy
+// and save typing: Google on Android, Sign in with Apple on iOS, Kakao for the Korean
+// market. Those hand back an identity the provider already verified, so they set no
+// password of their own.
+// Phone is out of MVP scope — note it is *disabled* here, not deleted: the flow renders
+// whatever methods are enabled for the platform, so adding it back later is this flag plus
+// its form, not a rebuild of the screen.
 const AUTH = {
-  smsCodeLength: 6,
-  smsResendSeconds: 180,   // how long before "Resend code" becomes available again
+  codeLength: 6,
+  codeResendSeconds: 180,   // how long before "Resend code" becomes available again
   passwordMinLength: 8,
   methods: [
-    { key: 'phone',  label: 'Phone number',        enabled: true,  primary: true },
-    { key: 'google', label: 'Continue with Google', enabled: true,  platforms: ['android'] },
-    { key: 'apple',  label: 'Sign in with Apple',   enabled: true,  platforms: ['ios'] },
-    { key: 'email',  label: 'Continue with email',  enabled: false },   // excluded from the MVP (F-33.1)
+    { key: 'email',  label: 'Email',                 enabled: true,  primary: true },
+    { key: 'google', label: 'Continue with Google',   enabled: true,  platforms: ['android'] },
+    { key: 'apple',  label: 'Sign in with Apple',     enabled: true,  platforms: ['ios'] },
+    { key: 'kakao',  label: 'Continue with Kakao',    enabled: true },
+    { key: 'phone',  label: 'Phone number',           enabled: false },   // excluded from the MVP (F-33.1)
   ],
 };
 
@@ -1550,9 +1552,9 @@ const devicePlatform = () => {
 const authMethods = (platform = devicePlatform()) =>
   AUTH.methods.filter(m => m.enabled && (!m.platforms || platform === 'web' || m.platforms.includes(platform)));
 
-// Mock: phone numbers that already have an account, so verifying one signs in rather
+// Mock: emails that already have an account, so verifying one signs in rather
 // than walking through profile creation. Swap for the real lookup.
-const KNOWN_PHONES = ['010-1234-5678', '01012345678'];
+const KNOWN_EMAILS = ['sora.kim@email.com'];
 
 // ── Rarity tiers (A-4 / F-15) ────────────────────────────────────────
 // The tier list is data, not a hard-coded union: a future tier (Legendary,
@@ -2732,7 +2734,10 @@ const LEGAL_DOCS = [
 // that account — while the phone is verified with a code when changed.
 // `avatar` is the default profile photo — a placeholder in public/assets/avatars/. If the file
 // isn't there it falls back to the coloured initial (see PhotoAvatar), so the header still reads.
-const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '+82 10-1234-5678', provider: 'Google', avatar: '/assets/avatars/avatar-parent.png' };
+// `dob`/`gender` are asked at sign-up (see auth.jsx's Create account step) but used to go
+// nowhere afterward — added here so the Account page can actually show and edit what
+// onboarding collected, instead of dropping it on the floor.
+const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', provider: 'Google', avatar: '/assets/avatars/avatar-parent.png', dob: '1990-05-12', gender: 'female' };
 
 // ── PARENT_PREFS — the parent DEVICE's own preferences ────────────────
 // Separate from the child's PLAYER.prefs: the parent app runs on a different
@@ -2743,7 +2748,7 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', phone: '
 // Off by default, for the same reason the child's is (see PLAYER.prefs).
 const PARENT_PREFS = { sound: false };
 
-export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_PHONES, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

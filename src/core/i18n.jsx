@@ -527,6 +527,7 @@ const KO = {
   'Sign in with your phone': '휴대폰 번호로 로그인', "We'll text you a 6-digit code. New here? This creates your account.": '6자리 인증번호를 문자로 보내드려요. 처음이시면 계정이 함께 만들어져요.',
   'Send code': '인증번호 받기', 'Verify': '확인', 'Enter the code': '인증번호 입력',
   'We sent a 6-digit code to': '인증번호 6자리를 보냈어요:',
+  'to confirm it’s you before changing how you sign in.': ' 본인 확인 후 로그인 방법을 변경할 수 있어요.',
   'Didn’t get it? You can resend in': '문자가 안 왔나요? 재전송 가능까지', 'Resend code': '인증번호 다시 보내기',
   'Continue with Google': 'Google로 계속하기', 'Sign in with Apple': 'Apple로 로그인',
   'What should we call you?': '이름을 알려줄래요?', 'This is the name your buddy will use.': '친구가 이 이름으로 불러줄 거예요.', 'e.g. Mina': '예: 민아',
@@ -651,6 +652,7 @@ const KO = {
   'Guardians': '보호자', 'Co-parent': '공동 양육자', 'Invite a guardian': '보호자 초대',
   'Edit': '수정', 'Save': '저장', 'Profile photo': '프로필 사진', 'Take photo': '사진 촬영', 'Choose from library': '앨범에서 선택',
   'Linked to your Google account': 'Google 계정에 연결됨',
+  'Linked to your Apple account': 'Apple 계정에 연결됨', 'Linked to your Kakao account': 'Kakao 계정에 연결됨',
   'OK': '확인', 'Sign-in': '로그인', 'Delete account': '계정 삭제', 'Delete your account?': '계정을 삭제할까요?',
   'This permanently deletes your account and unlinks every child device. This can’t be undone.': '계정이 영구히 삭제되고 모든 자녀 기기의 연결이 해제돼요. 되돌릴 수 없어요.',
   'Changes saved': '저장됐어요', 'Profile photo updated': '프로필 사진이 변경됐어요', 'Profile photo removed': '프로필 사진이 삭제됐어요',
@@ -1149,7 +1151,7 @@ const KO = {
   'Requests': '요청', 'Suggested': '추천', 'Invite friends': '친구 초대', 'Scan to add a friend': '스캔해서 친구 추가', 'People': '사람',
 
   // ── add friends (F-32) ──
-  'Add friends': '친구 추가', 'Add': '추가', 'My friend code': '내 친구 코드', 'Copied!': '복사됐어요!',
+  'Add friends': '친구 추가', 'Add': '추가', 'Search': '검색', 'My friend code': '내 친구 코드', 'Copied!': '복사됐어요!',
   'Add by code': '코드로 추가', 'Friend requests': '친구 요청', 'Suggested friends': '추천 친구',
   'mutual friends': '함께 아는 친구', 'Added': '추가됨', 'Request sent!': '요청을 보냈어요!', 'Friend added!': '친구가 추가됐어요!',
   'Add a friend': '친구 추가하기', 'Friend code': '친구 코드', 'Nickname': '닉네임', 'QR code': 'QR 코드',

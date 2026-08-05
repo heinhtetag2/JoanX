@@ -22,6 +22,7 @@ function AddFriends({ ctx, layout = 'list' }) {
   const methods = FRIEND_METHODS.filter(m => m.enabled);
   const [method, setMethod] = React.useState(methods[0]?.id || 'code');
   const [query, setQuery] = React.useState('');
+  const queryRef = React.useRef(null);
   const results = React.useMemo(() => searchUsers(query), [query]);
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1500); };
 
@@ -55,7 +56,7 @@ function AddFriends({ ctx, layout = 'list' }) {
   const codeInput = (compact) => (
     <div style={{ display: 'flex', gap: 8 }}>
       <input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="JNX-••••-••" style={{ flex: 1, minWidth: 0, border: `1.5px solid ${THEME.border}`, borderRadius: compact ? 12 : 14, padding: compact ? '10px 12px' : '12px 14px', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, letterSpacing: 1, color: THEME.fg1, background: '#fff', outline: 'none' }} />
-      <Button variant="primary" size={compact ? 'sm' : 'md'} icon="user-plus" onClick={addByCode} disabled={!code.trim()} style={{ background: BRAND.main, boxShadow: 'none' }}>{L('Add')}</Button>
+      <Button variant="primary" size={compact ? 'sm' : 'md'} icon="search" onClick={addByCode} disabled={!code.trim()} style={{ background: BRAND.main, boxShadow: 'none' }}>{L('Search')}</Button>
     </div>
   );
 
@@ -90,10 +91,13 @@ function AddFriends({ ctx, layout = 'list' }) {
   );
   const searchPanel = (
     <React.Fragment>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1.5px solid ${THEME.border}`, borderRadius: 14, padding: '11px 14px', background: '#fff' }}>
-        <Icon name="search" size={17} color={THEME.fg3} stroke={2.2} />
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder={L('Search by nickname')} style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, background: 'transparent', color: THEME.fg1 }} />
-        {query && <button onClick={() => setQuery('')} aria-label={L('Clear')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}><Icon name="x" size={16} color={THEME.fg3} stroke={2.4} /></button>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, border: `1.5px solid ${THEME.border}`, borderRadius: 14, padding: '11px 14px', background: '#fff' }}>
+          <Icon name="search" size={17} color={THEME.fg3} stroke={2.2} />
+          <input ref={queryRef} value={query} onChange={e => setQuery(e.target.value)} placeholder={L('Search by nickname')} style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, background: 'transparent', color: THEME.fg1 }} />
+          {query && <button onClick={() => setQuery('')} aria-label={L('Clear')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}><Icon name="x" size={16} color={THEME.fg3} stroke={2.4} /></button>}
+        </div>
+        <Button variant="primary" size="md" icon="search" onClick={() => queryRef.current && queryRef.current.blur()} disabled={!query.trim()} style={{ background: BRAND.main, boxShadow: 'none' }}>{L('Search')}</Button>
       </div>
       {query.trim() && (
         <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${THEME.border}`, overflow: 'hidden', marginTop: 10 }}>

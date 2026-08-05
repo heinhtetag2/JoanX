@@ -1,9 +1,10 @@
 // JoanX — parent app · ParentDetail
 
 import React from 'react';
-import { CHILDREN, NOTICES, LEGAL_DOCS, PARENT_PROFILE } from '../core/data.jsx';
-import { Badge, Bar, BottomSheet, Button, Icon, Input, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { AUTH, CHILDREN, NOTICES, LEGAL_DOCS, PARENT_PROFILE } from '../core/data.jsx';
+import { Badge, Bar, BottomSheet, Button, DateField, Icon, Input, Modal, PhotoAvatar, SelectField, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang, setLang } from '../core/i18n.jsx';
+import { ProviderMark } from '../core/auth.jsx';
 import { BRAND, brandBtn, ParentHead } from './shared.jsx';
 
 // ── FAQ — grouped Q&A used by the Help / FAQ parent pages ────────────
@@ -138,14 +139,43 @@ function FaqAccordion({ items }) {
   );
 }
 
+// [loginProvider] — Tweaks-only: which sign-in method the mock account STARTS with, so both
+// shapes of the Account screen (email/password vs. social) can be previewed. 'email' is the
+// shipped default — a guardian who signed up with email/password owns a real password, so
+// Security → Change password shows. Google/Apple/Kakao hand back an identity that already
+// carries its own key (see auth.jsx), so those accounts see a "Connected" row instead and
+// never a password screen. From here on it's just the starting value, not a live control —
+// `provider` state below is what actually drives which branch renders, and the guardian can
+// move it with Change sign-in method. PARENT_PROFILE.provider is left as static mock data.
+const PROVIDER_LABELS = { google: 'Google', apple: 'Apple', kakao: 'Kakao' };
+const PROVIDER_LINK_LABEL = { google: 'Linked to your Google account', apple: 'Linked to your Apple account', kakao: 'Linked to your Kakao account' };
+const PROVIDER_BADGE_BG = { google: '#fff', apple: '#000', kakao: '#FEE500' };
+const METHOD_CHANGED_MSG = { google: 'You’ll now sign in with Google', apple: 'You’ll now sign in with Apple', kakao: 'You’ll now sign in with Kakao', email: 'You’ll now sign in with email & password' };
+
+// Resend-code cooldown — mirrors auth.jsx's sign-up/login timer so every 6-digit code
+// screen in the app (email/password edit, change password, change sign-in method) waits
+// out the same window before "Resend code" becomes tappable, instead of being available
+// immediately.
+function useResendCooldown(active) {
+  const [left, setLeft] = React.useState(AUTH.codeResendSeconds);
+  React.useEffect(() => {
+    if (!active || left <= 0) return undefined;
+    const t = setInterval(() => setLeft(s => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [active, left]);
+  const label = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  return { left, reset: () => setLeft(AUTH.codeResendSeconds), label };
+}
+
 // ── Settings detail pages (one screen per row) ───────────────────────
-function ParentDetail({ ctx, inquiryStyle = 'form' }) {
+function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
   const page = ctx.params?.page || 'account';
+  // The real, guardian-changeable sign-in method — Tweaks only sets where it starts.
+  const [provider, setProvider] = React.useState(loginProvider);
+  const socialProvider = provider !== 'email' ? provider : null;
   const ko = getLang() === 'ko';   // [inquiryStyle="kr"] — the sentences with an interpolated
   // category name (L() can't template) branch on this directly, matching ParentReports' own
   // ko-ternary convention for dynamic strings.
-  const [twoFA, setTwoFA] = React.useState(true);
-  const [faceId, setFaceId] = React.useState(true);
   const [analytics, setAnalytics] = React.useState(true);
   const [tips, setTips] = React.useState(true);
   const [keepLoc, setKeepLoc] = React.useState(true);
@@ -196,7 +226,7 @@ function ParentDetail({ ctx, inquiryStyle = 'form' }) {
   const activeLegal = LEGAL_DOCS.find(d => d.id === ctx.params?.legalId) || LEGAL_DOCS[0];
   // Account editing — one field at a time via a bottom sheet; `rev` bumps to
   // re-render after we mutate the shared PARENT_PROFILE object.
-  const [editField, setEditField] = React.useState(null);   // 'name' | 'email' | 'phone' | null
+  const [editField, setEditField] = React.useState(null);   // 'name' | 'email' | 'dob' | 'gender' | null
   const [editVal, setEditVal] = React.useState('');
   const [photoSheet, setPhotoSheet] = React.useState(false);
   const [confirmRemovePhoto, setConfirmRemovePhoto] = React.useState(false);
@@ -204,22 +234,80 @@ function ParentDetail({ ctx, inquiryStyle = 'form' }) {
   const [, setRev] = React.useState(0);
   const [toast, setToast] = React.useState(null);           // brief confirmation pill
   const say = m => { setToast(m); setTimeout(() => setToast(null), 1800); };
-  // Email & phone are contact points, so a change is confirmed by a 6-digit code
-  // (mirrors sign-up). Name needs no verification and saves in one step.
-  const EDIT_FIELDS = { name: { label: 'Name', type: 'text', verify: false }, email: { label: 'Email', type: 'email', verify: true }, phone: { label: 'Phone', type: 'tel', verify: true } };
+  // Email is the account's contact point (and its identity), so a change is confirmed by a
+  // 6-digit code (mirrors sign-up). Name/DOB/gender need no verification and save in one
+  // step — the same three fields Create account asks for up front (auth.jsx), now editable
+  // here instead of being asked once and never shown again.
+  const GENDER_OPTIONS = [{ value: 'male', label: L('Male') }, { value: 'female', label: L('Female') }, { value: 'other', label: L('Prefer not to say') }];
+  const EDIT_FIELDS = {
+    name: { label: 'Name', type: 'text', verify: false },
+    email: { label: 'Email', type: 'email', verify: true },
+    dob: { label: 'Date of birth', type: 'date', verify: false },
+    gender: { label: 'Gender', type: 'select', verify: false },
+  };
+  const formatDob = v => { if (!v) return ''; const [y, m, d] = v.split('-').map(Number); return ko ? `${y}년 ${String(m).padStart(2, '0')}월 ${String(d).padStart(2, '0')}일` : new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+  const genderLabel = v => (GENDER_OPTIONS.find(o => o.value === v) || {}).label || '';
   const [editStep, setEditStep] = React.useState('input');  // 'input' | 'code'
   const [editCode, setEditCode] = React.useState('');
   const editCodeRef = React.useRef(null);
   const openEdit = f => { setEditVal(PARENT_PROFILE[f]); setEditCode(''); setEditStep('input'); setEditField(f); };
-  const applyEdit = () => { if (editVal.trim()) PARENT_PROFILE[editField] = editVal.trim(); setEditField(null); setRev(r => r + 1); say(L('Changes saved')); };
-  const proceedEdit = () => { if (EDIT_FIELDS[editField].verify) { setEditCode(''); setEditStep('code'); } else applyEdit(); };
-  // Change password — local-only in the prototype (nothing is persisted).
+  const applyEdit = () => { if (String(editVal).trim()) PARENT_PROFILE[editField] = String(editVal).trim(); setEditField(null); setRev(r => r + 1); say(L('Changes saved')); };
+  const editResend = useResendCooldown(editStep === 'code');
+  const proceedEdit = () => { if (EDIT_FIELDS[editField].verify) { setEditCode(''); editResend.reset(); setEditStep('code'); } else applyEdit(); };
+  // Change password — local-only in the prototype (nothing is persisted). A password change
+  // is a credential change like email/phone, so it earns the same code confirmation before
+  // it takes effect (see EDIT_FIELDS.verify below) rather than the current-password field alone.
   const [curPw, setCurPw] = React.useState('');
   const [newPw, setNewPw] = React.useState('');
   const [confPw, setConfPw] = React.useState('');
-  const [pwSaved, setPwSaved] = React.useState(false);
+  const [pwStep, setPwStep] = React.useState(null);  // null (closed) | 'form' | 'code' | 'saved'
+  const [pwCode, setPwCode] = React.useState('');
+  const pwCodeRef = React.useRef(null);
   const pwMismatch = confPw.length > 0 && newPw !== confPw;
   const pwReady = curPw.length > 0 && newPw.length >= 8 && newPw === confPw;
+  const resetPwFlow = () => { setCurPw(''); setNewPw(''); setConfPw(''); setPwCode(''); setPwStep(null); };
+  const pwResend = useResendCooldown(pwStep === 'code');
+
+  // Change sign-in method — re-auth (current password, or a fresh tap through the current
+  // provider) proves this session still owns the account before it's allowed to swap in a
+  // different one. Never an email-matching auto-link: the picker only ever offers providers
+  // OTHER than the current one, and picking one just re-points this already-authenticated
+  // account — no separate identity to merge, so no collision to resolve. Switching TO email
+  // is the one path that still needs a code, since no provider is left to vouch for that inbox
+  // — JoanX has to verify it directly, same as any other email edit.
+  const [methodStep, setMethodStep] = React.useState(null);   // null | 'reauth' | 'pick' | 'password' | 'code'
+  const [reauthPw, setReauthPw] = React.useState('');
+  const [reauthCode, setReauthCode] = React.useState('');
+  const reauthCodeRef = React.useRef(null);
+  const reauthResend = useResendCooldown(methodStep === 'reauth');
+  const [methodPw, setMethodPw] = React.useState('');
+  const [methodPw2, setMethodPw2] = React.useState('');
+  const [methodCode, setMethodCode] = React.useState('');
+  const methodCodeRef = React.useRef(null);
+  const methodPwMismatch = methodPw2.length > 0 && methodPw !== methodPw2;
+  const methodPwReady = methodPw.length >= 8 && methodPw === methodPw2;
+  const methodResend = useResendCooldown(methodStep === 'code');
+  const closeMethodSheet = () => { setMethodStep(null); setReauthPw(''); setReauthCode(''); setMethodPw(''); setMethodPw2(''); setMethodCode(''); };
+  // Picking a social provider finalizes immediately — its OAuth handshake (mocked here) IS
+  // the proof, so there's nothing left to confirm. Picking email instead needs a password and
+  // a code first, so it detours to those steps rather than finalizing on the spot.
+  const pickMethod = (key) => {
+    if (key === 'email') { setMethodStep('password'); return; }
+    setProvider(key);
+    closeMethodSheet();
+    say(L(METHOD_CHANGED_MSG[key]));
+  };
+  const finalizeEmailMethod = () => { setProvider('email'); closeMethodSheet(); say(L(METHOD_CHANGED_MSG.email)); };
+
+  // resend row — same cooldown as sign-up/login (auth.jsx): a countdown while it's on,
+  // then "Didn't get it? Resend code" becomes tappable once it reaches 0.
+  const resendRow = (resend, onResend) => resend.left > 0 ? (
+    <div style={{ marginTop: 14, fontSize: 12.5, fontWeight: 700, color: THEME.fg2 }}>
+      {L('Didn’t get it? You can resend in')} <span style={{ color: THEME.fg1, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{resend.label}</span>
+    </div>
+  ) : (
+    <button onClick={onResend} style={{ marginTop: 14, padding: 0, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, color: THEME.fg2, cursor: 'pointer' }}>{L('Didn’t get it?')} <span style={{ color: BRAND.primary, fontWeight: 800 }}>{L('Resend code')}</span></button>
+  );
 
   const chev = <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />;
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
@@ -278,57 +366,55 @@ function ParentDetail({ ctx, inquiryStyle = 'form' }) {
         {label(L('Account details'))}
         {card(<React.Fragment>
           {navRow(0, 'user', L('Name'), <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{PARENT_PROFILE.name}</span>, undefined, () => openEdit('name'))}
-          {/* Email is read-only — it comes from the linked Google/Apple account, so it's changed
-              there, not with an SMS code here. */}
-          <div style={rowStyle(1, false)}>
-            <Icon name="mail" size={18} color={THEME.fg2} stroke={2.2} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{L('Email')}</div>
-              <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="link" size={11} color={THEME.fg3} stroke={2.4} />{L('Linked to your Google account')}</div>
+          {/* Date of birth + gender — asked at sign-up (auth.jsx's Create account step) but
+              had nowhere to live afterward until now; editable here the same way Name is. */}
+          {navRow(1, 'calendar', L('Date of birth'), <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{formatDob(PARENT_PROFILE.dob)}</span>, undefined, () => openEdit('dob'))}
+          {navRow(2, 'user-round', L('Gender'), <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{genderLabel(PARENT_PROFILE.gender)}</span>, undefined, () => openEdit('gender'))}
+          {/* Email is read-only when signed in through Google/Apple/Kakao — it's changed
+              there, not with a code here. An email/password account has no such link, so
+              its email edits in place with the verify-code pattern instead. */}
+          {socialProvider ? (
+            <div style={rowStyle(3, false)}>
+              <Icon name="mail" size={18} color={THEME.fg2} stroke={2.2} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{L('Email')}</div>
+                <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="link" size={11} color={THEME.fg3} stroke={2.4} />{L(PROVIDER_LINK_LABEL[socialProvider])}</div>
+              </div>
+              <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, textAlign: 'right' }}>{PARENT_PROFILE.email}</span>
             </div>
-            <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600, textAlign: 'right' }}>{PARENT_PROFILE.email}</span>
-          </div>
-          {navRow(2, 'phone', L('Phone'), <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{PARENT_PROFILE.phone}</span>, undefined, () => openEdit('phone'))}
+          ) : navRow(3, 'mail', L('Email'), <span style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{PARENT_PROFILE.email}</span>, undefined, () => openEdit('email'))}
         </React.Fragment>)}
-        {label(L('Sign-in'))}
-        {card(
-          <div style={rowStyle(0, false)}>
-            <Icon name="mail" size={18} color={THEME.fg2} stroke={2.2} />
-            <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{PARENT_PROFILE.provider}</div>
-            <span style={{ fontSize: 11.5, fontWeight: 800, color: BRAND.primaryDark, background: BRAND.primaryLight, padding: '3px 9px', borderRadius: 999 }}>{L('Connected')}</span>
-          </div>
+        {/* Sign-in (social) and Change password are mutually exclusive — a Google/Apple/Kakao
+            identity carries its own key and never sets a JoanX password, so there's nothing
+            to change; only an email/password account gets the Security section. Both still
+            get Change sign-in method — re-auth first, then the picker (see methodStep below). */}
+        {socialProvider ? (
+          <React.Fragment>
+            {label(L('Sign-in'))}
+            {card(<React.Fragment>
+              <div style={rowStyle(0, false)}>
+                <span style={{ width: 30, height: 30, borderRadius: 999, background: PROVIDER_BADGE_BG[socialProvider], border: socialProvider === 'google' ? `1px solid ${THEME.border}` : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ProviderMark provider={socialProvider} />
+                </span>
+                <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{PROVIDER_LABELS[socialProvider]}</div>
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: BRAND.primaryDark, background: BRAND.primaryLight, padding: '3px 9px', borderRadius: 999 }}>{L('Connected')}</span>
+              </div>
+              {navRow(1, 'repeat', L('Change sign-in method'), chev, undefined, () => { reauthResend.reset(); setMethodStep('reauth'); })}
+            </React.Fragment>)}
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            {label(L('Security'))}
+            {card(<React.Fragment>
+              {navRow(0, 'lock', L('Change password'), chev, undefined, () => setPwStep('form'))}
+              {navRow(1, 'repeat', L('Change sign-in method'), chev, undefined, () => { reauthResend.reset(); setMethodStep('reauth'); })}
+            </React.Fragment>)}
+          </React.Fragment>
         )}
-        {label(L('Security'))}
-        {card(<React.Fragment>
-          {navRow(0, 'lock', L('Change password'), chev, undefined, () => ctx.nav('p_detail', { page: 'password' }))}
-          {toggleRow(1, 'shield-check', L('Two-factor authentication'), twoFA, setTwoFA)}
-          {toggleRow(2, 'scan-face', L('Face ID unlock'), faceId, setFaceId)}
-        </React.Fragment>)}
         {card(
           <div onClick={() => setConfirmDelete(true)} style={{ ...rowStyle(0, true), justifyContent: 'center' }}><Icon name="trash-2" size={18} color={THEME.danger} stroke={2.2} /><div style={{ fontSize: 14, fontWeight: 800, color: THEME.danger }}>{L('Delete account')}</div></div>
         )}
       </React.Fragment>
-    ) },
-
-    password: { title: L('Change password'), sub: null, back: 'account', body: (
-      pwSaved ? (
-        <div style={{ textAlign: 'center', padding: '28px 12px' }}>
-          <div style={{ width: 64, height: 64, borderRadius: 999, background: BRAND.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="check" size={30} color={BRAND.primary} stroke={2.6} /></div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{L('Password updated')}</div>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L('Your password has been changed.')}</div>
-          <Button variant="primary" fullWidth style={brandBtn} onClick={() => { setCurPw(''); setNewPw(''); setConfPw(''); setPwSaved(false); ctx.nav('p_detail', { page: 'account' }); }}>{L('Done')}</Button>
-        </div>
-      ) : (
-      <React.Fragment>
-        {banner('lock', null, L('Use at least 8 characters with a mix of letters and numbers.'))}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Input label={L('Current password')} value={curPw} onChange={e => setCurPw(e.target.value)} type="password" accent={BRAND.primary} />
-          <Input label={L('New password')} value={newPw} onChange={e => setNewPw(e.target.value)} type="password" accent={BRAND.primary} />
-          <Input label={L('Confirm new password')} value={confPw} onChange={e => setConfPw(e.target.value)} type="password" accent={BRAND.primary} error={pwMismatch ? L('Passwords don’t match') : undefined} />
-        </div>
-        <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} disabled={!pwReady} onClick={pwReady ? () => setPwSaved(true) : undefined}>{L('Update password')}</Button>
-      </React.Fragment>
-      )
     ) },
 
     plan: { title: L('Subscription'), sub: L('JoanX Family plan'), back: 'account', body: (
@@ -853,8 +939,15 @@ function ParentDetail({ ctx, inquiryStyle = 'form' }) {
         <BottomSheet title={editStep === 'code' ? L('Enter the code') : `${L('Edit')} ${L(EDIT_FIELDS[editField].label)}`} onClose={() => setEditField(null)}>
           {editStep === 'input' ? (
             <React.Fragment>
-              <Input label={L(EDIT_FIELDS[editField].label)} value={editVal} onChange={e => setEditVal(e.target.value)} type={EDIT_FIELDS[editField].type} accent={BRAND.primary} />
-              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={!editVal.trim()} onClick={editVal.trim() ? proceedEdit : undefined}>{EDIT_FIELDS[editField].verify ? L('Send code') : L('Save')}</Button>
+              {EDIT_FIELDS[editField].type === 'date' ? (
+                <DateField label={L('Date of birth')} value={editVal ? new Date(editVal + 'T00:00') : null} accent={BRAND.primary}
+                  onChange={d => setEditVal(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)} />
+              ) : EDIT_FIELDS[editField].type === 'select' ? (
+                <SelectField label={L('Gender')} title={L('Gender')} value={editVal} onChange={setEditVal} accent={BRAND.primary} options={GENDER_OPTIONS} />
+              ) : (
+                <Input label={L(EDIT_FIELDS[editField].label)} value={editVal} onChange={e => setEditVal(e.target.value)} type={EDIT_FIELDS[editField].type} accent={BRAND.primary} />
+              )}
+              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={!String(editVal).trim()} onClick={String(editVal).trim() ? proceedEdit : undefined}>{EDIT_FIELDS[editField].verify ? L('Send code') : L('Save')}</Button>
             </React.Fragment>
           ) : (
             <React.Fragment>
@@ -874,8 +967,146 @@ function ParentDetail({ ctx, inquiryStyle = 'form' }) {
                   })}
                 </div>
               </div>
-              <button onClick={() => setEditCode('')} style={{ marginTop: 14, padding: 0, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, color: THEME.fg2, cursor: 'pointer' }}>{L('Didn’t get it?')} <span style={{ color: BRAND.primary, fontWeight: 800 }}>{L('Resend code')}</span></button>
+              {resendRow(editResend, () => { setEditCode(''); editResend.reset(); })}
               <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={editCode.length < 6} onClick={editCode.length < 6 ? undefined : applyEdit}>{L('Verify')}</Button>
+            </React.Fragment>
+          )}
+        </BottomSheet>
+      )}
+
+      {/* change sign-in method — re-auth first (current password, or a 6-digit code sent to
+          the account email when signed in through a social provider), then a picker of every
+          OTHER method. Switching to a social provider finalizes on the spot (its OAuth already
+          proved it); switching to email detours through setting a password and verifying the
+          inbox with a code, since nothing else is left to vouch for it. */}
+      {methodStep && (
+        <BottomSheet title={
+          methodStep === 'pick' ? L('Choose how you’d like to sign in')
+          : methodStep === 'password' ? L('Set a password')
+          : methodStep === 'code' ? L('Enter the code')
+          : L('Confirm it’s you')
+        } onClose={closeMethodSheet}>
+          {methodStep === 'reauth' && (
+            socialProvider ? (
+              <React.Fragment>
+                <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{PARENT_PROFILE.email}</span> {L('to confirm it’s you before changing how you sign in.')}</div>
+                <div style={{ position: 'relative' }} onClick={() => reauthCodeRef.current && reauthCodeRef.current.focus()}>
+                  <input ref={reauthCodeRef} value={reauthCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
+                    onChange={e => setReauthCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {Array.from({ length: 6 }, (_, i) => {
+                      const active = i === reauthCode.length;
+                      return (
+                        <div key={i} style={{ flex: 1, height: 54, borderRadius: 12, background: '#fff', border: `2px solid ${active ? BRAND.primary : 'transparent'}`, boxShadow: active ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s' }}>
+                          <span style={{ fontSize: 22, fontWeight: 800, color: THEME.fg1 }}>{reauthCode[i] || ''}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                {resendRow(reauthResend, () => { setReauthCode(''); reauthResend.reset(); })}
+                <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={reauthCode.length < 6} onClick={reauthCode.length < 6 ? undefined : () => setMethodStep('pick')}>{L('Verify')}</Button>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Input label={L('Current password')} value={reauthPw} onChange={e => setReauthPw(e.target.value)} type="password" accent={BRAND.primary} />
+                <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={!reauthPw.trim()} onClick={!reauthPw.trim() ? undefined : () => setMethodStep('pick')}>{L('Continue')}</Button>
+              </React.Fragment>
+            )
+          )}
+          {methodStep === 'pick' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {['google', 'apple', 'kakao'].filter(k => k !== socialProvider).map(k => (
+                <button key={k} onClick={() => pickMethod(k)} className="jx-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '15px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 800, background: PROVIDER_BADGE_BG[k], color: k === 'apple' ? '#fff' : THEME.fg1, border: k === 'google' ? `1.5px solid ${THEME.border}` : 'none' }}>
+                  <ProviderMark provider={k} />{PROVIDER_LABELS[k]}
+                </button>
+              ))}
+              {socialProvider && (
+                <button onClick={() => pickMethod('email')} className="jx-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '15px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', background: '#fff', border: `1.5px solid ${THEME.border}` }}>
+                  <Icon name="mail" size={18} color={THEME.fg1} stroke={2.2} />
+                  <span style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L('Email')}</span>
+                </button>
+              )}
+            </div>
+          )}
+          {methodStep === 'password' && (
+            <React.Fragment>
+              <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('No provider is left to vouch for your email, so set a password JoanX can check directly.')}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Input label={L('New password')} value={methodPw} onChange={e => setMethodPw(e.target.value)} type="password" accent={BRAND.primary} />
+                <Input label={L('Confirm new password')} value={methodPw2} onChange={e => setMethodPw2(e.target.value)} type="password" accent={BRAND.primary} error={methodPwMismatch ? L('Passwords don’t match') : undefined} />
+              </div>
+              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={!methodPwReady} onClick={methodPwReady ? () => { methodResend.reset(); setMethodStep('code'); } : undefined}>{L('Continue')}</Button>
+            </React.Fragment>
+          )}
+          {methodStep === 'code' && (
+            <React.Fragment>
+              <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{PARENT_PROFILE.email}</span>.</div>
+              <div style={{ position: 'relative' }} onClick={() => methodCodeRef.current && methodCodeRef.current.focus()}>
+                <input ref={methodCodeRef} value={methodCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
+                  onChange={e => setMethodCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {Array.from({ length: 6 }, (_, i) => {
+                    const active = i === methodCode.length;
+                    return (
+                      <div key={i} style={{ flex: 1, height: 54, borderRadius: 12, background: '#fff', border: `2px solid ${active ? BRAND.primary : 'transparent'}`, boxShadow: active ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s' }}>
+                        <span style={{ fontSize: 22, fontWeight: 800, color: THEME.fg1 }}>{methodCode[i] || ''}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {resendRow(methodResend, () => { setMethodCode(''); methodResend.reset(); })}
+              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={methodCode.length < 6} onClick={methodCode.length < 6 ? undefined : finalizeEmailMethod}>{L('Verify')}</Button>
+            </React.Fragment>
+          )}
+        </BottomSheet>
+      )}
+
+      {/* change password — same sheet-over-the-current-screen pattern as reauth/email-edit,
+          rather than a dedicated full page, since it's just another credential confirmation. */}
+      {pwStep && (
+        <BottomSheet title={pwStep === 'code' ? L('Enter the code') : pwStep === 'saved' ? L('Password updated') : L('Change password')} onClose={resetPwFlow}>
+          {pwStep === 'saved' ? (
+            <div style={{ textAlign: 'center', padding: '8px 4px 4px' }}>
+              <div style={{ width: 64, height: 64, borderRadius: 999, background: BRAND.primaryLight, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="check" size={30} color={BRAND.primary} stroke={2.6} /></div>
+              <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L('Your password has been changed.')}</div>
+              <Button variant="primary" fullWidth style={brandBtn} onClick={resetPwFlow}>{L('Done')}</Button>
+            </div>
+          ) : pwStep === 'code' ? (
+            // same 6-digit verify pattern as the email/phone edit sheet — one code UI for every
+            // credential change in the app, rather than a one-off just for password.
+            <React.Fragment>
+              <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{PARENT_PROFILE.email}</span>.</div>
+              <div style={{ position: 'relative' }} onClick={() => pwCodeRef.current && pwCodeRef.current.focus()}>
+                <input ref={pwCodeRef} value={pwCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
+                  onChange={e => setPwCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {Array.from({ length: 6 }, (_, i) => {
+                    const active = i === pwCode.length;
+                    return (
+                      <div key={i} style={{ flex: 1, height: 54, borderRadius: 12, background: '#fff', border: `2px solid ${active ? BRAND.primary : 'transparent'}`, boxShadow: active ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s' }}>
+                        <span style={{ fontSize: 22, fontWeight: 800, color: THEME.fg1 }}>{pwCode[i] || ''}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {resendRow(pwResend, () => { setPwCode(''); pwResend.reset(); })}
+              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 16 }} disabled={pwCode.length < 6} onClick={pwCode.length < 6 ? undefined : () => setPwStep('saved')}>{L('Verify')}</Button>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              {banner('lock', null, L('Use at least 8 characters with a mix of letters and numbers.'))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Input label={L('Current password')} value={curPw} onChange={e => setCurPw(e.target.value)} type="password" accent={BRAND.primary} />
+                <Input label={L('New password')} value={newPw} onChange={e => setNewPw(e.target.value)} type="password" accent={BRAND.primary} />
+                <Input label={L('Confirm new password')} value={confPw} onChange={e => setConfPw(e.target.value)} type="password" accent={BRAND.primary} error={pwMismatch ? L('Passwords don’t match') : undefined} />
+              </div>
+              <Button variant="primary" fullWidth style={{ ...brandBtn, marginTop: 18 }} disabled={!pwReady} onClick={pwReady ? () => { pwResend.reset(); setPwStep('code'); } : undefined}>{L('Update password')}</Button>
             </React.Fragment>
           )}
         </BottomSheet>

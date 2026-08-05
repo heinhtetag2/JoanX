@@ -163,7 +163,7 @@ function Collection({ ctx }) {
         <SectionHead title={L('All buddies')} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           {visibleCharacters().map(c => (
-            <button key={c.id} disabled={!c.owned} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ background: '#fff', borderRadius: 18, padding: '16px 10px 14px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative' }}>
+            <button key={c.id} disabled={!c.owned} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ background: '#fff', borderRadius: 18, padding: '20px 8px 11px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative' }}>
               {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
               <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}>
                 <Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} />

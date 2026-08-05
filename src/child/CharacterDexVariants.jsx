@@ -48,7 +48,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
   if (variant === 'grid') body = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
       {all.map(c => (
-        <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', fontFamily: 'inherit' }}>
+        <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ background: '#fff', borderRadius: 18, padding: '18px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', fontFamily: 'inherit' }}>
           {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
           <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
           <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{nameOf(c)}</div>

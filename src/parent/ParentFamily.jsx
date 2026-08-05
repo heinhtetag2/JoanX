@@ -65,7 +65,7 @@ function ParentFamily({ ctx }) {
                   {L(m.relation)} · {m.name}
                   {m.me && <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3 }}> · {L('you')}</span>}
                 </div>
-                <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 2 }}>{m.phone}</div>
+                <div style={{ fontSize: 11.5, color: THEME.fg3, marginTop: 2 }}>{m.email}</div>
               </div>
               <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 9px', borderRadius: 999, background: m.role === 'owner' ? BRAND.primaryLight : THEME.surface2, color: m.role === 'owner' ? BRAND.primaryDark : THEME.fg2 }}>
                 {L(FAMILY_ROLES[m.role].label)}
@@ -116,7 +116,7 @@ function ParentFamily({ ctx }) {
 // ── The invite ───────────────────────────────────────────────────────
 // The link is the only path: the realistic case is that the other parent is at work, not
 // standing next to you, and a QR would force a co-presence that buys no security — the link is
-// single-use and expiring, and joining still needs the invitee's own phone verification. (A QR
+// single-use and expiring, and joining still needs the invitee's own email verification. (A QR
 // toggle used to sit alongside this — same invite, for when the two of them ARE together — but
 // one path is enough, so it's gone.)
 function ParentInvite({ ctx }) {
@@ -129,7 +129,7 @@ function ParentInvite({ ctx }) {
 
       <div style={{ padding: '8px 18px 0', textAlign: 'center' }}>
         <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 22px' }}>
-          {L('Send this to the other parent. They install JoanX, open the link, and verify their own phone number.')}
+          {L('Send this to the other parent. They install JoanX, open the link, and verify their own email.')}
         </p>
 
         {/* the code, in the same grouped band the child pairing step uses */}
@@ -149,7 +149,7 @@ function ParentInvite({ ctx }) {
         <div style={{ marginTop: 22, textAlign: 'left', ...card, padding: 16, marginBottom: 18 }}>
           {[
             { ic: 'clock', t: `${L('Expires in')} ${FAMILY_INVITE.expiresHours}h · ${L('one use only')}` },
-            { ic: 'smartphone', t: L('They verify their own phone number — never share your login') },
+            { ic: 'mail', t: L('They verify their own email — never share your login') },
             { ic: 'eye', t: L('Your child is told when a new parent is added') },
           ].map((r, i) => (
             <div key={r.ic} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderTop: i ? `1px solid ${THEME.border}` : 'none', paddingTop: i ? 11 : 0, marginTop: i ? 4 : 0 }}>

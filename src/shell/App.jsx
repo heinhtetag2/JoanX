@@ -102,7 +102,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'kr', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'merged', rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'header', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -277,9 +277,9 @@ function App() {
       p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
       p_family: <ParentFamily ctx={ctx} />, p_invite: <ParentInvite ctx={ctx} />,
-      p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} inquiryStyle={tw.inquiryStyle} />,
+      p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} inquiryStyle={tw.inquiryStyle} loginProvider={tw.loginProvider} />,
       // Profile tab — the parent account/profile page (identity + security), shown as a tab root
-      p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} />,
+      p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} loginProvider={tw.loginProvider} />,
       // center tab-bar scan button — the global connect flow (scan/code, then child picker)
       p_connect: <ParentAddChild ctx={{ ...ctx, params: { connect: true, scan: true } }} />,
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
@@ -727,6 +727,17 @@ function App() {
                     first run always sees. Ends on Reports, not Add-child (finishParentOnboarding
                     routes on { joined: true }), since the family/child already exist. */}
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(false); setParams({ authStep: 3, authPhase: 'invite' }); setStack([]); }}>Join family (invite code)</button>
+              </div>
+
+              {/* Account → Sign-in method. 'Email' (default) is a real password account, so
+                  Security → Change password shows; Google/Apple/Kakao hand back an identity
+                  that already carries its own key, so those show a read-only Connected row
+                  instead and no password screen — see ParentDetail.jsx. */}
+              <div className="tw-label">Account sign-in method</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['email', 'Email (password)'], ['google', 'Google'], ['apple', 'Apple'], ['kakao', 'Kakao']].map(([id, label]) => (
+                  <button key={id} className={'tw-chip' + (tw.loginProvider === id ? ' on' : '')} onClick={() => { setTw(s => ({ ...s, loginProvider: id })); setParentOnboarded(true); setPScreen('p_detail'); setParams({ page: 'account' }); setStack([]); }}>{label}</button>
+                ))}
               </div>
 
               <div className="tw-label">Impact / fall alert (C7)</div>

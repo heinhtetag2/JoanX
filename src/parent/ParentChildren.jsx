@@ -65,7 +65,7 @@ function ParentChildren({ ctx }) {
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <div style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '9px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={k.online ? 'link-2' : 'link-2-off'} size={14} color={k.online ? THEME.success : THEME.fg3} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700, color: k.online ? THEME.success : THEME.fg2 }}>{k.online ? L('Protected now') : L('Not connected')}</span></div>
-                <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{k.online ? `${L('Last seen')} ${k.lastSeen}` : L('Open to connect')}</div>
+                <div style={{ fontSize: 10.5, color: THEME.fg3, marginTop: 2 }}>{k.online ? L('Connected') : L('Open to connect')}</div>
               </div>
               <div style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '9px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="battery-medium" size={14} color={k.battery < 50 ? THEME.warning : THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700 }}>{k.online ? `${k.battery}%` : '—'}</span></div>

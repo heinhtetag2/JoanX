@@ -4,35 +4,36 @@
 // child device has no account of its own — its identity comes from the parent it pairs with —
 // so this never appears there.
 //
-// It opens on a choice: log in or create an account. The account's identity is a phone
-// number and its key is a password. The SMS code is not a second key — it answers one
-// question ("is this number really yours?"), so it is spent only where that question is
-// asked: at sign-up, and again at a password reset. A returning guardian types their number
-// and password and is in; nothing is texted, and no code screen appears.
+// It opens on a choice: log in or create an account. The account's identity is an email
+// address and its key is a password. The verification code is not a second key — it answers
+// one question ("is this email really yours?"), so it is spent only where that question is
+// asked: at sign-up, and again at a password reset. A returning guardian types their email
+// and password and is in; nothing is sent, and no code screen appears.
 //
 // So the two modes differ in shape, not just intent:
-//   sign up → consent → phone → code → set password → profile
-//   log in  → phone + password
-//   forgot  → phone → code → new password
-// Google (Android) and Apple (iOS) are offered where platform policy expects them. They hand
-// back an identity the provider already verified, so they set no password and skip both the
-// code and the password steps; email is an MVP-disabled method in AUTH.methods, so enabling
-// it later means turning the flag on and adding its form here.
+//   sign up → consent → email → code → set password → profile
+//   log in  → email + password
+//   forgot  → email → code → new password
+// Google (Android), Apple (iOS) and Kakao are offered where platform policy expects them or
+// the market calls for them. They hand back an identity the provider already verified, so
+// they set no password and skip both the code and the password steps; phone is an
+// MVP-disabled method in AUTH.methods, so enabling it later means turning the flag on and
+// adding its form here.
 
 import React from 'react';
-import { Button, DateField, Icon, Input, SelectField, THEME, formatPhone, mixHue } from './primitives.jsx';
-import { addGuardian, AUTH, FAMILY_INVITE, KNOWN_PHONES, authMethods } from './data.jsx';
+import { Button, DateField, Icon, Input, SelectField, THEME, mixHue } from './primitives.jsx';
+import { addGuardian, AUTH, FAMILY_INVITE, KNOWN_EMAILS, authMethods } from './data.jsx';
 import { L, getLang } from './i18n.jsx';
 
 const digitsOf = (s) => s.replace(/\D/g, '');
-const knownPhone = (p) => KNOWN_PHONES.some(k => digitsOf(k) === digitsOf(p));
+const knownEmail = (e) => KNOWN_EMAILS.some(k => k.toLowerCase() === e.trim().toLowerCase());
 
 // The three legal consents a guardian must give before the service can be used.
 // Each carries a full document body — provided by Joan Company — that opens on its own page,
 // so the parent can read what they are agreeing to without losing their place in the flow.
 const CONSENTS = [
   { key: 'personal', label: 'Collection and use of personal information',
-    body: "JoanX collects the guardian's and the child's name, date of birth and mobile number, together with the device and motion signals generated while the service is running. This information is used only to create and secure the account, to operate the walking-safety features, and to provide the guardian with safety reports. Personal information is retained only for as long as needed to provide the service and is deleted without delay once the account is closed or the retention period ends, unless a longer period is required by law. JoanX does not sell personal information and does not share it with any third party except where necessary to operate the service or where required by law. You may decline this consent; however, because this information is essential to the safety service, the service cannot be provided without it." },
+    body: "JoanX collects the guardian's and the child's name and date of birth, the guardian's email address, together with the device and motion signals generated while the service is running. This information is used only to create and secure the account, to operate the walking-safety features, and to provide the guardian with safety reports. Personal information is retained only for as long as needed to provide the service and is deleted without delay once the account is closed or the retention period ends, unless a longer period is required by law. JoanX does not sell personal information and does not share it with any third party except where necessary to operate the service or where required by law. You may decline this consent; however, because this information is essential to the safety service, the service cannot be provided without it." },
   { key: 'tos', label: 'Agreement to the Terms of Service',
     body: "These Terms govern your use of JoanX as a walking-safety companion operated under a guardian's supervision. By agreeing, you accept responsibility for setting up and managing the service on the child's behalf and agree to use it only for its intended safety purpose. JoanX offers safety guidance and in-app rewards, but it does not replace adult supervision and does not guarantee that every accident or hazard can be prevented. The service may be updated, suspended or modified to protect users or to comply with the law, and your continued use after such changes take effect constitutes acceptance of the revised Terms." },
   { key: 'location', label: 'Consent to the use of location information',
@@ -46,6 +47,11 @@ function ProviderMark({ provider }) {
   if (provider === 'apple') return (
     <svg width="16" height="19" viewBox="0 0 384 512" fill="#fff" aria-hidden="true">
       <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+    </svg>
+  );
+  if (provider === 'kakao') return (
+    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+      <path fill="#191919" d="M10 2.2C5.03 2.2 1 5.25 1 9c0 2.42 1.67 4.55 4.18 5.76-.18.65-.66 2.36-.76 2.72-.12.46.17.45.36.33.15-.1 2.33-1.58 3.27-2.22.63.09 1.28.14 1.95.14 4.97 0 9-3.05 9-6.73 0-3.75-4.03-6.8-9-6.8Z" />
     </svg>
   );
   return (
@@ -68,7 +74,7 @@ function ProviderMark({ provider }) {
 // picker chevron, which must not swallow a tap meant for the field behind them. This one is
 // a real control, so it opts back in; drop that and the eye renders but cannot be tapped.
 // Errors that belong to a whole step rather than to one field — a code that's too short, a
-// reset asked for with no number. Input renders its own inline error under the box; these have
+// reset asked for with no email. Input renders its own inline error under the box; these have
 // no box to sit under, so they say the same thing in the same voice one level up.
 function StepError({ children }) {
   return (
@@ -92,38 +98,40 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   // The guardian first says what they are here to do — log in, create an account, or join a
   // family someone else already started. `initialPhase` is a Tweaks-preview hook only (jumps
   // straight past 'choose'); every real user always starts there.
-  const [phase, setPhase] = React.useState(initialPhase || 'choose');  // 'choose' | 'invite' | 'consent' | 'phone' | 'code' | 'password' | 'profile'
+  const [phase, setPhase] = React.useState(initialPhase || 'choose');  // 'choose' | 'invite' | 'consent' | 'email' | 'code' | 'password' | 'profile'
   // Where the consent gate continues to once agreed — the first step of sign-up
-  // (choose → consent → phone). It stays a variable rather than a constant because the gate
+  // (choose → consent → email). It stays a variable rather than a constant because the gate
   // is reached from one place today and is the kind of thing a second entry point lands on.
-  const [afterConsent, setAfterConsent] = React.useState('phone');
+  const [afterConsent, setAfterConsent] = React.useState('email');
   // Where the profile step's back button returns to — it depends on how profile was reached:
-  // SMS sign-up comes through the code screen ('code'); Google/Apple skip it, arriving straight
-  // from the phone/social screen ('phone'); the mid-flow log-in→sign-up switch comes via consent.
+  // email sign-up comes through the code screen ('code'); Google/Apple/Kakao skip it, arriving
+  // straight from the email/social screen ('email'); the mid-flow log-in→sign-up switch comes
+  // via consent.
   const [profileBack, setProfileBack] = React.useState('code');
   const [mode, setMode] = React.useState(initialPhase === 'invite' ? 'join' : 'login');     // 'login' | 'signup' | 'join'
-  const [phone, setPhone] = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [code, setCode] = React.useState('');
   const [codeErr, setCodeErr] = React.useState(false);
   // Joining an existing family — the code FAMILY_INVITE holds (a fixed, shared value in this
   // prototype; a real backend would look up whichever invite the digits belong to). Separate
-  // from the SMS `code` above: this one proves "which family", the SMS proves "whose number".
+  // from the verification `code` above: this one proves "which family", the other proves
+  // "whose email".
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteErr, setInviteErr] = React.useState(false);
-  const [notice, setNotice] = React.useState(null);    // 'exists' | 'need-phone'
+  const [notice, setNotice] = React.useState(null);    // 'exists' | 'need-email'
   // The password step is reached two ways and says different things on each: a new account is
   // choosing a key ('set'), a locked-out guardian is replacing one ('reset'). Only 'reset' gets
   // a screen of its own — a new account picks its password inside the Create account form,
   // because one form for "who you are and how you get back in" is one decision, not two steps.
   const [pwMode, setPwMode] = React.useState('set');   // 'set' | 'reset'
-  // Whether the profile form must also collect a password. SMS sign-up owes one; Google/Apple
-  // hand back an identity that already carries its own key, so those accounts never ask.
+  // Whether the profile form must also collect a password. Email sign-up owes one; Google/Apple/
+  // Kakao hand back an identity that already carries its own key, so those accounts never ask.
   const [needsPw, setNeedsPw] = React.useState(true);
   const [pw, setPw] = React.useState('');
   const [pw2, setPw2] = React.useState('');
   const [pwErr, setPwErr] = React.useState('');        // login: wrong/blank password
   const [showPw, setShowPw] = React.useState(false);
-  const [resendLeft, setResendLeft] = React.useState(AUTH.smsResendSeconds);
+  const [resendLeft, setResendLeft] = React.useState(AUTH.codeResendSeconds);
   const [name, setName] = React.useState('');
   const [dob, setDob] = React.useState('');
   const [gender, setGender] = React.useState('');
@@ -131,23 +139,23 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   const codeRef = React.useRef(null);
   const inviteRef = React.useRef(null);
   const photoRef = React.useRef(null);
-  const socials = authMethods().filter(m => m.key === 'google' || m.key === 'apple');
-  // Joining shares sign-up's whole shape (consent → phone → SMS code → profile+password) — a
-  // second guardian is still a new login on a phone number nobody has verified yet, it just
-  // ends by attaching to an existing family instead of starting a fresh one.
+  const socials = authMethods().filter(m => m.key === 'google' || m.key === 'apple' || m.key === 'kakao');
+  // Joining shares sign-up's whole shape (consent → email → code → profile+password) — a
+  // second guardian is still a new login on an email nobody has verified yet, it just ends by
+  // attaching to an existing family instead of starting a fresh one.
   const signup = mode === 'signup' || mode === 'join';
 
-  // resend cooldown — a fresh SMS can only be requested once this reaches 0
+  // resend cooldown — a fresh code can only be requested once this reaches 0
   React.useEffect(() => {
     if (phase !== 'code' || resendLeft <= 0) return undefined;
     const t = setInterval(() => setResendLeft(s => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
   }, [phase, resendLeft]);
 
-  const phoneOk = digitsOf(phone).length >= 10;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   // Password rules, checked as you type on the set/reset screen. The prototype persists
   // nothing, so on log-in any password of a legal length is accepted — the same latitude the
-  // SMS code gets. What is real here is the shape of the flow and every state it can show.
+  // verification code gets. What is real here is the shape of the flow and every state it can show.
   const pwLongEnough = pw.length >= AUTH.passwordMinLength;
   const pwMatch = pw2.length > 0 && pw === pw2;
   const pwMismatch = pw2.length > 0 && pw !== pw2;
@@ -171,47 +179,47 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
 
   // Enter a mode from the landing screen. Sign-up must agree to the guardian consents BEFORE
   // anything else; log-in has already consented at its own registration, so it goes straight to
-  // the phone step; joining owes the invite code first — which family it's even consenting to
+  // the email step; joining owes the invite code first — which family it's even consenting to
   // join is the one thing consent can't come before.
   const start = (m) => {
     setMode(m); setNotice(null); setPw(''); setPw2(''); setPwErr('');
     if (m === 'join') { setInviteCode(''); setInviteErr(false); setPhase('invite'); }
-    else if (m === 'signup') { setAfterConsent('phone'); setPhase('consent'); }
-    else setPhase('phone');
+    else if (m === 'signup') { setAfterConsent('email'); setPhase('consent'); }
+    else setPhase('email');
   };
-  // The invite code proves "which family", never "whose number" — that's still the SMS step
-  // right after. Any 6 digits that don't match FAMILY_INVITE.code fail the same way a mistyped
-  // code should: no hint about what the right one might be.
+  // The invite code proves "which family", never "whose email" — that's still the verification
+  // step right after. Any 6 digits that don't match FAMILY_INVITE.code fail the same way a
+  // mistyped code should: no hint about what the right one might be.
   const verifyInvite = () => {
-    if (inviteCode.length < AUTH.smsCodeLength || inviteCode !== FAMILY_INVITE.code) { setInviteErr(true); return; }
-    setAfterConsent('phone'); setPhase('consent');
+    if (inviteCode.length < AUTH.codeLength || inviteCode !== FAMILY_INVITE.code) { setInviteErr(true); return; }
+    setAfterConsent('email'); setPhase('consent');
   };
   const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-  const sendCode = () => { setCode(''); setCodeErr(false); setNotice(null); setResendLeft(AUTH.smsResendSeconds); setPhase('code'); };
-  // "Forgot password" — the number is the account, so proving it again is what earns a new
+  const sendCode = () => { setCode(''); setCodeErr(false); setNotice(null); setResendLeft(AUTH.codeResendSeconds); setPhase('code'); };
+  // "Forgot password" — the email is the account, so proving it again is what earns a new
   // key. Same code screen as sign-up; only where it lands afterwards differs.
   //
-  // No known-number check here, for the same reason login() gives one answer to two
-  // questions: a reset form that says "no account uses this number" is a lookup service for
-  // anyone who wants to know which numbers are registered. The code screen looks identical
-  // either way. In production the SMS only leaves for a number that has an account — the
+  // No known-email check here, for the same reason login() gives one answer to two
+  // questions: a reset form that says "no account uses this email" is a lookup service for
+  // anyone who wants to know which emails are registered. The code screen looks identical
+  // either way. In production the code only goes out for an email that has an account — the
   // screen simply doesn't say which happened.
   const forgotPassword = () => {
-    if (!phoneOk) { setNotice('need-phone'); return; }
+    if (!emailOk) { setNotice('need-email'); return; }
     setPwMode('reset'); setPw(''); setPw2(''); setPwErr(''); sendCode();
   };
 
   // Log in — no code, just the two things the guardian knows.
   //
-  // The prototype has no accounts to check against, so any number and any password get in;
+  // The prototype has no accounts to check against, so any email and any password get in;
   // what is real here is the shape of the flow, not the credentials. The one wrong answer it
   // still shows is the empty field, because that state is part of the design.
   //
-  // When this is wired to a real backend, an unknown number and a wrong password must give the
-  // SAME answer — the 'Phone number or password is incorrect.' string is kept below for that.
-  // Saying "no account uses this number" would let anyone type numbers until one came back
+  // When this is wired to a real backend, an unknown email and a wrong password must give the
+  // SAME answer — the 'Email or password is incorrect.' string is kept below for that.
+  // Saying "no account uses this email" would let anyone type addresses until one came back
   // known, and what they'd learn is which families have a child on JoanX. That is worth more
-  // to the wrong person than a password is. The cost is a guardian who mistyped their number
+  // to the wrong person than a password is. The cost is a guardian who mistyped their email
   // reads "or password"; the alternative is a service that answers questions about its users
   // to people who aren't them.
   const login = () => {
@@ -225,9 +233,9 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   //   sign up + unknown → the Create account form, password included
   //   sign up + known   → offer to log in instead (they picked the wrong door)
   const verifyCode = () => {
-    if (code.length < AUTH.smsCodeLength) { setCodeErr(true); return; }
+    if (code.length < AUTH.codeLength) { setCodeErr(true); return; }
     if (pwMode === 'reset') { setPhase('password'); return; }
-    if (knownPhone(phone)) { setNotice('exists'); return; }
+    if (knownEmail(email)) { setNotice('exists'); return; }
     setPwMode('set'); setNeedsPw(true); setProfileBack('code'); setPhase('profile');
   };
 
@@ -240,21 +248,21 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   // already on this form rather than adding a second one just for a label.
   const submitProfile = () => {
     if (mode === 'join') {
-      addGuardian({ name: name.trim(), phone, relation: gender === 'male' ? 'Dad' : gender === 'female' ? 'Mum' : 'Guardian', since: todayStr() });
+      addGuardian({ name: name.trim(), email, relation: gender === 'male' ? 'Dad' : gender === 'female' ? 'Mum' : 'Guardian', since: todayStr() });
     }
     onDone(mode);
   };
-  // Resolve a wrong-door hint. From log-in, the number has NOT been verified — log-in never
-  // texts anything — so the switch keeps the typed number but still owes the code step:
+  // Resolve a wrong-door hint. From log-in, the email has NOT been verified — log-in never
+  // sends anything — so the switch keeps the typed email but still owes the code step:
   // consent → code → password → profile, the full sign-up minus the retyping.
-  // From sign-up, the number already has an account: they know this number, so send them to
+  // From sign-up, the email already has an account: they know this email, so send them to
   // log in with the password they already set rather than through onboarding again.
-  const switchToLogin = () => { setMode('login'); setNotice(null); setCode(''); setPw(''); setPw2(''); setPwErr(''); setPhase('phone'); };
+  const switchToLogin = () => { setMode('login'); setNotice(null); setCode(''); setPw(''); setPw2(''); setPwErr(''); setPhase('email'); };
 
-  // Google / Apple hand back a verified identity. Logging in lands in the app; signing up
-  // still needs the profile step (name / DOB / gender) the provider doesn't supply. Back from
-  // profile returns to the phone/social screen, since the code step was never shown.
-  const socialSignIn = () => { if (signup) { setNeedsPw(false); setProfileBack('phone'); setPhase('profile'); } else onDone(mode); };
+  // Google / Apple / Kakao hand back a verified identity. Logging in lands in the app; signing
+  // up still needs the profile step (name / DOB / gender) the provider doesn't supply. Back
+  // from profile returns to the email/social screen, since the code step was never shown.
+  const socialSignIn = () => { if (signup) { setNeedsPw(false); setProfileBack('email'); setPhase('profile'); } else onDone(mode); };
 
   return (
     <React.Fragment>
@@ -311,12 +319,12 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
 
             <div style={{ position: 'relative' }} onClick={() => inviteRef.current && inviteRef.current.focus()}>
               <input ref={inviteRef} value={inviteCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
-                onChange={e => { setInviteCode(digitsOf(e.target.value).slice(0, AUTH.smsCodeLength)); setInviteErr(false); }}
+                onChange={e => { setInviteCode(digitsOf(e.target.value).slice(0, AUTH.codeLength)); setInviteErr(false); }}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
               <div className={inviteErr ? 'jx-shake' : ''} style={{ display: 'flex', gap: 9 }}>
-                {Array.from({ length: AUTH.smsCodeLength }, (_, i) => {
+                {Array.from({ length: AUTH.codeLength }, (_, i) => {
                   const ch = inviteCode[i];
-                  const active = !inviteErr && i === inviteCode.length && inviteCode.length < AUTH.smsCodeLength;
+                  const active = !inviteErr && i === inviteCode.length && inviteCode.length < AUTH.codeLength;
                   const border = inviteErr ? THEME.danger : (active ? accent : THEME.border);
                   return (
                     <div key={i} style={{ width: 44, height: 56, borderRadius: 16, background: inviteErr ? THEME.dangerLight : '#fff', border: `1.5px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s, background .15s' }}>
@@ -326,7 +334,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
                 })}
               </div>
             </div>
-            {inviteErr && <StepError>{inviteCode.length < AUTH.smsCodeLength ? L('Enter all 6 digits of the code.') : L('That code doesn’t match — check with the parent who sent it.')}</StepError>}
+            {inviteErr && <StepError>{inviteCode.length < AUTH.codeLength ? L('Enter all 6 digits of the code.') : L('That code doesn’t match — check with the parent who sent it.')}</StepError>}
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
@@ -335,8 +343,8 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
         </>
       )}
 
-      {/* phone — the primary method */}
-      {phase === 'phone' && (
+      {/* email — the primary method */}
+      {phase === 'email' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
             <button onClick={() => setPhase(signup ? 'consent' : 'choose')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
@@ -344,13 +352,13 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
             </button>
 
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{signup ? L('Create your account') : L('Log in')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{signup ? L("Enter your phone to get started — we'll text you a 6-digit code.") : L('Log in with your phone number and password.')}</p>
+            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 24px' }}>{signup ? L("Enter your email to get started — we'll send you a 6-digit code.") : L('Log in with your email and password.')}</p>
 
-            <Input label={L('Phone number')} value={phone} onChange={e => { setPhone(formatPhone(e.target.value)); setNotice(null); }} placeholder="010-1234-5678" type="tel" accent={accent} />
+            <Input label={L('Email')} value={email} onChange={e => { setEmail(e.target.value); setNotice(null); }} placeholder="you@email.com" type="email" accent={accent} />
 
             {/* Log-in asks for the password on this same screen — the two things the guardian
-                knows, one step, no SMS round-trip. Sign-up sets its password later, once the
-                number it belongs to has actually been verified. */}
+                knows, one step, no code round-trip. Sign-up sets its password later, once the
+                email it belongs to has actually been verified. */}
             {!signup && (
               <div style={{ marginTop: 12 }}>
                 <Input label={L('Password')} value={pw} onChange={e => { setPw(e.target.value); setPwErr(''); }}
@@ -362,8 +370,8 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
               </div>
             )}
 
-            {/* Reset asked for with the number still blank — it is the number we would text. */}
-            {!signup && notice === 'need-phone' && <StepError>{L('Enter your phone number first.')}</StepError>}
+            {/* Reset asked for with the email still blank — it is the address we would send to. */}
+            {!signup && notice === 'need-email' && <StepError>{L('Enter your email first.')}</StepError>}
 
             {socials.length > 0 && (
               <>
@@ -375,12 +383,13 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {socials.map(m => {
                     const apple = m.key === 'apple';
+                    const kakao = m.key === 'kakao';
                     return (
                       <button key={m.key} onClick={socialSignIn} className="jx-press" style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%',
                         padding: '15px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
-                        background: apple ? '#000' : '#fff', color: apple ? '#fff' : THEME.fg1,
-                        border: apple ? 'none' : `1.5px solid ${THEME.border}`,
+                        background: apple ? '#000' : kakao ? '#FEE500' : '#fff', color: apple ? '#fff' : THEME.fg1,
+                        border: (apple || kakao) ? 'none' : `1.5px solid ${THEME.border}`,
                       }}>
                         <ProviderMark provider={m.key} />{L(m.label)}
                       </button>
@@ -394,33 +403,33 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!phoneOk} onClick={!phoneOk ? undefined : (signup ? sendCode : login)}>{signup ? L('Send code') : L('Log in')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={btnStyle} disabled={!emailOk} onClick={!emailOk ? undefined : (signup ? sendCode : login)}>{signup ? L('Send code') : L('Log in')}</Button>
           </div>
         </>
       )}
 
-      {/* SMS verification — sign-up and password reset both land here, because both are asking
-          the one question a code can answer: is this number really yours? */}
+      {/* verification code — sign-up and password reset both land here, because both are asking
+          the one question a code can answer: is this email really yours? */}
       {phase === 'code' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
-            <button onClick={() => { setPwMode('set'); setPhase('phone'); }} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => { setPwMode('set'); setPhase('email'); }} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
             </button>
 
             <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{pwMode === 'reset' ? L('Reset your password') : L('Enter the code')}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 28px' }}>
-              {L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{phone}</span>.
+              {L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{email}</span>.
             </p>
 
             <div style={{ position: 'relative' }} onClick={() => codeRef.current && codeRef.current.focus()}>
               <input ref={codeRef} value={code} inputMode="numeric" autoComplete="one-time-code"
-                onChange={e => { setCode(digitsOf(e.target.value).slice(0, AUTH.smsCodeLength)); setCodeErr(false); setNotice(null); }}
+                onChange={e => { setCode(digitsOf(e.target.value).slice(0, AUTH.codeLength)); setCodeErr(false); setNotice(null); }}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
               <div className={codeErr ? 'jx-shake' : ''} style={{ display: 'flex', gap: 9 }}>
-                {Array.from({ length: AUTH.smsCodeLength }, (_, i) => {
+                {Array.from({ length: AUTH.codeLength }, (_, i) => {
                   const ch = code[i];
-                  const active = !codeErr && i === code.length && code.length < AUTH.smsCodeLength;
+                  const active = !codeErr && i === code.length && code.length < AUTH.codeLength;
                   const border = codeErr ? THEME.danger : (active ? accent : THEME.border);
                   return (
                     <div key={i} style={{ width: 44, height: 56, borderRadius: 16, background: codeErr ? THEME.dangerLight : '#fff', border: `1.5px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s, background .15s' }}>
@@ -432,17 +441,17 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
             </div>
             {codeErr && <StepError>{L('Enter all 6 digits of the code.')}</StepError>}
 
-            {/* wrong-door hint — signing up on a number that already has an account. The
-                number is verified either way, so log-in is one tap away; it just needs the
+            {/* wrong-door hint — signing up on an email that already has an account. The
+                email is verified either way, so log-in is one tap away; it just needs the
                 password that account already has. */}
             {notice === 'exists' && (
               <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 20, background: mixHue(accent, 0, 40, 0.1), boxShadow: THEME.shadowCard }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1, lineHeight: 1.45 }}>{L('This number already has an account.')}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1, lineHeight: 1.45 }}>{L('This email already has an account.')}</div>
                 <button onClick={switchToLogin} className="jx-press" style={{ marginTop: 8, padding: 0, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, color: accent, cursor: 'pointer' }}>{L('Log in instead →')}</button>
               </div>
             )}
 
-            {/* resend is behind a cooldown so a tap-happy user can't spam the SMS gateway */}
+            {/* resend is behind a cooldown so a tap-happy user can't spam the email gateway */}
             <div style={{ marginTop: 18 }}>
               {resendLeft > 0 ? (
                 <span style={{ fontSize: 12.5, color: THEME.fg3, fontWeight: 600 }}>
@@ -461,7 +470,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
       )}
 
       {/* password — the reset path only; a new account picks its password inside the Create
-          account form. Reached after the same code verification sign-up uses, because the number
+          account form. Reached after the same code verification sign-up uses, because the email
           is the account and proving it again is what earns a new key. */}
       {phase === 'password' && (
         <>
@@ -503,7 +512,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
         </>
       )}
 
-      {/* new account — the little we still need once the number is verified */}
+      {/* new account — the little we still need once the email is verified */}
       {phase === 'profile' && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
@@ -580,11 +589,11 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
       )}
 
       {/* guardian consent — required by law, and the FIRST step of sign-up (choose → consent →
-          phone). Agreeing continues to `afterConsent`: 'phone' on a fresh sign-up, or 'code'
-          when a log-in with no account switched over — that one already typed its number, so
+          email). Agreeing continues to `afterConsent`: 'email' on a fresh sign-up, or 'code'
+          when a log-in with no account switched over — that one already typed its email, so
           it resumes at the verification it still owes. */}
       {phase === 'consent' && (
-        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase(mode === 'join' ? 'invite' : (afterConsent === 'code' ? 'phone' : 'choose'))} onDone={() => (afterConsent === 'code' ? sendCode() : setPhase(afterConsent))} />
+        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase(mode === 'join' ? 'invite' : (afterConsent === 'code' ? 'email' : 'choose'))} onDone={() => (afterConsent === 'code' ? sendCode() : setPhase(afterConsent))} />
       )}
     </React.Fragment>
   );
@@ -681,4 +690,4 @@ function ConsentStep({ accent, btnStyle, onBack, onDone }) {
   );
 }
 
-export { AuthFlow };
+export { AuthFlow, ProviderMark };

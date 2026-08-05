@@ -1,7 +1,7 @@
 // JoanX — child app · VillainDex
 
 import React from 'react';
-import { activeVillains, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
+import { activeVillains, BATTLE_REWARDS, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
 import { Badge, Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
@@ -14,6 +14,17 @@ import { music, sfx } from '../core/sound.jsx';
 // cost — this screen stacks one on every villain, so cheapness matters).
 const strokeOutline = (c, t = 1) =>
   `drop-shadow(${t}px ${t}px 0 ${c}) drop-shadow(-${t}px ${t}px 0 ${c}) drop-shadow(${t}px -${t}px 0 ${c}) drop-shadow(-${t}px -${t}px 0 ${c})`;
+
+// What a win against this villain actually pays right now — mirrors rewardTier() in
+// data.jsx (assuming a win) so the card never promises a number resolveBattle wouldn't
+// also roll. A-8.1: only the FIRST clear pays the bonus; every rematch pays the lower
+// repeat reward — that's the whole point of showing it here.
+const rewardPointsFor = v => {
+  if ((v.clears || 0) > 0) return BATTLE_REWARDS.repeat.points;
+  if (v.role === 'finalBoss') return BATTLE_REWARDS.finalClear.points;
+  if (v.role === 'midBoss') return BATTLE_REWARDS.bossClear.points;
+  return BATTLE_REWARDS.firstClear.points;
+};
 
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Three layouts, switchable from the Tweaks panel: 'road' (the current
@@ -286,7 +297,7 @@ function VillainTrail({ ctx }) {
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
-                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
+                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${rewardPointsFor(v)}P` : '???'}
               </span>
             </div>
           </div>
@@ -322,7 +333,15 @@ function VillainTrail({ ctx }) {
         )}
 
         {selCurrent && (
-          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle')}>{L('Start battle')}</Button>
+          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')}</Button>
+        )}
+        {/* A-8.1 — an already-beaten villain stays re-challengeable, just at the lower
+            repeat reward (rewardPointsFor above already shows that number). */}
+        {!selCurrent && v.defeated && (
+          <React.Fragment>
+            <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')}</Button>
+            <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 7, lineHeight: 1.4 }}>{L('First-clear reward already earned — rematches pay the repeat reward.')}</div>
+          </React.Fragment>
         )}
       </div>
     </div>
@@ -464,7 +483,7 @@ function VillainRoad({ ctx }) {
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
-                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${v.power}P` : '???'}
+                <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${rewardPointsFor(v)}P` : '???'}
               </span>
             </div>
           </div>
@@ -500,7 +519,15 @@ function VillainRoad({ ctx }) {
         )}
 
         {selCurrent && (
-          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle')}>{L('Start battle')}</Button>
+          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')}</Button>
+        )}
+        {/* A-8.1 — an already-beaten villain stays re-challengeable, just at the lower
+            repeat reward (rewardPointsFor above already shows that number). */}
+        {!selCurrent && v.defeated && (
+          <React.Fragment>
+            <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')}</Button>
+            <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 7, lineHeight: 1.4 }}>{L('First-clear reward already earned — rematches pay the repeat reward.')}</div>
+          </React.Fragment>
         )}
       </div>
       )}

@@ -548,7 +548,7 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
                     {child.online ? (ko ? '지금 보호 중이에요' : 'Protection is active') : (ko ? '기기가 오프라인이에요' : 'Device is offline')}
                   </div>
                   <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {child.device} · {child.online ? `${L('Last seen')} ${child.lastSeen}` : L('Open to connect')}
+                    {child.device} · {child.online ? L('Connected') : L('Open to connect')}
                   </div>
                 </div>
                 {child.online && (

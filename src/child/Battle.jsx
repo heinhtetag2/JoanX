@@ -75,10 +75,12 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
   }, [phase]);
   // A-8: the ladder is climbed sequentially — the next undefeated foe is the
   // default target. A-8.1: an already-beaten villain can be re-challenged, so
-  // the target is state, not a derived constant.
+  // the target is state, not a derived constant. Villain Dex's "Challenge
+  // again" passes an explicit `lv` for exactly that case — a specific already-
+  // -defeated villain, not whichever one the ladder would default to.
   const ladder = activeVillains();                          // a dark/seasonal villain is not on it
   const open = nextVillain();                               // null once the whole ladder is cleared
-  const [targetLv, setTargetLv] = React.useState((open || ladder[ladder.length - 1]).lv);
+  const [targetLv, setTargetLv] = React.useState(ctx.params?.lv || (open || ladder[ladder.length - 1]).lv);
   const villain = villainByLv(targetLv) || ladder[0];
   const isFinale = villain.role === 'finalBoss' && !villain.defeated;
   const opp = { species: villain.species, name: villain.name, color: villain.color, level: villain.lv, rarity: 'rare' };
