@@ -255,12 +255,16 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
   const [boardAgree, setBoardAgree] = React.useState(false);
   const [boardDoc, setBoardDoc] = React.useState(false);
   const [boardSent, setBoardSent] = React.useState(false);
+  const [boardFiles, setBoardFiles] = React.useState([]);        // 1:1 inquiry (board) — demo screenshot filenames attached to the draft
+  const addBoardFile = () => setBoardFiles(f => f.length < 5 ? [...f, `Screenshot_${f.length + 1}.png`] : f);
+  const removeBoardFile = i => setBoardFiles(f => f.filter((_, j) => j !== i));
   // Submitting turns the draft into a real (unanswered) ticket at the front of
   // BOARD_QUESTIONS, same shared-array mutation as submitKrInquiry above, so it shows up
   // in both "Me" right away and in "All" for other parents browsing the same board.
   const submitBoardInquiry = () => {
-    BOARD_QUESTIONS.unshift({ id: Date.now(), tag: boardTag.id, q: boardMsg.trim(), a: null, status: 'pending', time: 'Just now', mine: true });
+    BOARD_QUESTIONS.unshift({ id: Date.now(), tag: boardTag.id, q: boardMsg.trim(), a: null, status: 'pending', time: 'Just now', mine: true, files: boardFiles });
     setBoardSent(true);
+    setBoardFiles([]);
   };
   const activeNotice = NOTICES.find(n => n.id === ctx.params?.noticeId) || NOTICES[0];
   const activeLegal = LEGAL_DOCS.find(d => d.id === ctx.params?.legalId) || LEGAL_DOCS[0];
@@ -975,6 +979,27 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
             <textarea value={boardMsg} onChange={e => setBoardMsg(e.target.value)} placeholder={L('Write your question here')} rows={5}
               style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: 14, color: THEME.fg1, lineHeight: 1.55, padding: '14px', boxSizing: 'border-box' }} />
           )}
+          {label(L('Screenshots'))}
+          {card(
+            <button onClick={addBoardFile} disabled={boardFiles.length >= 5} className="jx-press" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', border: 'none', background: 'none', cursor: boardFiles.length >= 5 ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              <Icon name="plus" size={18} color={THEME.fg2} stroke={2.4} />
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Add file')}</span>
+              <Icon name="paperclip" size={18} color={THEME.fg3} stroke={2.2} />
+            </button>
+          , boardFiles.length ? 10 : 8)}
+          {boardFiles.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+              {boardFiles.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '6px 6px 6px 10px' }}>
+                  <Icon name="image" size={13} color={THEME.fg2} stroke={2.2} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: THEME.fg1 }}>{f}</span>
+                  <button onClick={() => removeBoardFile(i)} aria-label={L('Remove')} className="jx-press" style={{ width: 18, height: 18, borderRadius: 999, border: 'none', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <Icon name="x" size={11} color={THEME.fg2} stroke={2.6} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {card(
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
@@ -1094,7 +1119,7 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
                     {t.files?.length > 0 && <Icon name="paperclip" size={11} color={THEME.fg3} stroke={2.4} />}
                   </div>
                 </div>
-                <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>
+                {boardTab === 'me' && <Badge variant={t.status === 'answered' ? 'success' : 'warning'}>{t.status === 'answered' ? L('Answered') : L('In progress')}</Badge>}
                 {chev}
               </button>
             );
