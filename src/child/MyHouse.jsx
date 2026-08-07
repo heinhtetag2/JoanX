@@ -7,6 +7,7 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { ScreenHeader, screenBgActive } from './shared.jsx';
 import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
+import { GuestbookPanel, GuestbookRoomBubbles } from './GuestbookPatterns.jsx';
 
 // A themed room can render two ways: 'theme' (flat wallpaper + floor band) or
 // 'scene' (a real photo backdrop with the buddy standing in front of it). The
@@ -15,6 +16,19 @@ import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 // fallback, so a missing asset still shows a solid backdrop.
 const sceneBgImg = (s) => `url(${s.img}), url(${s.fallback})`;
 
+// Level badge — sits beside the player's name (hotspot header, hero card). A tinted
+// pill rather than the plain white/85% stat chips: level reads as a standing rank,
+// not a running count like streak or likes, so it gets its own accent (iris, the
+// rarity system's "special" hue) instead of blending into the row.
+function LevelBadge({ level }) {
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: THEME.rEpicBg, borderRadius: 999, padding: '4px 10px' }}>
+      <Icon name="star" size={12} color={THEME.rEpic} stroke={2.4} />
+      <span style={{ fontSize: 12, fontWeight: 800, color: THEME.rEpic }}>{`Lv ${level}`}</span>
+    </span>
+  );
+}
+
 // ── My Profile / House (F-32) — the public page friends visit ────────
 // `variant` decides what the buddy stands in:
 //   'theme'   — a flat wallpaper card on a gradient
@@ -22,7 +36,7 @@ const sceneBgImg = (s) => `url(${s.img}), url(${s.fallback})`;
 //   'hotspot' — your actual home room (ROOMS), edited right here by tapping it. This is
 //               the only variant where the profile and the Decorate screen show the same
 //               object, so a change here is a change a visiting friend sees.
-function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet' }) {
+function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet', guestbookStyle = 'sheet', puckStyle = 'dot' }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const owned = CHARACTERS.filter(x => x.owned);
   const buddies = owned;   // owned characters — the buddies you can switch to
@@ -61,6 +75,12 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
   const [homeSheet, setHomeSheet] = React.useState(null);
   const [roomPicker, setRoomPicker] = React.useState(false);
+  // Guestbook reads right over the room instead of navigating away — the notes are a beat
+  // in visiting the room, not a destination of their own. guestbookStyle (Tweaks) swaps
+  // between ten treatments of that same idea; GuestbookPanel/GuestbookRoomBubbles own how
+  // each one opens and closes, this just owns the like state they all read and write.
+  const [guestLikes, setGuestLikes] = React.useState(() => MY_GUESTBOOK.map(g => g.liked));
+  const toggleGuestLike = (i) => setGuestLikes(s => s.map((v, j) => (j === i ? !v : v)));
   const profIdx = ROOMS.findIndex(r => r.id === homeEd.room.id);
   const cycleRoom = (dir) => setProfRoomId(ROOMS[(profIdx + dir + ROOMS.length) % ROOMS.length].id);
   const tapRoom = (r) => { setProfRoomId(r.id); setRoomPicker(false); };
@@ -156,8 +176,15 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                   art they read as debug UI stuck to the screen. They come back when decor
                   ships as sprites that can sit in the room instead of floating over it. */}
               <RoomStage theme={homeEd.theme} draft={homeEd.draft} buddies={[c]} backdrop={!homeEd.theme.bg}
-                placedDecor={[]} height={535} radius={homeEd.theme.bg ? 0 : 22} buddySize={196} floorLine="9%"
+                placedDecor={[]} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%" puckStyle={puckStyle}
                 onPuck={(slot) => slot === 'buddy' ? setBuddyPicker(true) : setHomeSheet(slot)} />
+
+              {/* guestbookStyle 'bubbles' (Tweaks) — the notes friends left as speech bubbles
+                  parked on the room art itself, tap to open one. Lives here rather than in
+                  GuestbookPanel because it's positioned against the room, not the stats row. */}
+              {guestbookStyle === 'bubbles' && (
+                <GuestbookRoomBubbles notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} />
+              )}
 
               {/* 'arrows' — the carousel the photo-scene profile already used: step through
                   the rooms you've opened, one tap at a time. */}
@@ -169,7 +196,10 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
               ))}
             </div>
 
-            <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)', textAlign: 'center', marginTop: 10 }}>{PLAYER.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
+              <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)' }}>{PLAYER.name}</span>
+              <LevelBadge level={PLAYER.level} />
+            </div>
 
             {/* one dot per room — which one you're in, and how many there are */}
             {roomSwitch === 'arrows' && (
@@ -183,14 +213,6 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                 })}
               </div>
             )}
-
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 8 }}>
-              {[['star', `Lv ${PLAYER.level}`], ['flame', `${PLAYER.streak}${L('d')}`], ['heart', `${PLAYER.likes}`]].map(([ic, v], i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 11px' }}>
-                  <Icon name={ic} size={13} color={THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700 }}>{v}</span>
-                </div>
-              ))}
-            </div>
 
             {/* What friends left when they visited — the return leg of A-10 / F-32, which the
                 profile never had. A visiting friend can leave a reaction and a note on
@@ -206,18 +228,18 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
               {topReactions.map(r => (
                 <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 10px' }}>
-                  <span style={{ fontSize: 13, lineHeight: 1 }}>{r.emoji}</span>
+                  <Icon name={r.icon} size={13} color={r.color} stroke={2.3} />
                   <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg1 }}>{r.n}</span>
                 </div>
               ))}
-              {/* always rendered, even at zero — it is the only thing on the room that says a
-                  guestbook exists, so hiding it when empty means it can never be discovered */}
-              <button onClick={() => ctx.nav('guestbook')} className="jx-press" aria-label={L('Guestbook')}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', border: 'none', borderRadius: 999, padding: '5px 11px', fontFamily: 'inherit', cursor: 'pointer' }}>
-                <Icon name="book-heart" size={13} color={THEME.fg2} stroke={2.3} />
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg1 }}>{L('Guestbook')}</span>
-                <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2 }}>{MY_GUESTBOOK.length}</span>
-              </button>
+            </div>
+
+            {/* the notes friends left — always rendered, even at zero, so this stays the one
+                thing on the room that says a guestbook exists. guestbookStyle (Tweaks) swaps
+                which of ten treatments renders here; GUESTBOOK_STYLES in
+                GuestbookPatterns.jsx is the full list. */}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 18 }}>
+              <GuestbookPanel style={guestbookStyle} notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} roomTheme={homeEd.room.theme} />
             </div>
           </div>
         )}
@@ -290,7 +312,10 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
               })}
             </div>
           )}
-          <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: scene ? '#fff' : THEME.fg1, textShadow: scene ? '0 1px 10px rgba(0,0,0,.55)' : 'none' }}>{PLAYER.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: scene ? '#fff' : THEME.fg1, textShadow: scene ? '0 1px 10px rgba(0,0,0,.55)' : 'none' }}>{PLAYER.name}</span>
+            <LevelBadge level={PLAYER.level} />
+          </div>
           {scene && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
               {SCENES.map((s, i) => (
@@ -299,7 +324,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 8 }}>
-            {[['star', `Lv ${PLAYER.level}`], ['flame', `${PLAYER.streak}${L('d')}`], ['heart', `${PLAYER.likes}`]].map(([ic, v], i) => (
+            {[['flame', `${PLAYER.streak}${L('d')}`], ['heart', `${PLAYER.likes}`]].map(([ic, v], i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 11px' }}>
                 <Icon name={ic} size={13} color={THEME.fg2} stroke={2.3} /><span style={{ fontSize: 12.5, fontWeight: 700 }}>{v}</span>
               </div>

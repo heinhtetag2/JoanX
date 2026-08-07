@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CHARACTERS, FEATURES, PLAYER } from '../core/data.jsx';
-import { Icon, THEME } from '../core/primitives.jsx';
+import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
@@ -50,7 +50,7 @@ function NotifRow({ n, c, ctx, read, top }) {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: THEME.fg1, lineHeight: 1.3 }}>{L(n.t).replace('{name}', c.name)}</span>
         </div>
         <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 2, lineHeight: 1.4 }}>{L(n.s)}</div>
-        {n.cta && <button onClick={(e) => { e.stopPropagation(); read(n.id); ctx.nav(n.go); }} style={{ marginTop: 8, background: THEME.gold, color: '#fff', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 12.5, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer' }}>{L(n.cta)}</button>}
+        {n.cta && <Button variant="gold" size="sm" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); read(n.id); ctx.nav(n.go); }}>{L(n.cta)}</Button>}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
         <span style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600 }}>{n.time}</span>

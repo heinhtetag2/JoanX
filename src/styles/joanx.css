@@ -126,6 +126,15 @@ html, body {
 @keyframes jxSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .jx-sheet-up { animation: jxSheetUp .4s cubic-bezier(.16,1,.3,1) both; }
 
+/* Guestbook 'marquee' Tweaks pattern (GuestbookPatterns.jsx) — the track holds the note
+   list twice back to back, so translating exactly half its width loops seamlessly. */
+@keyframes jxMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Guestbook 'planemail' Tweaks pattern — one-shot fly-in when a note's plane lands, not a
+   loop; re-plays each time because the element it's on only mounts once flipped[i] flips. */
+@keyframes jxPlaneIn { from { opacity: 0; transform: translateX(-40px) rotate(-20deg) scale(.7); } to { opacity: 1; transform: translateX(0) rotate(0) scale(1); } }
+.jx-plane-in { animation: jxPlaneIn .5s cubic-bezier(.2,.8,.2,1) both; }
+
 @keyframes jxFade { from { opacity: .35; } to { opacity: 1; } }
 .jx-fade { animation: jxFade .3s ease both; }
 
@@ -140,6 +149,22 @@ html, body {
 /* backdrop dim — grows in from transparent instead of snapping to 35% */
 @keyframes jxDimIn { from { opacity: 0; } to { opacity: 1; } }
 .jx-dim-in { animation: jxDimIn .42s cubic-bezier(.4,0,.2,1) both; }
+
+/* Guestbook 'book' Tweaks pattern — its own enter/exit pair, not jx-pop/jx-dim-in: those
+   are shared by every other sheet in the app, and jx-pop's elastic overshoot read as an
+   abrupt "snap" here rather than a page settling open. A plain fade+scale, eased both
+   ways, plus a real exit (the sheet used to just vanish — React unmounts don't animate on
+   their own, so GuestbookPatterns.jsx holds it mounted for this animation's duration
+   before actually closing it). */
+@keyframes jxBookDimIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jxBookDimOut { from { opacity: 1; } to { opacity: 0; } }
+.jx-book-dim-in { animation: jxBookDimIn .34s ease both; }
+.jx-book-dim-out { animation: jxBookDimOut .26s ease both; }
+
+@keyframes jxBookIn { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes jxBookOut { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(.96) translateY(6px); } }
+.jx-book-in { animation: jxBookIn .34s cubic-bezier(.2,.8,.2,1) both; }
+.jx-book-out { animation: jxBookOut .26s ease both; }
 
 /* card / panel — fade + slide-up + a touch of scale, easing out smoothly */
 @keyframes jxOverlayIn {
@@ -297,6 +322,7 @@ html, body {
 
 @media (prefers-reduced-motion: reduce) {
   .jx-dim-in, .jx-overlay-in, .jx-char-in, .jx-content-in { animation: none; }
+  .jx-book-in, .jx-book-out, .jx-book-dim-in, .jx-book-dim-out { animation: none; }
   /* the clash still has to END on the outcome, so it is shortened rather than removed —
      dropping it would leave the plates parked and the beat would read as a freeze */
   .jx-clash-top-win, .jx-clash-top-lose, .jx-clash-bot-win, .jx-clash-bot-lose,

@@ -164,7 +164,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                   </div>
 
                   {canHatch ? (
-                    <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.gold, color: '#fff', borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, boxShadow: '0 3px 10px rgba(209,153,0,.4)' }}>
+                    <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.primary, color: '#fff', borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800 }}>
                       {L('Hatch')}
                     </button>
                   ) : unbuyable ? (
@@ -176,7 +176,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                       {`${L('Lv')}.${egg.minLevel}`}
                     </span>
                   ) : (
-                    <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? THEME.gold : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: on ? '0 3px 10px rgba(209,153,0,.4)' : 'none' }}>
+                    <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? THEME.primary : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <SafePointIcon size={16} />
                       {egg.price.toLocaleString()}
                     </button>
@@ -227,7 +227,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                     </div>
 
                     {canHatch ? (
-                      <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.gold, color: '#fff', borderRadius: 999, padding: '5px 0', fontSize: 12.5, fontWeight: 800, boxShadow: '0 3px 10px rgba(209,153,0,.4)' }}>
+                      <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.primary, color: '#fff', borderRadius: 999, padding: '5px 0', fontSize: 12.5, fontWeight: 800 }}>
                         {L('Hatch')}
                       </button>
                     ) : unbuyable ? (
@@ -239,7 +239,7 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                         {`${L('Lv')}.${egg.minLevel}`}
                       </span>
                     ) : (
-                      <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? THEME.gold : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 0', fontSize: 12.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, boxShadow: on ? '0 3px 10px rgba(209,153,0,.4)' : 'none' }}>
+                      <button onClick={() => purchase(egg)} className={on ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: on ? THEME.primary : 'rgba(255,255,255,0.85)', color: on ? '#fff' : THEME.fg3, borderRadius: 999, padding: '5px 0', fontSize: 12.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                         <SafePointIcon size={13} />
                         {egg.price.toLocaleString()}
                       </button>

@@ -27,6 +27,8 @@ export { Friends } from './Friends.jsx';
 export { Guestbook } from './Guestbook.jsx';
 export { FriendHouse } from './FriendHouse.jsx';
 export { MyHouse } from './MyHouse.jsx';
+export { GUESTBOOK_STYLES } from './GuestbookPatterns.jsx';
+export { PUCK_STYLES } from './RoomPuckStyles.jsx';
 export { DecorateRoom } from './DecorateRoom.jsx';
 export { AddFriends } from './AddFriends.jsx';
 export { MSG_LAYOUTS, WarningOverlay } from './WarningOverlay.jsx';

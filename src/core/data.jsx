@@ -1692,10 +1692,10 @@ const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.floori
 const ROOM_CAPACITY = 10;
 
 const ROOMS = [
-  // `home: true` marks the room the profile/house opens on (MyHouse). Green Room for now.
-  { id: 'green', name: 'Green Room', theme: 'green', home: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
+  // `home: true` marks the room the profile/house opens on (MyHouse). Dream Room for now.
+  { id: 'green', name: 'Green Room', theme: 'green', slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
   { id: 'town',  name: 'Town Room',  theme: 'town',  slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
-  { id: 'dream', name: 'Dream Room', theme: 'dream', slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', home: true, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
 ];
 
 /* ── Achievement badges ────────────────────────────────────────────────
@@ -2570,12 +2570,17 @@ const setVillains = (rows = []) => {
 // pre-written stamp (see GUEST_STAMPS) precisely so nothing unkind can be sent. A
 // thumbs-down, an angry face or a laughing-at face would hand that back: it is a bullying
 // vector, not a feature. The set expresses DEGREES OF ENCOURAGEMENT, nothing else.
+// `icon` is a lucide name (rendered via Icon) — the reaction bar used to show the raw
+// `emoji` glyph, but that renders as a different (and differently-sized) picture per OS
+// while every other icon in the app is the same flat line-icon everywhere. `emoji` stays
+// on the row for the handful of places that still compose it into plain text (moderation
+// previews, stamp-style notes), not for the reaction UI itself.
 const REACTIONS = [
-  { key: 'like', emoji: '💛', label: 'Nice',      color: '#e8a33d' },
-  { key: 'love', emoji: '😍', label: 'Love it',   color: '#e0559a' },
-  { key: 'wow',  emoji: '🤩', label: 'Amazing',   color: '#7c5cbf' },
-  { key: 'fire', emoji: '🔥', label: 'So cool',   color: '#e0554a' },
-  { key: 'clap', emoji: '👏', label: 'Well done', color: '#4b9a6b' },
+  { key: 'like', emoji: '💛', icon: 'thumbs-up',    label: 'Nice',      color: '#e8a33d' },
+  { key: 'love', emoji: '😍', icon: 'heart',        label: 'Love it',   color: '#e0559a' },
+  { key: 'wow',  emoji: '🤩', icon: 'zap',          label: 'Amazing',   color: '#7c5cbf' },
+  { key: 'fire', emoji: '🔥', icon: 'flame',        label: 'So cool',   color: '#e0554a' },
+  { key: 'clap', emoji: '👏', icon: 'party-popper', label: 'Well done', color: '#4b9a6b' },
 ];
 
 const reactionOf = (key) => REACTIONS.find(r => r.key === key) || null;

@@ -14,6 +14,7 @@ import { buyItem, CHARACTERS, DECOR, decorForRoom, PLAYER, ROOMS, themeOf } from
 import { BottomSheet, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
+import { RoomPucks } from './RoomPuckStyles.jsx';
 
 // ── useRoomEditing — everything a room editor needs to hold ──────────
 // Edits live per room in `drafts`, so Decorate can dress the Green Room, hop to the
@@ -127,7 +128,7 @@ const HOTSPOTS = [
 // band puts it at 24%; a room drawn as art puts it wherever the artist drew it, so the
 // host aims at the art rather than the box. Buddy and furniture share it — they stand on
 // the same ground.
-function RoomStage({ theme, draft, buddies, placedDecor, onPuck, height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%' }) {
+function RoomStage({ theme, draft, buddies, placedDecor, onPuck, height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', puckStyle = 'dot' }) {
   // A room drawn as one illustration has no repaintable wall or floor, so those two pucks
   // would open a picker whose effect nobody can see. They come back the day the art ships
   // as separate wall/floor layers — which is what A-7's wallpaper and flooring really need.
@@ -179,30 +180,38 @@ function RoomStage({ theme, draft, buddies, placedDecor, onPuck, height = 340, r
         ))}
       </div>
 
-      {/* leader lines, drawn under the pucks. non-scaling-stroke keeps them hairline
-          while the viewBox stretches to whatever height the host gave us. Line and dot are
-          one object, so they share one flat white — no shadow, no softened opacity. */}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-        {pucks.map(h => (
-          <line key={h.slot} x1={h.puck[0]} y1={h.puck[1]} x2={h.aim[0]} y2={h.aim[1]}
-            stroke={onArt ? '#fff' : THEME.fg1} strokeOpacity={onArt ? '1' : '.5'} strokeWidth="1.5"
-            strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-        ))}
-      </svg>
+      {/* puckStyle 'dot' (the shipped default) — leader lines, drawn under the pucks.
+          non-scaling-stroke keeps them hairline while the viewBox stretches to whatever
+          height the host gave us. Line and dot are one object, so they share one flat
+          white — no shadow, no softened opacity. Every other puckStyle (Tweaks) skips all
+          three of these and renders RoomPucks instead — see RoomPuckStyles.jsx. */}
+      {puckStyle === 'dot' && (
+        <React.Fragment>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            {pucks.map(h => (
+              <line key={h.slot} x1={h.puck[0]} y1={h.puck[1]} x2={h.aim[0]} y2={h.aim[1]}
+                stroke={onArt ? '#fff' : THEME.fg1} strokeOpacity={onArt ? '1' : '.5'} strokeWidth="1.5"
+                strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            ))}
+          </svg>
 
-      {/* the dot that lands the line on the thing it points at. Not an SVG circle: that
-          viewBox stretches, so a circle in it would come out an ellipse. */}
-      {pucks.map(h => (
-        <span key={h.slot} aria-hidden="true"
-          style={{ position: 'absolute', left: `${h.aim[0]}%`, top: `${h.aim[1]}%`, transform: 'translate(-50%,-50%)', width: 8, height: 8, borderRadius: 999, background: onArt ? '#fff' : THEME.fg1, pointerEvents: 'none' }} />
-      ))}
+          {/* the dot that lands the line on the thing it points at. Not an SVG circle: that
+              viewBox stretches, so a circle in it would come out an ellipse. */}
+          {pucks.map(h => (
+            <span key={h.slot} aria-hidden="true"
+              style={{ position: 'absolute', left: `${h.aim[0]}%`, top: `${h.aim[1]}%`, transform: 'translate(-50%,-50%)', width: 8, height: 8, borderRadius: 999, background: onArt ? '#fff' : THEME.fg1, pointerEvents: 'none' }} />
+          ))}
 
-      {pucks.map(h => (
-        <button key={h.slot} onClick={() => onPuck(h.slot)} aria-label={L(h.label)} className="jx-press"
-          style={{ position: 'absolute', left: `${h.puck[0]}%`, top: `${h.puck[1]}%`, transform: 'translate(-50%,-50%)', width: 54, height: 54, borderRadius: 999, background: '#fff', border: `2px solid ${THEME.fg1}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
-          <Icon name={h.icon} size={25} color={THEME.fg1} stroke={2.2} />
-        </button>
-      ))}
+          {pucks.map(h => (
+            <button key={h.slot} onClick={() => onPuck(h.slot)} aria-label={L(h.label)} className="jx-press"
+              style={{ position: 'absolute', left: `${h.puck[0]}%`, top: `${h.puck[1]}%`, transform: 'translate(-50%,-50%)', width: 54, height: 54, borderRadius: 999, background: '#fff', border: `2px solid ${THEME.fg1}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+              <Icon name={h.icon} size={25} color={THEME.fg1} stroke={2.2} />
+            </button>
+          ))}
+        </React.Fragment>
+      )}
+
+      {puckStyle !== 'dot' && <RoomPucks style={puckStyle} pucks={pucks} onPuck={onPuck} onArt={onArt} />}
     </div>
   );
 }

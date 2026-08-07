@@ -1001,6 +1001,9 @@ const KO = {
   // the feature actually is: a word your friends left. Used everywhere the feature is named,
   // including the parent-facing copy, so the product calls it one thing.
   'Rooms': '방', 'Guestbook': '친구 한마디',
+  // Guestbook Tweaks patterns (GuestbookPatterns.jsx) — nine alternate treatments of the
+  // sheet above, compared side by side before one ships
+  'Tap the bubbles in your room': '방 안 말풍선을 눌러보세요', 'Tap for the next note': '눌러서 다음 한마디 보기', 'Resume': '계속',
   // profile room switcher — all three rooms are free, so this only names them
   'Your rooms': '내 방', 'Showing': '보여주는 중', 'Tap to show': '눌러서 보여주기',
   'Pick the room your friends see.': '친구들에게 보여줄 방을 골라보세요.',
@@ -1018,6 +1021,7 @@ const KO = {
   // ── my profile / house + decoration (A-6 / A-7) ──
   'My Profile': '내 프로필', 'Friends see this': '친구에게 보여요', 'My rooms': '내 방',
   'Change buddy': '친구 바꾸기', 'Decorate rooms': '방 꾸미기', 'Decorate': '꾸미기',
+  'Edit room': '방 편집',
   'Change room': '방 바꾸기', 'Choose a room': '방 선택', 'Not enough points yet': '포인트가 부족해요',
   'Forest': '숲', 'Beach': '해변', 'City': '도시',
   'Choose your buddy': '버디 선택', 'Your buddies': '내 버디', 'See all in Collection': '컬렉션에서 모두 보기',

@@ -90,14 +90,20 @@ function FriendHouse({ ctx }) {
                     background: on ? `${r.color}1c` : THEME.surface2,
                     border: on ? `1.5px solid ${r.color}` : '1.5px solid transparent',
                     borderRadius: 13, padding: '8px 2px 6px', cursor: 'pointer', fontFamily: 'inherit', boxShadow: 'none' }}>
-                  <span style={{ fontSize: 19, lineHeight: 1 }}>{r.emoji}</span>
+                  <Icon name={r.icon} size={19} color={on ? r.color : THEME.fg2} stroke={2.1} />
                   <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: on ? r.color : THEME.fg2 }}>{n}</span>
                 </button>
               );
             })}
           </div>
-          <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: mine ? reactionOf(mine).color : THEME.fg3, marginTop: 8 }}>
-            {mine ? `${L('You said')} ${reactionOf(mine).emoji} ${L(reactionOf(mine).label)}` : L('Leave a reaction')}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, color: mine ? reactionOf(mine).color : THEME.fg3, marginTop: 8 }}>
+            {mine ? (
+              <React.Fragment>
+                <span>{L('You said')}</span>
+                <Icon name={reactionOf(mine).icon} size={13} color={reactionOf(mine).color} stroke={2.3} />
+                <span>{L(reactionOf(mine).label)}</span>
+              </React.Fragment>
+            ) : L('Leave a reaction')}
           </div>
         </div>
 
