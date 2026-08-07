@@ -85,16 +85,17 @@ const KRAFT_DARK = '#c9a873';
 const PARCHMENT = '#fbf6ec';
 const WOOD = '#a9744f';
 const WOOD_DARK = '#7a5236';
-const BOOK_COVER = '#4b3bc4';    // sampled from book-dream-closed/open.png's indigo cover — the 'book' style's own frame color, not the shared wood palette
-// One cover skin per room theme (public/assets/book/book-<theme>-<closed|open>.png), so the
-// book on the floor matches the room it's sitting in instead of always wearing the Dream
-// Room's indigo regardless of where you are. `cover` is sampled per skin for the popup
-// card's border, same reasoning as BOOK_COVER above. Any theme not listed here (a future
-// room added without its own art) falls back to the Dream indigo rather than a fourth guess.
+// One skin per room theme, both for the floor puck (public/assets/book/book-<theme>-<closed|open>.png)
+// and the notes popup it opens (public/assets/book-popup/notes-frame-<theme>.png +
+// close-btn-<theme>.png — an illuminated-manuscript frame and its matching round close
+// button, replacing the old drawn gradient+border card and lucide `x`). So the book left
+// lying on the Green Room's floor, and the popup it opens, both wear the Green Room's skin
+// instead of always defaulting to Dream's indigo/purple. Any theme not listed here (a future
+// room added without its own art) falls back to the Dream skin rather than a fourth guess.
 const BOOK_ART = {
-  dream: { closed: '/assets/book/book-dream-closed.png', open: '/assets/book/book-dream-open.png', cover: BOOK_COVER },
-  green: { closed: '/assets/book/book-green-closed.png', open: '/assets/book/book-green-open.png', cover: THEME.brand },
-  town:  { closed: '/assets/book/book-town-closed.png',  open: '/assets/book/book-town-open.png',  cover: THEME.primary },
+  dream: { closed: '/assets/book/book-dream-closed.png', open: '/assets/book/book-dream-open.png', frame: '/assets/book-popup/notes-frame-dream.png', close: '/assets/book-popup/close-btn-dream.png' },
+  green: { closed: '/assets/book/book-green-closed.png', open: '/assets/book/book-green-open.png', frame: '/assets/book-popup/notes-frame-green.png', close: '/assets/book-popup/close-btn-green.png' },
+  town:  { closed: '/assets/book/book-town-closed.png',  open: '/assets/book/book-town-open.png',  frame: '/assets/book-popup/notes-frame-town.png', close: '/assets/book-popup/close-btn-town.png' },
 };
 const bookArtFor = (theme) => BOOK_ART[theme] || BOOK_ART.dream;
 const BOARD = THEME.brandDark;
@@ -318,6 +319,45 @@ function GuestbookPanel({ style, notes, likes, onLike, roomTheme }) {
   const [closing, setClosing] = React.useState(false);
   const closeBook = () => { setClosing(true); setTimeout(() => { setOpen(false); setClosing(false); }, 260); };
   const count = notes.length;
+  // book: the puck lives in the room's normal content flow, capped inside a `zIndex:1`
+  // wrapper (see MyHouse.jsx) — the notes sheet's dim scrim is portaled straight to
+  // `.screen` at zIndex 95, well above that cap, so left alone the puck would dim along
+  // with the rest of the room the instant the scrim mounts. Rather than pull the puck's
+  // actual DOM node out of the room (it needs to stay there, at its normal room position,
+  // for every other room-decor concern), this measures where it's actually rendered and
+  // portals a live "echo" of it to `.screen` too, positioned to sit exactly on top of the
+  // real one — so it reads as the same book, just no longer dimmed. `.screen` is scaled
+  // for the phone-frame mockup, so raw getBoundingClientRect() pixels (post-scale) have to
+  // be divided back down by that scale to land in `.screen`'s own unscaled coordinate
+  // space — same reasoning as the coin-shower landing math in HomeVariantsSimple.jsx.
+  const puckRef = React.useRef(null);
+  const [puckRect, setPuckRect] = React.useState(null);
+  // The notes card's own entrance/exit (jx-book-in/out, styles/joanx.css) is a plain scale
+  // anchored on `transformOrigin` rather than a fixed slide direction — so it needs to know,
+  // in percentages of ITS OWN box, where the puck it was tapped from actually sits. Measured
+  // in the same effect as puckRect (below) since both need the puck's rect and both only
+  // matter for exactly the same window (open || closing); cardRef only resolves once the
+  // portal below has actually mounted the card, which happens in this same commit.
+  const cardRef = React.useRef(null);
+  const [cardOrigin, setCardOrigin] = React.useState('50% 115%');
+  React.useLayoutEffect(() => {
+    if (!(open || closing)) { setPuckRect(null); return; }
+    const puckEl = puckRef.current, cardEl = cardRef.current, screenEl = document.querySelector('.screen');
+    if (!puckEl || !screenEl) return;
+    const puckBox = puckEl.getBoundingClientRect(), screenBox = screenEl.getBoundingClientRect();
+    const scale = screenBox.width / screenEl.offsetWidth || 1;
+    setPuckRect({
+      left: (puckBox.left - screenBox.left) / scale,
+      top: (puckBox.top - screenBox.top) / scale,
+      width: puckBox.width / scale,
+      height: puckBox.height / scale,
+    });
+    if (cardEl) {
+      const cardBox = cardEl.getBoundingClientRect();
+      const puckCx = puckBox.left + puckBox.width / 2, puckCy = puckBox.top + puckBox.height / 2;
+      setCardOrigin(`${((puckCx - cardBox.left) / cardBox.width) * 100}% ${((puckCy - cardBox.top) / cardBox.height) * 100}%`);
+    }
+  }, [open, closing]);
 
   if (style === 'bubbles') {
     return (
@@ -1019,25 +1059,59 @@ function GuestbookPanel({ style, notes, likes, onLike, roomTheme }) {
     // waiting for the sheet to finish unmounting and snapping shut with no warning.
     const coverOpen = open && !closing;
     const bookArt = bookArtFor(roomTheme);
+    // Shared between the real puck and its echo (below) so the crossfade art/badge is
+    // defined once — the only difference between the two is which element wraps it.
+    const puckArt = (
+      <React.Fragment>
+        {/* Two stacked images crossfading, not one <img> with its src swapped — a src swap
+            is a hard cut (new image, new decode) with no way to animate between the two.
+            Both stay mounted always; opacity/scale carry the "opening" motion. Which pair
+            of images is swapped in at all (bookArt) depends on the room's theme, so the
+            book left lying on the Green Room's floor doesn't wear the Dream Room's cover. */}
+        <img src={bookArt.closed} alt="" draggable="false"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transition: 'opacity .38s ease, transform .38s cubic-bezier(.2,.8,.2,1)', opacity: coverOpen ? 0 : 1, transform: coverOpen ? 'scale(.9) rotate(-2deg)' : 'scale(1)' }} />
+        <img src={bookArt.open} alt="" draggable="false"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transition: 'opacity .38s ease, transform .38s cubic-bezier(.2,.8,.2,1)', opacity: coverOpen ? 1 : 0, transform: coverOpen ? 'scale(1)' : 'scale(1.08)' }} />
+        {/* A solid white ring (CollectionVariants' badge) sat on the cover like a sticker
+            stuck on top of it — the cover is the illustration here, not a neutral surface a
+            badge can own a corner of. A soft, borderless wash lets the art show through. */}
+        {count > 0 && (
+          <span style={{ position: 'absolute', top: 10, right: 18, minWidth: 22, height: 22, borderRadius: 999, background: 'rgba(255,255,255,.55)', color: THEME.fg1, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>{count}</span>
+        )}
+      </React.Fragment>
+    );
     return (
       <React.Fragment>
-        <div onClick={() => setOpen(true)} role="button" tabIndex={0} aria-label={L('Guestbook')} className="jx-press" style={{ cursor: 'pointer', position: 'relative', width: 108, height: 108 }}>
-          {/* Two stacked images crossfading, not one <img> with its src swapped — a src swap
-              is a hard cut (new image, new decode) with no way to animate between the two.
-              Both stay mounted always; opacity/scale carry the "opening" motion. Which pair
-              of images is swapped in at all (bookArt) depends on the room's theme, so the
-              book left lying on the Green Room's floor doesn't wear the Dream Room's cover. */}
-          <img src={bookArt.closed} alt="" draggable="false"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transition: 'opacity .38s ease, transform .38s cubic-bezier(.2,.8,.2,1)', opacity: coverOpen ? 0 : 1, transform: coverOpen ? 'scale(.9) rotate(-2deg)' : 'scale(1)' }} />
-          <img src={bookArt.open} alt="" draggable="false"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transition: 'opacity .38s ease, transform .38s cubic-bezier(.2,.8,.2,1)', opacity: coverOpen ? 1 : 0, transform: coverOpen ? 'scale(1)' : 'scale(1.08)' }} />
-          {/* A solid white ring (CollectionVariants' badge) sat on the cover like a sticker
-              stuck on top of it — the cover is the illustration here, not a neutral surface a
-              badge can own a corner of. A soft, borderless wash lets the art show through. */}
-          {count > 0 && (
-            <span style={{ position: 'absolute', top: 10, right: 18, minWidth: 22, height: 22, borderRadius: 999, background: 'rgba(255,255,255,.55)', color: THEME.fg1, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>{count}</span>
-          )}
+        {/* Idle bob (jx-book-float) lives on its own outer wrapper, not the jx-press element
+            underneath — jx-press's :active scale and this float both touch `transform`, and
+            an element can only run one `animation`/cascade winner for a given property, so
+            stacking them on the same node would have the tap-scale lose to the animation (or
+            vice versa) instead of the two compositing. On separate parent/child nodes they
+            nest and both just work. Paused once the cover is open (coverOpen) — a book that's
+            mid-page while also drifting up and down reads as unsteady, not alive, and the
+            sheet has the room's attention by then anyway.
+            visibility (not display) hidden once the sheet is up — the echo below takes over
+            showing the book, but this real node has to stay laid out (not collapse to 0×0)
+            so puckRef keeps reporting its true room position for as long as the echo needs it. */}
+        <div className={coverOpen ? '' : 'jx-book-float'} style={{ width: 108, height: 108, visibility: (open || closing) ? 'hidden' : 'visible' }}>
+          <div ref={puckRef} onClick={() => setOpen(true)} role="button" tabIndex={0} aria-label={L('Guestbook')} className="jx-press" style={{ cursor: 'pointer', position: 'relative', width: 108, height: 108 }}>
+            {puckArt}
+          </div>
         </div>
+        {/* The book lives in the room's normal flow, capped below the notes sheet's dim
+            scrim (zIndex 95, portaled straight to `.screen` — see the comment further down)
+            — left alone it'd dim along with the rest of the room the instant the sheet
+            opens. This is a portaled "echo" of it, positioned over puckRect (measured off
+            the real node above) at a zIndex ABOVE the scrim, so the book stays lit and
+            visible in place instead of disappearing behind the overlay. pointerEvents:none
+            so a tap here still falls through to the scrim beneath it and closes the sheet,
+            same as tapping anywhere else in the dimmed room would. */}
+        {(open || closing) && puckRect && createPortal(
+          <div style={{ position: 'fixed', left: puckRect.left, top: puckRect.top, width: puckRect.width, height: puckRect.height, zIndex: 96, pointerEvents: 'none' }}>
+            {puckArt}
+          </div>,
+          document.querySelector('.screen') || document.body
+        )}
         {/* Portaled to .screen (the phone-frame root), not rendered in place — ScreenHeader
             is `position:fixed` too, but it lives OUTSIDE the `zIndex:1` content wrapper this
             component is nested in, so no z-index we set here could ever outrank it: a
@@ -1047,22 +1121,55 @@ function GuestbookPanel({ style, notes, likes, onLike, roomTheme }) {
             actually win, so the header is truly covered instead of always painting through. */}
         {(open || closing) && createPortal(
           <div onClick={closeBook} className={closing ? 'jx-book-dim-out' : 'jx-book-dim-in'} style={{ position: 'fixed', inset: 0, zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(20,18,16,0.44)' }}>
-            {/* Pages stay the cream/parchment every other guestbook style uses (that part's
-                right — a cover this blue can still hold cream pages, see book-open.png) but the
-                frame is BOOK_COVER, not the shared woodland WOOD token — a brown picture-frame
-                border around a blue gem cover was the actual clash, not the parchment itself.
-                jx-book-in/out (not jx-pop/jx-dim-in) — a plain fade+scale settling both ways
-                instead of jx-pop's elastic overshoot, which read as an abrupt snap here. */}
-            <div onClick={e => e.stopPropagation()} className={closing ? 'jx-book-out' : 'jx-book-in'} style={{ width: '100%', maxWidth: 340, maxHeight: '70%', display: 'flex', flexDirection: 'column', background: `linear-gradient(160deg, ${PARCHMENT} 0%, ${KRAFT} 100%)`, border: `2.5px solid ${bookArt.cover}`, borderRadius: 26, padding: '18px 16px', boxSizing: 'border-box' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
-                <img src={bookArt.open} alt="" draggable="false" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
-                <div style={{ flex: 1, fontSize: 17, fontWeight: 800, color: THEME.fg1 }}>{L('Guestbook')}</div>
-                <button type="button" onClick={closeBook} aria-label={L('Close')} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                  <Icon name="x" size={17} color={THEME.fg2} stroke={2.4} />
-                </button>
-              </div>
-              <div className="no-sb" style={{ overflowY: 'auto' }}>
-                {count === 0 ? <EmptyNote /> : notes.map((n, i) => <NoteRow key={i} note={n} showLike={false} />)}
+            {/* The illuminated-manuscript frame (notes-frame.png) IS the card now — no drawn
+                gradient/border underneath it. Content sits in an absolutely-positioned inset
+                sized off the art's own margins, so it reads as ink on the page rather than a
+                component floating in front of it. jx-book-in/out (not jx-pop/jx-dim-in) — a
+                plain scale settling both ways, anchored on `transformOrigin: cardOrigin`
+                (computed above from the actual puck's screen position) so the card visibly
+                grows OUT OF the book that was tapped rather than just popping up centered —
+                jx-pop's elastic overshoot also read as an abrupt snap here regardless. The
+                idle bob (jx-book-float) lives on an INNER wrapper, not this outer element —
+                both jx-book-in/out and a float animate `transform`, and stacking two
+                `animation` values on one element has the later one simply win rather than
+                compose, so the entrance would clobber the float (or vice versa). Splitting
+                them onto parent/child means the settle and the bob are just two transforms
+                nested, which do compose. Only mounted while open (not during the close
+                animation) so it doesn't fight jx-book-out's own settle-down. */}
+            <div ref={cardRef} onClick={e => e.stopPropagation()} className={closing ? 'jx-book-out' : 'jx-book-in'}
+              style={{ position: 'relative', width: '100%', maxWidth: 320, maxHeight: '86vh', aspectRatio: '1776 / 2780', transformOrigin: cardOrigin }}>
+              <div className={closing ? '' : 'jx-book-float'} style={{ position: 'absolute', inset: 0 }}>
+                <img src={bookArt.frame} alt="" draggable="false" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+                <button type="button" onClick={closeBook} aria-label={L('Close')}
+                  style={{ position: 'absolute', top: '7%', right: '7.5%', width: '12%', aspectRatio: '1 / 1', border: 'none', cursor: 'pointer', padding: 0, backgroundColor: 'transparent', backgroundImage: `url(${bookArt.close})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} />
+                <div style={{ position: 'absolute', inset: '7.5% 9% 8.5%', display: 'flex', flexDirection: 'column', pointerEvents: 'none' }}>
+                  {/* This wrapper spans up into the close button's corner (inset top 7.5% vs
+                      the button's top 7%) — sat here with the default pointerEvents:auto, its
+                      empty-looking top region was actually an invisible click-catcher stacked
+                      ON TOP of the button (later in DOM order wins the paint/hit-test order
+                      when boxes overlap), so taps that looked dead-on the X never reached it.
+                      pointerEvents:none here, re-enabled just on the notes list below, lets
+                      clicks fall through everywhere this wrapper has nothing visible. */}
+                  <div style={{ position: 'relative', marginTop: 14, marginBottom: 40, minHeight: 24 }}>
+                    {/* Centered on the full content width, not a padded-for-the-button row — the
+                        close button now sits well clear in its own corner (see its top/right
+                        above), so reserving a gutter for it here just dragged the title off the
+                        frame's true center. No count badge here; the puck's own overlay (below)
+                        already carries the count. */}
+                    <div style={{ textAlign: 'center', fontSize: 15.5, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap' }}>{L('Guestbook')}</div>
+                  </div>
+                  <div className="no-sb" style={{ flex: 1, overflowY: 'auto', pointerEvents: 'auto' }}>
+                    {count === 0 ? <EmptyNote /> : notes.map((n, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,.6)', borderRadius: 14, padding: '10px 12px', marginBottom: 8 }}>
+                        <MascotChip species={n.avatar} color={n.color} size={32} bg={THEME.primaryLight} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: THEME.fg2 }}>{n.by}</div>
+                          <div style={{ fontSize: 13, color: THEME.fg1, marginTop: 1, lineHeight: 1.35 }}>{noteText(n)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>,

@@ -161,10 +161,24 @@ html, body {
 .jx-book-dim-in { animation: jxBookDimIn .34s ease both; }
 .jx-book-dim-out { animation: jxBookDimOut .26s ease both; }
 
-@keyframes jxBookIn { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-@keyframes jxBookOut { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(.96) translateY(6px); } }
-.jx-book-in { animation: jxBookIn .34s cubic-bezier(.2,.8,.2,1) both; }
-.jx-book-out { animation: jxBookOut .26s ease both; }
+/* Pure scale, no translateY — the card sets its own `transformOrigin` inline (computed off
+   the actual book puck's on-screen position, see GuestbookPatterns.jsx) so this reads as the
+   notes growing OUT OF the book that was just tapped, not a generic centered pop-in. A fixed
+   translateY offset can't do that; it only ever slides from one constant direction regardless
+   of where the book actually is on screen. */
+@keyframes jxBookIn { from { opacity: 0; transform: scale(.1); } to { opacity: 1; transform: scale(1); } }
+@keyframes jxBookOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.15); } }
+.jx-book-in { animation: jxBookIn .4s cubic-bezier(.2,.8,.2,1) both; }
+.jx-book-out { animation: jxBookOut .28s ease both; }
+
+/* Once open, the book sits in front of a cloudy sky (notes-frame.png) — a dead-still card
+   there read as pasted on rather than actually hanging in that sky. A slow, small vertical
+   drift (no rotation — a card doing that reads as unstable, not aloft) sells "floating" without
+   competing with jx-book-in's entrance for `transform` on the same element (see the JSX
+   comment where this is applied to a separate inner wrapper). Long duration + gentle range
+   keeps it a background detail, not something that fights the notes for attention. */
+@keyframes jxBookFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.jx-book-float { animation: jxBookFloat 3.6s ease-in-out infinite; }
 
 /* card / panel — fade + slide-up + a touch of scale, easing out smoothly */
 @keyframes jxOverlayIn {
