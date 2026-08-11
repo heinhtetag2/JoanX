@@ -473,6 +473,7 @@ const KO = {
 
   // ── parent: schedule editor ──
   'Edit schedule': '일정 편집', 'New schedule': '새 일정', 'Schedule name': '일정 이름',
+  'Edit child': '자녀 정보 수정',
   'e.g. School commute': '예: 등하굣길', 'Protection level': '보호 강도', 'Active days': '활성 요일',
   'Time': '시간', 'Start': '시작', 'End': '종료', 'Save schedule': '일정 저장', 'Delete schedule': '일정 삭제',
   'Notify me of activity': '활동 알림 받기', 'Character game & rewards': '캐릭터 게임 및 보상',

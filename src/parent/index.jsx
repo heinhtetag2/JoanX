@@ -3,6 +3,7 @@
 export { ParentReports } from './ParentReports.jsx';
 export { REPORT_LAYOUTS, ParentReportsVariant } from './ParentReportsVariants.jsx';
 export { ParentSettings } from './ParentSettings.jsx';
+export { ParentEditChild } from './ParentEditChild.jsx';
 export { ParentChildren } from './ParentChildren.jsx';
 export { ParentActivity } from './ParentActivity.jsx';
 export { ParentAccount } from './ParentAccount.jsx';

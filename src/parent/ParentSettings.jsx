@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { APP_CATEGORIES, CHILDREN, PERMISSIONS } from '../core/data.jsx';
-import { Badge, BottomSheet, Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle, avatarPalFor, formatPhone, screenBgFor } from '../core/primitives.jsx';
-import { L, getLang } from '../core/i18n.jsx';
+import { Badge, Icon, PhotoAvatar, THEME, Toggle, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
+import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
-import { BRAND, ParentHead, RULE_TAG_COLORS, brandBtn } from './shared.jsx';
+import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
 
 function ParentSettings({ ctx }) {
   const child = ctx.params?.child || CHILDREN[0];
@@ -44,23 +44,14 @@ function ParentSettings({ ctx }) {
   };
   const delTitle = ctx.lang === 'ko' ? `${child.name} 삭제할까요?` : `Remove ${child.name}?`;
 
-  // Edit-child profile — the same fields Add child collects up front, now editable
-  // after the fact. A draft copy so Cancel doesn't leave a half-typed name applied.
+  // Edit-child profile now lives on its own page (ParentEditChild.jsx) — same fields
+  // Add child collects up front, editable after the fact. It navigates back here with
+  // a one-shot `savedToast` param, which the effect below turns into the confirmation
+  // pill (same idiom as the child Home tab's pointsFx trigger).
   const ko = ctx.lang === 'ko';
-  const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a >= 0 ? a : null; };
-  const [editOpen, setEditOpen] = React.useState(false);
-  const [draft, setDraft] = React.useState(null);
-  const openEditChild = () => { setDraft({ name: child.name, dob: child.dob || '', relation: child.relation || '', sibling: child.sibling || '', phone: child.phone || '' }); setEditOpen(true); };
   const [toast, setToast] = React.useState(null);           // brief confirmation pill
   const say = m => { setToast(m); setTimeout(() => setToast(null), 1800); };
-  const saveEditChild = () => {
-    if (!draft.name.trim()) return;
-    const age = ageFromDob(draft.dob);
-    Object.assign(child, { name: draft.name.trim(), dob: draft.dob, relation: draft.relation, sibling: draft.sibling, phone: draft.phone, ...(age != null ? { age } : {}) });
-    setEditOpen(false);
-    force();
-    say(L('Changes saved'));
-  };
+  React.useEffect(() => { if (ctx.params?.savedToast) say(L('Changes saved')); }, []);
   const relLbl = { son: 'Son', daughter: 'Daughter', grandchild: 'Grandchild', other: 'Other child in my care' }[child.relation];
 
   // Device change is PARENT-INITIATED. Pairing only happens when the parent
@@ -85,7 +76,7 @@ function ParentSettings({ ctx }) {
               {[ko ? `만 ${child.age}세` : `${child.age} ${child.age === 1 ? 'year' : 'years'} old`, relLbl ? L(relLbl) : null].filter(Boolean).join(' · ')}
             </div>
           </div>
-          <button onClick={openEditChild} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, border: `1.5px solid ${THEME.border}`, background: '#fff', borderRadius: 999, padding: '8px 13px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, color: THEME.fg1, cursor: 'pointer' }}>
+          <button onClick={() => ctx.nav('p_editchild', { child })} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, border: `1.5px solid ${THEME.border}`, background: '#fff', borderRadius: 999, padding: '8px 13px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, color: THEME.fg1, cursor: 'pointer' }}>
             <Icon name="pencil" size={14} color={THEME.fg2} stroke={2.4} />{L('Edit')}
           </button>
         </div>
@@ -237,30 +228,6 @@ function ParentSettings({ ctx }) {
           <Icon name="trash-2" size={17} color={THEME.danger} stroke={2.3} />{L('Remove child')}
         </button>
       </div>
-
-      {/* edit-child profile sheet — same fields Add child collects, editable after setup */}
-      {editOpen && draft && (
-        <BottomSheet title={`${L('Edit')} ${child.name}`} onClose={() => setEditOpen(false)}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Input label={L("Child's name")} value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} placeholder={L('e.g. Mina')} icon="user" accent={BRAND.ink} />
-            <div>
-              <DateField label={L("Child's date of birth")} value={draft.dob ? new Date(draft.dob + 'T00:00') : null}
-                onChange={d => setDraft(s => ({ ...s, dob: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }))} accent={BRAND.ink} />
-              {draft.dob && ageFromDob(draft.dob) != null && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '4px 11px', borderRadius: 999, background: THEME.surface2, color: THEME.fg2, fontSize: 12.5, fontWeight: 800 }}>
-                  <Icon name="cake" size={13} color={THEME.fg3} stroke={2.3} />{ko ? `만 ${ageFromDob(draft.dob)}세` : `${ageFromDob(draft.dob)} ${ageFromDob(draft.dob) === 1 ? 'year' : 'years'} old`}
-                </div>
-              )}
-            </div>
-            <SelectField label={L('Relationship to you')} title={L('Relationship to you')} value={draft.relation} onChange={v => setDraft(d => ({ ...d, relation: v }))} accent={BRAND.ink}
-              options={[['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']].map(([v, l]) => ({ value: v, label: L(l) }))} />
-            <SelectField label={L('Position among siblings')} title={L('Position among siblings')} value={draft.sibling} onChange={v => setDraft(d => ({ ...d, sibling: v }))} accent={BRAND.ink}
-              options={[['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']].map(([v, l]) => ({ value: v, label: L(l) }))} />
-            <Input label={L("Child's phone number")} value={draft.phone} onChange={e => setDraft(d => ({ ...d, phone: formatPhone(e.target.value) }))} placeholder="010-1234-5678" type="tel" accent={BRAND.ink} />
-            <Button variant="primary" size="lg" fullWidth style={{ ...brandBtn, marginTop: 4 }} disabled={!draft.name.trim()} onClick={draft.name.trim() ? saveEditChild : undefined}>{L('Save')}</Button>
-          </div>
-        </BottomSheet>
-      )}
 
       {/* remove-child confirmation sheet */}
       {confirmDel && (

@@ -4,7 +4,7 @@ import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
@@ -281,7 +281,7 @@ function App() {
     else body = ({
       p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} highlightStrip={tw.highlightStrip} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
-      p_settings: <ParentSettings ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
+      p_settings: <ParentSettings ctx={ctx} />, p_editchild: <ParentEditChild ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
       // the household — a second parent joins the FAMILY, never the child's device
       p_family: <ParentFamily ctx={ctx} />, p_invite: <ParentInvite ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} inquiryStyle={tw.inquiryStyle} loginProvider={tw.loginProvider} />,
