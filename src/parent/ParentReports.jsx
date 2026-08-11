@@ -329,6 +329,10 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
   const doingWell = rep.acceptance >= 75;
   const nm = child.name;
   const dayName = i => (ko ? ['월', '화', '수', '목', '금', '토', '일'][i] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]);
+  // full day name for the activity card's own readout header (mirrors ParentWeeklyDetail's
+  // dayFull) — "일요일", not the short "일" the chart's own axis labels use.
+  const dayFull = i => (ko ? ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'][i]
+                            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][i]);
   const t = {
     respTitle: ko ? '경고에 반응하는 방식' : 'How they respond to warnings',
     respInsTitle: doingWell
@@ -389,22 +393,11 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
     { icon: 'flame',        c: '#c9922b', v: rep.streak + 'd',      l: 'Safe streak' },     // gold (echoes donut delayed)
     { icon: 'shield-check', c: '#4f9d89', v: stopsTotal,            l: 'Safe stops' },       // data teal-green (= donut immediate), NOT the brand green
   ];
-  // inline stat-dots inside the activity card. Lead metric is the risky-behavior
-  // reduction rate (a down-arrow % is the win), not the raw event count (F-20).
-  const inline = [
-    { v: (riskReduction >= 0 ? '↓' : '↑') + Math.abs(riskReduction) + '%', l: 'Risky moments', sub: 'vs. week start', c: '#bdd2ee', vc: riskReduction >= 0 ? THEME.success : THEME.danger },
-    { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
-    { v: rep.acceptance + '%', l: 'Stopped when warned', c: SERIES.rate },
-  ];
-  // activity-card footer: a small at-a-glance read of the week's chart —
-  // which day drew the most safe stops, and which had the most risky moments.
+  // which day drew the most safe stops, and which had the most risky moments — no longer
+  // shown on the activity card itself, but still feeds the chat drawer's insight copy below.
   const stopsByDay = reactions.map(d => d.immediate);
   const bestDayIdx = stopsByDay.indexOf(Math.max(...stopsByDay));
   const riskiestIdx = risk.indexOf(Math.max(...risk));
-  const activityFoot = [
-    { l: ko ? '가장 안전한 날' : 'Safest day', v: dayName(bestDayIdx), c: SERIES.trend },
-    { l: ko ? '주의가 많던 날' : 'Most alerts', v: dayName(riskiestIdx), c: '#8fb0dd' },
-  ];
 
   // "Ask about this week" — canned Q&A behind the floating chat button. Every answer
   // reuses numbers already computed above, so the drawer can never contradict the
@@ -823,7 +816,9 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
           </div>
         </div>
 
-        {/* activity card — inline stats + bars-and-line chart + CTA */}
+        {/* activity card — bars-and-line chart with its own tap-a-day readout header
+            (title + per-day values, same as the Weekly activity detail page) instead of a
+            separate static weekly-total block above it */}
         <div style={{ background: '#fff', borderRadius: 22, padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -832,31 +827,8 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
             </div>
             <button onClick={() => ctx.nav('p_weekactivity', { childId: child.id })} aria-label={L('Weekly activity')} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
-          <div style={{ display: 'flex', gap: 22, marginBottom: 18, alignItems: 'flex-start' }}>
-            {inline.map(s => (
-              <div key={s.l}>
-                <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: s.vc || THEME.fg1 }}>{s.v}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 999, background: s.c }} />
-                  <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{L(s.l)}</span>
-                </div>
-                {s.sub && <div style={{ fontSize: 10, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{L(s.sub)}</div>}
-              </div>
-            ))}
-          </div>
-          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14} />
-          {/* footer — a divider, then a plain read of the week's chart */}
-          <div style={{ borderTop: `1px solid ${THEME.border}`, marginTop: 16, paddingTop: 14, display: 'flex', gap: 26 }}>
-            {activityFoot.map(s => (
-              <div key={s.l}>
-                <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, color: THEME.fg1 }}>{s.v}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: 999, background: s.c }} />
-                  <span style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600 }}>{s.l}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14}
+            tooltip={(d, i) => ({ title: dayFull(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
         </div>
 
         {/* insight — tone adapts to whether this child is trending well */}

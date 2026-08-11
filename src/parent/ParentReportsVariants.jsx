@@ -68,7 +68,18 @@ function reportModel(sel, ctx) {
     { v: stopsTotal, l: 'Safe stops', c: SERIES.trend },
     { v: rep.acceptance + '%', l: 'Stopped when warned', c: SERIES.rate },
   ];
-  return { child, rep, reactions, risk, SERIES, RESP, actData, riskMax, doingWell, ko, dayName, t, tone, kpis, inline,
+  // activity-card footer: a small at-a-glance read of the week's chart — which day drew
+  // the most safe stops, and which had the most risky moments. Every layout shares this
+  // same ActivityCard component, so it only needs computing once, here, in the model
+  // every layout is built from.
+  const stopsByDay = reactions.map(d => d.immediate);
+  const bestDayIdx = stopsByDay.indexOf(Math.max(...stopsByDay));
+  const riskiestIdx = risk.indexOf(Math.max(...risk));
+  const activityFoot = [
+    { l: ko ? '가장 안전한 날' : 'Safest day', v: dayName(bestDayIdx), c: SERIES.trend },
+    { l: ko ? '주의가 많던 날' : 'Most alerts', v: dayName(riskiestIdx), c: '#8fb0dd' },
+  ];
+  return { child, rep, reactions, risk, SERIES, RESP, actData, riskMax, doingWell, ko, dayName, t, tone, kpis, inline, activityFoot,
     openResponse: () => ctx.nav('p_response', { childId: child.id }) };
 }
 
@@ -246,7 +257,7 @@ function ResponseMixCard({ model, bare }) {
 
 // Inline stats + bars-and-line chart + habit CTA. `bare` drops the card chrome.
 function ActivityCard({ model, ctx, bare }) {
-  const { inline, actData, riskMax, SERIES, dayName, t } = model;
+  const { inline, actData, riskMax, SERIES, dayName, t, activityFoot } = model;
   const body = (
     <React.Fragment>
       {!bare && (
@@ -269,6 +280,18 @@ function ActivityCard({ model, ctx, bare }) {
       </div>
       <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14}
         tooltip={(d, i) => ({ title: dayName(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
+      {/* footer — a divider, then a plain read of the week's chart (safest day / most alerts) */}
+      <div style={{ borderTop: `1px solid ${THEME.border}`, marginTop: 16, paddingTop: 14, display: 'flex', gap: 26 }}>
+        {activityFoot.map(s => (
+          <div key={s.l}>
+            <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, color: THEME.fg1 }}>{s.v}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: 999, background: s.c }} />
+              <span style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600 }}>{s.l}</span>
+            </div>
+          </div>
+        ))}
+      </div>
       <button onClick={() => ctx.nav('p_children')} style={{ width: '100%', marginTop: 18, display: 'flex', alignItems: 'center', gap: 10, background: THEME.surface2, border: 'none', borderRadius: 14, padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
         <Icon name="sparkles" size={17} color={BRAND.primary} stroke={2.3} />
         <span style={{ fontSize: 13, fontWeight: 700, color: THEME.fg1 }}>{t.buildHabits}</span>

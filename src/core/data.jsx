@@ -1979,7 +1979,7 @@ const PARENT_ALERTS = [
 const MAX_CHILDREN = 5;
 
 const CHILDREN = [
-  { id: 'k1', name: 'Mina', age: 11, mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5, bestStreak: 9,
+  { id: 'k1', name: 'Mina', age: 11, dob: '2015-02-10', relation: 'daughter', sibling: 'oldest', phone: '010-2345-6789', mode: 'smart', device: 'iPhone 13', battery: 72, online: true,  lastSeen: 'now', avatar: 'fox',  color: '#e1874a', streak: 5, bestStreak: 9,
     pendingDevice: { device: 'Galaxy S24', when: 'just now', where: 'Seoul, KR · new network' },
     cfg: {
       mode: 'smart',
@@ -1992,7 +1992,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k2', name: 'Leo',  age: 8,  mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, bestStreak: 6,
+  { id: 'k2', name: 'Leo',  age: 8, dob: '2018-05-22', relation: 'son', sibling: 'only', phone: '010-3456-7890', mode: 'lite',  device: 'Galaxy A14', battery: 45, online: false, lastSeen: '2h ago', avatar: 'bird', color: '#67c7ce', streak: 2, bestStreak: 6,
     cfg: {
       mode: 'lite',
       cats: { video: true, games: true, social: true, browser: true, camera: false, phone: false },
@@ -2004,7 +2004,7 @@ const CHILDREN = [
         { t: 'At home',        s: 'Geofenced · home Wi-Fi', tag: 'Relaxed' },
       ],
     } },
-  { id: 'k3', name: 'Yuna', age: 6,  mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, bestStreak: 8,
+  { id: 'k3', name: 'Yuna', age: 6, dob: '2020-01-30', phone: '010-4567-8901', mode: 'smart', device: 'iPhone SE', battery: 88, online: true,  lastSeen: 'now', avatar: 'owl', color: '#b9a3ef', relation: 'daughter', sibling: 'youngest', streak: 8, bestStreak: 8,
     cfg: {
       mode: 'smart',
       cats: { video: true, games: true, social: true, browser: false, camera: false, phone: false },

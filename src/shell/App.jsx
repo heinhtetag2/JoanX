@@ -41,11 +41,11 @@ function App() {
   const initialDetail = __q.get('detail');   // ?detail=char-cover opens the buddy detail screen
   const initialScreen = __q.get('screen');   // ?screen=myhouse jumps straight to any child screen
   // Cold-launch loading beat (child app only) — the app syncs the child's safety/permission
-  // "clearance" data before Home can trust it, same as any game's boot loader. Skipped when a
-  // deep link (?screen / ?detail) is jumping straight to a specific screen for review — the
-  // splash would only get in the way of the thing the link was for. "Replay boot splash" in
-  // Tweaks re-arms it.
-  const [booted, setBooted] = React.useState(!!(initialScreen || initialDetail));
+  // "clearance" data before Home can trust it, same as any game's boot loader. Starts skipped,
+  // same as `onboarded` above — a refresh during review should land straight on Home, not
+  // replay the splash every time. "Replay onboarding" in Tweaks (which replays the splash
+  // ahead of it too, see that button below) is the only way to see it again.
+  const [booted, setBooted] = React.useState(true);
 
   // Persist just the ACTIVE BUDDY across a browser refresh. This prototype otherwise keeps no
   // state across reloads (ADR-003), which is why a refresh used to snap the child back to the
@@ -405,8 +405,6 @@ function App() {
                   splash ahead of it too — otherwise this button would demo a sequence no
                   child ever actually sees. */}
               <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setBooted(false); setOnboarded(false); setScreen('home'); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
-              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px', marginTop: 6 }} onClick={() => setBooted(false)}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay boot splash</button>
-              <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
 
               <div className="tw-label">Buddy</div>
               <div className="tw-row">

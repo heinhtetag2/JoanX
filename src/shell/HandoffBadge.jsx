@@ -29,7 +29,7 @@ const HANDOFF = {
   // ── child app ──
   home:        { status: 'done', note: 'Final. Hero + XP ring, protection card, points/streak, and today’s missions all done.' },
   boot:        { status: 'done', note: 'Confirmed. Cold-launch loading screen — buddy + ripple, game-style progress bar, ahead of Home/onboarding.' },
-  onboarding:  { status: 'done', note: 'Confirmed. Splash → intro slides → connect-to-parent → permissions all done.' },
+  onboarding:  { status: 'done', note: 'Confirmed. Intro slides → connect-to-parent → permissions all done (the logo splash ahead of this is now BootSplash).' },
   // child profile & its detail screens
   profile:     { status: 'done', note: 'Confirmed. Profile hub: language + sound, linked parents, and Account rows (Notices / Help & support / About).' },
   help:        { status: 'done', note: 'Confirmed. Help & support — inline FAQ accordion (help-circle icons), contact link.' },

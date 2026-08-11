@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { APP_CATEGORIES, CHILDREN, PERMISSIONS } from '../core/data.jsx';
-import { Badge, Icon, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
-import { L } from '../core/i18n.jsx';
-import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
+import { Badge, BottomSheet, Button, DateField, Icon, Input, PhotoAvatar, SelectField, THEME, Toggle, avatarPalFor, formatPhone, screenBgFor } from '../core/primitives.jsx';
+import { L, getLang } from '../core/i18n.jsx';
+import { MascotChip } from '../core/characters.jsx';
+import { BRAND, ParentHead, RULE_TAG_COLORS, brandBtn } from './shared.jsx';
 
 function ParentSettings({ ctx }) {
   const child = ctx.params?.child || CHILDREN[0];
@@ -43,6 +44,25 @@ function ParentSettings({ ctx }) {
   };
   const delTitle = ctx.lang === 'ko' ? `${child.name} 삭제할까요?` : `Remove ${child.name}?`;
 
+  // Edit-child profile — the same fields Add child collects up front, now editable
+  // after the fact. A draft copy so Cancel doesn't leave a half-typed name applied.
+  const ko = ctx.lang === 'ko';
+  const ageFromDob = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); const t = new Date(); let a = t.getFullYear() - y; const mo = t.getMonth() + 1; if (mo < m || (mo === m && t.getDate() < d)) a--; return a >= 0 ? a : null; };
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [draft, setDraft] = React.useState(null);
+  const openEditChild = () => { setDraft({ name: child.name, dob: child.dob || '', relation: child.relation || '', sibling: child.sibling || '', phone: child.phone || '' }); setEditOpen(true); };
+  const [toast, setToast] = React.useState(null);           // brief confirmation pill
+  const say = m => { setToast(m); setTimeout(() => setToast(null), 1800); };
+  const saveEditChild = () => {
+    if (!draft.name.trim()) return;
+    const age = ageFromDob(draft.dob);
+    Object.assign(child, { name: draft.name.trim(), dob: draft.dob, relation: draft.relation, sibling: draft.sibling, phone: draft.phone, ...(age != null ? { age } : {}) });
+    setEditOpen(false);
+    force();
+    say(L('Changes saved'));
+  };
+  const relLbl = { son: 'Son', daughter: 'Daughter', grandchild: 'Grandchild', other: 'Other child in my care' }[child.relation];
+
   // Device change is PARENT-INITIATED. Pairing only happens when the parent
   // scans the child's new-phone QR (via "Reconnect device" below) — the app
   // has no way to passively "detect" a new phone before it's scanned, so there
@@ -52,6 +72,24 @@ function ParentSettings({ ctx }) {
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: screenBgFor(BRAND.primary) }}>
       <ParentHead sub={`${child.name} · ${child.device}`} title={L('Rules & settings')} onBack={() => ctx.nav('p_children')} />
       <div style={{ padding: '8px 16px 0' }}>
+        {/* child profile — name / age / relationship, editable. The one thing missing
+            from this screen before: everything here was rules and device state, with
+            no way to fix a typo'd name or update age after setup. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
+          <PhotoAvatar src={child.photo} size={48} style={{ background: `var(--color-interactives-avatar-${avatarPalFor(child.id)}-default)` }} fallback={
+            <PhotoAvatar src="/assets/avatars/avatar-child.png" size={48} style={{ background: `var(--color-interactives-avatar-${avatarPalFor(child.id)}-default)` }}
+              fallback={<MascotChip species={child.avatar} color={child.color} size={48} bg={`var(--color-interactives-avatar-${avatarPalFor(child.id)}-default)`} />} />} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15.5, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{child.name}</div>
+            <div style={{ fontSize: 12.5, color: THEME.fg2, marginTop: 2 }}>
+              {[ko ? `만 ${child.age}세` : `${child.age} ${child.age === 1 ? 'year' : 'years'} old`, relLbl ? L(relLbl) : null].filter(Boolean).join(' · ')}
+            </div>
+          </div>
+          <button onClick={openEditChild} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, border: `1.5px solid ${THEME.border}`, background: '#fff', borderRadius: 999, padding: '8px 13px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, color: THEME.fg1, cursor: 'pointer' }}>
+            <Icon name="pencil" size={14} color={THEME.fg2} stroke={2.4} />{L('Edit')}
+          </button>
+        </div>
+
         {/* device connection — start pairing (code / QR) from here */}
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Device')}</div>
         <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 18 }}>
@@ -200,6 +238,30 @@ function ParentSettings({ ctx }) {
         </button>
       </div>
 
+      {/* edit-child profile sheet — same fields Add child collects, editable after setup */}
+      {editOpen && draft && (
+        <BottomSheet title={`${L('Edit')} ${child.name}`} onClose={() => setEditOpen(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Input label={L("Child's name")} value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} placeholder={L('e.g. Mina')} icon="user" accent={BRAND.ink} />
+            <div>
+              <DateField label={L("Child's date of birth")} value={draft.dob ? new Date(draft.dob + 'T00:00') : null}
+                onChange={d => setDraft(s => ({ ...s, dob: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }))} accent={BRAND.ink} />
+              {draft.dob && ageFromDob(draft.dob) != null && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, padding: '4px 11px', borderRadius: 999, background: THEME.surface2, color: THEME.fg2, fontSize: 12.5, fontWeight: 800 }}>
+                  <Icon name="cake" size={13} color={THEME.fg3} stroke={2.3} />{ko ? `만 ${ageFromDob(draft.dob)}세` : `${ageFromDob(draft.dob)} ${ageFromDob(draft.dob) === 1 ? 'year' : 'years'} old`}
+                </div>
+              )}
+            </div>
+            <SelectField label={L('Relationship to you')} title={L('Relationship to you')} value={draft.relation} onChange={v => setDraft(d => ({ ...d, relation: v }))} accent={BRAND.ink}
+              options={[['son', 'Son'], ['daughter', 'Daughter'], ['grandchild', 'Grandchild'], ['other', 'Other child in my care']].map(([v, l]) => ({ value: v, label: L(l) }))} />
+            <SelectField label={L('Position among siblings')} title={L('Position among siblings')} value={draft.sibling} onChange={v => setDraft(d => ({ ...d, sibling: v }))} accent={BRAND.ink}
+              options={[['oldest', 'Oldest child'], ['middle', 'Middle child'], ['youngest', 'Youngest child'], ['only', 'Only child']].map(([v, l]) => ({ value: v, label: L(l) }))} />
+            <Input label={L("Child's phone number")} value={draft.phone} onChange={e => setDraft(d => ({ ...d, phone: formatPhone(e.target.value) }))} placeholder="010-1234-5678" type="tel" accent={BRAND.ink} />
+            <Button variant="primary" size="lg" fullWidth style={{ ...brandBtn, marginTop: 4 }} disabled={!draft.name.trim()} onClick={draft.name.trim() ? saveEditChild : undefined}>{L('Save')}</Button>
+          </div>
+        </BottomSheet>
+      )}
+
       {/* remove-child confirmation sheet */}
       {confirmDel && (
         <div onClick={() => setConfirmDel(false)} style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(20,18,17,.42)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', display: 'flex', alignItems: 'flex-end' }}>
@@ -218,6 +280,15 @@ function ParentSettings({ ctx }) {
             <button onClick={() => setConfirmDel(false)} style={{ width: '100%', marginTop: 10, padding: '15px', background: 'transparent', color: THEME.fg2, border: 'none', borderRadius: 14, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
               {L('Cancel')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* confirmation toast — pinned to the phone frame, auto-dismisses */}
+      {toast && (
+        <div className="jx-fade" style={{ position: 'fixed', bottom: 64, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 60, pointerEvents: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(43,41,38,.92)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>
+            <Icon name="check" size={15} color="#fff" stroke={2.8} />{toast}
           </div>
         </div>
       )}

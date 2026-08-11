@@ -274,7 +274,39 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
   const [editVal, setEditVal] = React.useState('');
   const [photoSheet, setPhotoSheet] = React.useState(false);
   const [confirmRemovePhoto, setConfirmRemovePhoto] = React.useState(false);
-  const [confirmDelete, setConfirmDelete] = React.useState(false);   // delete-account confirmation
+  // Delete account — permanent, so it earns its own three full pages (same PAGES/ctx.nav
+  // pattern as every other settings screen here), not a modal: read-and-acknowledge what
+  // it actually does (mirrors the sign-up guardian-consent screen in auth.jsx's
+  // ConsentStep), a quick "why are you leaving" so the reason isn't lost to a silent churn,
+  // then re-verify identity with the same 6-digit-code pattern every other credential
+  // change in this file uses, before the destructive action is actually offered.
+  const [deleteAgree, setDeleteAgree] = React.useState({ erase: false, unlink: false, undo: false });
+  const deleteAllAgreed = Object.values(deleteAgree).every(Boolean);
+  const toggleAllDelete = () => { const v = !deleteAllAgreed; setDeleteAgree({ erase: v, unlink: v, undo: v }); };
+  // which item's full explanation is open (its own page within delete-terms, same "row is a
+  // link via the ›, not an inline accordion" pattern ConsentStep uses for its own documents)
+  const [deleteDetail, setDeleteDetail] = React.useState(null);   // null | 'erase' | 'unlink' | 'undo'
+  const DELETE_ITEMS = {
+    erase: { label: 'My account and all its data will be permanently deleted.',
+      body: 'Deleting your account removes your profile, every child’s weekly reports, safety history, and app settings from JoanX. None of it can be recovered once it’s gone — if you’d like a copy first, use Export my data before you continue.' },
+    unlink: { label: 'Every linked child device will be unlinked.',
+      body: 'Each child device connected to your account loses its pairing immediately. Safety monitoring — walking detection, warnings, and alerts — stops on that device until it’s paired with a different guardian account.' },
+    undo: { label: 'This action can’t be undone.',
+      body: 'There’s no recovery window. As soon as you confirm with the verification code on the next step, deletion starts right away and can’t be reversed or cancelled.' },
+  };
+  const [deleteReason, setDeleteReason] = React.useState(null);
+  const [deleteCode, setDeleteCode] = React.useState('');
+  const deleteCodeRef = React.useRef(null);
+  const deleteResend = useResendCooldown(page === 'delete-otp');
+  const DELETE_REASONS = ['no-longer-needed', 'switching', 'too-complicated', 'privacy', 'other'];
+  const DELETE_REASON_LABEL = {
+    'no-longer-needed': 'My child no longer uses JoanX',
+    switching: 'Switching to another app',
+    'too-complicated': 'Too complicated to use',
+    privacy: 'Concerned about privacy',
+    other: 'Other',
+  };
+  const [confirmSignOut, setConfirmSignOut] = React.useState(false);   // sign-out confirmation
   const [, setRev] = React.useState(0);
   const [toast, setToast] = React.useState(null);           // brief confirmation pill
   const say = m => { setToast(m); setTimeout(() => setToast(null), 1800); };
@@ -451,13 +483,120 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
             {label(L('Security'))}
             {card(<React.Fragment>
               {navRow(0, 'lock', L('Change password'), chev, undefined, () => setPwStep('form'))}
-              {navRow(1, 'repeat', L('Change sign-in method'), chev, undefined, () => { reauthResend.reset(); setMethodStep('reauth'); })}
             </React.Fragment>)}
           </React.Fragment>
         )}
-        {card(
-          <div onClick={() => setConfirmDelete(true)} style={{ ...rowStyle(0, true), justifyContent: 'center' }}><Icon name="trash-2" size={18} color={THEME.danger} stroke={2.2} /><div style={{ fontSize: 14, fontWeight: 800, color: THEME.danger }}>{L('Delete account')}</div></div>
-        )}
+        {card(<React.Fragment>
+          {navRow(0, 'log-out', L('Sign out'), chev, undefined, () => setConfirmSignOut(true))}
+          <div onClick={() => { setDeleteAgree({ erase: false, unlink: false, undo: false }); ctx.nav('p_detail', { page: 'delete-terms' }); }} style={rowStyle(1, true)}>
+            <Icon name="trash-2" size={18} color={THEME.danger} stroke={2.2} />
+            <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: THEME.danger }}>{L('Delete account')}</div>
+            {chev}
+          </div>
+        </React.Fragment>)}
+      </React.Fragment>
+    ) },
+
+    // Delete account — three full pages, same PAGES/ctx.nav pattern as every other settings
+    // screen here, not a modal: read-and-acknowledge what deletion actually does (mirrors
+    // the sign-up guardian-consent screen, auth.jsx's ConsentStep), a quick "why are you
+    // leaving" so the reason isn't lost to a silent churn, then the same 6-digit-code
+    // re-verification every other credential change in this file uses.
+    'delete-terms': { title: L('Delete your account?'), sub: L('Step 1 of 3'), back: 'account',
+      // A tapped item opens its full explanation on its own page (same "row is a link via
+      // the ›, not an inline accordion" pattern as the sign-up consent screen's own
+      // documents) — Back returns to the checklist with every choice intact.
+      onBack: deleteDetail ? () => setDeleteDetail(null) : undefined, body: deleteDetail ? (
+        <React.Fragment>
+          <div style={{ fontSize: 11.5, fontWeight: 800, color: THEME.success, marginBottom: 6 }}>[{L('Required')}]</div>
+          <h1 className="game-font" style={{ fontSize: 20, fontWeight: 500, margin: '0 0 14px', lineHeight: 1.3 }}>{L(DELETE_ITEMS[deleteDetail].label)}</h1>
+          <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.6, margin: '0 0 90px' }}>{L(DELETE_ITEMS[deleteDetail].body)}</p>
+          <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+            <Button variant="danger" size="lg" fullWidth onClick={() => { setDeleteAgree(a => ({ ...a, [deleteDetail]: true })); setDeleteDetail(null); }}>{L('Agree')}</Button>
+          </div>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <div style={{ display: 'flex', gap: 12, background: THEME.dangerLight, borderRadius: 18, padding: 16, marginBottom: 18 }}>
+            <Icon name="triangle-alert" size={20} color={THEME.danger} stroke={2.3} style={{ flexShrink: 0, marginTop: 2 }} />
+            <div style={{ fontSize: 12.5, color: THEME.danger, lineHeight: 1.45, fontWeight: 700 }}>{L('Before you go, please confirm you understand what this does.')}</div>
+          </div>
+
+          {/* agree-to-all — same master-toggle card as the sign-up consent screen */}
+          <button onClick={toggleAllDelete} className="jx-press" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: '15px 16px', borderRadius: 18, background: '#fff', boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12 }}>
+            <Icon name={deleteAllAgreed ? 'circle-check-big' : 'circle'} size={20} color={deleteAllAgreed ? THEME.success : THEME.fg3} stroke={2.3} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{L('Agree to all')}</span>
+          </button>
+
+          <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden', marginBottom: 18 }}>
+            {['erase', 'unlink', 'undo'].map((k, i) => (
+              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 15px', borderTop: i ? `1px solid ${THEME.border}` : 'none' }}>
+                <button onClick={() => setDeleteAgree(a => ({ ...a, [k]: !a[k] }))} className="jx-press" style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <Icon name="check" size={16} color={deleteAgree[k] ? THEME.success : THEME.border} stroke={2.8} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, fontWeight: 800, color: THEME.fg2, flexShrink: 0 }}>[{L('Required')}]</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: THEME.fg1, lineHeight: 1.35 }}>{L(DELETE_ITEMS[k].label)}</span>
+                </button>
+                <button onClick={() => setDeleteDetail(k)} aria-label={L('View')} className="jx-press" style={{ padding: 4, border: 'none', background: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex' }}>
+                  <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.4} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ height: 76 }} />
+          <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+            <Button variant="danger" size="lg" fullWidth disabled={!deleteAllAgreed}
+              onClick={deleteAllAgreed ? () => { setDeleteReason(null); ctx.nav('p_detail', { page: 'delete-reason' }); } : undefined}>{L('Continue')}</Button>
+          </div>
+        </React.Fragment>
+      ) },
+
+    'delete-reason': { title: L('Why are you leaving?'), sub: L('Step 2 of 3'), back: 'delete-terms', body: (
+      <React.Fragment>
+        <div style={{ fontSize: 12.5, color: THEME.fg2, lineHeight: 1.45, margin: '0 4px 16px' }}>{L('Optional, but it helps us make JoanX better.')}</div>
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden', marginBottom: 18 }}>
+          {DELETE_REASONS.map((k, i) => {
+            const on = deleteReason === k;
+            return (
+              <div key={k} onClick={() => setDeleteReason(k)} style={rowStyle(i, true)}>
+                <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: on ? BRAND.primary : THEME.fg1 }}>{L(DELETE_REASON_LABEL[k])}</div>
+                <Icon name={on ? 'circle-check-big' : 'circle'} size={19} color={on ? BRAND.primary : THEME.fg3} stroke={2.2} />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ height: 76 }} />
+        <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+          <Button variant="danger" size="lg" fullWidth disabled={!deleteReason}
+            onClick={deleteReason ? () => { setDeleteCode(''); deleteResend.reset(); ctx.nav('p_detail', { page: 'delete-otp' }); } : undefined}>{L('Continue')}</Button>
+        </div>
+      </React.Fragment>
+    ) },
+
+    'delete-otp': { title: L('Enter the code'), sub: L('Step 3 of 3'), back: 'delete-reason', body: (
+      <React.Fragment>
+        <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18 }}>{L('We sent a 6-digit code to')} <span style={{ fontWeight: 800, color: THEME.fg1 }}>{PARENT_PROFILE.email}</span> {L('to confirm it’s you before deleting your account.')}</div>
+        <div style={{ position: 'relative' }} onClick={() => deleteCodeRef.current && deleteCodeRef.current.focus()}>
+          <input ref={deleteCodeRef} value={deleteCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
+            onChange={e => setDeleteCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
+          <div style={{ display: 'flex', gap: 10 }}>
+            {Array.from({ length: 6 }, (_, i) => {
+              const active = i === deleteCode.length;
+              return (
+                <div key={i} style={{ flex: 1, height: 72, borderRadius: 18, background: '#fff', border: `2px solid ${active ? BRAND.primary : 'transparent'}`, boxShadow: active ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s' }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: THEME.fg1 }}>{deleteCode[i] || ''}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {resendRow(deleteResend, () => { setDeleteCode(''); deleteResend.reset(); })}
+        <div style={{ height: 76 }} />
+        <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+          <Button variant="danger" size="lg" fullWidth disabled={deleteCode.length < 6}
+            onClick={deleteCode.length < 6 ? undefined : () => ctx.nav('p_reports')}>{L('Delete account')}</Button>
+        </div>
       </React.Fragment>
     ) },
 
@@ -737,16 +876,6 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
     legal: { title: L(activeLegal.label), sub: null, back: 'about', body: (
       <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, padding: '18px 16px' }}>
         <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.6 }}>{L(activeLegal.body)}</div>
-      </div>
-    ) },
-
-    signout: { title: L('Sign out'), sub: null, body: (
-      <div style={{ textAlign: 'center', padding: '24px 8px' }}>
-        <div style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--color-interactives-badge-rust-default)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="log-out" size={28} color={THEME.danger} stroke={2.3} /></div>
-        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 6 }}>{L('Sign out?')}</div>
-        <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, maxWidth: 280, margin: '0 auto 24px' }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
-        <Button variant="danger" fullWidth icon="log-out" style={{ marginBottom: 10 }} onClick={() => ctx.nav('p_reports')}>{L('Sign out')}</Button>
-        <Button variant="outline" fullWidth onClick={() => ctx.nav('p_account')}>{L('Cancel')}</Button>
       </div>
     ) },
   };
@@ -1389,12 +1518,14 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
         </BottomSheet>
       )}
 
-      {/* delete account — permanent, so it double-confirms */}
-      {confirmDelete && (
-        <Modal title={L('Delete your account?')} onClose={() => setConfirmDelete(false)}>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>{L('This permanently deletes your account and unlinks every child device. This can’t be undone.')}</div>
-          <Button variant="danger" fullWidth icon="trash-2" style={{ marginBottom: 10 }} onClick={() => { setConfirmDelete(false); ctx.nav('p_reports'); }}>{L('Delete account')}</Button>
-          <Button variant="outline" fullWidth onClick={() => setConfirmDelete(false)}>{L('Cancel')}</Button>
+      {/* sign out — a modal, not a full page: nothing left to read or decide beyond the one button */}
+      {confirmSignOut && (
+        <Modal title={L('Sign out?')} onClose={() => setConfirmSignOut(false)}>
+          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Button variant="outline" style={{ flex: 1 }} onClick={() => setConfirmSignOut(false)}>{L('Cancel')}</Button>
+            <Button variant="danger" style={{ flex: 1 }} onClick={() => { setConfirmSignOut(false); ctx.nav('p_reports'); }}>{L('Sign out')}</Button>
+          </div>
         </Modal>
       )}
 
@@ -1402,8 +1533,10 @@ function ParentDetail({ ctx, inquiryStyle = 'form', loginProvider = 'email' }) {
       {confirmRemovePhoto && (
         <Modal title={L('Remove profile photo?')} onClose={() => setConfirmRemovePhoto(false)}>
           <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.5, marginBottom: 18, textAlign: 'center' }}>{L('This removes your current photo. You can add a new one anytime.')}</div>
-          <Button variant="danger" fullWidth icon="trash-2" style={{ marginBottom: 10 }} onClick={() => { setConfirmRemovePhoto(false); say(L('Profile photo removed')); }}>{L('Remove')}</Button>
-          <Button variant="outline" fullWidth onClick={() => setConfirmRemovePhoto(false)}>{L('Cancel')}</Button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Button variant="outline" style={{ flex: 1 }} onClick={() => setConfirmRemovePhoto(false)}>{L('Cancel')}</Button>
+            <Button variant="danger" style={{ flex: 1 }} onClick={() => { setConfirmRemovePhoto(false); say(L('Profile photo removed')); }}>{L('Remove')}</Button>
+          </div>
         </Modal>
       )}
 

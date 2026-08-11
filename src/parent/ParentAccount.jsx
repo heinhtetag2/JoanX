@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FEATURES, guardians, PARENT_PROFILE, PARENT_PREFS } from '../core/data.jsx';
-import { Button, Icon, Modal, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
+import { Icon, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 import { sfx } from '../core/sound.jsx';
@@ -15,7 +15,6 @@ function ParentAccount({ ctx }) {
   // so the sound engine reads it live; mirrored in state so the switch re-renders
   const [sound, setSound] = React.useState(PARENT_PREFS.sound !== false);
   const setSoundPref = v => { PARENT_PREFS.sound = v; setSound(v); if (v) sfx.toggle(true); };
-  const [signOut, setSignOut] = React.useState(false);   // sign-out confirmation modal
   const chev = <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />;
   const rowStyle = i => ({ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' });
   const label = t => <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{t}</div>;
@@ -98,21 +97,8 @@ function ParentAccount({ ctx }) {
           <div onClick={() => ctx.nav('p_detail', { page: 'about' })} style={rowStyle(3)}><Icon name="info" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('About JoanX')}</div>{chev}</div>
         </React.Fragment>)}
 
-        {card(
-          <div onClick={() => setSignOut(true)} style={{ ...rowStyle(0), justifyContent: 'center' }}><Icon name="log-out" size={18} color={THEME.danger} stroke={2.2} /><div style={{ fontSize: 14, fontWeight: 800, color: THEME.danger }}>{L('Sign out')}</div></div>
-        )}
-
         <div style={{ textAlign: 'center', fontSize: 11, color: THEME.fg3, marginTop: 4 }}>JoanX · v1.0.0</div>
       </div>
-
-      {/* sign-out confirmation — centered dialog */}
-      {signOut && (
-        <Modal title={L('Sign out?')} onClose={() => setSignOut(false)}>
-          <div style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.55, marginBottom: 20, textAlign: 'center' }}>{L('You can sign back in anytime. Your children stay protected.')}</div>
-          <Button variant="danger" fullWidth onClick={() => { setSignOut(false); ctx.nav('p_reports'); }}>{L('Sign out')}</Button>
-          <button onClick={() => setSignOut(false)} style={{ width: '100%', marginTop: 4, padding: '12px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: THEME.fg2 }}>{L('Cancel')}</button>
-        </Modal>
-      )}
     </div>
   );
 }
