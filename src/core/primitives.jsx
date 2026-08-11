@@ -336,10 +336,16 @@ function Modal({ title, onClose, children }) {
 
 // Bottom sheet — the same slide-up + rounded-top surface used across the app, packaged
 // so pickers (select, calendar) all present the same way: dim scrim, drag handle, title, X.
-function BottomSheet({ title, onClose, children }) {
+// `minHeight` — optional, for a sheet whose content varies a lot between opens (a
+// catalogue grid with one row one time, three the next): without it the sheet
+// shrink-wraps to whatever's in it, so a short list snaps to a noticeably smaller
+// card than a long one — jarring when the same trigger can open either. Callers that
+// want a steady card height across their own set of contents pass it; most sheets
+// (a fixed list, a form) are fine shrink-wrapping and leave it unset.
+function BottomSheet({ title, onClose, children, minHeight }) {
   return (
     <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(20,18,16,0.42)' }}>
-      <div className="jx-sheet-up" onClick={e => e.stopPropagation()} style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', display: 'flex', flexDirection: 'column' }}>
+      <div className="jx-sheet-up" onClick={e => e.stopPropagation()} style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', minHeight, display: 'flex', flexDirection: 'column' }}>
         <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 12px' }} />
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, fontSize: 17, fontWeight: 800, color: THEME.fg1, lineHeight: 1.3 }}>{title}</div>

@@ -556,11 +556,14 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <Badge variant={b.rarity === 'epic' ? 'epic' : b.rarity === 'rare' ? 'primary' : 'default'}>{L(b.rarity === 'epic' ? 'Epic' : b.rarity === 'rare' ? 'Rare' : 'Common')}</Badge>
             </div>
             <p style={{ fontSize: 15, color: THEME.fg2, textShadow: EGG_HATCH_BG.common ? '0 1px 3px rgba(255,255,255,.8), 0 0 12px rgba(255,255,255,.6)' : 'none', lineHeight: 1.5, margin: '10px 0 0', position: 'relative' }}>{L('Walk safely with your parent to grow your buddy together.')}</p>
-          </div>
 
-          <div style={{ position: 'relative', zIndex: 1, padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            {/* CTA wears a deepened shade of the starter egg shell, matching the Shop hatch */}
-            <Button variant="primary" size="lg" fullWidth style={{ background: shade(STARTER_EGG_C, -22), boxShadow: 'none' }} onClick={finish}>{L("Let's go")}</Button>
+            {/* CTA — a round close button sitting right under the content, exactly the
+                Shop/EggHatch reveal's system pattern (EggHatch.jsx) — not a full-width bar
+                pinned to the screen edge. aria-label carries the real action since the icon
+                alone doesn't say it. */}
+            <button onClick={finish} className="jx-press" aria-label={L("Let's go")} style={{ marginTop: 22, width: 40, height: 40, flexShrink: 0, border: 'none', cursor: 'pointer', background: `${shade(STARTER_EGG_C, -22)}b3`, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', position: 'relative' }}>
+              <Icon name="x" size={18} color="#fff" stroke={2.6} />
+            </button>
           </div>
         </>
       )}

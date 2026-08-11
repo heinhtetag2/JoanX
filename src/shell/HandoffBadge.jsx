@@ -28,6 +28,7 @@ const STATUS = {
 const HANDOFF = {
   // ── child app ──
   home:        { status: 'done', note: 'Final. Hero + XP ring, protection card, points/streak, and today’s missions all done.' },
+  boot:        { status: 'done', note: 'Confirmed. Cold-launch loading screen — buddy + ripple, game-style progress bar, ahead of Home/onboarding.' },
   onboarding:  { status: 'done', note: 'Confirmed. Splash → intro slides → connect-to-parent → permissions all done.' },
   // child profile & its detail screens
   profile:     { status: 'done', note: 'Confirmed. Profile hub: language + sound, linked parents, and Account rows (Notices / Help & support / About).' },

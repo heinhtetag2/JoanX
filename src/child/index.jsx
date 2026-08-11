@@ -1,6 +1,7 @@
 // JoanX — child app · public screen barrel
 
 export { Onboarding } from './Onboarding.jsx';
+export { BootSplash } from './BootSplash.jsx';
 export { ChildHome } from './ChildHome.jsx';
 export { SafetyStatus } from './SafetyStatus.jsx';
 export { Notifications } from './Notifications.jsx';
@@ -27,8 +28,6 @@ export { Friends } from './Friends.jsx';
 export { Guestbook } from './Guestbook.jsx';
 export { FriendHouse } from './FriendHouse.jsx';
 export { MyHouse } from './MyHouse.jsx';
-export { GUESTBOOK_STYLES } from './GuestbookPatterns.jsx';
-export { PUCK_STYLES } from './RoomPuckStyles.jsx';
 export { DecorateRoom } from './DecorateRoom.jsx';
 export { AddFriends } from './AddFriends.jsx';
 export { MSG_LAYOUTS, WarningOverlay } from './WarningOverlay.jsx';

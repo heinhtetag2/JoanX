@@ -33,6 +33,21 @@ html, body {
 .no-sb::-webkit-scrollbar { width: 0; height: 0; }
 .no-sb { scrollbar-width: none; }
 
+/* book guestbook notes list — a thin thumb instead of no-sb's bare hide, so a long note
+   list (many friends signing in) reads as scrollable at a glance rather than just cutting
+   off at the frame's bottom edge. Kept as its own class (not a `no-sb` variant) since this
+   is the one scroll region in the phone meant to read as visible — everywhere else still
+   wants the invisible-scrollbar default. Track transparent so the book's own parchment
+   backdrop shows through. Color comes from --jx-book-thumb, set inline per room theme
+   (GuestbookPatterns.jsx) to the actual wood/gold trim sampled off that theme's own frame
+   art — green's carved wood, dream's bright gold, town's honey oak — so the thumb reads as
+   hardware from THIS book, not one flat brown pasted over all three. Falls back to green's
+   tone if the variable is ever unset. */
+.jx-book-notes::-webkit-scrollbar { width: 5px; }
+.jx-book-notes::-webkit-scrollbar-track { background: transparent; }
+.jx-book-notes::-webkit-scrollbar-thumb { background: var(--jx-book-thumb, #a9744f); border-radius: 999px; }
+.jx-book-notes { scrollbar-width: thin; scrollbar-color: var(--jx-book-thumb, #a9744f) transparent; }
+
 /* ── animations ── */
 @keyframes jxFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .jx-float { animation: jxFloat 3.2s ease-in-out infinite; }

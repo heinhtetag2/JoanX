@@ -15,6 +15,7 @@ import { BottomSheet, Icon, SafePointIcon, THEME } from '../core/primitives.jsx'
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { RoomPucks } from './RoomPuckStyles.jsx';
+import { sfx } from '../core/sound.jsx';
 
 // ── useRoomEditing — everything a room editor needs to hold ──────────
 // Edits live per room in `drafts`, so Decorate can dress the Green Room, hop to the
@@ -60,15 +61,22 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
 
   // A-5.1 — buying goes through buyItem() so the points check, the level gate and the
   // ownership write are the same here as on every other item surface.
+  // one item at a time per slot group — the shelf holds ONE object, the seat's area
+  // holds ONE furniture piece. Placing a new one clears whatever was there in the same
+  // group first, rather than stacking a shelf full of icons; tapping the one that's
+  // already on just takes it back, same "tap to take back" gesture reactions use.
   const tapDecor = (d) => {
+    const turningOn = !draft.placed[d.id];
     if (!ownedDecor[d.id]) {
       const verdict = buyItem(d, PLAYER);
       if (!verdict.ok) { say(L(verdict.reason === 'level' ? 'Unlocks at Lv' : 'Not enough points yet')); return; }
+      sfx.purchase();   // same cue Shop's egg purchase plays — spending points gets a sound either place
       setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
-      editDraft({ placed: { ...draft.placed, [d.id]: true } });
-      return;
     }
-    editDraft({ placed: { ...draft.placed, [d.id]: !draft.placed[d.id] } });
+    const nextPlaced = { ...draft.placed };
+    if (turningOn) catalog.forEach(item => { if (item.slot === d.slot) nextPlaced[item.id] = false; });
+    nextPlaced[d.id] = turningOn;
+    editDraft({ placed: nextPlaced });
   };
 
   // free placement (A-6) — a buddy lives in exactly one room, and a room holds `slots`
@@ -128,11 +136,15 @@ const HOTSPOTS = [
 // band puts it at 24%; a room drawn as art puts it wherever the artist drew it, so the
 // host aims at the art rather than the box. Buddy and furniture share it — they stand on
 // the same ground.
-function RoomStage({ theme, draft, buddies, placedDecor, onPuck, height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', puckStyle = 'dot' }) {
+// `interactive` — false for a read-only visit (FriendHouse): the room, its decor and its
+// buddy still render, but the edit pucks don't — a dot that opens nothing on tap reads as
+// broken, not as "not yours to touch". `onPuck` still defaults to a no-op underneath that,
+// since interactive-but-handlerless is also a valid state to fail quietly on.
+function RoomStage({ theme, draft, buddies, placedDecor, onPuck = () => {}, height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', interactive = true }) {
   // A room drawn as one illustration has no repaintable wall or floor, so those two pucks
   // would open a picker whose effect nobody can see. They come back the day the art ships
   // as separate wall/floor layers — which is what A-7's wallpaper and flooring really need.
-  const pucks = HOTSPOTS.filter(h => !(theme.bg && (h.slot === 'wallpaper' || h.slot === 'flooring')));
+  const pucks = interactive ? HOTSPOTS.filter(h => !(theme.bg && (h.slot === 'wallpaper' || h.slot === 'flooring'))) : [];
   // a hairline of ink reads on a pale gradient and disappears into illustration, so the
   // leader lines flip to white the moment there's art under them
   const onArt = !!theme.bg || !backdrop;
@@ -180,38 +192,7 @@ function RoomStage({ theme, draft, buddies, placedDecor, onPuck, height = 340, r
         ))}
       </div>
 
-      {/* puckStyle 'dot' (the shipped default) — leader lines, drawn under the pucks.
-          non-scaling-stroke keeps them hairline while the viewBox stretches to whatever
-          height the host gave us. Line and dot are one object, so they share one flat
-          white — no shadow, no softened opacity. Every other puckStyle (Tweaks) skips all
-          three of these and renders RoomPucks instead — see RoomPuckStyles.jsx. */}
-      {puckStyle === 'dot' && (
-        <React.Fragment>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-            {pucks.map(h => (
-              <line key={h.slot} x1={h.puck[0]} y1={h.puck[1]} x2={h.aim[0]} y2={h.aim[1]}
-                stroke={onArt ? '#fff' : THEME.fg1} strokeOpacity={onArt ? '1' : '.5'} strokeWidth="1.5"
-                strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-            ))}
-          </svg>
-
-          {/* the dot that lands the line on the thing it points at. Not an SVG circle: that
-              viewBox stretches, so a circle in it would come out an ellipse. */}
-          {pucks.map(h => (
-            <span key={h.slot} aria-hidden="true"
-              style={{ position: 'absolute', left: `${h.aim[0]}%`, top: `${h.aim[1]}%`, transform: 'translate(-50%,-50%)', width: 8, height: 8, borderRadius: 999, background: onArt ? '#fff' : THEME.fg1, pointerEvents: 'none' }} />
-          ))}
-
-          {pucks.map(h => (
-            <button key={h.slot} onClick={() => onPuck(h.slot)} aria-label={L(h.label)} className="jx-press"
-              style={{ position: 'absolute', left: `${h.puck[0]}%`, top: `${h.puck[1]}%`, transform: 'translate(-50%,-50%)', width: 54, height: 54, borderRadius: 999, background: '#fff', border: `2px solid ${THEME.fg1}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
-              <Icon name={h.icon} size={25} color={THEME.fg1} stroke={2.2} />
-            </button>
-          ))}
-        </React.Fragment>
-      )}
-
-      {puckStyle !== 'dot' && <RoomPucks style={puckStyle} pucks={pucks} onPuck={onPuck} onArt={onArt} />}
+      <RoomPucks pucks={pucks} onPuck={onPuck} onArt={onArt} />
     </div>
   );
 }
@@ -224,7 +205,13 @@ function RoomSlotSheet({ slot, onClose, ed }) {
   const hs = HOTSPOTS.find(h => h.slot === slot);
 
   return (
-    <BottomSheet title={L(hs.label)} onClose={onClose}>
+    // furniture/shelf share one grid layout but not one item count — Shelf's catalogue
+    // runs three rows deep, Furniture sometimes just one, and the sheet used to
+    // shrink-wrap to whichever you'd tapped. minHeight keeps the two catalogue slots at
+    // the same card height either way, so switching between them doesn't visibly resize
+    // the sheet out from under you. Wallpaper/flooring/buddy stay shrink-wrapped —
+    // their own content shapes are steady enough not to need it.
+    <BottomSheet title={L(hs.label)} onClose={onClose} minHeight={(slot === 'furniture' || slot === 'shelf') ? 440 : undefined}>
       {(slot === 'wallpaper' || slot === 'flooring') && (
         <div style={{ display: 'flex', gap: 10 }}>
           {(slot === 'wallpaper' ? theme.wallpapers : theme.floorings).map(t => {
@@ -275,7 +262,7 @@ function RoomSlotSheet({ slot, onClose, ed }) {
             {forSlot.map(d => {
               const own = ownedDecor[d.id], isOn = !!draft.placed[d.id];
               return (
-                <button key={d.id} onClick={() => tapDecor(d)} style={{ background: isOn ? THEME.brandLight : THEME.surface2, border: isOn ? `2px solid ${THEME.brand}` : '2px solid transparent', borderRadius: 16, padding: '14px 6px 10px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative' }}>
+                <button key={d.id} onClick={() => tapDecor(d)} style={{ background: isOn ? THEME.brandLight : THEME.surface2, border: isOn ? `2px solid ${THEME.brand}` : '2px solid transparent', outline: 'none', borderRadius: 16, padding: '14px 6px 10px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative' }}>
                   {isOn && <div style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></div>}
                   <Icon name={d.icon} size={26} color={isOn ? THEME.brand : THEME.fg2} stroke={2.1} />
                   <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{L(d.name)}</div>

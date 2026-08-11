@@ -1008,6 +1008,7 @@ const KO = {
   'Your rooms': '내 방', 'Showing': '보여주는 중', 'Tap to show': '눌러서 보여주기',
   'Pick the room your friends see.': '친구들에게 보여줄 방을 골라보세요.',
   'Tap a note to leave it.': '남기고 싶은 메모를 눌러요.', 'Note left!': '메모를 남겼어요!', 'One note per visit': '한 번에 한 개',
+  'Leave a note': '메모 남기기',
   // guestbook free-text note (F-32) + moderation reasons (moderation.jsx)
   'Write a short note, or tap one below.': '짧은 메모를 쓰거나, 아래에서 골라요.', 'Say something kind…': '따뜻한 말을 남겨요…', 'Leave note': '메모 남기기',
   'Let’s keep it kind — that message can’t be posted.': '고운 말로 써 주세요 — 이 메모는 남길 수 없어요.',

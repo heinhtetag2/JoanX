@@ -1,44 +1,40 @@
 // JoanX — child app · Friends
 
 import React from 'react';
-import { CHARACTERS, FRIENDS, MY_GUESTBOOK, PLAYER } from '../core/data.jsx';
+import { CHARACTERS, FRIENDS, PLAYER } from '../core/data.jsx';
 import { Button, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip, shade } from '../core/characters.jsx';
 import { ScreenHeader, screenBgActive } from './shared.jsx';
 
 // ── "Me" card — the Friends screen leads with you (F-32) ────────────
-// Guestbook notes are the payoff of a friend's visit, but they used to live inside
-// My Profile, which sits behind the Profile tab's settings — three taps away, with nothing
-// on the social tab hinting at them. So the child's own profile now heads the Friends
-// screen, and tapping it opens the Guestbook directly. "My Room" stays reachable from the
-// same card, since that is the page friends actually land on when they visit.
+// The guestbook now lives inside the room itself — the book puck MyHouse shows on your
+// own room — so this card no longer advertises a separate "Guestbook · N ›" tap target
+// that jumped straight to a standalone screen: "My Room" is the one door in, and the book
+// is what you find once you're there. The row itself is just a display now — name, buddy,
+// streak, buddy count, likes — with "My Room" as the only button on it.
 function MeCard({ ctx, me }) {
-  const notes = MY_GUESTBOOK.length;
+  const chars = CHARACTERS.filter(c => c.owned).length;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: THEME.surface, borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 16 }}>
-      <button onClick={() => ctx.nav('guestbook')} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-        <div style={{ width: 52, height: 52, borderRadius: 999, background: ACCENT.light, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-          <Mascot species={me.species} stage={me.stage} color={me.color} size={48} />
+      <div style={{ width: 52, height: 52, borderRadius: 999, background: ACCENT.light, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+        <Mascot species={me.species} stage={me.stage} color={me.color} size={48} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{PLAYER.name}</div>
+        {/* same flame/paw pair every friend row shows (Stat, below) — Mina's card reads as
+            one more row in the same system rather than a special one-off. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 3 }}>
+          <Stat icon="flame" color={THEME.gold} value={PLAYER.streak} />
+          <Stat icon="paw-print" color={ACCENT.main} value={chars} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1 }}>{PLAYER.name}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 3 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>
-              <Icon name="book-heart" size={13} color={ACCENT.main} stroke={2.3} />
-              {notes > 0 ? `${L('Guestbook')} · ${notes}` : L('Guestbook')}
-            </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: THEME.fg2 }}>
-              <Icon name="heart" size={13} color={THEME.joy} fill={THEME.joy} stroke={2} />
-              {PLAYER.likes}
-            </span>
-          </div>
-        </div>
-        <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.5} />
-      </button>
-      {/* the room is still one tap away — it is the page a visiting friend actually lands on */}
+      </div>
+      {/* the room is one tap away — it is the page a visiting friend actually lands on,
+          and where the guestbook (the book puck) now lives. Trailing chevron (not a
+          leading home icon, not arrow-right's tailed shaft) — the same bare caret every
+          friend row's own chevron-right wears, so the two read as the same "go" gesture. */}
       <button onClick={() => ctx.nav('myhouse')} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: ACCENT.light, color: ACCENT.dark, border: 'none', borderRadius: 999, padding: '9px 13px', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>
-        <Icon name="home" size={14} color={ACCENT.dark} stroke={2.4} />{L('My Room')}
+        {L('My Room')}<Icon name="chevron-right" size={16} color={ACCENT.dark} stroke={2.4} />
       </button>
     </div>
   );
@@ -49,7 +45,7 @@ function MeCard({ ctx, me }) {
 // screen shouldn't be the one exception.)
 const ACCENT = { main: THEME.brand, dark: THEME.brandDark, light: THEME.brandLight };
 
-// small stat chip (flame streak / gem count) — shared across variants
+// small stat chip (flame streak / paw-print buddy count) — shared across variants
 const Stat = ({ icon, color, value, tone = 'plain' }) => (
   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700,
     color: tone === 'plain' ? THEME.fg2 : THEME.fg1,
@@ -100,7 +96,7 @@ function Friends({ ctx, layout = 'list' }) {
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 3 }}>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
           </div>
         </div>
         <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main }}>{L('Visit')}<Icon name="arrow-right" size={16} color={ACCENT.main} stroke={2.4} /></Button>
@@ -122,7 +118,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 6 }}>{f.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
               <Stat icon="flame" color={THEME.gold} value={f.streak} />
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             </div>
           </button>
         ))}
@@ -141,7 +137,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 17, fontWeight: 800 }}>{f.name}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <Stat icon="flame" color={THEME.gold} value={f.streak} tone="pill" />
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} tone="pill" />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} tone="pill" />
             </div>
           </div>
         </div>
@@ -163,7 +159,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Stat icon="flame" color={THEME.gold} value={f.streak} />
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             </div>
             <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
           </div>
@@ -171,7 +167,7 @@ function Friends({ ctx, layout = 'list' }) {
       </div>
     ),
 
-    // 5 · Leaderboard — ranked by gems, medals for the top three
+    // 5 · Leaderboard — ranked by buddies collected, medals for the top three
     leaderboard: () => {
       const ranked = [...friends].sort((a, b) => b.chars - a.chars);
       const medal = ['#e0a500', '#b8b8b8', '#c08457'];   // gold / silver / bronze
@@ -193,7 +189,7 @@ function Friends({ ctx, layout = 'list' }) {
                 <div style={{ marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={`${f.streak}${L('d streak')}`} /></div>
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: ACCENT.dark, fontWeight: 800 }}>
-                <Icon name="gem" size={15} color={ACCENT.main} stroke={2.3} /><span className="game-font" style={{ fontSize: 17, fontWeight: 500 }}>{f.chars}</span>
+                <Icon name="paw-print" size={15} color={ACCENT.main} stroke={2.3} /><span className="game-font" style={{ fontSize: 17, fontWeight: 500 }}>{f.chars}</span>
               </div>
             </div>
           ))}
@@ -214,7 +210,7 @@ function Friends({ ctx, layout = 'list' }) {
               <div style={{ fontSize: 16, fontWeight: 800, marginTop: 10 }}>{f.name}</div>
               <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                 <Stat icon="flame" color={THEME.gold} value={f.streak} />
-                <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+                <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
               </div>
             </div>
             <div style={{ padding: 12 }}>
@@ -233,7 +229,7 @@ function Friends({ ctx, layout = 'list' }) {
           <div style={{ fontSize: 16.5, fontWeight: 800, color: '#fff' }}>{f.name}</div>
           <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="flame" size={13} color="#fff" stroke={2.3} />{f.streak}</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="gem" size={13} color="#fff" stroke={2.3} />{f.chars}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="paw-print" size={13} color="#fff" stroke={2.3} />{f.chars}</span>
           </div>
         </div>
         <Icon name="arrow-right" size={20} color="#fff" stroke={2.4} />
@@ -257,7 +253,7 @@ function Friends({ ctx, layout = 'list' }) {
                 <div style={{ fontSize: 19, fontWeight: 800, marginTop: 6 }}>{top.name}</div>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                   <Stat icon="flame" color={THEME.gold} value={top.streak} />
-                  <Stat icon="gem" color={ACCENT.main} value={top.chars} />
+                  <Stat icon="paw-print" color={ACCENT.main} value={top.chars} />
                 </div>
               </div>
             </div>
@@ -272,7 +268,7 @@ function Friends({ ctx, layout = 'list' }) {
                   <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={38} bg={ACCENT.light} /><Dot online={f.online} /></div>
                   <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
                   <Stat icon="flame" color={THEME.gold} value={f.streak} />
-                  <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+                  <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
                   <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
                 </div>
               ))}
@@ -310,7 +306,7 @@ function Friends({ ctx, layout = 'list' }) {
                 <div style={{ fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
                 <div style={{ fontSize: 12, color: f.online ? THEME.success : THEME.fg2, fontWeight: 600, marginTop: 2 }}>{f.online ? L('Online now') : L('Last seen recently')}</div>
               </div>
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
               <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
             </div>
           </div>
@@ -330,7 +326,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 15.5, fontWeight: 800 }}>{f.name}</div>
             <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
               <Stat icon="flame" color={THEME.gold} value={f.streak} />
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             </div>
           </div>
           <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main }}>{L('Visit')}</Button>
@@ -365,7 +361,7 @@ function Friends({ ctx, layout = 'list' }) {
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
           <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
           </div>
         </div>
         <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
@@ -383,7 +379,7 @@ function Friends({ ctx, layout = 'list' }) {
               <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{f.name}</div>
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="flame" size={12} color="#fff" stroke={2.3} />{f.streak}</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="gem" size={12} color="#fff" stroke={2.3} />{f.chars}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.92)' }}><Icon name="paw-print" size={12} color="#fff" stroke={2.3} />{f.chars}</span>
               </div>
             </div>
           </button>
@@ -416,7 +412,7 @@ function Friends({ ctx, layout = 'list' }) {
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
           <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
           </div>
         </div>
         <Icon name="arrow-right" size={18} color={ACCENT.main} stroke={2.4} style={{ position: 'relative' }} />
@@ -442,7 +438,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={38} bg={ACCENT.light} /><Dot online={f.online} /></div>
             <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
           </div>
         ))}
@@ -461,7 +457,7 @@ function Friends({ ctx, layout = 'list' }) {
           <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main }}>{L('Visit')}<Icon name="chevron-right" size={16} color={ACCENT.main} stroke={2.5} /></Button>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-          {[['flame', THEME.gold, f.streak, L('Streak')], ['gem', ACCENT.main, f.chars, L('Gems')]].map(([ic, col, val, lbl]) => (
+          {[['flame', THEME.gold, f.streak, L('Streak')], ['paw-print', ACCENT.main, f.chars, L('Buddies')]].map(([ic, col, val, lbl]) => (
             <div key={lbl} style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '10px 12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={ic} size={15} color={col} stroke={2.3} /><span className="game-font" style={{ fontSize: 19, fontWeight: 500 }}>{val}</span></div>
               <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{lbl}</div>
@@ -471,27 +467,23 @@ function Friends({ ctx, layout = 'list' }) {
       </div>
     )),
 
-    // 19 · Groups — split into Online / Offline sections
-    groups: () => {
-      const on = friends.filter(f => f.online), off = friends.filter(f => !f.online);
-      const section = (title, arr) => (arr.length ? (
-        <React.Fragment key={title}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg3, textTransform: 'uppercase', letterSpacing: .4, margin: '10px 4px 8px', textAlign: 'right' }}>{title} · {arr.length}</div>
-          <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
-            {arr.map((f, i) => (
-              <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
-                <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={40} bg={ACCENT.light} /><Dot online={f.online} /></div>
-                <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
-                <Stat icon="flame" color={THEME.gold} value={f.streak} />
-                <Stat icon="gem" color={ACCENT.main} value={f.chars} />
-                <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
-              </div>
-            ))}
+    // 19 · Groups — one flat list, every friend together. Used to split into Online/Offline
+    // sections, and to carry a presence dot on each avatar; both are gone now — a friend
+    // shouldn't jump between two lists (or wear a status light) depending on the moment
+    // you happen to open the tab, since JoanX has no chat for presence to matter to.
+    groups: () => (
+      <div style={{ background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+        {friends.map((f, i) => (
+          <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+            <MascotChip species={f.avatar} color={f.color} size={40} bg={ACCENT.light} />
+            <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
+            <Stat icon="flame" color={THEME.gold} value={f.streak} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
+            <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
           </div>
-        </React.Fragment>
-      ) : null);
-      return <div>{section(L('Online'), on)}{section(L('Offline'), off)}</div>;
-    },
+        ))}
+      </div>
+    ),
 
     // 20 · Ticket — event-ticket cards with a buddy-colored stub + perforation
     ticket: () => friends.map(f => (
@@ -506,7 +498,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
             <div style={{ display: 'flex', gap: 12, marginTop: 3 }}>
               <Stat icon="flame" color={THEME.gold} value={f.streak} />
-              <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             </div>
           </div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: ACCENT.main, fontWeight: 800, fontSize: 13 }}>{L('Visit')}<Icon name="arrow-right" size={15} color={ACCENT.main} stroke={2.4} /></div>
@@ -525,7 +517,7 @@ function Friends({ ctx, layout = 'list' }) {
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
           </div>
         </div>
         <Button variant="secondary" size="sm" fullWidth onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main, marginTop: 12 }}><Icon name="home" size={16} color={ACCENT.main} stroke={2.4} />{L('Visit')}</Button>
@@ -544,7 +536,7 @@ function Friends({ ctx, layout = 'list' }) {
                 <div style={{ fontSize: big ? 17 : 14.5, fontWeight: 800 }}>{f.name}</div>
                 <div style={{ display: 'flex', gap: 10, marginTop: big ? 6 : 3, justifyContent: big ? 'flex-start' : 'center' }}>
                   <Stat icon="flame" color={THEME.gold} value={f.streak} />
-                  <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+                  <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
                 </div>
               </div>
             </button>
@@ -561,7 +553,7 @@ function Friends({ ctx, layout = 'list' }) {
             <span style={{ width: 9, height: 9, borderRadius: 999, background: f.online ? THEME.success : THEME.fg3, flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{f.name}</span>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
           </div>
         ))}
@@ -597,7 +589,7 @@ function Friends({ ctx, layout = 'list' }) {
           <div style={{ fontSize: 17, fontWeight: 800 }}>{f.name}</div>
           <div style={{ display: 'flex', gap: 12, justifyContent: left ? 'flex-start' : 'flex-end' }}>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
           </div>
           <div style={{ display: 'flex', justifyContent: left ? 'flex-start' : 'flex-end' }}>
             <Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main }}>{L('Visit')}<Icon name="arrow-right" size={15} color={ACCENT.main} stroke={2.4} /></Button>
@@ -624,7 +616,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ fontSize: 18, fontWeight: 800, marginTop: 10 }}>{top.name}</div>
             <div style={{ display: 'flex', gap: 12, margin: '6px 0 14px' }}>
               <Stat icon="flame" color={THEME.gold} value={top.streak} />
-              <Stat icon="gem" color={ACCENT.main} value={top.chars} />
+              <Stat icon="paw-print" color={ACCENT.main} value={top.chars} />
             </div>
             <Button variant="primary" size="sm" onClick={() => visit(top)} style={{ background: ACCENT.main, boxShadow: 'none' }}>{L('Visit')}<Icon name="chevron-right" size={16} color="#fff" stroke={2.5} /></Button>
           </div>
@@ -649,7 +641,7 @@ function Friends({ ctx, layout = 'list' }) {
         <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={44} bg={ACCENT.light} /><Dot online={f.online} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
         </div>
         <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
       </div>
@@ -661,7 +653,7 @@ function Friends({ ctx, layout = 'list' }) {
         <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={46} bg={ACCENT.light} /><Dot online={f.online} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
         </div>
         <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
       </div>
@@ -673,7 +665,7 @@ function Friends({ ctx, layout = 'list' }) {
         <div style={{ position: 'relative', flexShrink: 0 }}><div style={{ width: 72, height: 72, borderRadius: 18, background: ACCENT.light, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mascot species={f.avatar} stage={2} color={f.color} size={62} /></div><Dot online={f.online} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 16.5, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 14, marginTop: 6 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 14, marginTop: 6 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
           <div style={{ marginTop: 10 }}><Button variant="secondary" size="sm" onClick={() => visit(f)} style={{ background: ACCENT.light, color: ACCENT.main }}>{L('Visit')}<Icon name="chevron-right" size={16} color={ACCENT.main} stroke={2.5} /></Button></div>
         </div>
       </div>
@@ -685,7 +677,7 @@ function Friends({ ctx, layout = 'list' }) {
         <div style={{ width: 56, height: 56, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(160deg, ${shade(f.color, 66)}, ${shade(f.color, 84)})` }}><Mascot species={f.avatar} stage={2} color={f.color} size={46} /><Dot online={f.online} /></div>
         <div style={{ flex: 1, minWidth: 0, padding: '0 14px' }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 2 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
         </div>
         <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} style={{ marginRight: 16, flexShrink: 0 }} />
       </div>
@@ -696,7 +688,7 @@ function Friends({ ctx, layout = 'list' }) {
       <div key={f.id} onClick={() => visit(f)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, border: `1px solid ${THEME.border}`, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
         </div>
         <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={48} bg={ACCENT.light} /><Dot online={f.online} /></div>
       </div>
@@ -708,7 +700,7 @@ function Friends({ ctx, layout = 'list' }) {
         <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={46} bg="rgba(255,255,255,.65)" /><Dot online={f.online} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{f.name}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 3 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
         </div>
         <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
       </div>
@@ -723,7 +715,7 @@ function Friends({ ctx, layout = 'list' }) {
             <div style={{ position: 'relative', flexShrink: 0 }}><MascotChip species={f.avatar} color={f.color} size={40} bg={ACCENT.light} /><Dot online={f.online} /></div>
             <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 800 }}>{f.name}</div>
             <Stat icon="flame" color={THEME.gold} value={f.streak} />
-            <Stat icon="gem" color={ACCENT.main} value={f.chars} />
+            <Stat icon="paw-print" color={ACCENT.main} value={f.chars} />
             <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
           </div>
         ))}
@@ -740,20 +732,20 @@ function Friends({ ctx, layout = 'list' }) {
               <Icon name="chevron-right" size={16} color={THEME.fg3} stroke={2.3} />
             </div>
             <div style={{ fontSize: 15, fontWeight: 800, marginTop: 10 }}>{f.name}</div>
-            <div style={{ display: 'flex', gap: 12, marginTop: 4 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="gem" color={ACCENT.main} value={f.chars} /></div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 4 }}><Stat icon="flame" color={THEME.gold} value={f.streak} /><Stat icon="paw-print" color={ACCENT.main} value={f.chars} /></div>
           </div>
         ))}
       </div>
     ),
 
-    // 35 · Gallery — a compact 3-across avatar gallery with a gem pill
+    // 35 · Gallery — a compact 3-across avatar gallery with a paw-print pill
     gallery: () => (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
         {friends.map(f => (
           <button key={f.id} onClick={() => visit(f)} style={{ background: '#fff', border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '12px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', fontFamily: 'inherit' }}>
             <div style={{ position: 'relative' }}><MascotChip species={f.avatar} color={f.color} size={52} bg={ACCENT.light} /><Dot online={f.online} /></div>
             <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 4, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: ACCENT.light, color: ACCENT.dark, borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 800 }}><Icon name="gem" size={11} color={ACCENT.main} stroke={2.3} />{f.chars}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: ACCENT.light, color: ACCENT.dark, borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 800 }}><Icon name="paw-print" size={11} color={ACCENT.main} stroke={2.3} />{f.chars}</span>
           </button>
         ))}
       </div>

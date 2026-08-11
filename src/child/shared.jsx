@@ -147,6 +147,20 @@ function RarityPill({ rarity }) {
   return <span style={{ fontSize: 9.5, fontWeight: 800, color: r.fg, background: r.bg, padding: '2px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: .3 }}>{L(r.label)}</span>;
 }
 
+// Level badge — sits beside a name (MyHouse's own hero, FriendHouse's visit header). A
+// tinted pill rather than the plain white/85% stat chips: level reads as a standing rank,
+// not a running count like streak or likes, so it gets its own accent (iris, the rarity
+// system's "special" hue) instead of blending into the row. Shared so a friend's room
+// reads the name+level exactly the way your own does (A-10 / F-32).
+function LevelBadge({ level }) {
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: THEME.rEpicBg, borderRadius: 999, padding: '4px 10px' }}>
+      <Icon name="star" size={12} color={THEME.rEpic} stroke={2.4} />
+      <span style={{ fontSize: 12, fontWeight: 800, color: THEME.rEpic }}>{`Lv ${level}`}</span>
+    </span>
+  );
+}
+
 // completion header used by both encyclopedias. The presentation lives in
 // DexHeaders.jsx; this reads the active variant the way Mascot reads
 // window.JX_CHAR_STYLE, so the four call sites don't have to thread it through.
@@ -177,4 +191,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, DexProgress, PointsChip, StatCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard };

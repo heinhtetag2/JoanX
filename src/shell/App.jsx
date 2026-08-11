@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, GUESTBOOK_STYLES, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, PUCK_STYLES, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
@@ -40,6 +40,12 @@ function App() {
   const __q = new URLSearchParams(window.location.search);
   const initialDetail = __q.get('detail');   // ?detail=char-cover opens the buddy detail screen
   const initialScreen = __q.get('screen');   // ?screen=myhouse jumps straight to any child screen
+  // Cold-launch loading beat (child app only) — the app syncs the child's safety/permission
+  // "clearance" data before Home can trust it, same as any game's boot loader. Skipped when a
+  // deep link (?screen / ?detail) is jumping straight to a specific screen for review — the
+  // splash would only get in the way of the thing the link was for. "Replay boot splash" in
+  // Tweaks re-arms it.
+  const [booted, setBooted] = React.useState(!!(initialScreen || initialDetail));
 
   // Persist just the ACTIVE BUDDY across a browser refresh. This prototype otherwise keeps no
   // state across reloads (ADR-003), which is why a refresh used to snap the child back to the
@@ -102,7 +108,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', guestbookStyle: 'book', puckStyle: 'caption', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -256,7 +262,8 @@ function App() {
   // render active child/parent screen
   let body;
   if (role === 'child') {
-    if (!onboarded) body = <Onboarding ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />;
+    if (!booted) body = <BootSplash onDone={() => setBooted(true)} />;
+    else if (!onboarded) body = <Onboarding ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />;
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
@@ -267,7 +274,7 @@ function App() {
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} eggCardRadius={tw.eggCardRadius} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} guestbookStyle={tw.guestbookStyle} puckStyle={tw.puckStyle} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
+      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -291,7 +298,7 @@ function App() {
   const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
     : ['myhouse', 'decorate'].includes(screen) ? 'profile'   // the house/rooms are now a Profile detail
     : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
-  const showChildTabs = role === 'child' && onboarded && CHILD_TAB_ROOTS.includes(screen);
+  const showChildTabs = role === 'child' && booted && onboarded && CHILD_TAB_ROOTS.includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
 
   return (
@@ -358,7 +365,7 @@ function App() {
           Onboarding / login aren't router screens, so they map to their own handoff keys. */}
       {devBadge && !isDocRole(role) && (
         <div style={{ position: 'fixed', top: '50%', left: 24, transform: 'translateY(-50%)', zIndex: 200 }}>
-          <HandoffBadge screenKey={impact && impactKey ? impactKey : role === 'child' ? (onboarded ? screen : 'onboarding') : (parentOnboarded ? pScreen : 'parent_onboarding')} />
+          <HandoffBadge screenKey={impact && impactKey ? impactKey : role === 'child' ? (!booted ? 'boot' : onboarded ? screen : 'onboarding') : (parentOnboarded ? pScreen : 'parent_onboarding')} />
         </div>
       )}
 
@@ -394,7 +401,11 @@ function App() {
           {role === 'child' && (
             <React.Fragment>
               <div className="tw-label">Flow</div>
-              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setOnboarded(false); setScreen('home'); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
+              {/* A real first run is splash → onboarding, so replaying onboarding replays the
+                  splash ahead of it too — otherwise this button would demo a sequence no
+                  child ever actually sees. */}
+              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px' }} onClick={() => { setBooted(false); setOnboarded(false); setScreen('home'); setStack([]); }}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay onboarding</button>
+              <button className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7, alignItems: 'center', padding: '12px', marginTop: 6 }} onClick={() => setBooted(false)}><Icon name="rotate-ccw" size={15} color={THEME.fg1} stroke={2.3} />Replay boot splash</button>
               <button disabled className="tw-chip" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px', marginTop: 6, opacity: .5, pointerEvents: 'none', cursor: 'not-allowed' }}>▶ App intro (disabled)</button>
 
               <div className="tw-label">Buddy</div>
@@ -408,25 +419,11 @@ function App() {
               {/* Room switch selector removed — the default 'sheet' (Name → sheet) is the chosen
                   behaviour; tw.roomSwitch stays defaulted so MyHouse keeps getting it. */}
 
-              {/* Guestbook style — ten treatments of "notes friends left, read without
-                  leaving the room" (GuestbookPatterns.jsx), side by side while one gets
-                  picked. Unlike the removed selectors above, this one stays live. */}
-              <div className="tw-label">Guestbook style</div>
-              <div className="tw-row">
-                {GUESTBOOK_STYLES.map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.guestbookStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, guestbookStyle: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Guestbook style selector removed — 'book' (Storybook, GuestbookPatterns.jsx)
+                  is the chosen treatment; GuestbookPanel no longer takes a style prop. */}
 
-              {/* Room switcher style — ten alternatives to the dot-and-leader-line puck
-                  (RoomPuckStyles.jsx) for switching buddy/shelf/furniture. 'dot' (first) is
-                  the shipped default, kept in the list as the baseline to compare against. */}
-              <div className="tw-label">Room switcher style</div>
-              <div className="tw-row">
-                {PUCK_STYLES.map(([v, l]) => (
-                  <button key={v} className={'tw-chip' + (tw.puckStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, puckStyle: v }))}>{l}</button>
-                ))}
-              </div>
+              {/* Room switcher style selector removed — 'caption' (RoomPuckStyles.jsx) is the
+                  chosen treatment; RoomStage no longer takes a puckStyle prop. */}
 
               {/* Buddy switch selector removed — the default 'sheet' (Tap → sheet) is the chosen
                   behaviour; tw.buddySwitch stays defaulted so MyHouse keeps getting it. */}
@@ -533,9 +530,15 @@ function App() {
                 ))}
               </div>
 
-              {/* Warning style + Message style selectors removed — the defaults 'spotlight' and
-                  'sheet' are the chosen behaviours; both stay defaulted in tw so the overlay keeps
-                  getting them. */}
+              <div className="tw-label">Warning style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['spotlight', 'Spotlight'], ['card', 'Card'], ['frame', 'Frame'], ['signal', 'Signal'], ['strip', 'Strip'], ['sheet', 'Sheet'], ['banner', 'Banner']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.overlay === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, overlay: v }))}>{l}</button>
+                ))}
+              </div>
+              {/* Message style selector removed — 'sheet' is the chosen behaviour for the
+                  repeating-message step; it stays defaulted in tw so that stage keeps getting it. */}
 
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

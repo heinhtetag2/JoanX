@@ -5,9 +5,9 @@ import { CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, PLAYER, REACTIONS, ROOMS, S
 import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { ScreenHeader, screenBgActive } from './shared.jsx';
+import { LevelBadge, ScreenHeader, screenBgActive } from './shared.jsx';
 import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
-import { GuestbookPanel, GuestbookRoomBubbles } from './GuestbookPatterns.jsx';
+import { GuestbookPanel } from './GuestbookPatterns.jsx';
 
 // A themed room can render two ways: 'theme' (flat wallpaper + floor band) or
 // 'scene' (a real photo backdrop with the buddy standing in front of it). The
@@ -16,19 +16,6 @@ import { GuestbookPanel, GuestbookRoomBubbles } from './GuestbookPatterns.jsx';
 // fallback, so a missing asset still shows a solid backdrop.
 const sceneBgImg = (s) => `url(${s.img}), url(${s.fallback})`;
 
-// Level badge — sits beside the player's name (hotspot header, hero card). A tinted
-// pill rather than the plain white/85% stat chips: level reads as a standing rank,
-// not a running count like streak or likes, so it gets its own accent (iris, the
-// rarity system's "special" hue) instead of blending into the row.
-function LevelBadge({ level }) {
-  return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: THEME.rEpicBg, borderRadius: 999, padding: '4px 10px' }}>
-      <Icon name="star" size={12} color={THEME.rEpic} stroke={2.4} />
-      <span style={{ fontSize: 12, fontWeight: 800, color: THEME.rEpic }}>{`Lv ${level}`}</span>
-    </span>
-  );
-}
-
 // ── My Profile / House (F-32) — the public page friends visit ────────
 // `variant` decides what the buddy stands in:
 //   'theme'   — a flat wallpaper card on a gradient
@@ -36,7 +23,7 @@ function LevelBadge({ level }) {
 //   'hotspot' — your actual home room (ROOMS), edited right here by tapping it. This is
 //               the only variant where the profile and the Decorate screen show the same
 //               object, so a change here is a change a visiting friend sees.
-function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet', guestbookStyle = 'sheet', puckStyle = 'dot' }) {
+function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet' }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const owned = CHARACTERS.filter(x => x.owned);
   const buddies = owned;   // owned characters — the buddies you can switch to
@@ -76,9 +63,9 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const [homeSheet, setHomeSheet] = React.useState(null);
   const [roomPicker, setRoomPicker] = React.useState(false);
   // Guestbook reads right over the room instead of navigating away — the notes are a beat
-  // in visiting the room, not a destination of their own. guestbookStyle (Tweaks) swaps
-  // between ten treatments of that same idea; GuestbookPanel/GuestbookRoomBubbles own how
-  // each one opens and closes, this just owns the like state they all read and write.
+  // in visiting the room, not a destination of their own. GuestbookPanel (the 'book' style,
+  // GuestbookPatterns.jsx) owns how it opens and closes, this just owns the like state it
+  // reads and writes.
   const [guestLikes, setGuestLikes] = React.useState(() => MY_GUESTBOOK.map(g => g.liked));
   const toggleGuestLike = (i) => setGuestLikes(s => s.map((v, j) => (j === i ? !v : v)));
   const profIdx = ROOMS.findIndex(r => r.id === homeEd.room.id);
@@ -109,25 +96,31 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   // the 48px band than a 38px chip did, and the stock 102 clears the room switcher on its own.
 
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110,
-      ...(roomPage
-        ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
-        : { background: screenBgActive() }) }}>
-      {/* scene: the photo is a full-bleed backdrop from the very top of the screen
-          down past the character, then masked to fade into the page background */}
-      {variant === 'scene' && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 470, backgroundImage: sceneBgImg(sceneObj), backgroundSize: '140%', backgroundPosition: '38% top', backgroundRepeat: 'no-repeat', backgroundColor: sceneObj.tint, WebkitMaskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', maskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', zIndex: 0, pointerEvents: 'none' }} />
-      )}
-      {/* Same treatment as the Villain Dex: title and like count in white straight on the room
-          art, only the back button keeping a background. The white chips this used to wear read
-          as a toolbar bolted over the illustration — three floating controls in a row — where the
-          Dex's bare white text lets the art run to the top edge uninterrupted.
-          The heart goes white with the rest. It is the one element that loses something (the joy
-          orange), but a lone coloured icon between white text and a white chevron is what makes a
-          row like this look assembled rather than designed. */}
-      <ScreenHeader light title={L('My Profile')} onBack={() => ctx.back()}
-        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}><Icon name="heart" size={15} color="#fff" fill="#fff" stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{PLAYER.likes}</span></div>} />
-      <div style={{ padding: '0 16px', position: 'relative', zIndex: 1 }}>
+    <div style={{ position: 'absolute', inset: 0 }}>
+      {/* the room — its painted background AND everything standing in it — as one unit,
+          so opening a picker can shift the whole thing up together without the buddy
+          drifting off the floor that's painted into the background behind it. ScreenHeader
+          and the picker sheets stay OUTSIDE this div on purpose: `position:fixed` resolves
+          against the nearest transformed ancestor (see ScreenHeader's own comment), so if
+          the header lived in here too, sliding this up would drag the header with it.
+          hotspot's own content (switcher pill + 460px stage + name/reactions/book) already
+          fills the screen on its own with a little room to spare — the standard 110 bottom
+          buffer this shares with every other screen was the one thing pushing it past the
+          fold, so a light scroll used to be possible even though nothing sat below it worth
+          scrolling to: the pill would scroll out from under the header and the room would
+          shift up over empty floor, then settle back once you let go. Locked to `hidden` so
+          the room reads as one fixed scene, not a page. */}
+      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: variant === 'hotspot' ? 'hidden' : 'auto', paddingTop: 102, paddingBottom: 110,
+        transform: homeSheet ? 'translateY(-160px)' : 'none', transition: 'transform .32s cubic-bezier(.2,.8,.2,1)',
+        ...(roomPage
+          ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
+          : { background: screenBgActive() }) }}>
+        {/* scene: the photo is a full-bleed backdrop from the very top of the screen
+            down past the character, then masked to fade into the page background */}
+        {variant === 'scene' && (
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 470, backgroundImage: sceneBgImg(sceneObj), backgroundSize: '140%', backgroundPosition: '38% top', backgroundRepeat: 'no-repeat', backgroundColor: sceneObj.tint, WebkitMaskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', maskImage: 'linear-gradient(180deg, #000 68%, transparent 100%)', zIndex: 0, pointerEvents: 'none' }} />
+        )}
+        <div style={{ padding: '0 16px', position: 'relative', zIndex: 1 }}>
 
         {/* hero · 'hotspot' — the home room itself, tappable. No "Friends see this"
             badge needed: the room a friend visits and the room you're editing are now
@@ -176,15 +169,8 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                   art they read as debug UI stuck to the screen. They come back when decor
                   ships as sprites that can sit in the room instead of floating over it. */}
               <RoomStage theme={homeEd.theme} draft={homeEd.draft} buddies={[c]} backdrop={!homeEd.theme.bg}
-                placedDecor={[]} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%" puckStyle={puckStyle}
+                placedDecor={[]} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%"
                 onPuck={(slot) => slot === 'buddy' ? setBuddyPicker(true) : setHomeSheet(slot)} />
-
-              {/* guestbookStyle 'bubbles' (Tweaks) — the notes friends left as speech bubbles
-                  parked on the room art itself, tap to open one. Lives here rather than in
-                  GuestbookPanel because it's positioned against the room, not the stats row. */}
-              {guestbookStyle === 'bubbles' && (
-                <GuestbookRoomBubbles notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} />
-              )}
 
               {/* 'arrows' — the carousel the photo-scene profile already used: step through
                   the rooms you've opened, one tap at a time. */}
@@ -235,11 +221,9 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             </div>
 
             {/* the notes friends left — always rendered, even at zero, so this stays the one
-                thing on the room that says a guestbook exists. guestbookStyle (Tweaks) swaps
-                which of ten treatments renders here; GUESTBOOK_STYLES in
-                GuestbookPatterns.jsx is the full list. */}
+                thing on the room that says a guestbook exists. */}
             <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 18 }}>
-              <GuestbookPanel style={guestbookStyle} notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} roomTheme={homeEd.room.theme} />
+              <GuestbookPanel notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} roomTheme={homeEd.room.theme} />
             </div>
           </div>
         )}
@@ -354,7 +338,20 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
         {/* The guestbook preview used to sit here. It's gone from the profile — the notes
             live on their own screen (F-32 still holds; reach it from the "me" card on
             Friends), and the profile is the room, not a feed under it. */}
+        </div>
       </div>
+
+      {/* Same treatment as the Villain Dex: title and like count in white straight on the room
+          art, only the back button keeping a background. The white chips this used to wear read
+          as a toolbar bolted over the illustration — three floating controls in a row — where the
+          Dex's bare white text lets the art run to the top edge uninterrupted.
+          The heart goes white with the rest. It is the one element that loses something (the joy
+          orange), but a lone coloured icon between white text and a white chevron is what makes a
+          row like this look assembled rather than designed.
+          Rendered here, OUTSIDE the room's own transformed wrapper above, so it stays pinned to
+          `.screen` (see its own comment) instead of sliding up with the room when a picker opens. */}
+      <ScreenHeader light title={L('My Profile')} onBack={() => ctx.back()}
+        right={<div style={{ display: 'flex', alignItems: 'center', gap: 4, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}><Icon name="heart" size={15} color="#fff" fill="#fff" stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{PLAYER.likes}</span></div>} />
 
       {/* the hotspot hero's pickers — same sheets the Decorate screen uses */}
       {homeSheet && <RoomSlotSheet slot={homeSheet} onClose={() => setHomeSheet(null)} ed={homeEd} />}

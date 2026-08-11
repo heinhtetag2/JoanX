@@ -77,7 +77,8 @@ function ChartReadout({ title, rows }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         {rows.map(r => (
           <span key={r.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 999, background: r.color }} />
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: r.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: THEME.fg2, whiteSpace: 'nowrap' }}>{r.label.split(' ')[0]}</span>
             <span style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1 }}>{r.value}</span>
           </span>
         ))}
@@ -403,7 +404,6 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
   const activityFoot = [
     { l: ko ? '가장 안전한 날' : 'Safest day', v: dayName(bestDayIdx), c: SERIES.trend },
     { l: ko ? '주의가 많던 날' : 'Most alerts', v: dayName(riskiestIdx), c: '#8fb0dd' },
-    { l: ko ? '안전 멈춤' : 'Safe stops', v: stopsTotal, c: '#4f9d89' },
   ];
 
   // "Ask about this week" — canned Q&A behind the floating chat button. Every answer
@@ -844,8 +844,7 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
               </div>
             ))}
           </div>
-          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14}
-            tooltip={(d, i) => ({ title: dayName(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
+          <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14} />
           {/* footer — a divider, then a plain read of the week's chart */}
           <div style={{ borderTop: `1px solid ${THEME.border}`, marginTop: 16, paddingTop: 14, display: 'flex', gap: 26 }}>
             {activityFoot.map(s => (

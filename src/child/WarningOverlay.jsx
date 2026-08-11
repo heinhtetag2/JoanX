@@ -454,6 +454,17 @@ function WarningOverlay({ ctx }) {
   const stage = { buzz: 0, warn: 1, message: 2 }[phase];
   const grace = phase === 'grace';
   const lightBg = variant === 'spotlight' && phase === 'warn';
+  // 'frame' and 'signal' put copy directly on the dim (no card behind it), right over the home
+  // screen's own busiest area (header, points pill, next-level label) — so they need a darker
+  // dim than the other variants to keep that text from bleeding through and cluttering the
+  // headline.
+  const deepDim = (variant === 'frame' || variant === 'signal') && phase === 'warn';
+  // 'card', 'frame' and 'signal' all commit a lot of screen to the moment — but the home screen
+  // behind the dim is still showing its own idle content (for card/frame, that's the exact same
+  // buddy in the exact same pose). Un-blurred, it reads as clutter or, worse, two copies of the
+  // character on screen at once. `spotlight` already solved this for its own dim (see lightBg's
+  // blur below); these three need the same fix.
+  const blurWarn = (variant === 'card' || variant === 'frame' || variant === 'signal') && phase === 'warn';
 
   // ── COOLDOWN: reached when the message is ignored. The app is usable again — no dim, no block (F-10 is out of
   // MVP scope) — while the system re-assesses the risk. A quiet, non-interactive pill is all that's left.
@@ -480,7 +491,7 @@ function WarningOverlay({ ctx }) {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 60 }}>
       {/* dim — grows in from transparent (spec #6), barely-there during grace, then deepens as the escalation advances */}
-      <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, background: grace ? 'rgba(43,41,38,.16)' : lightBg ? 'rgba(248,247,247,.86)' : phase === 'message' ? 'rgba(43,41,38,.52)' : 'rgba(43,41,38,.34)', backdropFilter: lightBg ? 'blur(3px)' : 'none', transition: 'background .4s ease' }} />
+      <div className="jx-dim-in" style={{ position: 'absolute', inset: 0, background: grace ? 'rgba(43,41,38,.16)' : lightBg ? 'rgba(248,247,247,.86)' : deepDim ? 'rgba(43,41,38,.64)' : phase === 'message' ? 'rgba(43,41,38,.52)' : 'rgba(43,41,38,.34)', backdropFilter: (lightBg || blurWarn) ? 'blur(3px)' : 'none', transition: 'background .4s ease' }} />
 
       {/* F-08.4 / F-12 — safe state seen: the escalation freezes and the four conditions are
           verified behind the scenes (sensor/OS level — phone away, screen off, still walking),
@@ -600,6 +611,110 @@ function WarningOverlay({ ctx }) {
               </div>
             </div>
           )}
+
+          {/* ── VARIANT: anchored card — the spotlight's replacement. The buddy no longer
+              floats alone on blank dim; it bursts the top edge of a tone-tinted stage on a
+              card that is inset from all four edges (the same "the app is holding this up"
+              shape as `sheet`), docked low where a thumb already is. Fixes what made
+              `spotlight` read as generic-AI: content centred on an empty screen with nothing
+              to ground it (see design note: no centred empty screens — hero + bottom-anchored
+              CTA instead). */}
+          {variant === 'card' && (
+            <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '0 20px 20px', boxShadow: THEME.shadowXl, textAlign: 'center' }}>
+              <div className="jx-char-in" style={{ marginTop: -46, display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: 108, height: 108, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} /></div>
+                </div>
+              </div>
+              {round > 1 && <div style={{ marginTop: 12 }}><RoundBadge round={round} tier={tier} inline /></div>}
+              <div className="game-font" style={{ fontSize: 21, fontWeight: 500, marginTop: round > 1 ? 10 : 14 }}>{L(tier.title)} {PLAYER.name}!</div>
+              <div style={{ fontSize: 13.5, color: THEME.fg2, marginTop: 5, lineHeight: 1.4 }}>{L(tier.body)}</div>
+              <div style={{ marginTop: 16 }}>
+                <Button variant="primary" size="md" fullWidth onClick={respond} style={ctaStyle()}>{L('Okay, got it')}</Button>
+              </div>
+            </div>
+          )}
+
+          {/* ── VARIANT: frame — keeps spotlight's big, full-screen presence (the buddy stays
+              the size of the moment) but stops piling every element into one centred stack.
+              Title docks near the top (information, no thumb needed), the buddy sits mid-screen
+              grounded on its own tinted stage instead of floating on blank dim, and the one CTA
+              docks to the very bottom edge — where a thumb already is, not floating mid-air. */}
+          {variant === 'frame' && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '0 20px calc(env(safe-area-inset-bottom) + 20px)' }}>
+              <div className="jx-content-in" style={{ marginTop: 148, textAlign: 'center' }}>
+                {round > 1 && <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><RoundBadge round={round} tier={tier} inline /></div>}
+                <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff' }}>{L(tier.title)} {PLAYER.name}!</div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 6, lineHeight: 1.4 }}>{L(tier.body)}</div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="jx-char-in" style={{ position: 'relative', width: 200, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip }} />
+                  <div className="jx-float" style={{ position: 'relative' }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={168} /></div>
+                </div>
+              </div>
+              <div className="jx-content-in" style={{ animationDelay: '.2s' }}>
+                <Button variant="primary" size="lg" fullWidth onClick={respond} style={ctaStyle()}>{L('Okay, got it')}</Button>
+              </div>
+            </div>
+          )}
+
+          {/* ── VARIANT: signal — `card` and `frame` still lean on the buddy as the hero, but
+              the comic art line has no alert pose: MascotComic doesn't even read the `mood`
+              prop, so the "warning" is always the same calm, guitar-playing idle picture no
+              matter which frame it sits in. `signal` stops asking the illustration to carry
+              urgency and leads with the thing that actually can: a tone-coloured icon medallion
+              and colour-coded copy, the same escalation language a phone OS uses for its own
+              alerts. The buddy still appears — small, as a "from [buddy]" tag — so the moment
+              keeps its identity without being undercut by a mismatched expression. */}
+          {variant === 'signal' && (() => {
+            const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
+            return (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 28px calc(env(safe-area-inset-bottom) + 20px)' }}>
+                <div className="jx-char-in" style={{ marginTop: 132, width: 100, height: 100, borderRadius: 999, background: tone.rail, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="eye" size={44} color="#fff" stroke={2.2} />
+                </div>
+                {round > 1 && <div className="jx-content-in" style={{ marginTop: 16 }}><RoundBadge round={round} tier={tier} inline /></div>}
+                <div className="jx-content-in game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: round > 1 ? 12 : 18, textAlign: 'center', color: '#fff' }}>{L(tier.title)} {PLAYER.name}!</div>
+                <div className="jx-content-in" style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 6, textAlign: 'center', lineHeight: 1.4, maxWidth: 280 }}>{L(tier.body)}</div>
+                <div className="jx-content-in" style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.14)', borderRadius: 999, padding: '5px 14px 5px 5px' }}>
+                  <MascotChip species={c.species} stage={c.stage} color={c.color} size={30} bg="rgba(255,255,255,.92)" />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{c.name} · {L('still walking')}</span>
+                </div>
+                <div style={{ flex: 1 }} />
+                <div className="jx-content-in" style={{ width: '100%' }}>
+                  <Button variant="primary" size="lg" fullWidth onClick={respond} style={ctaStyle()}>{L('Okay, got it')}</Button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── VARIANT: strip — the most minimal of the set, and character-free by design:
+              at this footprint the mismatched idle pose would be the whole visual, so it's left
+              out entirely. A slim, tap-anywhere bar docked at the bottom edge (the one position
+              none of the others use) — an icon medallion, one line of copy, a checkmark. Reads
+              closer to a native OS alert than an in-app character moment. */}
+          {variant === 'strip' && (() => {
+            const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
+            return (
+              <div className="jx-overlay-up" style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+                <div onClick={respond} style={{ cursor: 'pointer', background: THEME.surface, borderRadius: '24px 24px 0 0', padding: '16px 18px calc(env(safe-area-inset-bottom) + 18px)', boxShadow: '0 -10px 30px rgba(0,0,0,.16)' }}>
+                  {round > 1 && <div style={{ marginBottom: 10 }}><RoundBadge round={round} tier={tier} /></div>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 999, background: tone.rail, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon name="eye" size={20} color="#fff" stroke={2.4} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="game-font" style={{ fontSize: 16, fontWeight: 500 }}>{L(tier.title)} {PLAYER.name}!</div>
+                    </div>
+                    <div style={{ width: 36, height: 36, borderRadius: 999, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon name="check" size={18} color={tone.ink} stroke={2.8} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           </React.Fragment>)}
         </React.Fragment>
       )}

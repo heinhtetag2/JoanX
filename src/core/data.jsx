@@ -280,10 +280,19 @@ const decorForRoom = (roomId) => DECOR.filter(d => d.rooms.includes('*') || d.ro
 // messages friends have left on MY profile (F-32 guestbook, received side)
 // Every note in a guestbook — received or left — is one of the GUEST_STAMPS below. Nothing
 // here is ever free text, so the seeds are stamps too.
+// Demo roster runs deeper than the 3-friend fixture (Jisoo/Aria/Tom) on purpose — with only
+// a handful of notes the book's list never overflows, so its scroll never gets exercised.
+// The extra names/colors (Sora/Emma/Kai/Yuna/Haru) are pulled from the same cast used
+// elsewhere for suggested/discoverable friends, cycling the full GUEST_STAMPS set.
 const MY_GUESTBOOK = [
   { by: 'Jisoo', avatar: 'cat',  color: '#e278a8', emoji: '😍', text: 'Your room is awesome!', liked: true },
   { by: 'Aria',  avatar: 'owl',  color: '#b9a3ef', emoji: '⭐', text: 'Cool collection!', liked: false },
   { by: 'Tom',   avatar: 'bird', color: '#67c7ce', emoji: '🔥', text: 'Nice streak!', liked: false },
+  { by: 'Sora',  avatar: 'owl',  color: '#b9a3ef', text: 'I stopped by!', liked: false },
+  { by: 'Emma',  avatar: 'cat',  color: '#f0a6c0', text: 'Strong buddy!', liked: false },
+  { by: 'Kai',   avatar: 'fox',  color: '#e1874a', text: 'Congrats on the new buddy!', liked: false },
+  { by: 'Yuna',  avatar: 'bird', color: '#67c7ce', text: 'Your room is awesome!', liked: false },
+  { by: 'Haru',  avatar: 'owl',  color: '#b9a3ef', text: 'Nice streak!', liked: false },
 ];
 
 // add-friends flow
@@ -1668,8 +1677,8 @@ const themeById = (id) => ROOM_THEMES.find(t => t.id === id) || ROOM_THEMES[0];
 const themeOf = (room) => themeById(room?.theme);
 
 // The two painted surfaces, resolved for a room. Both fall back to the theme's first
-// swatch, so a room row that predates the palette — a friend's room, which carries only
-// { name, theme, wallpaper } — still renders instead of painting `undefined`.
+// swatch, so a bare { theme } with no wallpaper/flooring of its own still renders
+// instead of painting `undefined`.
 const wallOf = (room) => { const t = themeOf(room); return t.wall(room?.wallpaper || t.wallpapers[0]); };
 const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.flooring || t.floorings[0]); };
 
@@ -2608,20 +2617,23 @@ const react = (who, key) => {
 // ── Friends (F-32 / A-10) — visit-only: featured buddy, rooms, reactions,
 //    one-line guestbook. No chat, no real-time interaction. ──────────
 const FRIENDS = [
-  { id: 'f1', name: 'Jisoo', avatar: 'cat',  color: '#e278a8', online: true,  streak: 9,  chars: 11, likes: 24, reactions: { like: 9, love: 7, wow: 4, fire: 3, clap: 1 }, myReaction: null,
+  { id: 'f1', name: 'Jisoo', avatar: 'cat',  color: '#e278a8', online: true,  level: 6, streak: 9,  chars: 11, likes: 24, reactions: { like: 9, love: 7, wow: 4, fire: 3, clap: 1 }, myReaction: null,
     featured: { species: 'cat',  name: 'Cloud',  color: '#e278a8', stage: 3, rarity: 'epic' },
-    // friends' rooms are the SAME themes, just decorated differently — a visit should
-    // feel like the same world, not a parallel one (A-10 · F-19)
-    rooms: [{ name: 'Green Room', theme: 'green', wallpaper: '#eef5dd' }, { name: 'Dream Room', theme: 'dream', wallpaper: '#f7e9f5' }],
-    guest: [{ by: 'Tom', emoji: '😍', text: 'Your room is awesome!' }, { by: 'Aria', emoji: '🔥', text: 'Nice streak!' }] },
-  { id: 'f2', name: 'Tom',   avatar: 'bird', color: '#67c7ce', online: false, streak: 4,  chars: 7,  likes: 12, reactions: { like: 5, love: 2, wow: 1, fire: 3, clap: 1 }, myReaction: 'fire',
+    // `roomId` points straight at ROOMS (core/data.jsx) — a friend's room is the SAME
+    // painted rooms and shared decor table "my room" (MyHouse) draws from, just a
+    // different one picked as theirs, so a visit feels like the same world instead of a
+    // parallel one (A-10 · F-19). Not yet its own per-friend decorated room — that's the
+    // next step once a friend's house can diverge from the shared ROOMS state.
+    roomId: 'green',
+    guest: [{ by: 'Tom', avatar: 'bird', color: '#67c7ce', emoji: '😍', text: 'Your room is awesome!' }, { by: 'Aria', avatar: 'owl', color: '#b9a3ef', emoji: '🔥', text: 'Nice streak!' }] },
+  { id: 'f2', name: 'Tom',   avatar: 'bird', color: '#67c7ce', online: false, level: 3, streak: 4,  chars: 7,  likes: 12, reactions: { like: 5, love: 2, wow: 1, fire: 3, clap: 1 }, myReaction: 'fire',
     featured: { species: 'bird', name: 'Sky',    color: '#67c7ce', stage: 2, rarity: 'rare' },
-    rooms: [{ name: 'Town Room', theme: 'town', wallpaper: '#e7eef2' }],
-    guest: [{ by: 'Mina', emoji: '⭐', text: 'Cool collection!' }] },
-  { id: 'f3', name: 'Aria',  avatar: 'owl',  color: '#b9a3ef', online: true,  streak: 15, chars: 14, likes: 31, reactions: { like: 11, love: 8, wow: 6, fire: 4, clap: 2 }, myReaction: null,
+    roomId: 'town',
+    guest: [{ by: 'Mina', avatar: 'fox', color: '#4b814f', emoji: '⭐', text: 'Cool collection!' }] },
+  { id: 'f3', name: 'Aria',  avatar: 'owl',  color: '#b9a3ef', online: true,  level: 8, streak: 15, chars: 14, likes: 31, reactions: { like: 11, love: 8, wow: 6, fire: 4, clap: 2 }, myReaction: null,
     featured: { species: 'owl',  name: 'Nova',   color: '#b9a3ef', stage: 3, rarity: 'rare' },
-    rooms: [{ name: 'Dream Room', theme: 'dream', wallpaper: '#e8e6fa' }, { name: 'Town Room', theme: 'town', wallpaper: '#f4efe6' }],
-    guest: [{ by: 'Jisoo', emoji: '🔥', text: 'Nice streak!' }, { by: 'Tom', emoji: '👋', text: 'I stopped by!' }] },
+    roomId: 'dream',
+    guest: [{ by: 'Jisoo', avatar: 'cat', color: '#e278a8', emoji: '🔥', text: 'Nice streak!' }, { by: 'Tom', avatar: 'bird', color: '#67c7ce', emoji: '👋', text: 'I stopped by!' }] },
 ];
 
 // A-10.1: the quick-tap notes. A child can now also TYPE a short note, but these stamps
