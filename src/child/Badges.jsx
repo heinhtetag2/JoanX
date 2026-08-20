@@ -88,27 +88,65 @@ function BadgeArt({ a, size = 76, locked }) {
   );
 }
 
-/* One badge in the grid: medallion, name, and either the tier or the progress
-   toward it. The whole tile is the tap target — a badge is a thing you pick
-   up, not a row with a chevron. An earned-but-unclaimed badge swaps the tier
-   label for a gold "Claim" cue and a plain dot on the medallion, so the reward
-   is visible from the grid without opening the sheet — tapping still opens
-   BadgeSheet, where the actual Claim button lives. */
-function BadgeTile({ a, onPick }) {
+/* Four ways to mark an earned-but-unclaimed badge, switchable from Tweaks →
+   Badge claim style so the app can be seen mid-decision rather than guessed at
+   once. 'ribbon' reads too close to a storefront sale tag for some tastes, so
+   it sits alongside three others rather than being the only option:
+     - ribbon:    a diagonal corner banner (the badge/egg-art ribbon motif)
+     - flag:      a folded paper corner, dog-eared rather than banner-shaped —
+                  a marker, not a merchandising tag
+     - tint:      the whole card warms gold and the label becomes a real
+                  button bar instead of a status word
+     - medallion: a small reward marker sitting on the artwork itself, the
+                  most subtle of the four
+   Each only changes how "this is ready" is signalled; the tap target, the
+   name, and the tier/progress line underneath are identical either way. */
+function ClaimMark({ style }) {
+  if (style === 'flag') {
+    return (
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 40, height: 40, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 0, height: 0, borderStyle: 'solid', borderWidth: '0 40px 40px 0', borderColor: `transparent ${THEME.gold} transparent transparent` }} />
+        <Icon name="award" size={11} color="#fff" stroke={2.6} style={{ position: 'absolute', top: 6, right: 6 }} />
+      </div>
+    );
+  }
+  // ribbon (default)
+  return (
+    <div style={{ position: 'absolute', top: 0, left: 0, width: 84, height: 84, pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', top: 12, left: -26, width: 104, transform: 'rotate(-45deg)', background: THEME.gold, color: '#fff', fontSize: 9.5, fontWeight: 800, textAlign: 'center', padding: '3px 0', letterSpacing: .2 }}>{L('Claim')}</div>
+    </div>
+  );
+}
+
+function BadgeTile({ a, onPick, claimStyle = 'ribbon' }) {
   const locked = !a.done;
   const unclaimed = a.done && !a.claimed;
   const t = tierOf(a);
+  const tinted = unclaimed && claimStyle === 'tint';
   return (
     <button onClick={() => onPick(a)} className="jx-press"
-      style={{ position: 'relative', background: '#fff', border: 'none', borderRadius: 18, padding: '14px 8px 11px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'inherit' }}>
-      {unclaimed && <span style={{ position: 'absolute', top: 10, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.gold }} />}
-      <BadgeArt a={a} locked={locked} />
+      style={{ position: 'relative', overflow: (unclaimed && (claimStyle === 'ribbon' || claimStyle === 'flag')) ? 'hidden' : 'visible', background: tinted ? THEME.goldLight : '#fff', border: tinted ? `1.5px solid ${THEME.gold}` : 'none', borderRadius: 18, padding: tinted ? '12.5px 6.5px 7.5px' : '14px 8px 11px', boxShadow: THEME.shadowCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', fontFamily: 'inherit' }}>
+      {unclaimed && (claimStyle === 'ribbon' || claimStyle === 'flag') && <ClaimMark style={claimStyle} />}
+      {unclaimed && claimStyle === 'dot' && <span style={{ position: 'absolute', top: 10, right: 10, width: 9, height: 9, borderRadius: 999, background: THEME.gold }} />}
+
+      <div style={{ position: 'relative' }}>
+        <BadgeArt a={a} locked={locked} />
+        {unclaimed && claimStyle === 'medallion' && (
+          <span style={{ position: 'absolute', bottom: -2, right: -4, width: 24, height: 24, borderRadius: 999, background: THEME.gold, border: '2.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="gift" size={12} color="#fff" stroke={2.6} />
+          </span>
+        )}
+      </div>
+
       <span style={{ fontSize: 12, fontWeight: 800, color: locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2, textAlign: 'center' }}>{L(a.name)}</span>
+
       {locked && a.total
         ? <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg3 }}>{a.progress}/{a.total}</span>
-        : unclaimed
-          ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold }}>{L('Claim')}</span>
-          : <span style={{ fontSize: 10.5, fontWeight: 800, color: locked ? THEME.fg3 : t.ring }}>{L(locked ? 'Locked' : t.label)}</span>}
+        : unclaimed && claimStyle === 'tint'
+          ? <span style={{ width: '100%', marginTop: 2, background: THEME.gold, color: '#fff', fontSize: 11, fontWeight: 800, borderRadius: 10, padding: '5px 0' }}>{L('Claim')}</span>
+          : unclaimed && (claimStyle === 'medallion' || claimStyle === 'dot')
+            ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold }}>{L('Claim')}</span>
+            : <span style={{ fontSize: 10.5, fontWeight: 800, color: locked ? THEME.fg3 : t.ring }}>{L(locked ? 'Locked' : t.label)}</span>}
     </button>
   );
 }
@@ -169,15 +207,19 @@ function BadgeSheet({ a, ctx, onClose }) {
   );
 }
 
-/* The grid. Earned badges sort first: the case should open on what the child
-   has, not on a wall of grey. Within each half the authored order stands. */
+/* The grid. A badge with a reward sitting on it sorts first — that is the most
+   urgent thing on this screen — then the rest of what's earned, then locked.
+   The case should open on what the child has, not on a wall of grey; within
+   each group the authored order stands. */
+const gridRank = (a) => (a.done && !a.claimed) ? 0 : a.done ? 1 : 2;
 function BadgeGrid({ ctx }) {
   const [picked, setPicked] = React.useState(null);
-  const list = [...ACHIEVEMENTS].sort((x, y) => (y.done ? 1 : 0) - (x.done ? 1 : 0));
+  const list = [...ACHIEVEMENTS].sort((x, y) => gridRank(x) - gridRank(y));
+  const claimStyle = ctx?.tweaks?.claimStyle || 'ribbon';
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-        {list.map(a => <BadgeTile key={a.id} a={a} onPick={setPicked} />)}
+        {list.map(a => <BadgeTile key={a.id} a={a} onPick={setPicked} claimStyle={claimStyle} />)}
       </div>
       {picked && <BadgeSheet a={picked} ctx={ctx} onClose={() => setPicked(null)} />}
     </>

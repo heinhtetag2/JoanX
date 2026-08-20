@@ -157,6 +157,21 @@ const TOAST_TONE = {
   urgent: { rail: THEME.danger,  chip: THEME.dangerLight,  ink: THEME.danger,   bubble: BUBBLE },
 };
 
+// F-08.3 — the buddy visibly weakens as the tone escalates. The comic art style doesn't
+// read the `mood` prop at all (it's a fixed idle render), so a CSS filter is the one
+// degradation cue every art style honours: full colour at gentle, a touch muted at firm,
+// desaturated and dimmed at urgent.
+const MASCOT_TIER_STYLE = {
+  gentle: {},
+  firm:   { filter: 'saturate(.82)' },
+  urgent: { filter: 'grayscale(.5) saturate(.75) brightness(.9)', opacity: .85 },
+};
+const mascotDegrade = (tier) => MASCOT_TIER_STYLE[tier.key] || {};
+
+// Icon escalates with the tone too, in the variants where an icon carries urgency instead
+// of the mascot (signal / strip).
+const TIER_ICON = { gentle: 'eye', firm: 'triangle-alert', urgent: 'hand' };
+
 // Four message layouts, all built on the design-system tokens (DESIGN-SYSTEM.md §4/§5):
 // card radius 20 · padding 16 · screen gutter 18 · shadowCard (hairline ring + whisper,
 // "not a big floaty blur") · child-app CTAs render flat. Flip between them in Tweaks →
@@ -206,7 +221,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
 
   const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
   const urgent = tier.key === 'urgent';
-  const sub = urgent ? L(tier.body) : `${c.name} · ${L('still walking')}`;
+  const sub = urgent ? L('Last warning — ignoring this ends the session') : `${c.name} · ${L('still walking')}`;
   const ink = urgent ? THEME.danger : THEME.fg1;
 
   // The one thing that changes between lines. It carries the fade, so the card, the buddy and
@@ -246,7 +261,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
         <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 14px' }} />
         {round > 1 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} style={mascotDegrade(tier)} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}>
             {line(19, 13, 4)}
           </div>
@@ -266,7 +281,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ flexShrink: 0, width: 84, height: 84, borderRadius: 22, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={74} /></div>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={74} style={mascotDegrade(tier)} /></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {line(22, 12.5, 5)}
@@ -281,7 +296,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={84} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={84} style={mascotDegrade(tier)} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '16px 16px 16px 4px', padding: '12px 14px', marginBottom: 6 }}>
             {line(19, 12.5, 3)}
           </div>
@@ -295,7 +310,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
     hero: (
       <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
         <div className="jx-float" style={{ marginTop: -42, marginBottom: 2 }}>
-          <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} />
+          <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} style={mascotDegrade(tier)} />
         </div>
         {round > 1 && <div style={{ marginBottom: 8 }}><Badge_ /></div>}
         {line(21, 13, 4)}
@@ -431,7 +446,12 @@ function WarningOverlay({ ctx }) {
   // if walking + phone use are still going do we buzz again and re-show the warning, one tone
   // firmer. No screen block, ever.
   const standDown = (outcome) => {
-    logRiskEvent({ outcome, rounds: round, tier: tier.key });
+    // F-08.3 — round 3 (the last, "visibly struggling" tier) going ignored is the last round
+    // there is: no 4th, firmer-still round exists, so the intervention ends outright and the
+    // risk event is logged as not accepted — never cycling back for another buzz.
+    const final = outcome === 'ignored' && round >= INTERVENTION.maxRounds;
+    logRiskEvent({ outcome: final ? 'not_accepted' : outcome, rounds: round, tier: tier.key });
+    if (final) { ctx.closeOverlay(); return; }
     setPhase('cooldown');
   };
 
@@ -482,10 +502,7 @@ function WarningOverlay({ ctx }) {
   }
 
   const Msg = () => (
-    <React.Fragment>
-      <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25 }}>{L(tier.title)} {PLAYER.name}!</div>
-      <div style={{ fontSize: 13.5, color: THEME.fg2, marginTop: 4, lineHeight: 1.4 }}>{L(tier.body)}</div>
-    </React.Fragment>
+    <div className="game-font" style={{ fontSize: 19, fontWeight: 500, lineHeight: 1.25 }}>{L(tier.title)}</div>
   );
 
   return (
@@ -568,7 +585,7 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '18px 18px 20px', boxShadow: THEME.shadowXl }}>
               {round > 1 && <RoundBadge round={round} tier={tier} />}
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                <div className="jx-char-in"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} /></div>
+                <div className="jx-char-in"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} style={mascotDegrade(tier)} /></div>
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ marginTop: 14 }}>
@@ -582,10 +599,9 @@ function WarningOverlay({ ctx }) {
           {variant === 'spotlight' && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center' }}>
               {/* spec #6 — the character scales in first, then the copy and CTA cascade in behind it */}
-              <div className="jx-char-in"><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} /></div></div>
+              <div className="jx-char-in"><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} style={mascotDegrade(tier)} /></div></div>
               {round > 1 && <div className="jx-content-in" style={{ marginTop: 10, animationDelay: '.14s' }}><RoundBadge round={round} tier={tier} inline /></div>}
-              <div className="game-font jx-content-in" style={{ fontSize: 26, fontWeight: 500, marginTop: 10, animationDelay: '.18s' }}>{L(tier.title)} {PLAYER.name}!</div>
-              <div className="jx-content-in" style={{ fontSize: 15, color: THEME.fg2, margin: '8px 0 22px', lineHeight: 1.45, animationDelay: '.26s' }}>{L(tier.body)}</div>
+              <div className="game-font jx-content-in" style={{ fontSize: 24, fontWeight: 500, margin: '10px 0 22px', lineHeight: 1.35, animationDelay: '.18s' }}>{L(tier.title)}</div>
               {/* One thing on this screen, and it is the safe action: looking up is the child's
                   only option, so the brand CTA stands alone with no competing dismiss. */}
               <div className="jx-content-in" style={{ width: '100%', display: 'flex', justifyContent: 'center', animationDelay: '.34s' }}>
@@ -599,10 +615,9 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', top: 94, left: 14, right: 14 }}>
               <div style={{ background: '#fff', borderRadius: 20, padding: '12px 14px', boxShadow: THEME.shadowXl }}>
                 <div onClick={respond} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <div className="jx-char-in" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} /></div>
+                  <div className="jx-char-in" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} style={mascotDegrade(tier)} /></div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800 }}>{round === 1 ? L('Eyes up while walking') : L(tier.title) + ' ' + PLAYER.name + '!'}</div>
-                    <div style={{ fontSize: 12, color: THEME.fg2 }}>{round === 1 ? L("Tap when your eyes are up") : L(tier.body)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>{L(tier.title)}</div>
                   </div>
                   <div style={{ width: 34, height: 34, borderRadius: 999, background: THEME.brandLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon name="check" size={18} color={THEME.brand} stroke={2.6} />
@@ -623,12 +638,11 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '0 20px 20px', boxShadow: THEME.shadowXl, textAlign: 'center' }}>
               <div className="jx-char-in" style={{ marginTop: -46, display: 'flex', justifyContent: 'center' }}>
                 <div style={{ width: 108, height: 108, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} /></div>
+                  <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} style={mascotDegrade(tier)} /></div>
                 </div>
               </div>
               {round > 1 && <div style={{ marginTop: 12 }}><RoundBadge round={round} tier={tier} inline /></div>}
-              <div className="game-font" style={{ fontSize: 21, fontWeight: 500, marginTop: round > 1 ? 10 : 14 }}>{L(tier.title)} {PLAYER.name}!</div>
-              <div style={{ fontSize: 13.5, color: THEME.fg2, marginTop: 5, lineHeight: 1.4 }}>{L(tier.body)}</div>
+              <div className="game-font" style={{ fontSize: 21, fontWeight: 500, marginTop: round > 1 ? 10 : 14, lineHeight: 1.3 }}>{L(tier.title)}</div>
               <div style={{ marginTop: 16 }}>
                 <Button variant="primary" size="md" fullWidth onClick={respond} style={ctaStyle()}>{L('Okay, got it')}</Button>
               </div>
@@ -644,13 +658,12 @@ function WarningOverlay({ ctx }) {
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: '0 20px calc(env(safe-area-inset-bottom) + 20px)' }}>
               <div className="jx-content-in" style={{ marginTop: 148, textAlign: 'center' }}>
                 {round > 1 && <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><RoundBadge round={round} tier={tier} inline /></div>}
-                <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff' }}>{L(tier.title)} {PLAYER.name}!</div>
-                <div style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 6, lineHeight: 1.4 }}>{L(tier.body)}</div>
+                <div className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', lineHeight: 1.3 }}>{L(tier.title)}</div>
               </div>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="jx-char-in" style={{ position: 'relative', width: 200, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip }} />
-                  <div className="jx-float" style={{ position: 'relative' }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={168} /></div>
+                  <div className="jx-float" style={{ position: 'relative' }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={168} style={mascotDegrade(tier)} /></div>
                 </div>
               </div>
               <div className="jx-content-in" style={{ animationDelay: '.2s' }}>
@@ -672,11 +685,10 @@ function WarningOverlay({ ctx }) {
             return (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 28px calc(env(safe-area-inset-bottom) + 20px)' }}>
                 <div className="jx-char-in" style={{ marginTop: 132, width: 100, height: 100, borderRadius: 999, background: tone.rail, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="eye" size={44} color="#fff" stroke={2.2} />
+                  <Icon name={TIER_ICON[tier.key] || 'eye'} size={44} color="#fff" stroke={2.2} />
                 </div>
                 {round > 1 && <div className="jx-content-in" style={{ marginTop: 16 }}><RoundBadge round={round} tier={tier} inline /></div>}
-                <div className="jx-content-in game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: round > 1 ? 12 : 18, textAlign: 'center', color: '#fff' }}>{L(tier.title)} {PLAYER.name}!</div>
-                <div className="jx-content-in" style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 6, textAlign: 'center', lineHeight: 1.4, maxWidth: 280 }}>{L(tier.body)}</div>
+                <div className="jx-content-in game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: round > 1 ? 12 : 18, textAlign: 'center', color: '#fff', lineHeight: 1.3, maxWidth: 300 }}>{L(tier.title)}</div>
                 <div className="jx-content-in" style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.14)', borderRadius: 999, padding: '5px 14px 5px 5px' }}>
                   <MascotChip species={c.species} stage={c.stage} color={c.color} size={30} bg="rgba(255,255,255,.92)" />
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{c.name} · {L('still walking')}</span>
@@ -702,10 +714,10 @@ function WarningOverlay({ ctx }) {
                   {round > 1 && <div style={{ marginBottom: 10 }}><RoundBadge round={round} tier={tier} /></div>}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 42, height: 42, borderRadius: 999, background: tone.rail, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon name="eye" size={20} color="#fff" stroke={2.4} />
+                      <Icon name={TIER_ICON[tier.key] || 'eye'} size={20} color="#fff" stroke={2.4} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="game-font" style={{ fontSize: 16, fontWeight: 500 }}>{L(tier.title)} {PLAYER.name}!</div>
+                      <div className="game-font" style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.3 }}>{L(tier.title)}</div>
                     </div>
                     <div style={{ width: 36, height: 36, borderRadius: 999, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon name="check" size={18} color={tone.ink} stroke={2.8} />
