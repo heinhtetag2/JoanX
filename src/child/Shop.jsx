@@ -164,9 +164,17 @@ function Shop({ ctx, eggShake = false, eggHatch = 'pop', eggShopLayout = 'merged
                   </div>
 
                   {canHatch ? (
-                    <button onClick={() => hatchOwned(egg)} className="jx-press" style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.primary, color: '#fff', borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800 }}>
-                      {L('Hatch')}
-                    </button>
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      {/* already own one for free, but the egg is still for sale — the same
+                          buy pill the not-yet-owned state uses below, so a rare egg you can
+                          both hatch and buy looks the same whichever state got you there */}
+                      {!unbuyable && !locked && (
+                        <button onClick={() => purchase(egg)} className={afford ? 'jx-press' : undefined} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: afford ? THEME.primary : 'rgba(255,255,255,0.85)', color: afford ? '#fff' : THEME.fg3, borderRadius: 999, padding: '13px 0', fontSize: 15, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <SafePointIcon size={16} />
+                          {egg.price.toLocaleString()}
+                        </button>
+                      )}
+                    </div>
                   ) : unbuyable ? (
                     <span style={{ width: '100%', textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: THEME.goldLight, color: '#9e7300', borderRadius: 999, padding: '13px 0', fontSize: 14, fontWeight: 800 }}>
                       <Icon name="gift" size={15} color={THEME.gold} stroke={2.3} />{L('Reward')}
