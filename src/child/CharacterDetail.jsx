@@ -1,28 +1,64 @@
 // JoanX — child app · CharacterDetail
 
 import React from 'react';
-import { battlePower, CHARACTERS, nextStageAt, PLAYER, STATS, statsFor } from '../core/data.jsx';
+import { battlePower, buyItem, canBuyItem, CHARACTERS, nextStageAt, OUTFITS, PLAYER, STATS, statsFor } from '../core/data.jsx';
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { screenBgActive, ScreenHeader, OUTFIT_SLOTS } from './shared.jsx';
 
 // ── Character detail / customize / evolve ────────────────────────────
 function CharacterDetail({ ctx }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
-  const [color, setColor] = React.useState(orig.color);
+  // Recolouring is gone — the buddy's colour is fixed to its species art.
+  const color = orig.color;
   // Evolution is automatic — a buddy evolves on level-up when its XP fills.
   // No manual evolve action, so stage/level are read-only here.
   const stage = orig.stage;
   const level = orig.level;
 
-  const swatches = ['#e1874a', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb', '#e86f5f'];
-  const items = [
-    { id: 'scarf', icon: 'shirt', name: 'Hero Scarf', on: stage >= 2 },
-    { id: 'cape', icon: 'wind', name: 'Guardian Cape', on: stage >= 3 },
-    { id: 'hat', icon: 'crown', name: 'Star Crown', on: false, locked: true },
-    { id: 'glasses', icon: 'glasses', name: 'Cool Shades', on: false, locked: true },
-  ];
+  // A-5: outfits are bought here, on the buddy they belong to — not in the
+  // Points shop. Free ones are granted as the buddy evolves into their stage.
+  // Mirrors the same purchase/equip logic CharVariant uses in CharacterVariants.jsx.
+  const [pts, setPts] = React.useState(PLAYER.points);
+  const [bought, setBought] = React.useState(() => new Set());
+  const [worn, setWorn] = React.useState(() => new Set());
+  const [note, setNote] = React.useState(null);
+  const [slotFilter, setSlotFilter] = React.useState(OUTFIT_SLOTS[0].id);
+
+  const locked_ = (o) => stage < o.minStage;
+  const ownedOutfit = (o) => o.owned || bought.has(o.id) || (o.price === 0 && !locked_(o));
+  const toast = (msg) => { setNote(msg); setTimeout(() => setNote(null), 1600); };
+  const buyOutfit = (o) => {
+    if (ownedOutfit(o)) return;
+    const verdict = canBuyItem(o, PLAYER, stage);
+    if (!verdict.ok) {
+      if (verdict.reason === 'stage') return toast(`${L('Unlocks at Stage')} ${verdict.need}`);
+      if (verdict.reason === 'level') return toast(`${L('Unlocks at Lv')} ${verdict.need}`);
+      return toast(L('Not enough points yet'));
+    }
+    buyItem(o, PLAYER, stage); setPts(PLAYER.points);
+    setBought(s => new Set(s).add(o.id));
+    setWorn(s => new Set(s).add(o.id));
+    toast(`${L(o.name)} ${L('unlocked!')}`);
+  };
+  const toggleWear = (o) => {
+    if (!ownedOutfit(o)) return;
+    setWorn(s => { const n = new Set(s); n.has(o.id) ? n.delete(o.id) : n.add(o.id); return n; });
+  };
+  const isWorn = (o) => ownedOutfit(o) && (o.price === 0 || worn.has(o.id));
+  const items = OUTFITS.map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked_(o) }));
+  const filteredItems = items.filter(it => it.slot === slotFilter);
+  const tapItem = (it) => {
+    const o = OUTFITS.find(x => x.id === it.id);
+    if (!o || locked_(o)) return;
+    ownedOutfit(o) ? toggleWear(o) : buyOutfit(o);
+  };
+  const itemStatus = (it) => it.locked
+    ? `${L('Stage')} ${it.minStage}`
+    : it.own
+      ? (it.on ? L('Equipped') : L('Tap to equip'))
+      : `★ ${it.price}`;
 
   // A-3.3 — the four core stats villain battles are fought with. Values are DERIVED
   // from rarity, level and stage (statsFor), so this card cannot drift from the number
@@ -84,38 +120,41 @@ function CharacterDetail({ ctx }) {
           </div>
         </div>
 
-        {/* customize color */}
-        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{L('Color')}</div>
-          <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap' }}>
-            {swatches.map(s => {
-              const sel = color === s;
+        {/* accessories — one OUTFITS slot at a time (A-5.1). Category chips float free
+            above the card, their own crisp white pills, rather than crammed inside it
+            alongside the grid. */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>{L('Items')}</div>
+          <div className="no-sb" style={{ display: 'flex', gap: 7, overflowX: 'auto', marginBottom: 10 }}>
+            {OUTFIT_SLOTS.filter(s => items.some(it => it.slot === s.id)).map(s => {
+              const on = slotFilter === s.id;
               return (
-                <button key={s} onClick={() => setColor(s)} aria-label={s} style={{
-                  width: 32, height: 32, borderRadius: 999, background: s, border: 'none', padding: 0, cursor: 'pointer',
-                  boxShadow: sel ? `0 0 0 2.5px #fff, 0 0 0 4.5px ${s}` : 'inset 0 0 0 1px rgba(46,43,41,0.10)',
-                  transform: sel ? 'scale(1.06)' : 'none', transition: 'transform .12s ease',
-                }} />
+                <button key={s.id} onClick={() => setSlotFilter(s.id)} style={{ flex: 'none', border: on ? 'none' : '1.5px solid rgba(46,43,41,0.08)', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 14px', background: on ? THEME.primary : '#fff', boxShadow: on ? `0 4px 10px ${THEME.primary}4a` : THEME.shadowCard, display: 'inline-flex', alignItems: 'center', gap: 5, color: on ? '#fff' : THEME.fg2, fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap' }}>
+                  <Icon name={s.icon} size={12} color={on ? '#fff' : THEME.fg3} stroke={2.4} />{L(s.label)}
+                </button>
               );
             })}
           </div>
-        </div>
-
-        {/* customize items */}
-        <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 14 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{L('Items')}</div>
+          <div style={{ background: '#fff', borderRadius: 18, padding: 16, boxShadow: THEME.shadowCard }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10 }}>
-            {items.map(it => (
-              <div key={it.id} style={{ position: 'relative', aspectRatio: '1', minWidth: 0, borderRadius: 16, background: it.on ? THEME.primaryLight : THEME.surface2, border: it.on ? `2px solid ${THEME.primary}` : `2px solid transparent`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            {filteredItems.map(it => (
+              <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', aspectRatio: '1', minWidth: 0, borderRadius: 16, background: it.on ? THEME.primaryLight : THEME.surface2, border: it.on ? `2px solid ${THEME.primary}` : `2px solid transparent`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 <Icon name={it.locked ? 'lock' : it.icon} size={20} color={it.locked ? THEME.fg3 : it.on ? THEME.primary : THEME.fg2} stroke={2.2} />
                 <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
-              </div>
+                <span style={{ fontSize: 8.5, fontWeight: 800, color: it.on ? THEME.primary : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
+              </button>
             ))}
+          </div>
           </div>
         </div>
 
         <Button variant="primary" size="lg" fullWidth style={{ background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
+
+      {/* outfit purchase feedback */}
+      {note && (
+        <div className="jx-fade" style={{ position: 'fixed', left: '50%', bottom: 128, transform: 'translateX(-50%)', zIndex: 60, background: THEME.fg1, color: '#fff', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>{note}</div>
+      )}
     </div>
   );
 }

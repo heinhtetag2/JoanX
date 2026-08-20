@@ -5,13 +5,14 @@ import { buyItem, canBuyItem, CHARACTERS, moodForStage, nextStageAt, OUTFITS, PL
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { isNeon, mixHue, pastelHue } from './shared.jsx';
+import { isNeon, mixHue, pastelHue, OUTFIT_SLOTS } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
 
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
-  const [color, setColor] = React.useState(orig.color);
+  const color = orig.color;
   const [tab, setTab] = React.useState('stat');
+  const [slotFilter, setSlotFilter] = React.useState(OUTFIT_SLOTS[0].id);
   // A-3.3 — the stage is READ, not chosen. It follows the level (Stage 1 Lv.1–3, Stage 2
   // Lv.4–7, Stage 3 Lv.8–10, all server-tunable), so there is no "Evolve now" button any
   // more: the buddy transforms the moment the level that earns it lands, wherever that
@@ -21,8 +22,6 @@ function CharVariant({ ctx, variant }) {
   const stage = orig.stage;
   const info = stageOf(stage);            // art · anim · expression · lines for this stage
   const nextAt = nextStageAt(level);      // level the next stage lands at, or null if grown
-
-  const swatches = ['#e0554a', '#e1874a', '#4b814f', '#9867e4', '#67c7ce', '#e278a8', '#6697c9', '#ffbc05', '#a8c3eb'];
 
   // A-5: outfits are bought here, on the buddy they belong to — not in the
   // Points shop. Free ones are granted as the buddy evolves into their stage.
@@ -144,21 +143,27 @@ function CharVariant({ ctx, variant }) {
       })}
     </div>
   );
-  const colorContent = (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-      {swatches.map(s => {
-        const sel = color === s;
+  // category chips for the accessories tab — filters `items` to one OUTFITS slot at a
+  // time (A-5.1's taxonomy), reused as-is across every variant's item panel below.
+  const filteredItems = items.filter(it => it.slot === slotFilter);
+  // Category chips float free between the top tabs and the content card — their own
+  // crisp white pills with a hairline lift, rather than crammed inside the card with
+  // the grid. Reads as a second-level tab, not a second section of the same box.
+  const slotTabRow = (
+    <div className="no-sb" style={{ display: 'flex', gap: 7, overflowX: 'auto', width: '100%' }}>
+      {OUTFIT_SLOTS.filter(s => items.some(it => it.slot === s.id)).map(s => {
+        const on = slotFilter === s.id;
         return (
-          <button key={s} onClick={() => setColor(s)} style={{ width: 42, height: 42, borderRadius: 13, background: s, border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: sel ? `0 0 0 3px #fff, 0 0 0 5px ${s}` : 'inset 0 0 0 1px rgba(46,43,41,0.10)', transform: sel ? 'scale(1.05)' : 'none', transition: 'transform .12s ease' }}>
-            {sel && <Icon name="check" size={20} color="#fff" stroke={3} />}
+          <button key={s.id} onClick={() => setSlotFilter(s.id)} style={{ flex: 'none', border: on ? 'none' : '1.5px solid rgba(46,43,41,0.08)', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 14px', background: on ? accent : '#fff', boxShadow: on ? `0 4px 10px ${accent}4a` : THEME.shadowCard, display: 'inline-flex', alignItems: 'center', gap: 5, color: on ? '#fff' : THEME.fg2, fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap', transition: 'all .12s ease' }}>
+            <Icon name={s.icon} size={12} color={on ? '#fff' : THEME.fg3} stroke={2.4} />{L(s.label)}
           </button>
         );
       })}
     </div>
   );
-  const itemContent = (
+  const itemGrid = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10, width: '100%' }}>
-      {items.map(it => (
+      {filteredItems.map(it => (
         <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
           <div style={{ width: 34, height: 34, borderRadius: 999, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}><Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} /></div>
           <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
@@ -171,7 +176,7 @@ function CharVariant({ ctx, variant }) {
     <div key="pn" style={{ marginBottom: 14 }}>
       {/* segmented tabs */}
       <div style={{ display: 'flex', gap: 4, background: onColorBg ? 'rgba(255,255,255,0.42)' : THEME.surface2, borderRadius: 16, padding: 4, marginBottom: 12, border: '1.5px solid rgba(46,43,41,0.08)' }}>
-        {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
+        {[['stat', L('Stats'), 'swords'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           // on the colored variants, gray inactive icons go muddy — use a readable buddy-tint instead
           const offText = onColorBg ? shade(brand, -48) : THEME.fg2;
@@ -183,9 +188,11 @@ function CharVariant({ ctx, variant }) {
           );
         })}
       </div>
+      {/* category chips — Items tab only */}
+      {tab === 'item' && <div style={{ marginBottom: 10 }}>{slotTabRow}</div>}
       {/* content */}
       <div style={{ ...card, marginBottom: 0, minHeight: 150, display: 'flex', alignItems: 'center' }}>
-        {tab === 'stat' ? traitsContent : tab === 'color' ? colorContent : itemContent}
+        {tab === 'stat' ? traitsContent : itemGrid}
       </div>
     </div>
   );
@@ -214,14 +221,15 @@ function CharVariant({ ctx, variant }) {
       })}
     </div>
   );
-  // colors as a centered row of round swatches
-  const colorContentShowcase = (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-      {swatches.map(s => {
-        const sel = color === s;
+  // category chips — same frosted-pill treatment as the top tabs above, so they read
+  // as a second tier of the same chrome rather than a different kind of control.
+  const slotTabRowShowcase = (
+    <div className="no-sb" style={{ display: 'flex', gap: 7, overflowX: 'auto', width: '100%' }}>
+      {OUTFIT_SLOTS.filter(s => items.some(it => it.slot === s.id)).map(s => {
+        const on = slotFilter === s.id;
         return (
-          <button key={s} onClick={() => setColor(s)} style={{ width: 40, height: 40, borderRadius: 999, background: s, border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: sel ? `0 0 0 3px #fff, 0 0 0 5px ${s}, 0 4px 10px ${s}55` : `0 2px 6px ${s}40`, transform: sel ? 'scale(1.08)' : 'none', transition: 'transform .12s ease' }}>
-            {sel && <Icon name="check" size={19} color="#fff" stroke={3} />}
+          <button key={s.id} onClick={() => setSlotFilter(s.id)} style={{ flex: 'none', border: `1.5px solid ${on ? accent : 'transparent'}`, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 14px', background: on ? '#fff' : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'inline-flex', alignItems: 'center', gap: 5, color: on ? accent : shade(brand, -44), fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap', transition: 'all .12s ease' }}>
+            <Icon name={s.icon} size={12} color={on ? accent : shade(brand, -30)} stroke={2.4} />{L(s.label)}
           </button>
         );
       })}
@@ -231,12 +239,15 @@ function CharVariant({ ctx, variant }) {
   // minmax(0,1fr), not 1fr: a 1fr track's automatic minimum is min-content, so the
   // un-wrappable item name would push the track wider than half the card and the
   // second column would hang off the right edge. The tiles must be free to shrink.
-  const itemContentShowcase = (
+  const itemGridShowcase = (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, width: '100%' }}>
-      {items.map(it => (
-        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, borderRadius: 16, background: it.on ? `${accent}14` : THEME.surface2, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '10px 10px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
-            <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
+      {filteredItems.map(it => (
+        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, borderRadius: 16, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, padding: '10px 10px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
+          {/* equipped is a small corner mark on an otherwise-flat card, not a
+              recolored tile — the same "ribbon, not sticker" idiom Badges uses */}
+          {it.on && <span style={{ position: 'absolute', top: 7, right: 7, width: 15, height: 15, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={9} color="#fff" stroke={3.5} /></span>}
+          <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? accent : THEME.fg2} stroke={2.3} />
           </div>
           <div style={{ minWidth: 0 }}>
             {/* wraps rather than ellipsizes — half a tile is ~78px of text and a child
@@ -249,24 +260,31 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
 
-  // showcase gets its own panel — floating frosted chip-tabs + a clean white
-  // content card ringed with an accent glow, to match the premium pedestal hero.
+  // showcase gets its own panel — floating frosted chip-tabs over the same
+  // flat card/well chrome the rest of the app uses, to match the premium
+  // pedestal hero without reaching for glow.
   const PanelShowcase = (
     <div key="pn" style={{ marginBottom: 14 }}>
-      {/* chip tabs — each its own frosted pill; active fills with the buddy color */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
+      {/* segmented tabs — the same well recipe as every other screen's toggle
+          (Notifications/Collection/Profile): a frosted track, white active pill
+          defined by shadowCard's hairline ring, never a colored glow */}
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.42)', borderRadius: 16, padding: 4, marginBottom: tab === 'item' ? 10 : 14, border: '1.5px solid rgba(255,255,255,0.55)' }}>
+        {[['stat', L('Stats'), 'swords'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
+          const offText = shade(brand, -48);
+          const offIcon = shade(brand, -34);
           return (
-            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '10px 4px', background: on ? accent : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: on ? `0 8px 18px ${accent}55` : 'inset 0 0 0 1.5px rgba(255,255,255,0.75)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: on ? '#fff' : shade(brand, -44), fontWeight: 800, fontSize: 12.5, transition: 'all .15s ease' }}>
-              <Icon name={icon} size={14} color={on ? '#fff' : shade(brand, -30)} stroke={2.5} />{label}
+            <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 12, padding: '10px 4px', background: on ? '#fff' : 'transparent', boxShadow: on ? THEME.shadowCard : 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: on ? accent : offText, fontWeight: 800, fontSize: 12.5 }}>
+              <Icon name={icon} size={14} color={on ? accent : offIcon} stroke={2.4} />{label}
             </button>
           );
         })}
       </div>
-      {/* content — solid white card with an accent ring */}
-      <div style={{ background: '#fff', borderRadius: 24, padding: '22px 18px', minHeight: 150, display: 'flex', alignItems: 'center', border: `1.5px solid ${accent}24` }}>
-        {tab === 'stat' ? traitsContentShowcase : tab === 'color' ? colorContentShowcase : itemContentShowcase}
+      {/* category chips — Items tab only */}
+      {tab === 'item' && <div style={{ marginBottom: 14 }}>{slotTabRowShowcase}</div>}
+      {/* content — the same frosted/flat card every other panel here uses */}
+      <div style={{ ...card, marginBottom: 0, minHeight: 150, display: 'flex', alignItems: 'center' }}>
+        {tab === 'stat' ? traitsContentShowcase : itemGridShowcase}
       </div>
     </div>
   );
@@ -276,7 +294,7 @@ function CharVariant({ ctx, variant }) {
     <div key="pn" style={{ ...card, marginBottom: 14, padding: 0, overflow: 'hidden' }}>
       {/* underline tab header */}
       <div style={{ display: 'flex', padding: '2px 6px 0', borderBottom: '1.5px solid rgba(46,43,41,0.08)' }}>
-        {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
+        {[['stat', L('Stats'), 'swords'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           return (
             <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '12px 4px 13px', position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, color: on ? accent : shade(brand, -36), fontWeight: 800, fontSize: 12.5 }}>
@@ -286,6 +304,11 @@ function CharVariant({ ctx, variant }) {
           );
         })}
       </div>
+      {/* category chips — their own strip with a divider, distinct from both the tab
+          header above and the item rail below, Items tab only */}
+      {tab === 'item' && (
+        <div style={{ padding: '10px 16px', borderBottom: '1.5px solid rgba(46,43,41,0.08)' }}>{slotTabRow}</div>
+      )}
       {/* content */}
       <div style={{ padding: '18px 16px', minHeight: 132, display: 'flex', alignItems: 'center' }}>
         {tab === 'stat' ? (
@@ -304,19 +327,9 @@ function CharVariant({ ctx, variant }) {
               );
             })}
           </div>
-        ) : tab === 'color' ? (
-          // standard color picker — round swatches, selected gets a ring
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-            {swatches.map(s => {
-              const sel = color === s;
-              return (
-                <button key={s} onClick={() => setColor(s)} style={{ width: 34, height: 34, borderRadius: 999, background: s, border: 'none', padding: 0, cursor: 'pointer', boxShadow: sel ? `0 0 0 2px #fff, 0 0 0 4px ${s}` : 'inset 0 0 0 1px rgba(46,43,41,0.10)', transition: 'box-shadow .12s ease' }} />
-              );
-            })}
-          </div>
         ) : (
           <div className="no-sb" style={{ display: 'flex', gap: 10, width: '100%', overflowX: 'auto' }}>
-            {items.map(it => (
+            {filteredItems.map(it => (
               <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ flex: 1, minWidth: 70, borderRadius: 16, background: it.on ? `${accent}16` : tileBg, border: it.on ? `1.5px solid ${accent}` : '1.5px solid transparent', padding: '12px 6px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 11, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
                   <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
@@ -334,12 +347,12 @@ function CharVariant({ ctx, variant }) {
     <Button key="set" variant="primary" size="lg" fullWidth style={{ marginTop: 2, background: appAccent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
   );
   // wave gets its own panel — rounded pill tabs (accent-filled active),
-  // a vertical bar chart for stats, square swatches, and 2×2 item cards.
+  // semicircle gauges for stats, and 2×2 item cards.
   const PanelWave = (
     <div key="pn" style={{ marginBottom: 14 }}>
       {/* pill segmented tabs — active fills with the buddy color */}
       <div style={{ display: 'flex', gap: 4, background: THEME.surface2, borderRadius: 999, padding: 4, marginBottom: 12, border: '1.5px solid rgba(46,43,41,0.07)' }}>
-        {[['stat', L('Stats'), 'swords'], ['color', L('Color'), 'palette'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
+        {[['stat', L('Stats'), 'swords'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
           const on = tab === id;
           return (
             <button key={id} onClick={() => setTab(id)} style={{ flex: 1, border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '9px 4px', background: on ? accent : 'transparent', boxShadow: on ? `0 4px 10px ${accent}55` : 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, color: on ? '#fff' : THEME.fg2, fontWeight: 800, fontSize: 12.5, transition: 'all .15s ease' }}>
@@ -348,6 +361,8 @@ function CharVariant({ ctx, variant }) {
           );
         })}
       </div>
+      {/* category chips — Items tab only */}
+      {tab === 'item' && <div style={{ marginBottom: 10 }}>{slotTabRow}</div>}
       {/* content card */}
       <div style={{ ...card, marginBottom: 0, minHeight: 150, display: 'flex', alignItems: 'center' }}>
         {tab === 'stat' ? (
@@ -373,22 +388,10 @@ function CharVariant({ ctx, variant }) {
               );
             })}
           </div>
-        ) : tab === 'color' ? (
-          // square swatches, selected gets a ring + check
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-            {swatches.map(s => {
-              const sel = color === s;
-              return (
-                <button key={s} onClick={() => setColor(s)} style={{ width: 36, height: 36, borderRadius: 11, background: s, border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: sel ? `0 0 0 2px #fff, 0 0 0 4px ${s}` : 'inset 0 0 0 1px rgba(46,43,41,0.10)' }}>
-                  {sel && <Icon name="check" size={18} color="#fff" stroke={3} />}
-                </button>
-              );
-            })}
-          </div>
         ) : (
           // 2×2 item cards with a corner badge
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, width: '100%' }}>
-            {items.map(it => (
+            {filteredItems.map(it => (
               <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}12` : THEME.surface2, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '13px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, textAlign: 'center', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
                 {it.on && <span style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={10} color="#fff" stroke={3.5} /></span>}
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>

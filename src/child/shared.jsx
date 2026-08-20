@@ -18,6 +18,16 @@ function screenBgActive() {
   return screenBgFor(THEME.brand);
 }
 
+// A buddy's colour is fixed to its species art — the character detail screens browse
+// accessories instead, one OUTFITS slot (A-5.1's taxonomy in data.jsx) at a time.
+// Shared here so CharacterDetail.jsx and CharacterVariants.jsx don't each hand-roll it.
+const OUTFIT_SLOTS = [
+  { id: 'clothing',  label: 'Clothing',  icon: 'shirt' },
+  { id: 'hat',       label: 'Hat',       icon: 'crown' },
+  { id: 'glasses',   label: 'Glasses',   icon: 'glasses' },
+  { id: 'accessory', label: 'Accessory', icon: 'sparkles' },
+];
+
 // `left` fills the leading slot on screens with no back button — tab roots that still
 // want something there (Friends puts the player's own avatar in it).
 function ScreenHeader({ title, onBack, left, right, flush, light }) {
@@ -191,4 +201,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard, OUTFIT_SLOTS };

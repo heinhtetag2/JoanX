@@ -254,7 +254,8 @@ const KO = {
   'Fully grown — and still walking beside you.': '다 자랐지만 여전히 네 옆에서 걸어.',
   'Nothing gets past us now.': '이제 아무것도 우릴 못 지나가.',
   'You taught me every step of this.': '이 모든 걸 네가 가르쳐줬어.',
-  'Color': '색상', 'Items': '아이템', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
+  'Items': '아이템', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
+  'Clothing': '의상', 'Hat': '모자', 'Glasses': '안경', 'Accessory': '액세서리',
   'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
 
@@ -283,6 +284,11 @@ const KO = {
   'Eyes Up': '고개 들기', 'Finish 5 phone-free walks': '폰 없이 5번 걷기 완료',
   'Buckle Up': '안전벨트', 'Buckle up on 10 car rides': '차 탈 때 10번 벨트 매기',
   'Safe Route': '안전 경로', 'Take the safe route 5 times': '안전한 길로 5번 가기',
+  'Good Neighbor': '좋은 이웃', "Stamp 5 friends' guestbooks": '친구 방명록 5곳에 도장 찍기',
+  'Popular House': '인기 있는 집', 'Receive 10 guestbook stamps': '방명록 도장 10개 받기',
+  'Temp Tamer': '템 길들이기',
+  'Egg-cellent': '첫 부화', 'Hatch your first egg': '첫 알 부화하기', 'Hatch 5 eggs': '알 5개 부화하기',
+  'Lucky Hatch': '행운의 부화', 'Hatch an Epic-rarity buddy': '에픽 등급 버디 부화하기',
 
   // ── profile ──
   'Profile': '프로필', 'My profile': '내 프로필', 'Age': '나이',
