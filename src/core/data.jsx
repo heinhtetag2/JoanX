@@ -529,7 +529,10 @@ const INTERVENTION = {
   // off and back on. So the safe state must hold for this long before the overlay is removed.
   // Short enough to feel instant, long enough to outlast a blip. Pilot-tunable.
   safeConfirmSeconds: 1,
-  maxRounds: 3,         // tone ladder length; further rounds repeat the strongest tier
+  // Tone ladder length. Unlike a repeating cap, round 3 going ignored ends the intervention
+  // outright (WarningOverlay.standDown) rather than cycling back for a 4th "firmer still"
+  // round — see the tiers comment below.
+  maxRounds: 3,
   // F-09 — character message: a line holds for messageSeconds, and at least
   // messageGapSeconds must pass before the next one appears. Both are pilot-tunable, so
   // they live here rather than in the component — remote settings can retune them without
@@ -540,19 +543,19 @@ const INTERVENTION = {
   // takes to swap the next one in.
   messageSeconds: 4,
   messageGapSeconds: 4.5,
-  // F-08.3 — each ignored round comes back firmer. Tone only: never a screen block.
+  // F-08.3 — the buddy speaks directly, not a system message, and comes back firmer — and
+  // visibly wearier — each ignored round: playful/teasing → firm → visibly struggling. One
+  // canonical line per tier, not a rotation pool: the character says exactly this each round,
+  // never a paraphrase of it. Round 3 going ignored is the last one (see maxRounds above).
   tiers: [
-    { key: 'gentle', title: 'Eyes up,',        body: "Let's put the phone away while we're walking." },
-    { key: 'firm',   title: 'Still walking,',  body: 'Phone down until you stop — I mean it this time.' },
-    { key: 'urgent', title: 'This is unsafe,', body: 'Stop walking or put the phone away now. This is going in your report.' },
+    { key: 'gentle', title: 'Hey, you should look ahead.' },
+    { key: 'firm',   title: "You're looking again. Now really look ahead." },
+    { key: 'urgent', title: "Wait... I'm really struggling. Put the screen down." },
   ],
-  // F-09 — the same line twice running breeds fatigue and then resistance, so each tone
-  // tier gets a pool the toast rotates through. Keep every pool at 3+ lines: the rotation
-  // guarantees no back-to-back repeat only while there is something else to say.
   messages: {
-    gentle: ['Eyes up!', 'Phone away for now', 'Look ahead!', 'Watch your step!'],
-    firm:   ['Still on your phone?', 'Eyes on the path, please', 'Phone down while walking', 'Head up — I mean it'],
-    urgent: ['Stop walking — now', 'This is unsafe', 'Put the phone away', 'Eyes up before you get hurt'],
+    gentle: ['Hey, you should look ahead.'],
+    firm:   ["You're looking again. Now really look ahead."],
+    urgent: ["Wait... I'm really struggling. Put the screen down."],
   },
 };
 
@@ -1199,8 +1202,6 @@ const EGG_GRANTS = [
     when: { event: 'spring-2026' }, label: 'Spring event' },
 
   // 6 · designated achievements
-  { id: 'g-ach-zone',      source: 'achievement', egg: 'common', qty: 1, enabled: true,
-    when: { achievement: 'a4' }, label: 'Zone Dodger' },
   { id: 'g-ach-collector', source: 'achievement', egg: 'rare',   qty: 1, enabled: true,
     when: { achievement: 'a5' }, label: 'Collector' },
 ];
@@ -1408,10 +1409,6 @@ const CHARACTER_UNLOCKS = [
   { id: 'u-phone-drop', enabled: true, source: 'behaviour',
     when: { metric: 'phoneUseDrop', reach: 0.5 }, grant: { rarity: 'epic' },
     label: 'Halve your phone use while walking' },
-  { id: 'u-ach-early', enabled: true, source: 'achievement',
-    when: { achievement: 'a6' }, grant: { rarity: 'rare' },
-    label: 'Early Walker' },
-
   // seasonal / special missions — authored ahead, dark until ops flips it on
   { id: 'u-event-spring', enabled: false, set: 'spring-2026', source: 'event',
     when: { event: 'spring-2026' }, grant: { character: 'c19' },              // Zephyr
@@ -1734,12 +1731,13 @@ const ROOMS = [
 const ACHIEVEMENTS = [
   { id: 'a1', icon: 'footprints',   tier: 'common', name: 'First Steps',   desc: 'Walk safely for 10 minutes',   done: true,  claimed: true,  reward: 50,  img: 'badge-first-steps.png' },
   { id: 'a3', icon: 'timer',        tier: 'rare',   name: 'Quick Reflex',  desc: 'Stop within 3s, 10 times',     done: true,  claimed: true,  reward: 80,  img: 'badge-quick-reflex.png' },
-  { id: 'a4', icon: 'shield-check', tier: 'common', name: 'Zone Dodger',   desc: 'Avoid 5 danger zones',         done: false, progress: 3, total: 5, reward: 150, img: 'badge-zone-dodger.png' },
   { id: 'a5', icon: 'gem',          tier: 'epic',   name: 'Collector',     desc: 'Own 8 characters',             done: true,  claimed: true,  reward: 200, img: 'badge-collector.png' },
-  { id: 'a6', icon: 'sunrise',      tier: 'rare',   name: 'Early Walker',  desc: 'Safe morning commute, 7 days', done: true,  claimed: true,  reward: 130, img: 'badge-early-walker.png' },
-  { id: 'a7', icon: 'signpost',     tier: 'rare',   name: 'Crossing Pro',  desc: 'Cross at 10 crosswalks',       done: false, progress: 7, total: 10, reward: 110, img: 'badge-crossing-pro.png' },
-  { id: 'a9', icon: 'hard-hat',     tier: 'common', name: 'Helmet Hero',   desc: 'Helmet on for 7 rides',        done: true,  claimed: true,  reward: 100, img: 'badge-helmet-hero.png' },
-  { id: 'a11', icon: 'route',       tier: 'rare',   name: 'Safe Route',    desc: 'Take the safe route 5 times',  done: true,  claimed: false, reward: 120, img: 'badge-safe-route.png' },
+
+  { id: 'a15', icon: 'heart',       tier: 'common', name: 'Good Neighbor', desc: "Stamp 5 friends' guestbooks",    done: true,  claimed: true,  reward: 60,  img: 'badge-good-neighbor.png' },
+  { id: 'a16', icon: 'home',        tier: 'rare',   name: 'Popular House', desc: 'Receive 10 guestbook stamps',    done: false, progress: 6, total: 10, reward: 140, img: 'badge-popular-house.png' },
+  { id: 'a17', icon: 'sword',       tier: 'rare',   name: 'Temp Tamer',    desc: 'Defeat every villain once',      done: false, progress: 3, total: 10, reward: 170, img: 'badge-temp-tamer.png' },
+  { id: 'a18', icon: 'egg',         tier: 'common', name: 'Egg-cellent',   desc: 'Hatch 5 eggs',                   done: true,  claimed: true,  reward: 65,  img: 'badge-egg-cellent.png' },
+  { id: 'a19', icon: 'sparkles',    tier: 'epic',   name: 'Lucky Hatch',   desc: 'Hatch an Epic-rarity buddy',     done: true,  claimed: false, reward: 220, img: 'badge-lucky-hatch.png' },
 ];
 
 // Pays out a badge's reward the moment a child taps Claim, and flips it to
