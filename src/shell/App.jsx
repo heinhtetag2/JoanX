@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, LEGACY_DETAIL_LAYOUTS, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
@@ -108,7 +108,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -244,7 +244,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -266,7 +266,7 @@ function App() {
     else if (!onboarded) body = <Onboarding ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />;
     else body = ({
       home: tw.homeLayout.indexOf('simple-') === 0 ? <HomeVariantSimple variant={tw.homeLayout} ctx={ctx} /> : <HomeVariant variant={tw.homeLayout} ctx={ctx} />, safety: <SafetyStatus ctx={ctx} />,
-      collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
+      collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: tw.detailLayout.indexOf('legacy-') === 0 ? <CharDetailVariantLegacy layout={tw.detailLayout} ctx={ctx} /> : <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       // keyed on the preview target: Battle reads it once, as its initial phase, so
       // jumping from one preview to another has to remount rather than reconcile
       battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
@@ -518,6 +518,14 @@ function App() {
                 Marks every earned badge unclaimed again — open Collection → Badges and tap one to see the Claim button.
               </div>
 
+              <div className="tw-label" style={{ marginTop: 12 }}>Badge claim style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['ribbon', 'Ribbon'], ['flag', 'Corner flag'], ['tint', 'Tint + button'], ['medallion', 'Medallion'], ['dot', 'Dot (original)']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.claimStyle === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, claimStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
               <div className="tw-label">Story</div>
               <div className="tw-row">
                 <button className="tw-chip on" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 6, alignItems: 'center', padding: '10px' }} onClick={() => setStory(true)}>▲ How JoanX works</button>
@@ -602,6 +610,28 @@ function App() {
                 {COLLECTION_LAYOUTS.map(({ id, label }) => (
                   <button key={id} className={'tw-chip' + (tw.collectionLayout === id ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, collectionLayout: id })); setStack([]); setScreen('collection'); }}>{label}</button>
+                ))}
+              </div>
+
+              {/* Every CharDetailVariant layout, not just the shipped 'showcase' default —
+                  each was a real design pass and none should go unreachable just because
+                  it isn't the pick. Opens on the active buddy so there's something to see. */}
+              <div className="tw-label">Detail layout</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {DETAIL_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.detailLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, detailLayout: id })); setStack([]); setParams({ id: PLAYER.activeCharId }); setScreen('character'); }}>{label}</button>
+                ))}
+              </div>
+
+              {/* Pre-accessories designs (Stats/Color/Items, buddy recoloring) — kept
+                  reachable exactly as they were rather than deleted when Color gave way
+                  to the outfit-slot browser. A frozen snapshot, not a second live design. */}
+              <div className="tw-label">Detail layout (legacy, with Color)</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {LEGACY_DETAIL_LAYOUTS.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.detailLayout === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, detailLayout: id })); setStack([]); setParams({ id: PLAYER.activeCharId }); setScreen('character'); }}>{label}</button>
                 ))}
               </div>
 

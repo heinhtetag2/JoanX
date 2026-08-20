@@ -34,6 +34,7 @@ export { MSG_LAYOUTS, WarningOverlay } from './WarningOverlay.jsx';
 export { ImpactOverlay } from './ImpactOverlay.jsx';
 export { AchievementUnlock } from './AchievementUnlock.jsx';
 export { LiteBlock } from './LiteBlock.jsx';
-export { CharDetailVariant } from './CharacterVariants.jsx';
+export { CharDetailVariant, DETAIL_LAYOUTS } from './CharacterVariants.jsx';
+export { CharDetailVariantLegacy, LEGACY_DETAIL_LAYOUTS } from './CharacterVariantsLegacy.jsx';
 export { HOME_LAYOUTS, HomeVariant } from './HomeVariants.jsx';
 export { HomeVariantSimple, HOME_STAT_B_OPTIONS } from './HomeVariantsSimple.jsx';
