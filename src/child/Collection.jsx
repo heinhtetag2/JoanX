@@ -6,8 +6,7 @@ import { Badge, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx'
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader } from './shared.jsx';
-import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
-import { ACHIEVEMENTS } from '../core/data.jsx';
+import { BadgeGrid, collectionIntent } from './Badges.jsx';
 
 // A shimmering placeholder tile — reused across the loading skeleton.
 const Sk = ({ w = '100%', h = 12, r = 8, style }) => <div className="jx-skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />;
@@ -63,7 +62,7 @@ function Collection({ ctx }) {
   if (empty) {
     return (
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-        <ScreenHeader title={L('Collection House')} right={<div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="paw-print" size={15} color={THEME.primary} stroke={2.3} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>0/{visibleCharacters().length}</span></div>} />
+        <ScreenHeader title={L('Collection House')} />
         <div style={{ padding: '40px 28px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <div className="jx-float" style={{ width: 96, height: 96, borderRadius: 999, background: THEME.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}><Icon name="egg" size={46} color={THEME.primary} stroke={1.8} /></div>
           <h2 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '10px 0 0' }}>{L('No buddies yet')}</h2>
@@ -81,13 +80,7 @@ function Collection({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} right={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Icon name={side === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
-          <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>
-            {side === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}` : `${owned.length}/${visibleCharacters().length}`}
-          </span>
-        </div>} />
+      <ScreenHeader title={L('Collection House')} />
       <div style={{ padding: '0 16px' }}>
         {/* Buddies / Badges — the Notifications well recipe: chips at --r-md 12
             inside a --r-lg 16 track, white card on the well for the selected one. */}

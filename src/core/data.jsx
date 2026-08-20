@@ -112,7 +112,7 @@ const setBattleRules = (settings = {}) => {
 };
 
 const PLAYER = {
-  name: 'Mina', age: 11, points: 1600,
+  name: 'Mina', age: 11, points: 20000,
   // Default profile photo — a placeholder in public/assets/avatars/. Falls back to the buddy
   // mascot when the file is absent (see PhotoAvatar), so the profile hero still reads.
   avatar: '/assets/avatars/avatar-child.png',

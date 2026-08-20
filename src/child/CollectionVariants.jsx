@@ -517,8 +517,6 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       { id: 'badges',  icon: 'award',       label: 'Badges' },
     ];
     const active = TABS[tab] ? TABS[tab].id : 'buddies';
-    const headCount = active === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}`
-      : `${owned.length}/${all.length}`;
 
     // buddies — the same 3-up grid the 'grid' layout uses (owned + locked)
     // owned buddies first, locked/undiscovered sink to the bottom (stable within each group)
@@ -538,11 +536,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
     return (
       <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-        <ScreenHeader title={L('Collection House')} right={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Icon name={active === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
-            <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>{headCount}</span>
-          </div>} />
+        <ScreenHeader title={L('Collection House')} />
         <div style={{ padding: '0 16px' }}>
           {/* icon tab strip — flat, brand-green active tab (no glow), one row of
               equal tabs like the reference game's secondary nav */}
@@ -587,13 +581,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Collection House')} right={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Icon name={side === 'badges' ? 'award' : 'paw-print'} size={15} color={THEME.primary} stroke={2.3} />
-          <span className="game-font" style={{ fontSize: 14, fontWeight: 500 }}>
-            {side === 'badges' ? `${badgesEarned()}/${ACHIEVEMENTS.length}` : `${owned.length}/${all.length}`}
-          </span>
-        </div>} />
+      <ScreenHeader title={L('Collection House')} />
       <div style={{ padding: '0 16px' }}>
         {/* Buddies / Badges — sits in the SHARED shell, above the variant body, so
             every collection layout gets the badge case rather than only the one
