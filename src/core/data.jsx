@@ -1735,7 +1735,7 @@ const ACHIEVEMENTS = [
 
   { id: 'a15', icon: 'heart',       tier: 'common', name: 'Good Neighbor', desc: "Stamp 5 friends' guestbooks",    done: true,  claimed: true,  reward: 60,  img: 'badge-good-neighbor.png' },
   { id: 'a16', icon: 'home',        tier: 'rare',   name: 'Popular House', desc: 'Receive 10 guestbook stamps',    done: false, progress: 6, total: 10, reward: 140, img: 'badge-popular-house.png' },
-  { id: 'a17', icon: 'sword',       tier: 'rare',   name: 'Temp Tamer',    desc: 'Defeat every villain once',      done: false, progress: 3, total: 10, reward: 170, img: 'badge-temp-tamer.png' },
+  { id: 'a17', icon: 'sword',       tier: 'rare',   name: 'Temp Tamer',    desc: 'Defeat 5 villains',               done: false, progress: 3, total: 5,  reward: 170, img: 'badge-temp-tamer.png' },
   { id: 'a18', icon: 'egg',         tier: 'common', name: 'Egg-cellent',   desc: 'Hatch 5 eggs',                   done: true,  claimed: true,  reward: 65,  img: 'badge-egg-cellent.png' },
   { id: 'a19', icon: 'sparkles',    tier: 'epic',   name: 'Lucky Hatch',   desc: 'Hatch an Epic-rarity buddy',     done: true,  claimed: false, reward: 220, img: 'badge-lucky-hatch.png' },
 ];
