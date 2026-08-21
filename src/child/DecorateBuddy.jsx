@@ -5,7 +5,7 @@ import { buyItem, canBuyItem, CHARACTERS, moodForStage, OUTFITS, PLAYER } from '
 import { Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { ScreenHeader, outfitSlotsFor, outfitItemsFor, PointsChip } from './shared.jsx';
+import { ScreenHeader, outfitSlotsFor, outfitItemsFor } from './shared.jsx';
 
 // ── Decorate a buddy (A-5) ────────────────────────────────────────────
 // A dedicated page for the same outfit system the character detail screen's
@@ -420,14 +420,7 @@ function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
       <div style={{ flex: 1, background: '#fff', borderRadius: '28px 28px 0 0', padding: '18px 16px 134px', boxShadow: '0 -4px 14px rgba(20,18,16,0.05)', transform: `translateY(${translateY})`, transition: drag.current.active ? 'none' : 'transform .48s cubic-bezier(.32,.72,0,1)' }}>
         <div onTouchStart={e => dragStart(e.touches[0].clientY)} onTouchMove={e => dragMove(e.touches[0].clientY)} onTouchEnd={dragEnd} onMouseDown={onGripMouseDown}
           style={{ width: 40, height: 5, borderRadius: 999, background: 'rgba(46,43,41,0.22)', margin: '-8px auto 14px', cursor: 'grab', touchAction: 'none' }} />
-        {/* category tabs share their row with the points balance — the tabs take the left,
-            the chip sits fixed-width on the right, vertically centered against the tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <DecorateTabs tabStyle={tabStyle} slots={slots.filter(s => items.some(it => it.slot === s.id))} slotFilter={slotFilter} setSlotFilter={setSlotFilter} accent={accent} />
-          </div>
-          <PointsChip pts={PLAYER.points} />
-        </div>
+        <DecorateTabs tabStyle={tabStyle} slots={slots.filter(s => items.some(it => it.slot === s.id))} slotFilter={slotFilter} setSlotFilter={setSlotFilter} accent={accent} />
 
         {/* item count for the selected category — real info (how many are here) rather
             than just repeating the tab label the selected tab already shows */}
