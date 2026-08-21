@@ -5,14 +5,15 @@ import { buyItem, canBuyItem, CHARACTERS, moodForStage, nextStageAt, OUTFITS, PL
 import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { isNeon, mixHue, pastelHue, OUTFIT_SLOTS } from './shared.jsx';
+import { isNeon, mixHue, pastelHue, outfitSlotsFor, outfitItemsFor } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
 
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
   const color = orig.color;
   const [tab, setTab] = React.useState('stat');
-  const [slotFilter, setSlotFilter] = React.useState(OUTFIT_SLOTS[0].id);
+  const slots = outfitSlotsFor(orig);
+  const [slotFilter, setSlotFilter] = React.useState(slots[0].id);
   // A-3.3 — the stage is READ, not chosen. It follows the level (Stage 1 Lv.1–3, Stage 2
   // Lv.4–7, Stage 3 Lv.8–10, all server-tunable), so there is no "Evolve now" button any
   // more: the buddy transforms the moment the level that earns it lands, wherever that
@@ -60,7 +61,7 @@ function CharVariant({ ctx, variant }) {
 
   // The existing Items tab IS the outfit shop — no second section. A tile is
   // locked only when stage-gated; an affordable unowned tile shows its price.
-  const items = OUTFITS.map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked(o) }));
+  const items = outfitItemsFor(orig, OUTFITS).map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked(o) }));
   const tapItem = (it) => {
     const o = OUTFITS.find(x => x.id === it.id);
     if (!o || locked(o)) return;
@@ -106,7 +107,15 @@ function CharVariant({ ctx, variant }) {
     </div>
   );
 
-  // ── top bar (back · name · battle) ──
+  // ── top bar (back · name · decorate) ──
+  // The fight shortcut moved off this screen: the bottom tab bar's own battle button
+  // is already global and one tap away, so a second sword icon here was redundant.
+  // What's specific to a buddy's own page is dressing that buddy up — so the
+  // buddy-scoped action lives here instead (F-5, DecorateBuddy.jsx).
+  // The shirt button gets the same corner dot HomeVariantsSimple's egg-shop badge uses for
+  // "something here is worth a look" — on whenever an unlocked outfit is still unbought, off
+  // once the buddy owns everything it's currently allowed to wear.
+  const hasUnbought = items.some(it => !it.own && !it.locked);
   const TopBar = ({ onColor }) => {
     const btn = onColor ? '#fff' : '#fff';
     const ink = THEME.fg1;
@@ -114,7 +123,10 @@ function CharVariant({ ctx, variant }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
         <button onClick={() => ctx.back()} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: btn, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="chevron-left" size={20} color={ink} stroke={2.4} /></button>
         <span className="game-font" style={{ fontSize: 18, fontWeight: 500, color: ink }}>{orig.name}</span>
-        <button onClick={() => ctx.nav('battle')} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: btn, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="swords" size={18} color={THEME.joy} stroke={2.2} /></button>
+        <button onClick={() => ctx.nav('decoratebuddy', { id: orig.id })} style={{ position: 'relative', width: 38, height: 38, borderRadius: 999, border: 'none', background: btn, boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Icon name="shirt" size={18} color={accent} stroke={2.2} />
+          {hasUnbought && <span style={{ position: 'absolute', top: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: THEME.brand, border: '2px solid #fff' }} />}
+        </button>
       </div>
     );
   };
@@ -151,7 +163,7 @@ function CharVariant({ ctx, variant }) {
   // the grid. Reads as a second-level tab, not a second section of the same box.
   const slotTabRow = (
     <div className="no-sb" style={{ display: 'flex', gap: 7, overflowX: 'auto', width: '100%' }}>
-      {OUTFIT_SLOTS.filter(s => items.some(it => it.slot === s.id)).map(s => {
+      {slots.filter(s => items.some(it => it.slot === s.id)).map(s => {
         const on = slotFilter === s.id;
         return (
           <button key={s.id} onClick={() => setSlotFilter(s.id)} style={{ flex: 'none', border: on ? 'none' : '1.5px solid rgba(46,43,41,0.08)', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 14px', background: on ? accent : '#fff', boxShadow: on ? `0 4px 10px ${accent}4a` : THEME.shadowCard, display: 'inline-flex', alignItems: 'center', gap: 5, color: on ? '#fff' : THEME.fg2, fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap', transition: 'all .12s ease' }}>
@@ -165,7 +177,11 @@ function CharVariant({ ctx, variant }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10, width: '100%' }}>
       {filteredItems.map(it => (
         <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}1c` : tileBg, border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 4px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .65 : 1 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 999, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}><Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} /></div>
+          {it.img && !it.locked
+            ? <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src={it.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
+            : <div style={{ width: 34, height: 34, borderRadius: 999, background: it.on ? accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.06)' }}>
+                <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
+              </div>}
           <span style={{ fontSize: 9, fontWeight: 700, color: it.locked ? THEME.fg3 : THEME.fg2, textAlign: 'center', lineHeight: 1.1 }}>{L(it.name)}</span>
           <span style={{ fontSize: 8.5, fontWeight: 800, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold }}>{itemStatus(it)}</span>
         </button>
@@ -221,43 +237,13 @@ function CharVariant({ ctx, variant }) {
       })}
     </div>
   );
-  // category chips — same frosted-pill treatment as the top tabs above, so they read
-  // as a second tier of the same chrome rather than a different kind of control.
-  const slotTabRowShowcase = (
-    <div className="no-sb" style={{ display: 'flex', gap: 7, overflowX: 'auto', width: '100%' }}>
-      {OUTFIT_SLOTS.filter(s => items.some(it => it.slot === s.id)).map(s => {
-        const on = slotFilter === s.id;
-        return (
-          <button key={s.id} onClick={() => setSlotFilter(s.id)} style={{ flex: 'none', border: `1.5px solid ${on ? accent : 'transparent'}`, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999, padding: '7px 14px', background: on ? '#fff' : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'inline-flex', alignItems: 'center', gap: 5, color: on ? accent : shade(brand, -44), fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap', transition: 'all .12s ease' }}>
-            <Icon name={s.icon} size={12} color={on ? accent : shade(brand, -30)} stroke={2.4} />{L(s.label)}
-          </button>
-        );
-      })}
-    </div>
-  );
-  // items as 2-col rows with name + equip status
-  // minmax(0,1fr), not 1fr: a 1fr track's automatic minimum is min-content, so the
-  // un-wrappable item name would push the track wider than half the card and the
-  // second column would hang off the right edge. The tiles must be free to shrink.
-  const itemGridShowcase = (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, width: '100%' }}>
-      {filteredItems.map(it => (
-        <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, borderRadius: 16, background: '#fff', border: 'none', boxShadow: THEME.shadowCard, padding: '10px 10px', cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: it.locked ? .65 : 1 }}>
-          {/* equipped is a small corner mark on an otherwise-flat card, not a
-              recolored tile — the same "ribbon, not sticker" idiom Badges uses */}
-          {it.on && <span style={{ position: 'absolute', top: 7, right: 7, width: 15, height: 15, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={9} color="#fff" stroke={3.5} /></span>}
-          <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? accent : THEME.fg2} stroke={2.3} />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            {/* wraps rather than ellipsizes — half a tile is ~78px of text and a child
-                who reads "Guardian C…" learns nothing about what they're equipping */}
-            <div style={{ fontSize: 11, fontWeight: 800, color: it.locked ? THEME.fg3 : THEME.fg1, lineHeight: 1.2 }}>{L(it.name)}</div>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: it.on ? accent : it.own || it.locked ? THEME.fg3 : THEME.gold, marginTop: 1 }}>{itemStatus(it)}</div>
-          </div>
-        </button>
-      ))}
-    </div>
+  // the buddy's personality blurb — accessories now live on their own dedicated
+  // screen (the shirt icon in TopBar → DecorateBuddy), so this tab isn't a second,
+  // redundant copy of that shop; it's something the item grid never had room for.
+  const storyContent = (
+    <p style={{ fontSize: 13.5, color: THEME.fg2, lineHeight: 1.6, margin: 0, textAlign: 'center' }}>
+      {orig.bio ? L(orig.bio) : L("This buddy's story hasn't been written yet.")}
+    </p>
   );
 
   // showcase gets its own panel — floating frosted chip-tabs over the same
@@ -268,8 +254,8 @@ function CharVariant({ ctx, variant }) {
       {/* segmented tabs — the same well recipe as every other screen's toggle
           (Notifications/Collection/Profile): a frosted track, white active pill
           defined by shadowCard's hairline ring, never a colored glow */}
-      <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.42)', borderRadius: 16, padding: 4, marginBottom: tab === 'item' ? 10 : 14, border: '1.5px solid rgba(255,255,255,0.55)' }}>
-        {[['stat', L('Stats'), 'swords'], ['item', L('Items'), 'shirt']].map(([id, label, icon]) => {
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.42)', borderRadius: 16, padding: 4, marginBottom: 14, border: '1.5px solid rgba(255,255,255,0.55)' }}>
+        {[['stat', L('Stats'), 'swords'], ['story', L('Story'), 'message-circle']].map(([id, label, icon]) => {
           const on = tab === id;
           const offText = shade(brand, -48);
           const offIcon = shade(brand, -34);
@@ -280,11 +266,9 @@ function CharVariant({ ctx, variant }) {
           );
         })}
       </div>
-      {/* category chips — Items tab only */}
-      {tab === 'item' && <div style={{ marginBottom: 14 }}>{slotTabRowShowcase}</div>}
       {/* content — the same frosted/flat card every other panel here uses */}
       <div style={{ ...card, marginBottom: 0, minHeight: 150, display: 'flex', alignItems: 'center' }}>
-        {tab === 'stat' ? traitsContentShowcase : itemGridShowcase}
+        {tab === 'stat' ? traitsContentShowcase : storyContent}
       </div>
     </div>
   );
@@ -444,9 +428,14 @@ function CharVariant({ ctx, variant }) {
   // ── mascot (centered) ──
   // A-3.3 — form, idle animation and face all come from the stage table, so a stage-up
   // changes how the buddy looks AND how it moves, not just a number on a badge.
+  // The Client reference render is otherwise still — every other style already floats via
+  // its own call sites (home hero, onboarding), so bring this one screen in line with them
+  // rather than turning it on for every style here and changing established behaviour.
   const Buddy = ({ size }) => (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Mascot species={orig.species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" />
+      <div className={window.JX_CHAR_STYLE === 'client' ? 'jx-float' : ''}>
+        <Mascot species={orig.species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" />
+      </div>
     </div>
   );
   const Badges = (
@@ -552,8 +541,15 @@ function CharVariant({ ctx, variant }) {
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', textAlign: 'center', marginTop: 8, cursor: 'pointer' }}>
           <div style={{ position: 'relative' }}><Buddy size={162} /></div>
           {/* contact shadow. shade() clamps on a neon brand colour (shade(#E00477,62)
-              → #ff42b5), so the "shadow" came out hotter than the buddy — pastelise it. */}
-          <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${neon ? pastelHue(brand, 0, 0.80, 1) : shade(brand, 62)} 0%, ${tint(brand, .82)} 58%, ${tint(brand, .82)}00 78%)` }} />
+              → #ff42b5), so the "shadow" came out hotter than the buddy — pastelise it.
+              Skipped for Client: the reference render is its own finished image, and this
+              pedestal glow (tuned for the app's own flat mascots) doesn't belong under it. */}
+          {window.JX_CHAR_STYLE !== 'client' && (
+            <div style={{ width: 168, height: 30, borderRadius: '50%', margin: '-12px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${neon ? pastelHue(brand, 0, 0.80, 1) : shade(brand, 62)} 0%, ${tint(brand, .82)} 58%, ${tint(brand, .82)}00 78%)` }} />
+          )}
+          {/* the shadow above doubled as breathing room before the badges row — without it
+              Client's feet sit right on top of "Common · Stage 2", so it needs its own gap */}
+          {window.JX_CHAR_STYLE === 'client' && <div style={{ height: 14 }} />}
         </div>
         <div style={{ textAlign: 'center', marginTop: 10 }}>
           {Badges}

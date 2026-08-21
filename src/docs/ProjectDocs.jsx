@@ -45,16 +45,16 @@ const XP_STEPS = [
 const XP_TOTAL = XP_STEPS.reduce((a, b) => a + b.xp, 0);          // 2,250 EXP to the cap
 
 const VILLAINS = [
-  { lv: 1,  name: 'Temp',   power: 60,  role: '', risk: 'Temptation — the phone that begs to be checked', ability: 'Just One Peek' },
-  { lv: 2,  name: 'Haze',   power: 95,  role: '', risk: 'Carelessness — attention draining away', ability: 'Blur' },
-  { lv: 3,  name: 'Rush',   power: 130, role: '', risk: 'Impulse — moving before looking', ability: 'Go Now' },
-  { lv: 4,  name: 'Noct',   power: 165, role: '', risk: 'Darkness — being unseen by drivers', ability: 'Lights Out' },
-  { lv: 5,  name: 'Glitch', power: 205, role: '', risk: 'Confusion — danger that breaks the rules', ability: 'Wrong Signal' },
-  { lv: 6,  name: 'Maze',   power: 245, role: '', risk: 'Complexity — losing your way', ability: 'Endless Detour' },
-  { lv: 7,  name: 'Vex',    power: 285, role: '', risk: 'Anxiety — pressure crowding out the road', ability: 'Hurry Up' },
-  { lv: 8,  name: 'Grim',   power: 330, role: '', risk: 'Fear — freezing mid-crossing', ability: 'Freeze' },
-  { lv: 9,  name: 'Vilord', power: 380, role: 'Mid-boss',   risk: 'The hand behind the other eight', ability: 'Command the Eight' },
-  { lv: 10, name: 'Nox',    power: 440, role: 'Final boss', risk: 'The source — the dark the others are made of', ability: 'Total Dark' },
+  { lv: 1,  name: 'Ping',   power: 60,  role: '', risk: 'Notifications — the phone that never stops asking to be checked', ability: 'Endless Alerts' },
+  { lv: 2,  name: 'Temo',   power: 95,  role: '', risk: 'Temptation — the promise that the next thing is even better', ability: 'Just One More' },
+  { lv: 3,  name: 'Vortex', power: 130, role: '', risk: 'Scrolling — a feed with no bottom and no door out', ability: 'No Bottom' },
+  { lv: 4,  name: 'Moody',  power: 165, role: '', risk: 'Emotion — a mood that swings with every like and comment', ability: 'Compare and Despair' },
+  { lv: 5,  name: 'Chrono', power: 205, role: '', risk: 'Time — the clock that goes silent the moment you open it', ability: 'Time Blindness' },
+  { lv: 6,  name: 'Hexa',   power: 245, role: '', risk: 'Habit — a loop worn so deep you stop deciding to open it', ability: 'Worn Groove' },
+  { lv: 7,  name: 'Shatter', power: 285, role: '', risk: 'Focus — concentration broken into pieces too small to use', ability: 'Split Focus' },
+  { lv: 8,  name: 'Twist',  power: 330, role: '', risk: 'Thinking — a mind bent until its own judgement cannot be trusted', ability: 'Warped Read' },
+  { lv: 9,  name: 'Puppet', power: 380, role: 'Mid-boss',   risk: 'Mind control — strings on every choice you thought was your own', ability: 'Pull the Strings' },
+  { lv: 10, name: 'Vilord', power: 440, role: 'Final boss', risk: 'Total domination — the moment the phone stops being a tool and starts being in charge', ability: 'Full Control' },
 ];
 
 const REACTIONS = [   // REACTIONS_7D — the chart the parent report is built on
@@ -82,9 +82,9 @@ const POWER = [
   { k: 'Epic Lv.1',    v: 235 }, { k: 'Epic Lv.10',   v: 451 },
 ];
 const THRESHOLDS = [
-  { k: 'Grim (Lv.8)',   v: 330, c: C.ink3 },
-  { k: 'Vilord (Lv.9)', v: 380, c: C.warn },
-  { k: 'Nox (Lv.10)',   v: 440, c: C.bad },
+  { k: 'Twist (Lv.8)',  v: 330, c: C.ink3 },
+  { k: 'Puppet (Lv.9)', v: 380, c: C.warn },
+  { k: 'Vilord (Lv.10)', v: 440, c: C.bad },
 ];
 
 const EGG_ODDS = [
@@ -128,7 +128,7 @@ const TESTS = [
   { id: 'U-12', c: 'rollRarity over 10,000 Common Egg rolls', e: '≈80% common, 20% rare, exactly 0% epic' },
   { id: 'U-17', c: 'setXpCurve({steps:[100,"x",-5], maxLevel:0})', e: 'Every launch default restored' },
   { id: 'U-18', c: 'setStatGrowth({ stageMult: 2 })', e: 'Ignored — a stage must never grant stats' },
-  { id: 'U-21', c: 'endingUnlocked() after appending an enabled 11th villain', e: 'Still keyed to Nox' },
+  { id: 'U-21', c: 'endingUnlocked() after appending an enabled 11th villain', e: 'Still keyed to Vilord' },
   { id: 'C-01', c: 'Stop inside the 2-second buzz hold', e: 'No warning ever renders; outcome logged as immediate' },
   { id: 'C-03', c: 'A single stray "safe" sensor reading', e: 'The overlay does NOT come down before safeConfirmSeconds' },
 ];
@@ -291,13 +291,13 @@ function PowerChart() {
         ))}
         {POWER.map((p, i) => {
           const on = hov === i;
-          const beatsNox = p.v >= 440;
+          const beatsVilord = p.v >= 440;
           return (
             <div key={p.k} onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov(null)}
               style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, zIndex: 1 }}>
               <span style={{ fontSize: 11, fontWeight: 800, color: on ? C.ink : C.ink2, fontVariantNumeric: 'tabular-nums' }}>{p.v}</span>
               <div style={{ width: '100%', height: (p.v / MAX) * (H - 20), borderRadius: '4px 4px 0 0',
-                background: beatsNox ? C.good : C.ocean, opacity: hov == null || on ? 1 : 0.45, transition: 'opacity .12s ease' }} />
+                background: beatsVilord ? C.good : C.ocean, opacity: hov == null || on ? 1 : 0.45, transition: 'opacity .12s ease' }} />
             </div>
           );
         })}
@@ -416,7 +416,7 @@ const FEATURES = [
   { id: 'F-19 · A-8 · A-9', t: 'Villains & the ending', screens: ['Battle.jsx', 'VillainDex.jsx'],
     p: 'Give the danger a face a child can beat.',
     d: 'Ten original IP characters, each personifying a real road risk. Sequential unlock, 5 challenges a day, power rising 60 → 440. Outcome is computed from accumulated growth, never from reflexes: win = power(buddy) + 30 ≥ villain.power.',
-    e: 'First clear 120pt/60xp · repeat 40pt/20xp (strictly lower, so re-fighting is for records, not farming) · beating Nox pays 500pt/200xp + an Epic Egg and unlocks the ending.' },
+    e: 'First clear 120pt/60xp · repeat 40pt/20xp (strictly lower, so re-fighting is for records, not farming) · beating Vilord pays 500pt/200xp + an Epic Egg and unlocks the ending.' },
   { id: 'F-32 · A-10', t: 'Friends, houses & guestbook', screens: ['Friends.jsx', 'FriendHouse.jsx', 'Guestbook.jsx'],
     p: 'Let children show off without exposing them to each other.',
     d: 'Visit-only: see a friend’s featured buddy, browse their rooms, leave a like, sign the guestbook.',
@@ -433,7 +433,7 @@ const RULES = [
   { t: 'Every decoration is buyable with points', s: 'A null price would mean "unobtainable by saving", which the spec forbids. 0 means granted; null means not-for-sale — and no decoration is null.' },
   { t: 'Only an Epic Egg can hatch an Epic', s: 'That is the entire mechanism keeping the two hidden characters genuinely rare.' },
   { t: 'Hidden Epics are invisible everywhere', s: 'No dex slot, no silhouette, no "???" placeholder, and not in the completion denominator — any of those would leak that they exist.' },
-  { t: 'The final boss is a ROLE, not a row position', s: 'The old code asked "is this the last villain?". Appending a seasonal villain after Nox would have silently promoted it to final boss and moved the ending. Now the ladder asks the role.' },
+  { t: 'The final boss is a ROLE, not a row position', s: 'The old code asked "is this the last villain?". Appending a seasonal villain after Vilord would have silently promoted it to final boss and moved the ending. Now the ladder asks the role.' },
   { t: 'A grant can never pay twice', s: 'Three ledgers map ruleId → timesPaid. isOwed() returns a COUNT, not a boolean — so a child who walks 80km before the next check is owed all three 25km eggs at once, while a one-shot rule settles forever the moment it is paid.' },
   { t: 'Points leave the wallet only if the EXP lands', s: 'The verdict is computed first; the wallet is debited only on ok.' },
 ];
@@ -1064,15 +1064,15 @@ function ProjectDocs() {
           </p>
           <div className="doc-why">
             <b>Boss status is a role, not a row position.</b> The original code asked "is this the last
-            villain in the array?" — which meant appending a seasonal villain after Nox would silently
+            villain in the array?" — which meant appending a seasonal villain after Vilord would silently
             promote it to final boss and move the ending. The ladder now asks the <i>role</i>, and that
-            was verified: enabling an 11th villain extends the ladder and leaves the finale with Nox.
+            was verified: enabling an 11th villain extends the ladder and leaves the finale with Vilord.
           </div>
         </section>
 
         {/* ── BALANCE ── */}
         <section id="balance" ref={set('balance')} className="doc-section">
-          <h2 className="doc-h2">Balance analysis — who can actually beat Nox?</h2>
+          <h2 className="doc-h2">Balance analysis — who can actually beat Vilord?</h2>
           <p className="doc-lead">
             A battle is won when <code>power(buddy) + 30 ≥ villain.power</code>. So the difficulty curve
             is not an opinion — it is arithmetic, and it can be checked. These bars are the real
@@ -1081,7 +1081,7 @@ function ProjectDocs() {
           <PowerChart />
           <div className="doc-why">
             <b>Finding: the final boss is beatable only by an Epic.</b> A fully-grown <i>Rare</i> reaches
-            367 effective power against Nox's 440 — it falls <b>73 short</b>, and no amount of levelling
+            367 effective power against Vilord's 440 — it falls <b>73 short</b>, and no amount of levelling
             closes the gap, because Lv.10 is the cap. Only an Epic (451) clears it.
             <br /><br />
             That makes the guaranteed unlocks <b>load-bearing, not decorative</b>: an Epic comes from the

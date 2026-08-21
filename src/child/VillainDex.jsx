@@ -328,7 +328,7 @@ function VillainTrail({ ctx }) {
         {ending && v.role === 'finalBoss' && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 10, background: THEME.goldLight, borderRadius: 12, padding: '9px 11px' }}>
             <Icon name="sunrise" size={14} color="#9e7300" stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div style={{ fontSize: 11.5, color: '#9e7300', fontWeight: 700, lineHeight: 1.45 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
+            <div style={{ fontSize: 11.5, color: '#9e7300', fontWeight: 700, lineHeight: 1.45 }}>{L('The pull every other villain was made of is gone. The choice is yours again — and so is your time.')}</div>
           </div>
         )}
 
@@ -514,7 +514,7 @@ function VillainRoad({ ctx }) {
         {ending && v.role === 'finalBoss' && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 10, background: THEME.goldLight, borderRadius: 12, padding: '9px 11px' }}>
             <Icon name="sunrise" size={14} color="#9e7300" stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} />
-            <div style={{ fontSize: 11.5, color: '#9e7300', fontWeight: 700, lineHeight: 1.45 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
+            <div style={{ fontSize: 11.5, color: '#9e7300', fontWeight: 700, lineHeight: 1.45 }}>{L('The pull every other villain was made of is gone. The choice is yours again — and so is your time.')}</div>
           </div>
         )}
 

@@ -29,6 +29,7 @@ export { Guestbook } from './Guestbook.jsx';
 export { FriendHouse } from './FriendHouse.jsx';
 export { MyHouse } from './MyHouse.jsx';
 export { DecorateRoom } from './DecorateRoom.jsx';
+export { DecorateBuddy } from './DecorateBuddy.jsx';
 export { AddFriends } from './AddFriends.jsx';
 export { MSG_LAYOUTS, WarningOverlay } from './WarningOverlay.jsx';
 export { ImpactOverlay } from './ImpactOverlay.jsx';

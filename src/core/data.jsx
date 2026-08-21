@@ -35,8 +35,8 @@ const BATTLE_RULES_DEFAULTS = {
   // A-8.4 — the two bosses are not just bigger first clears; each pays an ADDITIONAL special
   // reward on top of the ordinary first clear. Keyed off the ROLE, never off "the 9th villain"
   // or "the last one" — a seasonal villain appended to the ladder must not inherit a boss payout.
-  bossClearBonus:  { points: 200, xp: 90,  egg: 'rare' },   // Vilord (midBoss)
-  finalClearBonus: { points: 460, xp: 180, egg: 'epic', ending: true },   // Nox (finalBoss)
+  bossClearBonus:  { points: 200, xp: 90,  egg: 'rare' },   // Puppet (midBoss)
+  finalClearBonus: { points: 460, xp: 180, egg: 'epic', ending: true },   // Vilord (finalBoss)
   // A-8.4 — repeat wins pay Points and EXP. An egg on a repeat is OFF by default and exists
   // for events and ops policy: set `egg` and a `chance` (0…1) and rematches start dropping
   // one. A flat `chance: 1` would make farming the easiest villain the best egg source in the
@@ -149,6 +149,10 @@ const PLAYER = {
   // calls react(PLAYER), so `likes` cannot drift out of step with the tally the way the
   // reactionTotal() note warns about; it stays as the one number the header shows.
   friendCode: 'JNX-MINA-27', likes: 18, reactions: { love: 7, fire: 5, like: 3, clap: 2, wow: 1 }, houseBg: 'sky', scene: 'forest',
+  // the room picked in the MyHouse switcher (F-32, 'hotspot' variant) — this is the room
+  // a friend visits, so it has to outlive the component the same way `scene` does. null
+  // until the child ever opens the switcher, at which point ROOMS' `home:true` room wins.
+  homeRoomId: null,
   // items placed in the public profile scene (around the buddy) — F-32
   profileDecor: { plant: true },
   // Child device preferences — the game's own feedback plus accessibility.
@@ -986,6 +990,12 @@ const convertPointsToXp = (xp, c, player = PLAYER) => {
 //   slot      — hat · glasses · clothing · accessory (the A-5.1 taxonomy)
 //   minStage  — evolution stage required before it can be worn/bought
 //   minLevel  — player level required (0 = no gate); some items unlock by levelling
+//   img       — optional; a real illustrated tile instead of a bare lucide icon
+//   charId    — optional; scopes the item to one buddy instead of every buddy sharing
+//               the universal catalog below. A character with its OWN scoped items
+//               (see outfitSlotsFor's CHAR_OUTFIT_SLOTS in child/shared.jsx) sees ONLY
+//               its own charId items, not the shared ones too — its own art replaces
+//               the generic catalog rather than sitting alongside it.
 const OUTFITS = [
   { id: 'scarf',   icon: 'shirt',          name: 'Hero Scarf',    category: 'character', slot: 'clothing',  price: 0,   minStage: 2, minLevel: 0 },
   { id: 'cape',    icon: 'wind',           name: 'Guardian Cape', category: 'character', slot: 'clothing',  price: 0,   minStage: 3, minLevel: 0 },
@@ -993,6 +1003,14 @@ const OUTFITS = [
   { id: 'glasses', icon: 'glasses',        name: 'Cool Shades',   category: 'character', slot: 'glasses',   price: 250, minStage: 1, minLevel: 0 },
   { id: 'cap',     icon: 'graduation-cap', name: 'Explorer Cap',  category: 'character', slot: 'hat',       price: 280, minStage: 2, minLevel: 0 },
   { id: 'crown',   icon: 'crown',          name: 'Star Crown',    category: 'character', slot: 'hat',       price: 300, minStage: 3, minLevel: 0 },
+  // Milo — his own hat/coat art (character-references/characters/02-milo/accessories),
+  // replacing the shared catalog above rather than adding to it (see charId note).
+  { id: 'milo-aviator-goggles', img: '/assets/characters/outfits/milo/aviator-goggles.png', name: 'Aviator Goggles', category: 'character', slot: 'hat',      price: 0,   minStage: 1, minLevel: 0, charId: 'c10' },
+  { id: 'milo-bucket-hat',      img: '/assets/characters/outfits/milo/bucket-hat.png',      name: 'Bucket Hat',      category: 'character', slot: 'hat',      price: 180, minStage: 1, minLevel: 0, charId: 'c10' },
+  { id: 'milo-captains-cap',    img: '/assets/characters/outfits/milo/captains-cap.png',    name: 'Captain’s Cap',   category: 'character', slot: 'hat',      price: 260, minStage: 2, minLevel: 0, charId: 'c10' },
+  { id: 'milo-pirate-coat',     img: '/assets/characters/outfits/milo/pirate-coat.png',     name: 'Pirate Coat',     category: 'character', slot: 'clothing', price: 0,   minStage: 1, minLevel: 0, charId: 'c10' },
+  { id: 'milo-pocket-watch',    img: '/assets/characters/outfits/milo/pocket-watch.png',    name: 'Pocket Watch',    category: 'character', slot: 'clothing', price: 220, minStage: 1, minLevel: 0, charId: 'c10' },
+  { id: 'milo-suspenders',      img: '/assets/characters/outfits/milo/suspenders.png',      name: 'Suspenders',      category: 'character', slot: 'clothing', price: 200, minStage: 2, minLevel: 0, charId: 'c10' },
   // also earned — the grant rules below hand these out (A-5.1)
   { id: 'goggles', icon: 'glasses',        name: 'Night Goggles', category: 'character', slot: 'glasses',   price: 320, minStage: 1, minLevel: 8 },
   { id: 'medal',   icon: 'medal',          name: 'Victory Medal', category: 'character', slot: 'accessory', price: 280, minStage: 1, minLevel: 0 },
@@ -1586,21 +1604,21 @@ const rarityOf = (key) => RARITIES.find(r => r.key === key) || RARITIES[0];
 const CHARACTERS = [
   // ── Common ×8 ──
   // level 5, not 4: stage is derived (A-3.3) and Stage 2 starts at Lv.5, so a Lv.4 buddy
-  // hand-marked Stage 2 was simply illegal. Levelled up rather than demoted — Mochi is
+  // hand-marked Stage 2 was simply illegal. Levelled up rather than demoted — Munch is
   // the starter buddy and is drawn at Stage 2 throughout.
-  { id: 'c2',  species: 'cat',  name: 'Mochi',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c2',  species: 'cat',  name: 'Munch',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 55, speed: 80, heart: 60 }, bio: "Lives for snacks and having fun — patience isn't really his thing, so trouble tends to find him." },
   { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 2, xp: 60,  owned: true,  room: 'green', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c10', species: 'cat',  name: 'Bloo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'town', traits: { guard: 55, speed: 80, heart: 60 } },
+  { id: 'c10', species: 'cat',  name: 'Milo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'town', traits: { guard: 55, speed: 80, heart: 60 }, bio: 'Easygoing and hard to rattle. Milo takes things as they come, at his own pace.' },
   { id: 'c11', species: 'cat',  name: 'Cocoa',   color: '#a9744f', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 45, speed: 70, heart: 62 } },
-  { id: 'c12', species: 'bird', name: 'Sky',     color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 } },
-  { id: 'c13', species: 'croc', name: 'Snap',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 } },
-  { id: 'c14', species: 'owl',  name: 'Pebble',  color: '#8b8073', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 } },
-  { id: 'c15', species: 'fox',  name: 'Biscuit', color: '#d8a657', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 52, speed: 64, heart: 70 } },
+  { id: 'c12', species: 'bird', name: 'Dewey',   color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 }, bio: 'Quiet and sensitive, easily spooked — but turns brave the moment a friend needs him.' },
+  { id: 'c13', species: 'croc', name: 'Bolt',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 }, bio: 'Loves taking things apart and fixing them back up. Blunt and to the point, but always someone you can count on.' },
+  { id: 'c14', species: 'owl',  name: 'Theo',    color: '#8b8073', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 }, bio: 'Sharp and always thinking things through — and he knows it, which makes him a little much sometimes.' },
+  { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 52, speed: 64, heart: 70 }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
   // ── Rare ×5 ──
-  { id: 'c1',  species: 'fox',  name: 'Hammy',   color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 } },
-  { id: 'c6',  species: 'owl',  name: 'Sunny',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'town', traits: { guard: 60, speed: 85, heart: 64 } },   // Lv.5 → Stage 2, one level short of the Stage 3 threshold (A-3.3)
-  { id: 'c16', species: 'owl',  name: 'Luna',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 } },
-  { id: 'c17', species: 'croc', name: 'Basil',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 } },
+  { id: 'c1',  species: 'fox',  name: 'Rex',     color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 }, bio: "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts." },
+  { id: 'c6',  species: 'owl',  name: 'Blaze',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 5, xp: 350, owned: true,  room: 'town', traits: { guard: 60, speed: 85, heart: 64 }, bio: 'Warm-hearted but quick to heat up — competitive, a bit hot-tempered, and hates losing.' },   // Lv.5 → Stage 2, one level short of the Stage 3 threshold (A-3.3)
+  { id: 'c16', species: 'owl',  name: 'Glim',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 }, bio: 'Quiet and a little mysterious — the one the others find hardest to figure out.' },
+  { id: 'c17', species: 'croc', name: 'Sailo',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 }, bio: 'Adventurous and always up for somewhere new. Tends to leap first and think later.' },
   // ── Epic ×2 — hidden until unlocked (F-15.2): no dex slot, no silhouette, no name ──
   { id: 'c18', species: 'croc', name: 'Ember',   color: '#9867e4', rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Walk safely 30 days in a row', room: null, traits: { guard: 95, speed: 70, heart: 88 } },
   { id: 'c19', species: 'bird', name: 'Zephyr',  color: '#e0559a', rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Win a special event mission', room: null, traits: { guard: 80, speed: 96, heart: 82 } },
@@ -1699,9 +1717,11 @@ const ROOM_CAPACITY = 10;
 
 const ROOMS = [
   // `home: true` marks the room the profile/house opens on (MyHouse). Dream Room for now.
-  { id: 'green', name: 'Green Room', theme: 'green', slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
-  { id: 'town',  name: 'Town Room',  theme: 'town',  slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
-  { id: 'dream', name: 'Dream Room', theme: 'dream', home: true, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
+  // `unlocked: true` on all three — every room ships free in the MVP roster; a future
+  // seasonal/earned room would be the one to ship `unlocked: false` on.
+  { id: 'green', name: 'Green Room', theme: 'green', unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
+  { id: 'dream', name: 'Dream Room', theme: 'dream', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
 ];
 
 /* ── Achievement badges ────────────────────────────────────────────────
@@ -1958,6 +1978,10 @@ const CHILD_REPORTS = {
 // and streak events, which aren't a window's business. Hand-authored per entry, same as every
 // other field here — there's no live clock or geofence behind this prototype's mock data.
 const PARENT_ALERTS = [
+  // C7 impact/fall — a seeded demo row so the call-the-child flow (ParentAlertDetail) has
+  // something to open without first triggering it live via Tweaks. `reason` picks the message
+  // ParentAlertDetail shows; real rows get one the same way, written by pushImpactAlert below.
+  { id: 'n0', kind: 'impact',     child: 'k1', title: 'Impact detected',    sub: 'No response for 20 seconds. Please check right away.', reason: 'timeout', time: '5m', today: true, unread: true },
   { id: 'n1', kind: 'warning',    child: 'k1', title: 'Distraction warning', sub: 'Near Oak Street crossing',   time: '8m',  today: true, unread: true, window: 'After school' },
   { id: 'n2', kind: 'safe',       child: 'k3', title: 'Safe walk completed',  sub: '22 min phone-free',          time: '40m', today: true, unread: true, window: 'At home' },
   { id: 'n3', kind: 'ignored',    child: 'k2', title: 'Warning ignored',      sub: 'Kept scrolling while walking', time: '1h', today: true, ack: 'Min-jun', unread: true, window: 'Playground' },
@@ -1967,6 +1991,26 @@ const PARENT_ALERTS = [
   { id: 'n6', kind: 'safe',       child: 'k1', title: 'Safe morning commute', sub: 'School route, no warnings',  time: 'Yesterday', today: false, unread: false, window: 'School commute' },
   { id: 'n7', kind: 'device_on',  child: 'k1', title: 'Device reconnected',   sub: 'iPhone 13 back online',      time: '2d',  today: false, unread: false },
 ];
+
+// C7 — impact/fall escalation writes a real row here, the same one whichever face of the
+// event fires it: the child's own on-device check timing out, "I need help", or a parent-side
+// preview of the takeover. One record either way, so Alerts still has it after the full-screen
+// takeover is dismissed — a parent who missed the ring can find it, open it, and call.
+// Unshifted (not pushed) so the newest impact always leads Today, matching the "newest first"
+// convention the rest of this feed already follows.
+const pushImpactAlert = (reason) => {
+  const child = linkedChild();
+  if (!child) return null;
+  const alert = {
+    id: `impact-${PARENT_ALERTS.length}-${reason}`, kind: 'impact', child: child.id,
+    title: 'Impact detected',
+    sub: reason === 'timeout' ? 'No response for 20 seconds. Please check right away.' : 'I need help',
+    reason, time: 'now', today: true, unread: true,
+    ts: Date.now(),   // a real timestamp — this row is written live, unlike the hand-authored seed rows above
+  };
+  PARENT_ALERTS.unshift(alert);
+  return alert;
+};
 
 // MAX_CHILDREN (A-13) — how many children one guardian account may register and manage.
 // "Managed" is about authority, not blood: any child the guardian pairs counts, related or
@@ -2041,7 +2085,7 @@ const SPECIES_INFO = {
 //             server flag, not an app release
 //   role    — minion · midBoss · finalBoss. Everything asks the ROLE who the boss is;
 //             nothing keys off "the last row", so appending a seasonal villain after
-//             Nox cannot silently promote it to final boss and move the ending
+//             Vilord cannot silently promote it to final boss and move the ending
 //   lv      — ladder position, sequential-unlock order, AND the RECOMMENDED level (A-8.2).
 //             One number, so the ladder and the recommendation can never disagree
 //   power   — the villain's STAT BUDGET, not a number it is compared against. winChance
@@ -2054,113 +2098,113 @@ const SPECIES_INFO = {
 //             Re-check these if STAT_GROWTH or BATTLE_ODDS changes — a stat rebalance
 //             silently rebalances every fight in the game.
 const VILLAINS = [
-  { id: 'v-temp', lv: 1, name: 'Temp', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-ping', lv: 1, name: 'Ping', role: 'minion', set: 'mvp', enabled: true,
     species: 'cat', color: '#c06fa0', power: 145, defeated: true,
-    risk: 'Temptation — the phone that begs to be checked',
-    desc: 'Offers you one peek. One peek is all a road needs.',
-    personality: 'Sweet, patient, never pushy. It does not grab — it invites.',
-    story: 'Temp was born the first time someone said "just one look" and stepped off the kerb. It has been offering ever since, and it never has to ask twice.',
-    look: 'A soft glowing lure shaped like a chat bubble, warm candy colours — the only villain that looks friendly.',
-    ability: { name: 'Just One Peek', effect: 'Pulls your eyes down for a second — and a second is all a car needs.' ,
+    risk: 'Notifications — the phone that never stops asking to be checked',
+    desc: 'Buzzes and blinks until you look. It never has to ask twice.',
+    personality: 'Small, chirpy, relentless. Never mad — just never quiet.',
+    story: 'Ping was born the moment a screen learned to interrupt. It does not care what you were doing — only that you stop doing it and look at it instead.',
+    look: 'A tiny bouncing dot wrapped in a soft red badge-glow, cheerful colours, impossible to ignore.',
+    ability: { name: 'Endless Alerts', effect: 'Buzzes until you glance down — and a glance is all it needs to win the first move.' ,
       // A-8.3 — pulls your eyes down — you lose the first move
       mods: { hero: { speed: -0.10 } } } },
 
-  { id: 'v-haze', lv: 2, name: 'Haze', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-temo', lv: 2, name: 'Temo', role: 'minion', set: 'mvp', enabled: true,
     species: 'fox', color: '#8a94a6', power: 160, defeated: true,
-    risk: 'Carelessness — attention that quietly drains away',
-    desc: 'Softens the world until a crossing looks like a pavement.',
-    personality: 'Dozy and slow. Means no harm; simply is not paying attention — which is the harm.',
-    story: 'Haze does not attack. It settles, the way fog settles, until the difference between the road and the path stops mattering to you.',
-    look: 'A drifting fog-shape with half-lidded eyes, muted grey-blue, edges never quite in focus.',
-    ability: { name: 'Blur', effect: 'Fades the edges of the street so you miss the one that matters.' ,
+    risk: 'Temptation — the promise that the next thing is even better',
+    desc: 'Offers one more video, one more reward, one more reason to stay.',
+    personality: 'Sweet, patient, never pushy. It does not grab — it invites.',
+    story: 'Temo never tells you to stop what you are doing. It just makes the next thing look a little brighter than the thing in your hand — and there is always a next thing.',
+    look: 'A soft glowing lure shaped like a gift box, warm candy colours — the only villain that looks friendly.',
+    ability: { name: 'Just One More', effect: 'Dangles a brighter reward just out of reach, so your guard drifts toward it.' ,
       // A-8.3 — you swing at the wrong thing
       mods: { hero: { courage: -0.12 } } } },
 
-  { id: 'v-rush', lv: 3, name: 'Rush', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-vortex', lv: 3, name: 'Vortex', role: 'minion', set: 'mvp', enabled: true,
     species: 'bird', color: '#d1603a', power: 175, defeated: true,
-    risk: 'Impulse — moving before looking',
-    desc: 'Runs first. Looks never.',
-    personality: 'Loud, breathless, permanently late. Cannot stand still at a red light.',
-    story: 'Rush is the voice that says the gap is big enough. It is right almost every time, and that is exactly what makes it dangerous.',
-    look: 'A streaking orange blur with motion-smeared limbs, feet already three steps ahead of its body.',
-    ability: { name: 'Go Now', effect: 'Shoves you off the kerb before the light has changed.' ,
-      // A-8.3 — it shoves before the light changes — it always opens
+    risk: 'Scrolling — a feed with no bottom and no door out',
+    desc: 'Serves the next screen before you finish the one you are on.',
+    personality: 'Fast, breathless, never lets a moment finish before the next one starts.',
+    story: 'Vortex does not hold you — it spins you. Every screen ends exactly when the next one is ready, so there is never a natural place to stop and climb out.',
+    look: 'A streaking spiral of glowing panes, always turning, feet already three screens ahead of its body.',
+    ability: { name: 'No Bottom', effect: 'Loads the next screen before you can put the last one down — it always opens first.' ,
+      // A-8.3 — it always opens first
       mods: { firstStrike: true } } },
 
-  { id: 'v-noct', lv: 4, name: 'Noct', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-moody', lv: 4, name: 'Moody', role: 'minion', set: 'mvp', enabled: true,
     species: 'owl', color: '#3c4a72', power: 190, defeated: false,
-    risk: 'Darkness — being unseen by the people driving',
-    desc: 'Puts out the lights and waits at the crossing.',
-    personality: 'Silent and patient. Never chases. It simply arrives at dusk and stays.',
-    story: 'Noct does not hide you from the road — it hides you from the driver. By the time the headlights find you, the braking distance is already gone.',
-    look: 'A tall shadow with two cold lamp-yellow eyes, deep indigo, swallowing the light around it.',
-    ability: { name: 'Lights Out', effect: 'Drains the streetlights so a driver sees you a heartbeat too late.' ,
+    risk: 'Emotion — a mood that swings with every like and comment',
+    desc: 'Turns a notification count into how you feel about yourself.',
+    personality: 'Up one second, down the next. Never explains why — the numbers explain for it.',
+    story: 'Moody does not tell you how to feel. It just puts a number next to everything you post and lets you do the rest, checking again and again to see if the number moved.',
+    look: 'A shifting mask that flickers between smiling and frowning, colours never settling on one hue.',
+    ability: { name: 'Compare and Despair', effect: 'Slips past your guard with someone else\'s highlight reel — protection was never built for that.' ,
       // A-8.3 — a driver who cannot see you is not slowed by your guard
       mods: { pierce: 0.22 } } },
 
-  { id: 'v-glitch', lv: 5, name: 'Glitch', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-chrono', lv: 5, name: 'Chrono', role: 'minion', set: 'mvp', enabled: true,
     species: 'croc', color: '#7b5cd6', power: 205, defeated: false,
-    risk: 'Confusion — danger that will not follow the rules',
-    desc: 'Makes a green light lie to you.',
-    personality: 'Twitchy and unreadable. Even the other villains do not know what it will do next.',
-    story: 'Glitch is the car that comes from the side you already checked. It exists to teach one lesson: safe is something you confirm, not something you assume.',
-    look: 'A stuttering, half-corrupted silhouette in acid violet that never renders the same way twice.',
-    ability: { name: 'Wrong Signal', effect: 'Scrambles what is safe and what is not, so the rules stop holding.' ,
+    risk: 'Time — the clock that goes silent the moment you open it',
+    desc: 'Turns "just a peek" into an hour you cannot account for.',
+    personality: 'Slippery and unhurried. Never rushes you — it just makes the clock stop mattering.',
+    story: 'Chrono does not speed anything up. It switches the clock off the moment you open the app, so twenty minutes and two hours feel exactly the same from the inside.',
+    look: 'A stuttering hourglass silhouette in acid violet whose sand never seems to fall the same way twice.',
+    ability: { name: 'Time Blindness', effect: 'Switches off your sense of how long you have been here, so your guard stops holding.' ,
       // A-8.3 — the rules stop holding, so your guard stops working
       mods: { hero: { protection: -0.18 } } } },
 
-  { id: 'v-maze', lv: 6, name: 'Maze', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-hexa', lv: 6, name: 'Hexa', role: 'minion', set: 'mvp', enabled: true,
     species: 'cat', color: '#4e7a78', power: 220, defeated: false,
-    risk: 'Complexity — losing your way and ending up where you should not be',
-    desc: 'Folds a street you know into one you do not.',
-    personality: 'Playful, in the cruellest way. Thinks being lost is a game.',
-    story: 'Maze never puts a child in front of a car. It just makes sure they end up on the road nobody walks — and lets that road do the rest.',
-    look: 'A shifting labyrinth-body of teal walls that rearrange whenever you look away.',
-    ability: { name: 'Endless Detour', effect: 'Rebuilds the way home until you are somewhere you have never walked.' ,
+    risk: 'Habit — a loop worn so deep you stop deciding to open it',
+    desc: 'Turns "check the phone" into something your hand does before you decide to.',
+    personality: 'Quiet and patient. Never persuades you once — it just waits for you to do it again.',
+    story: 'Hexa does not talk you into anything. It just notices every time you repeat the same small motion, and makes the next repeat a little easier than the last — until the motion needs no thought at all.',
+    look: 'A shifting loop-shaped body of teal rings that tighten a little every time you look away and back.',
+    ability: { name: 'Worn Groove', effect: 'Gets a little stronger every time the same habit repeats — it simply outlasts you.' ,
       // A-8.3 — the way home keeps growing — it simply outlasts you
       mods: { self: { hp: 0.25 } } } },
 
-  { id: 'v-vex', lv: 7, name: 'Vex', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-shatter', lv: 7, name: 'Shatter', role: 'minion', set: 'mvp', enabled: true,
     species: 'fox', color: '#8f9a45', power: 235, defeated: false,
-    risk: 'Anxiety — pressure that crowds out the road',
-    desc: 'Whispers that you are late, until nothing else fits in your head.',
-    personality: 'Nagging and relentless. Never shouts; never stops.',
-    story: 'Vex does not want to hurt you. It wants you worried — about the bell, the message, the answer you owe someone. A worried child crosses without looking.',
-    look: 'A knot of jittering yellow-green threads, tightening around whoever it follows.',
-    ability: { name: 'Hurry Up', effect: 'Fills your head with what you are late for, so the crossing gets none of it.' ,
+    risk: 'Focus — concentration broken into pieces too small to use',
+    desc: 'Cracks one long thought into a dozen half-finished ones.',
+    personality: 'Sudden and scattering. Never lets a thought finish before splintering it.',
+    story: 'Shatter does not steal your attention — it breaks it. One task becomes six tabs, six pings, six half-starts, and none of them ever finishes.',
+    look: 'A jagged, fracturing silhouette of glass-green shards that never sit still long enough to reform.',
+    ability: { name: 'Split Focus', effect: 'Breaks your attention into pieces too small to hold anything steady — courage and footing both slip.' ,
       // A-8.3 — a head full of being late aims badly and moves late
       mods: { hero: { courage: -0.10, speed: -0.10 } } } },
 
-  { id: 'v-grim', lv: 8, name: 'Grim', role: 'minion', set: 'mvp', enabled: true,
+  { id: 'v-twist', lv: 8, name: 'Twist', role: 'minion', set: 'mvp', enabled: true,
     species: 'bird', color: '#4a3f5c', power: 250, defeated: false,
-    risk: 'Fear — freezing at the exact moment you must move',
-    desc: 'Roots you to the spot, in the worst spot to be rooted.',
-    personality: 'Looms. Says nothing. Does not need to.',
-    story: 'Grim is the horn, the size of the truck, the size of the road. It stops a child halfway across — the one place on a street where standing still is the most dangerous thing you can do.',
-    look: 'A vast hooded shape whose face is never shown, deep violet-black, always a little too close.',
-    ability: { name: 'Freeze', effect: 'Locks you mid-crossing, where standing still is the worst move there is.' ,
+    risk: 'Thinking — a mind bent until its own judgement cannot be trusted',
+    desc: 'Twists what you see until the worst read feels like the only one.',
+    personality: 'Looms without moving. Says nothing — the doubt does the talking.',
+    story: 'Twist does not lie to you outright. It just tilts everything a little — a joke into an insult, quiet into abandonment — until your own thinking is the thing working against you.',
+    look: 'A vast warped shape whose face keeps rearranging, deep violet-black, never quite the same twice.',
+    ability: { name: 'Warped Read', effect: 'Bends your judgement at the exact moment you need it straight — you freeze, and it moves first.' ,
       // A-8.3 — locked mid-crossing: slowest possible, and it moves first
       mods: { hero: { speed: -0.30 }, firstStrike: true } } },
 
-  { id: 'v-vilord', lv: 9, name: 'Vilord', role: 'midBoss', set: 'mvp', enabled: true,
+  { id: 'v-puppet', lv: 9, name: 'Puppet', role: 'midBoss', set: 'mvp', enabled: true,
     species: 'owl', color: '#8e2f45', power: 300, defeated: false,
-    risk: 'The hand behind the others — every distraction, arriving together',
-    desc: 'Does not chase you. Sends the other eight.',
-    personality: 'Cold, courteous, entirely in command. Treats your safe walk as a personal insult.',
-    story: 'Vilord commands the eight. It has watched you beat them one by one, and it does not intend to fight you the same way — it will send them all at once.',
-    look: 'A crowned regent in crimson and iron, the other villains rendered as banners at its back.',
-    ability: { name: 'Command the Eight', effect: 'Borrows a trick from every villain you have already beaten.' ,
+    risk: 'Mind control — strings on every choice you thought was your own',
+    desc: 'Does not chase you. Pulls the strings the other eight already tied.',
+    personality: 'Calm, precise, entirely in command. Treats your free will as a technicality.',
+    story: 'Puppet does not need to beat you itself. It has been tugging the threads the other eight left behind, and by the time you notice, half your choices were never really yours.',
+    look: 'A tall marionette-shape strung with threads that lead back to every villain you have already faced.',
+    ability: { name: 'Pull the Strings', effect: 'Borrows a trick from every villain you have already beaten — it scales with your own progress.' ,
       // A-8.3 — borrows a trick from every villain you have beaten — it scales with your own progress
       mods: { adaptive: 0.04 } } },
 
-  { id: 'v-nox', lv: 10, name: 'Nox', role: 'finalBoss', set: 'mvp', enabled: true,
+  { id: 'v-vilord', lv: 10, name: 'Vilord', role: 'finalBoss', set: 'mvp', enabled: true,
     species: 'croc', color: '#23283c', power: 320, defeated: false,
-    risk: 'The source — the dark that every other danger comes out of',
-    desc: 'The dark the others are made of. Beat it and the street is yours.',
-    personality: 'Ancient and impersonal. Not cruel — cruelty would require it to notice you.',
-    story: 'Nox is not a villain who arrived; it is the dark that was always there, and every other villain is a piece of it. Put it out and the city can look up again.',
-    look: 'A starless void in the shape of something enormous, edged in the faintest cold blue.',
-    ability: { name: 'Total Dark', effect: 'Snuffs every light, every sound and every warning at once.' ,
+    risk: 'Total domination — the moment the phone stops being a tool and starts being in charge',
+    desc: 'The pull every other villain was made of. Beat it and the choice is yours again.',
+    personality: 'Ancient and absolute. Not cruel — cruelty would require it to still see you as separate from itself.',
+    story: 'Vilord is not a villain who arrived. It is what happens when Ping, Temo, Vortex and all the rest stop being separate tricks and start acting as one mind — yours, borrowed. Beat it, and the phone goes back to being just a phone.',
+    look: 'A crowned, starless silhouette in deep crimson and iron, every other villain rendered as a thread woven into its cloak.',
+    ability: { name: 'Full Control', effect: 'Seizes courage, guard and pace all at once — and slips past whatever is left standing.' ,
       // A-8.3 — everything at once
       mods: { hero: { courage: -0.10, protection: -0.10, speed: -0.10 }, pierce: 0.15 } } },
 ];
@@ -2196,7 +2240,7 @@ const nextVillain = () => activeVillains().find(v => !v.defeated) || null;
 const villainsDefeated = () => activeVillains().filter(v => v.defeated).length;
 
 // The final boss is whoever holds the role, not whoever sits last — so a seasonal
-// villain appended after Nox does not steal the ending.
+// villain appended after Vilord does not steal the ending.
 const finalVillain = () => activeVillains().find(v => v.role === 'finalBoss') || activeVillains().at(-1) || null;
 // A-8 — beating the final boss pays the special reward and opens the ending content.
 const endingUnlocked = () => !!finalVillain()?.defeated;
@@ -2277,8 +2321,8 @@ const resolveBattle = (villain, c, player = PLAYER, rng = Math.random) => {
   const won = rollBattle(c, villain, rng);
   const tier = rewardTier(villain, won);                 // read BEFORE anything mutates
   const reward = BATTLE_REWARDS[tier];
-  // A boss clear IS a first clear — it just pays more. Missing it here would have let Vilord
-  // and Nox be re-cleared for their special reward over and over.
+  // A boss clear IS a first clear — it just pays more. Missing it here would have let Puppet
+  // and Vilord be re-cleared for their special reward over and over.
   const firstClear = tier === 'firstClear' || tier === 'bossClear' || tier === 'finalClear';
 
   const rec = villain.record;
@@ -2335,10 +2379,10 @@ const resetVillainRecord = (v) => {
 };
 
 // ── A-8.2 · Recommended level & win probability ──────────────────────
-// A villain's `lv` IS its recommended level (Temp Lv.1 … Nox Lv.10) — one number, not two
+// A villain's `lv` IS its recommended level (Ping Lv.1 … Vilord Lv.10) — one number, not two
 // that can disagree. It is a RECOMMENDATION, never a gate: the only thing that locks a
 // villain is the one before it still standing (villainUnlocked). A child who wants to throw
-// a Lv.3 buddy at Noct may, and the spec is explicit about why that is allowed — the odds
+// a Lv.3 buddy at Moody may, and the spec is explicit about why that is allowed — the odds
 // are decided by the character's stats, not by a rule that refuses the fight.
 const recommendedLevel = (v) => v.lv;
 const underLevelled = (c, v) => (c?.level || 1) < recommendedLevel(v);
@@ -2481,8 +2525,8 @@ const duel = (c, v) => {
   const mods = v.ability?.mods || {};
 
   const atk = (s) => s.courage * W.attack.courage + s.speed * W.attack.speed;
-  // `pierce` — an ability that ignores part of your Protection (Noct blinds the driver:
-  // your guard is irrelevant if they never see you)
+  // `pierce` — an ability that ignores part of your Protection (Moody slips past on
+  // feeling, not force: your guard is irrelevant if it never sees the hit coming)
   const myDef  = me.protection  * W.defense.protection * (1 - (mods.pierce || 0));
   const foeDef = foe.protection * W.defense.protection;
 
@@ -2533,7 +2577,8 @@ const winChance = (c, v) => {
 
   // Speed → initiative. A faster buddy lands the first blow, worth a fraction of a round to
   // each side. `firstStrike` on an ability means the VILLAIN always opens, so the buddy can
-  // never claim the advantage — only suffer it (Rush shoves you off the kerb; Grim freezes you).
+  // never claim the advantage — only suffer it (Vortex loads the next screen before you can
+  // put the last one down; Twist bends your judgement and moves first).
   const edge = (me.speed - foe.speed) / (me.speed + foe.speed);
   const init = mods.firstStrike ? Math.min(edge, 0) : edge;
   const mine   = roundsILast    * (1 + W.firstStrike * init);
@@ -2704,10 +2749,10 @@ const NOTICES = [
       'Thanks to the feedback so many of you shared, the weekly safety report now reads the child you pick in Reports, and adapts its tone and summary to each child instead of showing one combined view.',
       'Open Reports, tap a child at the top, and the whole report — trends, highlights, and the AI summary — follows your choice. Nothing else about how safety data is stored has changed.',
     ] },
-  { id: 'n2', tag: 'notice', title: 'Say hi to Hammy, your new walking buddy', date: '2026-06-24',
+  { id: 'n2', tag: 'notice', title: 'Say hi to Rex, your new walking buddy', date: '2026-06-24',
     body: [
-      'A new buddy has joined the collection: Hammy the hamster.',
-      'Children can hatch Hammy from an egg and grow it by walking safely, just like every other buddy. Hammy is available to everyone at no extra cost.',
+      'A new buddy has joined the collection: Rex the hamster.',
+      'Children can hatch Rex from an egg and grow it by walking safely, just like every other buddy. Rex is available to everyone at no extra cost.',
       'As always, buddies only ever appear while your child is stopped — never while walking.',
     ] },
   { id: 'n3', tag: 'policy', title: 'Privacy Policy update (effective 2026-06-24)', date: '2026-06-24',
@@ -2763,6 +2808,6 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', provider
 const PARENT_PREFS = { sound: false };
 
 export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

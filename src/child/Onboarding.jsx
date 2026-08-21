@@ -9,12 +9,12 @@ import { screenBgFor } from './shared.jsx';
 import { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
 
-// The first buddy every new child is given (for now): Hammy, the green one. Onboarding and
+// The first buddy every new child is given (for now): Rex, the green one. Onboarding and
 // the hatch wear his colour, so the flow that hands you a green buddy is itself green —
 // the child app tints to the buddy it is about, and here that buddy is the starter.
 // (This was the product magenta, which left a green buddy sitting inside a pink flow.)
 const STARTER_ID = 'c1';
-const STARTER_GREEN = THEME.success;      // evergreen 50 — the same #4b814f Hammy carries
+const STARTER_GREEN = THEME.success;      // evergreen 50 — the same #4b814f Rex carries
 const P_BRAND = {
   primary: STARTER_GREEN,
   primaryDark: shade(STARTER_GREEN, -28),
@@ -53,6 +53,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
   const [pairing, setPairing] = React.useState(false); // "connecting…" wait screen after the QR is scanned / code submitted
   const [connected, setConnected] = React.useState(false); // "connected" success screen after linking
   const [charReveal, setCharReveal] = React.useState(false); // egg → hatch → congrats screen
+  const [permsPhase, setPermsPhase] = React.useState(false);  // congrats → permission guide (asked after the hatch, not before)
   // A-2: the first buddy arrives as an egg, not a handout. Tap or shake it and
   // a random starter hatches out — same motif as the Shop's buddy egg.
   const [eggPhase, setEggPhase] = React.useState('egg');     // egg | cracking | reveal
@@ -171,8 +172,10 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
         </div>
       )}
 
-      {/* 4 · permission guide (last step) — full page with a toggle per permission */}
-      {step === 4 && !charReveal && (
+      {/* 4 · permission guide — asked right after the buddy hatches, not before, so the ask
+          lands with a buddy the child already has a stake in protecting. Full page with a
+          toggle per permission. */}
+      {step === 4 && charReveal && eggPhase === 'reveal' && permsPhase && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '6px 22px 0' }}>
             {/* Skip rides the title's first line rather than sitting in a band of its own —
@@ -236,7 +239,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
             {/* Continue unlocks only once every permission is granted. Nobody is trapped:
                 Skip (top right) is the way past, and it owns the consequence in the
                 limited-protection sheet rather than pretending nothing was lost (F-26). */}
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} disabled={!allGranted} onClick={allGranted ? openEgg : undefined}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} disabled={!allGranted} onClick={allGranted ? finish : undefined}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -433,7 +436,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(4)}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => { setStep(4); openEgg(); }}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -488,7 +491,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       )}
 
       {/* 3e · hatched — congrats reveal */}
-      {step === 4 && charReveal && eggPhase === 'reveal' && (
+      {step === 4 && charReveal && eggPhase === 'reveal' && !permsPhase && (
         <>
           {/* reveal carries the same painted backdrop as the waiting egg screen — the scene
               shouldn't swap out from under the buddy the moment it appears. Falls back to the
@@ -542,7 +545,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
                 Shop/EggHatch reveal's system pattern (EggHatch.jsx) — not a full-width bar
                 pinned to the screen edge. aria-label carries the real action since the icon
                 alone doesn't say it. */}
-            <button onClick={finish} className="jx-press" aria-label={L("Let's go")} style={{ marginTop: 22, width: 40, height: 40, flexShrink: 0, border: 'none', cursor: 'pointer', background: `${shade(STARTER_EGG_C, -22)}b3`, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', position: 'relative' }}>
+            <button onClick={() => setPermsPhase(true)} className="jx-press" aria-label={L("Let's go")} style={{ marginTop: 22, width: 40, height: 40, flexShrink: 0, border: 'none', cursor: 'pointer', background: `${shade(STARTER_EGG_C, -22)}b3`, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', position: 'relative' }}>
               <Icon name="x" size={18} color="#fff" stroke={2.6} />
             </button>
           </div>
@@ -598,7 +601,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               ))}
             </div>
             <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setShowFallback(false)}>{L('Go back & allow')}</Button>
-            <button onClick={() => { perms.forEach(p => { if (!grants[p.id]) deny(p.id); }); setShowFallback(false); openEgg(); }} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Continue with limited protection')}</button>
+            <button onClick={() => { perms.forEach(p => { if (!grants[p.id]) deny(p.id); }); setShowFallback(false); finish(); }} style={{ width: '100%', marginTop: 10, padding: 6, background: 'none', border: 'none', color: THEME.fg2, fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>{L('Continue with limited protection')}</button>
           </div>
         </div>
       )}

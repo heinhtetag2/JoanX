@@ -613,7 +613,7 @@ function CardsSection() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <MascotChip species="fox" color="#4b814f" size={44} />
               <div>
-                <div style={{ fontWeight: 800, fontSize: 15, color: THEME.fg1 }}>Hammy</div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: THEME.fg1 }}>Rex</div>
                 <div style={{ fontSize: 12.5, color: THEME.fg2 }}>{use}</div>
               </div>
             </div>
@@ -858,7 +858,7 @@ function MascotsSection() {
       </div>
       <SubHead>Roster — <code>STYLE_BUDDIES[style]</code></SubHead>
       <PropsTable rows={[
-        ['comic', "fox·'Hammy' #4b814f · cat·'Mochi' #e1874a · bird·'Pip' #4f93c4 · owl·'Sunny' #e0554a", null, 'flat SVG · /assets/characters/comic/{species}.svg'],
+        ['comic', "fox·'Rex' #4b814f · cat·'Munch' #e1874a · bird·'Pip' #4f93c4 · owl·'Blaze' #e0554a", null, 'flat SVG · /assets/characters/comic/{species}.svg'],
         ['cute', "fox·'Dino' · cat·'Axolotl' · bird·'Giraffe' · owl·'Pig'", null, '3D PNG · /assets/characters/cute/{species}.png'],
       ]} />
       <p className="ds-p ds-dim" style={{ fontSize: 13 }}>

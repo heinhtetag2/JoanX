@@ -57,11 +57,14 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   //
   // All three rooms are free, so the switcher is a plain picker: no locks, no goals, no
   // ladder. (They used to be earned — see the note on ROOMS in core/data.jsx.)
-  const homeRoom = ROOMS.find(r => r.home) || ROOMS[0];
+  const homeRoom = ROOMS.find(r => r.id === PLAYER.homeRoomId) || ROOMS.find(r => r.home) || ROOMS[0];
   const [profRoomId, setProfRoomId] = React.useState(homeRoom.id);
   const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
   const [homeSheet, setHomeSheet] = React.useState(null);
   const [roomPicker, setRoomPicker] = React.useState(false);
+  // persisted on PLAYER, same as `scene` below — a profile has no Save button, so the
+  // room a friend visits has to survive past this component unmounting, not just a render.
+  const setHomeRoom = (id) => { setProfRoomId(id); PLAYER.homeRoomId = id; };
   // Guestbook reads right over the room instead of navigating away — the notes are a beat
   // in visiting the room, not a destination of their own. GuestbookPanel (the 'book' style,
   // GuestbookPatterns.jsx) owns how it opens and closes, this just owns the like state it
@@ -69,8 +72,8 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const [guestLikes, setGuestLikes] = React.useState(() => MY_GUESTBOOK.map(g => g.liked));
   const toggleGuestLike = (i) => setGuestLikes(s => s.map((v, j) => (j === i ? !v : v)));
   const profIdx = ROOMS.findIndex(r => r.id === homeEd.room.id);
-  const cycleRoom = (dir) => setProfRoomId(ROOMS[(profIdx + dir + ROOMS.length) % ROOMS.length].id);
-  const tapRoom = (r) => { setProfRoomId(r.id); setRoomPicker(false); };
+  const cycleRoom = (dir) => setHomeRoom(ROOMS[(profIdx + dir + ROOMS.length) % ROOMS.length].id);
+  const tapRoom = (r) => { setHomeRoom(r.id); setRoomPicker(false); };
 
   const setScene = (s) => { setSceneId(s.id); PLAYER.scene = s.id; };
   const chooseScene = (s) => { setScene(s); setScenePicker(false); };

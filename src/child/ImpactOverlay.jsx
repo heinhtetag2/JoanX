@@ -49,7 +49,7 @@ function CountRing({ secs, total, size = 132 }) {
 // ── CHILD · the safety check ─────────────────────────────────────────
 // "Are you okay?" with a 20s countdown to auto-notify. Two answers: "I'm okay" dismisses with no
 // alert sent; "I need help" escalates immediately. Silence for the full window escalates too.
-function ImpactSafetyCheck({ onClose, onGoParent, onKey }) {
+function ImpactSafetyCheck({ onClose, onGoParent, onKey, onEscalate }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const [phase, setPhase] = React.useState('check');   // check → sent (escalated)
   const [reason, setReason] = React.useState(null);    // 'help' | 'timeout' — how the escalation happened
@@ -77,7 +77,9 @@ function ImpactSafetyCheck({ onClose, onGoParent, onKey }) {
     return () => clearTimeout(t);
   }, [secs, phase]);
 
-  const escalate = (why) => { setReason(why); setPhase('sent'); };
+  // Escalating is the moment the parent actually gets told — so it's also the moment their
+  // Alerts feed gets the real record, not just this screen's own "sent" state.
+  const escalate = (why) => { setReason(why); setPhase('sent'); onEscalate && onEscalate(why); };
 
   // The escalated screen carries no actions — the child has already done the one thing asked of
   // them, so it states what happened, holds long enough to read, and dismisses itself.
@@ -215,7 +217,7 @@ function ImpactParentAlert({ childName = PLAYER.name, onClose, onKey }) {
         <div className="game-font" style={{ fontSize: 27, fontWeight: 500 }}>{L('Impact detected')}</div>
         <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', marginTop: 4 }}>{childName}</div>
         <div style={{ fontSize: 14.5, color: 'rgba(255,255,255,.92)', margin: '12px 0 0', lineHeight: 1.5 }}>
-          {L('No response for 20 seconds. Please check on them right away.')}
+          {L('No response for 20 seconds. Please check right away.')}
         </div>
       </div>
 
@@ -233,9 +235,9 @@ function ImpactParentAlert({ childName = PLAYER.name, onClose, onKey }) {
 // The single entry point App renders. Branches on role so the impact event is one overlay with
 // two faces — the child's safety check and the parent's urgent notice. `onKey` reports the
 // current step (impact_check / impact_sent / impact_parent) so the dev handoff badge can name it.
-function ImpactOverlay({ role, childName, onClose, onGoParent, onKey }) {
+function ImpactOverlay({ role, childName, onClose, onGoParent, onKey, onEscalate }) {
   if (role === 'parent') return <ImpactParentAlert childName={childName} onClose={onClose} onKey={onKey} />;
-  return <ImpactSafetyCheck onClose={onClose} onGoParent={onGoParent} onKey={onKey} />;
+  return <ImpactSafetyCheck onClose={onClose} onGoParent={onGoParent} onKey={onKey} onEscalate={onEscalate} />;
 }
 
 export { ImpactOverlay };

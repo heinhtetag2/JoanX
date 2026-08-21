@@ -14,7 +14,7 @@ import { BRAND, ParentHead } from './shared.jsx';
 // together by time alone, checking for a problem means reading past the good news to find it.
 // Safety comes first: it's the reason a parent opens this tab at all, the mirror of the child
 // app putting Buddy first because that is what a child hopes to see.
-const FAMILY = { warning: 'safety', ignored: 'safety', limited: 'safety', device_off: 'safety', safe: 'progress', streak: 'progress', device_on: 'progress' };
+const FAMILY = { warning: 'safety', ignored: 'safety', limited: 'safety', device_off: 'safety', impact: 'safety', safe: 'progress', streak: 'progress', device_on: 'progress' };
 const familyOf = (a) => FAMILY[a.kind] || 'safety';
 const FAMILIES = [{ id: 'safety', label: 'Safety' }, { id: 'progress', label: 'Progress' }];
 
@@ -24,6 +24,7 @@ const FAMILIES = [{ id: 'safety', label: 'Safety' }, { id: 'progress', label: 'P
 const KIND = {
   warning:    { icon: 'triangle-alert', bg: THEME.warningLight,  fg: THEME.warning },
   ignored:    { icon: 'octagon-alert',  bg: THEME.dangerLight,   fg: THEME.danger },
+  impact:     { icon: 'triangle-alert', bg: THEME.dangerLight,   fg: THEME.danger },
   safe:       { icon: 'shield-check',   bg: THEME.successLight,  fg: THEME.success },
   streak:     { icon: 'flame',          bg: THEME.goldLight,     fg: THEME.gold },
   device_off: { icon: 'wifi-off',       bg: THEME.surface2,      fg: THEME.fg2 },
@@ -39,7 +40,7 @@ function AlertRow({ a, ctx, read, top }) {
   const k = KIND[a.kind] || KIND.safe;
   const child = CHILDREN.find(c => c.id === a.child);
   return (
-    <div onClick={() => { read(a.id); if (child) ctx.nav('p_settings', { child }); }}
+    <div onClick={() => { read(a.id); if (a.kind === 'impact') { ctx.nav('p_alert', { alertId: a.id }); return; } if (child) ctx.nav('p_settings', { child }); }}
       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: top ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer', background: a.unread ? BRAND.primaryLight + '88' : '#fff' }}>
       {/* kind tile with the child's mascot tucked in the corner */}
       <div style={{ position: 'relative', flexShrink: 0 }}>

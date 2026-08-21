@@ -394,6 +394,9 @@ function MascotToyCute({ species = 'fox', size = 160, style, float }) {
 // The comic line is the app's product line, so it is brand-locked to the JoanX green —
 // switching buddy (Hammy → Pip → Sunny…) never repaints the app. Comic mascots are fixed
 // PNG art, so pinning the accent only affects chrome, never the character illustration.
+// `client` is deliberately left out here: it's a single-buddy preset, not a product line a
+// hatch needs to bring an unlisted species into, so it should always resolve to its one
+// buddy (Milo) — the same snap-to-roster path an unlocked style already takes.
 const STYLE_BRAND = { cute: CUTE_BRAND, comic: THEME.brand, revamp: THEME.brand };
 
 // The locked brand colour of a character style, or null if the style recolours per buddy.
@@ -404,10 +407,16 @@ const styleBrand = (style) => STYLE_BRAND[style || window.JX_CHAR_STYLE] || null
 // and the accent/brand colour the app adopts when a buddy is picked.
 const STYLE_BUDDIES = {
   comic: [
-    ['fox',  'Hammy', '#4b814f'],
-    ['cat',  'Mochi', '#e1874a'],
+    ['fox',  'Rex',   '#4b814f'],
+    ['cat',  'Munch', '#e1874a'],
     ['bird', 'Pip',   '#4f93c4'],
-    ['owl',  'Sunny', '#e0554a'],
+    ['owl',  'Blaze', '#e0554a'],
+  ],
+  // Client — a locked, single-buddy preset around the comic cat art approved for review:
+  // same fixed illustration as comic/cat.svg, just isolated from the rest of the comic
+  // roster so switching buddy can't wander off this one approved look.
+  client: [
+    ['cat', 'Milo', THEME.brand],
   ],
   toy: [
     ['cat',  'Mochi', '#e79a52'],   // only Mochi has a real 3D render for now
@@ -640,6 +649,29 @@ function MascotComic({ species = 'fox', size = 160, style, float }) {
       <img src={`/assets/characters/comic/${encodeURIComponent(file)}`} alt="" draggable="false"
            style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
                     transform: tf || undefined, transformOrigin: 'center bottom' }} />
+    </div>
+  );
+}
+
+// ── Client line ("client") — a locked preview of client-supplied reference art itself,
+// not a flat redraw like every other line here: this style exists to review the reference
+// literally (see character-references/characters/02-milo/base-form/plain/plain.png), so it
+// renders that source render as-is rather than the app's own hand-drawn illustration.
+const CLIENT_SRC = {
+  cat: 'milo-plain.png',   // Milo — the droplet reference render supplied for review
+};
+// The reference render sits inside a lot of empty canvas — bumped up a touch so it reads
+// closer to the app's own mascot size, and nudged down so it grounds in its frame like the
+// others instead of floating high inside the extra headroom the source image carries.
+const CLIENT_BASE = 1.22;
+const CLIENT_SHIFT_Y = 0.15;
+function MascotClient({ species = 'cat', size = 160, style }) {
+  const file = CLIENT_SRC[species] || CLIENT_SRC.cat;
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
+      <img src={`/assets/characters/client/${encodeURIComponent(file)}`} alt="" draggable="false"
+           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
+                    transform: `translateY(${CLIENT_SHIFT_Y * 100}%) scale(${CLIENT_BASE})`, transformOrigin: 'center bottom' }} />
     </div>
   );
 }
@@ -945,6 +977,7 @@ function Mascot(props) {
   if (s === 'kr') return <MascotKR {...props} />;
   if (s === 'toon') return <MascotToon {...props} />;
   if (s === 'comic') return <MascotComic {...props} />;
+  if (s === 'client') return <MascotClient {...props} />;
   if (s === 'revamp') return <MascotRevamp {...props} />;
   if (s === 'toy') return <MascotToy {...props} />;
   if (s === 'cute') return <MascotToyCute {...props} />;

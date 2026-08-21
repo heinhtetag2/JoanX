@@ -1,10 +1,10 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, LEGACY_DETAIL_LAYOUTS, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, DecorateBuddy, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
-import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims } from '../core/data.jsx';
+import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAlertDetail, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
@@ -68,7 +68,10 @@ function App() {
   // (impact > risk event) and takes the whole screen for both apps.
   const [impact, setImpact] = React.useState(false);
   const [impactKey, setImpactKey] = React.useState(null);   // which C7 step is on screen, for the handoff badge
-  const triggerImpact = () => { setOverlay(false); setHold(false); setImpact(true); };
+  // The parent-side preview jumps straight to the takeover, skipping the child's own 20s check
+  // — so unlike the real flow (which records the alert the moment IT escalates, see
+  // ImpactOverlay's onEscalate below), this shortcut has to write the Alerts row itself.
+  const triggerImpact = () => { setOverlay(false); setHold(false); setImpact(true); if (role === 'parent') pushImpactAlert('timeout'); };
   // Achievement unlock moment (Tweaks preview). Holds an ACHIEVEMENTS row while the
   // celebration is up, null when closed. "View badges" routes to the Collection's
   // Badges side via collectionIntent — the same intent the Profile trophy shelf uses.
@@ -108,7 +111,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3, play: 'max', charStyle: 'comic', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'comic' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -218,13 +221,13 @@ function App() {
     setBump(b => b + 1);
   };
 
-  // Clear the saved buddy and return to the seed default (green Hammy). The escape hatch for
+  // Clear the saved buddy and return to the seed default (green Rex). The escape hatch for
   // getting "stuck" on a persisted buddy you no longer want — refresh no longer resets it, so
   // this button does. Wipes jx.buddy AND the in-memory identity, so a later refresh stays clean.
   const resetBuddy = () => {
     try { localStorage.removeItem('jx.buddy'); } catch { /* storage unavailable */ }
     PLAYER.activeCharId = 'c1';
-    setTw(s => ({ ...s, charStyle: 'comic', species: 'fox', color: '#4b814f', name: 'Hammy', stage: 3 }));
+    setTw(s => ({ ...s, charStyle: 'client', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3 }));
     setBump(b => b + 1);
   };
 
@@ -274,7 +277,7 @@ function App() {
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} eggCardRadius={tw.eggCardRadius} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
+      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, decoratebuddy: <DecorateBuddy ctx={ctx} tabStyle={tw.decorateTabStyle} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -291,13 +294,14 @@ function App() {
       p_connect: <ParentAddChild ctx={{ ...ctx, params: { connect: true, scan: true } }} />,
       p_schedule: <ParentSchedule ctx={ctx} />, p_aireport: <ParentAIReport ctx={ctx} />,
       p_response: <ParentResponseDetail ctx={ctx} />,
+      p_alert: <ParentAlertDetail ctx={ctx} />,
       p_weekactivity: <ParentWeeklyDetail ctx={ctx} />,
     })[pScreen] || <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} highlightStrip={tw.highlightStrip} />;
   }
 
   const activeChildTab = ['friends', 'friendhouse', 'addfriend', 'guestbook'].includes(screen) ? 'friends'
     : ['myhouse', 'decorate'].includes(screen) ? 'profile'   // the house/rooms are now a Profile detail
-    : ['character', 'chardex', 'villaindex'].includes(screen) ? 'collection' : screen;
+    : ['character', 'chardex', 'villaindex', 'decoratebuddy'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && booted && onboarded && CHILD_TAB_ROOTS.includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
 
@@ -346,7 +350,7 @@ function App() {
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
           {/* C7 — impact/fall takeover. Renders for whichever app is showing: child sees the safety
               check, parent sees the urgent notification. Above every other overlay (zIndex 200). */}
-          {impact && <ImpactOverlay role={role} childName={PLAYER.name} onClose={() => setImpact(false)} onGoParent={() => setRole('parent')} onKey={setImpactKey} />}
+          {impact && <ImpactOverlay role={role} childName={PLAYER.name} onClose={() => setImpact(false)} onGoParent={() => setRole('parent')} onKey={setImpactKey} onEscalate={pushImpactAlert} />}
           {/* Achievement unlock celebration (child). Sits above the screens but below the
               impact takeover — a safety event always outranks a reward moment. */}
           {role === 'child' && unlock && (
@@ -393,7 +397,7 @@ function App() {
 
           <div className="tw-label">Character style</div>
           <div className="tw-row">
-            {[['comic', 'Comic'], ['cute', '3D Cute'], ['revamp', 'Revamp']].map(([v, l]) => (
+            {[['comic', 'Comic'], ['cute', '3D Cute'], ['revamp', 'Revamp'], ['client', 'Client']].map(([v, l]) => (
               <button key={v} className={'tw-chip' + (tw.charStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, charStyle: v }))}>{l}</button>
             ))}
           </div>
@@ -412,7 +416,14 @@ function App() {
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v, color: c }))}>{l}</button>
                 ))}
               </div>
-              <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Hammy (default)</button>
+              <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Rex (default)</button>
+
+              <div className="tw-label">Decorate tabs</div>
+              <div className="tw-row">
+                {[['stack', 'Stack'], ['underline', 'Underline'], ['segmented', 'Segmented'], ['chip', 'Chip'], ['dot', 'Dot'], ['tag', 'Tag'], ['stitch', 'Stitch'], ['ribbon', 'Ribbon'], ['knob', 'Knob'], ['switch', 'Switch'], ['peel', 'Peel'], ['pin', 'Pin'], ['brush', 'Brush'], ['frame', 'Frame'], ['shelf', 'Shelf']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.decorateTabStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, decorateTabStyle: v }))}>{l}</button>
+                ))}
+              </div>
 
               {/* Room switch selector removed — the default 'sheet' (Name → sheet) is the chosen
                   behaviour; tw.roomSwitch stays defaulted so MyHouse keeps getting it. */}
@@ -624,16 +635,10 @@ function App() {
                 ))}
               </div>
 
-              {/* Pre-accessories designs (Stats/Color/Items, buddy recoloring) — kept
-                  reachable exactly as they were rather than deleted when Color gave way
-                  to the outfit-slot browser. A frozen snapshot, not a second live design. */}
-              <div className="tw-label">Detail layout (legacy, with Color)</div>
-              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {LEGACY_DETAIL_LAYOUTS.map(({ id, label }) => (
-                  <button key={id} className={'tw-chip' + (tw.detailLayout === id ? ' on' : '')}
-                    onClick={() => { setTw(s => ({ ...s, detailLayout: id })); setStack([]); setParams({ id: PLAYER.activeCharId }); setScreen('character'); }}>{label}</button>
-                ))}
-              </div>
+              {/* Legacy detail layouts (Stats/Color/Items, buddy recoloring) selector removed —
+                  'char-showcase' (no Color tab) is the chosen behaviour; tw.detailLayout stays
+                  defaulted so a buddy tap keeps getting it. The legacy component/layouts stay
+                  in code as a frozen snapshot, just no longer offered as a live option here. */}
 
               <div className="tw-label">Dex layout</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

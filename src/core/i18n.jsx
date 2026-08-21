@@ -254,10 +254,35 @@ const KO = {
   'Fully grown — and still walking beside you.': '다 자랐지만 여전히 네 옆에서 걸어.',
   'Nothing gets past us now.': '이제 아무것도 우릴 못 지나가.',
   'You taught me every step of this.': '이 모든 걸 네가 가르쳐줬어.',
-  'Items': '아이템', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
-  'Clothing': '의상', 'Hat': '모자', 'Glasses': '안경', 'Accessory': '액세서리',
+  'Items': '아이템', '%n items': '아이템 %n개', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
+  'Clothing': '의상', 'Hat': '모자', 'Coat': '코트', 'Glasses': '안경', 'Accessory': '액세서리',
+  // Milo's own hat/coat catalog (character-references/characters/02-milo/accessories)
+  'Aviator Goggles': '비행 고글', 'Bucket Hat': '벙거지 모자', 'Captain’s Cap': '선장 모자',
+  'Pirate Coat': '해적 코트', 'Pocket Watch': '회중시계', 'Suspenders': '멜빵',
   'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
+  // buddy bios — the character detail screen's Story tab
+  'Story': '스토리', "This buddy's story hasn't been written yet.": '아직 이야기가 없어요.',
+  "Lives for snacks and having fun — patience isn't really his thing, so trouble tends to find him.":
+    '먹을 것과 노는 걸 제일 좋아해요 — 참을성은 별로 없어서 사고를 잘 쳐요.',
+  'Easygoing and hard to rattle. Milo takes things as they come, at his own pace.':
+    '느긋하고 웬만한 일엔 동요하지 않아요. 마일로는 자기만의 속도로 하나씩 받아들여요.',
+  'Quiet and sensitive, easily spooked — but turns brave the moment a friend needs him.':
+    '조용하고 예민해서 잘 놀라지만, 친구가 필요할 땐 누구보다 용감해져요.',
+  'Loves taking things apart and fixing them back up. Blunt and to the point, but always someone you can count on.':
+    '뭔가 뜯어보고 고치는 걸 좋아해요. 직설적이지만 언제나 믿고 의지할 수 있는 친구예요.',
+  'Sharp and always thinking things through — and he knows it, which makes him a little much sometimes.':
+    '똑똑하고 늘 이것저것 따져보는 편이에요 — 본인도 그걸 알아서 가끔은 좀 피곤할 때도 있어요.',
+  'Looks perfectly well-behaved, but secretly loves being the center of attention.':
+    '얌전해 보이지만 사실은 주목받는 걸 몰래 좋아해요.',
+  "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts.":
+    '자신만만하고 늘 자기가 대장이라고 생각해요. 살짝 잘난 척하지만, 진짜 중요한 순간엔 책임지고 나서요.',
+  'Warm-hearted but quick to heat up — competitive, a bit hot-tempered, and hates losing.':
+    '따뜻한 마음씨지만 욱하는 것도 빨라요 — 승부욕이 강하고 성질이 좀 급하며 지는 걸 싫어해요.',
+  'Quiet and a little mysterious — the one the others find hardest to figure out.':
+    '조용하고 살짝 신비로워요 — 친구들이 제일 알기 어려워하는 성격이에요.',
+  'Adventurous and always up for somewhere new. Tends to leap first and think later.':
+    '모험을 좋아하고 늘 새로운 곳에 갈 준비가 되어 있어요. 일단 뛰어들고 나중에 생각하는 편이에요.',
 
   // ── battle ──
   'Finding opponent…': '상대를 찾는 중…', 'Matching within ±3 levels': '±3 레벨 내에서 매칭 중',
@@ -733,9 +758,9 @@ const KO = {
   'Hi there — the JoanX team here.': '안녕하세요. 조안X 팀입니다.',
   'Thanks to the feedback so many of you shared, the weekly safety report now reads the child you pick in Reports, and adapts its tone and summary to each child instead of showing one combined view.': '많은 분들이 보내주신 의견을 반영해, 주간 안전 리포트가 이제 리포트 화면에서 선택한 자녀를 기준으로 표시되며, 하나로 합쳐 보여주는 대신 자녀마다 톤과 요약을 맞춰 드려요.',
   'Open Reports, tap a child at the top, and the whole report — trends, highlights, and the AI summary — follows your choice. Nothing else about how safety data is stored has changed.': '리포트를 열고 상단에서 자녀를 선택하면 추세·하이라이트·AI 요약까지 리포트 전체가 그 선택을 따라와요. 안전 데이터를 보관하는 방식은 그대로예요.',
-  'Say hi to Hammy, your new walking buddy': '새로운 산책 친구 하미를 만나보세요',
-  'A new buddy has joined the collection: Hammy the hamster.': '새로운 친구가 컬렉션에 합류했어요: 햄스터 하미예요.',
-  'Children can hatch Hammy from an egg and grow it by walking safely, just like every other buddy. Hammy is available to everyone at no extra cost.': '아이들은 알에서 하미를 부화시키고 다른 친구들처럼 안전하게 걸으며 키울 수 있어요. 하미는 추가 비용 없이 누구나 만날 수 있어요.',
+  'Say hi to Rex, your new walking buddy': '새로운 산책 친구 렉스를 만나보세요',
+  'A new buddy has joined the collection: Rex the hamster.': '새로운 친구가 컬렉션에 합류했어요: 햄스터 렉스예요.',
+  'Children can hatch Rex from an egg and grow it by walking safely, just like every other buddy. Rex is available to everyone at no extra cost.': '아이들은 알에서 렉스를 부화시키고 다른 친구들처럼 안전하게 걸으며 키울 수 있어요. 렉스는 추가 비용 없이 누구나 만날 수 있어요.',
   'As always, buddies only ever appear while your child is stopped — never while walking.': '언제나처럼 친구는 자녀가 멈춰 있을 때만 나타나요 — 걷는 중에는 절대 나오지 않아요.',
   'Privacy Policy update (effective 2026-06-24)': '개인정보 처리방침 개정 안내 (2026-06-24 시행)',
   'We have refreshed our Privacy Policy to describe how safety events are stored separately from your child’s identity, and to make our data-retention windows clearer.': '안전 이벤트가 자녀의 신원과 분리되어 저장되는 방식을 설명하고 데이터 보관 기간을 더 명확히 하기 위해 개인정보 처리방침을 개정했어요.',
@@ -904,71 +929,71 @@ const KO = {
   'Defeat the villain before to reveal': '이전 빌런을 물리치면 공개돼요',
   'Boss': '보스', 'Reward': '보상', 'Start battle': '배틀 시작',
 
-  // villain roster (A-8/A-9) — original IP characters, each one a risk to a walking
+  // villain roster (A-8/A-9) — original IP characters, each one a way a phone hooks a
   // child made visible. Name · risk · tagline · story · ability, per villain.
-  'Temp': '템프', 'Haze': '헤이즈', 'Rush': '러시', 'Noct': '녹트', 'Glitch': '글리치',
-  'Maze': '메이즈', 'Vex': '벡스', 'Grim': '그림', 'Vilord': '빌로드', 'Nox': '녹스',
+  'Ping': '핑', 'Temo': '테모', 'Vortex': '보르텍스', 'Moody': '무디', 'Chrono': '크로노',
+  'Hexa': '헥사', 'Shatter': '섀터', 'Twist': '트위스트', 'Puppet': '퍼펫', 'Vilord': '빌로드',
   'Mid-boss': '중간 보스', 'Final boss': '최종 보스', 'Villain': '빌런',
 
-  'Temptation — the phone that begs to be checked': '유혹 — 자꾸만 확인하고 싶어지는 폰',
-  'Offers you one peek. One peek is all a road needs.': '딱 한 번만 보라고 해요. 도로에는 그 한 번이면 충분해요.',
-  'Temp was born the first time someone said "just one look" and stepped off the kerb. It has been offering ever since, and it never has to ask twice.': '누군가 "딱 한 번만"이라며 인도를 벗어난 그 순간 템프가 태어났어요. 그 뒤로 계속 권하고 있고, 두 번 말할 필요도 없었죠.',
-  'Just One Peek': '딱 한 번만',
-  'Pulls your eyes down for a second — and a second is all a car needs.': '단 1초 시선을 빼앗아요 — 자동차에는 그 1초면 충분해요.',
+  'Notifications — the phone that never stops asking to be checked': '알림 — 끊임없이 확인하라고 조르는 폰',
+  'Buzzes and blinks until you look. It never has to ask twice.': '네가 볼 때까지 울리고 깜빡여요. 두 번 조를 필요도 없죠.',
+  'Ping was born the moment a screen learned to interrupt. It does not care what you were doing — only that you stop doing it and look at it instead.': '화면이 방해하는 법을 배운 그 순간 핑이 태어났어요. 네가 뭘 하고 있었는지는 관심 없어요 — 하던 걸 멈추고 자기를 보게 만드는 것뿐이죠.',
+  'Endless Alerts': '끝없는 알림',
+  'Buzzes until you glance down — and a glance is all it needs to win the first move.': '네가 내려다볼 때까지 울려요 — 그 한 번의 시선이면 선공을 가져가기 충분해요.',
 
-  'Carelessness — attention that quietly drains away': '부주의 — 소리 없이 새어 나가는 집중력',
-  'Softens the world until a crossing looks like a pavement.': '세상을 흐릿하게 만들어 횡단보도를 인도처럼 보이게 해요.',
-  'Haze does not attack. It settles, the way fog settles, until the difference between the road and the path stops mattering to you.': '헤이즈는 공격하지 않아요. 안개처럼 내려앉을 뿐이죠. 차도와 인도의 차이가 아무래도 상관없어질 때까지요.',
-  'Blur': '흐림',
-  'Fades the edges of the street so you miss the one that matters.': '거리의 경계선을 지워, 정말 중요한 선을 놓치게 해요.',
+  'Temptation — the promise that the next thing is even better': '유혹 — 다음 건 더 좋을 거라는 약속',
+  'Offers one more video, one more reward, one more reason to stay.': '영상 하나 더, 보상 하나 더, 머물 이유 하나 더를 내밀어요.',
+  'Temo never tells you to stop what you are doing. It just makes the next thing look a little brighter than the thing in your hand — and there is always a next thing.': '테모는 하던 걸 멈추라고 말하지 않아요. 그냥 다음 것을 지금 손에 든 것보다 조금 더 반짝이게 보여줄 뿐이죠 — 그리고 다음 것은 항상 있어요.',
+  'Just One More': '딱 하나만 더',
+  'Dangles a brighter reward just out of reach, so your guard drifts toward it.': '손이 닿을 듯 말 듯한 곳에 더 반짝이는 보상을 매달아, 네 경계심을 그쪽으로 끌어당겨요.',
 
-  'Impulse — moving before looking': '충동 — 보기 전에 움직이는 것',
-  'Runs first. Looks never.': '먼저 달려요. 보는 법은 없어요.',
-  'Rush is the voice that says the gap is big enough. It is right almost every time, and that is exactly what makes it dangerous.': '러시는 "지금 건너도 충분해"라고 속삭이는 목소리예요. 거의 매번 맞아요 — 그래서 더 위험하죠.',
-  'Go Now': '지금 가',
-  'Shoves you off the kerb before the light has changed.': '신호가 바뀌기도 전에 등을 떠밀어요.',
+  'Scrolling — a feed with no bottom and no door out': '스크롤 — 바닥도 출구도 없는 피드',
+  'Serves the next screen before you finish the one you are on.': '지금 화면을 다 보기도 전에 다음 화면을 내밀어요.',
+  'Vortex does not hold you — it spins you. Every screen ends exactly when the next one is ready, so there is never a natural place to stop and climb out.': '보르텍스는 너를 붙잡지 않아요 — 빙글빙글 돌릴 뿐이죠. 화면은 다음 것이 준비된 순간 딱 끝나서, 멈추고 빠져나올 자연스러운 지점이 없어요.',
+  'No Bottom': '바닥없음',
+  'Loads the next screen before you can put the last one down — it always opens first.': '마지막 화면을 내려놓기도 전에 다음 화면을 띄워요 — 언제나 먼저 움직이죠.',
 
-  'Darkness — being unseen by the people driving': '어둠 — 운전자에게 보이지 않는 것',
-  'Puts out the lights and waits at the crossing.': '불을 꺼뜨리고 횡단보도에서 기다려요.',
-  'Noct does not hide you from the road — it hides you from the driver. By the time the headlights find you, the braking distance is already gone.': '녹트는 도로에서 너를 숨기는 게 아니라, 운전자에게서 너를 숨겨요. 헤드라이트가 너를 찾았을 땐 이미 멈출 거리가 없어요.',
-  'Lights Out': '소등',
-  'Drains the streetlights so a driver sees you a heartbeat too late.': '가로등을 꺼뜨려, 운전자가 한 박자 늦게 너를 보게 해요.',
+  'Emotion — a mood that swings with every like and comment': '감정 — 좋아요와 댓글마다 흔들리는 기분',
+  'Turns a notification count into how you feel about yourself.': '알림 개수를 스스로에 대한 감정으로 바꿔놔요.',
+  'Moody does not tell you how to feel. It just puts a number next to everything you post and lets you do the rest, checking again and again to see if the number moved.': '무디는 어떻게 느껴야 하는지 말하지 않아요. 그냥 네가 올린 모든 것 옆에 숫자를 붙여두고, 나머지는 네가 하게 두죠 — 숫자가 움직였는지 보려고 계속 확인하게요.',
+  'Compare and Despair': '비교와 좌절',
+  'Slips past your guard with someone else\'s highlight reel — protection was never built for that.': '남의 하이라이트 장면으로 네 경계를 스쳐 지나가요 — 방어는 원래 그런 걸 막으라고 만든 게 아니었거든요.',
 
-  'Confusion — danger that will not follow the rules': '혼란 — 규칙을 지키지 않는 위험',
-  'Makes a green light lie to you.': '초록불이 거짓말을 하게 만들어요.',
-  'Glitch is the car that comes from the side you already checked. It exists to teach one lesson: safe is something you confirm, not something you assume.': '글리치는 이미 확인한 쪽에서 튀어나오는 자동차예요. 알려주는 건 하나뿐 — 안전은 짐작하는 게 아니라 확인하는 거예요.',
-  'Wrong Signal': '거짓 신호',
-  'Scrambles what is safe and what is not, so the rules stop holding.': '안전한 것과 위험한 것을 뒤섞어, 규칙을 무너뜨려요.',
+  'Time — the clock that goes silent the moment you open it': '시간 — 열자마자 조용해지는 시계',
+  'Turns "just a peek" into an hour you cannot account for.': '"딱 한 번만"을 설명할 수 없는 한 시간으로 바꿔놔요.',
+  'Chrono does not speed anything up. It switches the clock off the moment you open the app, so twenty minutes and two hours feel exactly the same from the inside.': '크로노는 아무것도 빠르게 만들지 않아요. 앱을 여는 순간 시계를 꺼버려서, 20분과 두 시간이 안에서는 똑같이 느껴지게 해요.',
+  'Time Blindness': '시간 감각 상실',
+  'Switches off your sense of how long you have been here, so your guard stops holding.': '얼마나 오래 있었는지에 대한 감각을 꺼버려, 경계심이 더는 버티지 못하게 해요.',
 
-  'Complexity — losing your way and ending up where you should not be': '복잡함 — 길을 잃고 가면 안 될 곳에 서는 것',
-  'Folds a street you know into one you do not.': '아는 길을 모르는 길로 접어버려요.',
-  'Maze never puts a child in front of a car. It just makes sure they end up on the road nobody walks — and lets that road do the rest.': '메이즈는 아이를 차 앞에 세우지 않아요. 아무도 걷지 않는 길로 데려다 놓고, 나머지는 그 길에 맡기죠.',
-  'Endless Detour': '끝없는 우회',
-  'Rebuilds the way home until you are somewhere you have never walked.': '집에 가는 길을 계속 바꿔, 한 번도 걸어본 적 없는 곳에 데려다 놔요.',
+  'Habit — a loop worn so deep you stop deciding to open it': '습관 — 너무 깊이 파여서 더는 결정하지 않고 여는 고리',
+  'Turns "check the phone" into something your hand does before you decide to.': '"폰 확인하기"를 결정하기도 전에 손이 먼저 하는 일로 바꿔놔요.',
+  'Hexa does not talk you into anything. It just notices every time you repeat the same small motion, and makes the next repeat a little easier than the last — until the motion needs no thought at all.': '헥사는 너를 설득하지 않아요. 그냥 같은 작은 동작을 반복할 때마다 알아채고, 다음 반복을 조금씩 더 쉽게 만들 뿐이죠 — 결국 아무 생각 없이도 그 동작이 나올 때까지요.',
+  'Worn Groove': '닳아버린 홈',
+  'Gets a little stronger every time the same habit repeats — it simply outlasts you.': '같은 습관이 반복될 때마다 조금씩 강해져요 — 그냥 네가 지칠 때까지 버티는 거죠.',
 
-  'Anxiety — pressure that crowds out the road': '불안 — 도로를 밀어내는 압박감',
-  'Whispers that you are late, until nothing else fits in your head.': '늦었다고 속삭여, 머릿속에 다른 게 들어갈 자리를 없애요.',
-  'Vex does not want to hurt you. It wants you worried — about the bell, the message, the answer you owe someone. A worried child crosses without looking.': '벡스는 너를 다치게 하고 싶은 게 아니라, 걱정하게 만들고 싶어요. 종소리, 읽지 않은 메시지, 해야 할 대답. 걱정에 빠진 아이는 보지 않고 건너니까요.',
-  'Hurry Up': '서둘러',
-  'Fills your head with what you are late for, so the crossing gets none of it.': '늦은 일들로 머리를 가득 채워, 횡단보도에는 아무 생각도 남기지 않아요.',
+  'Focus — concentration broken into pieces too small to use': '집중 — 쓸 수 없을 만큼 잘게 쪼개진 집중력',
+  'Cracks one long thought into a dozen half-finished ones.': '길게 이어지던 생각 하나를, 끝맺지 못한 열두 개로 쪼개놔요.',
+  'Shatter does not steal your attention — it breaks it. One task becomes six tabs, six pings, six half-starts, and none of them ever finishes.': '섀터는 네 집중력을 훔치지 않아요 — 부숴버리죠. 할 일 하나가 탭 여섯 개, 알림 여섯 개, 시작만 한 여섯 개가 되고, 그중 어느 것도 끝나지 않아요.',
+  'Split Focus': '쪼개진 집중',
+  'Breaks your attention into pieces too small to hold anything steady — courage and footing both slip.': '주의력을 아무것도 안정되게 붙잡을 수 없을 만큼 잘게 쪼개요 — 용기도 발판도 함께 흔들려요.',
 
-  'Fear — freezing at the exact moment you must move': '두려움 — 움직여야 할 순간에 굳어버리는 것',
-  'Roots you to the spot, in the worst spot to be rooted.': '가장 멈추면 안 되는 곳에 너를 붙박아요.',
-  'Grim is the horn, the size of the truck, the size of the road. It stops a child halfway across — the one place on a street where standing still is the most dangerous thing you can do.': '그림은 경적 소리, 트럭의 크기, 도로의 크기예요. 건너던 아이를 도로 한복판에 세워요 — 가만히 서 있는 게 가장 위험한 바로 그 자리에요.',
-  'Freeze': '얼어붙기',
-  'Locks you mid-crossing, where standing still is the worst move there is.': '횡단보도 한가운데에 너를 묶어둬요. 멈춰 서는 게 최악인 그곳에요.',
+  'Thinking — a mind bent until its own judgement cannot be trusted': '생각 — 스스로의 판단을 믿을 수 없을 만큼 뒤틀린 마음',
+  'Twists what you see until the worst read feels like the only one.': '보이는 걸 뒤틀어, 최악의 해석만이 유일한 답처럼 느껴지게 해요.',
+  'Twist does not lie to you outright. It just tilts everything a little — a joke into an insult, quiet into abandonment — until your own thinking is the thing working against you.': '트위스트는 대놓고 거짓말하지 않아요. 그냥 모든 걸 조금씩 기울일 뿐이죠 — 농담은 모욕으로, 침묵은 버림받음으로. 결국 네 생각 자체가 너에게 불리하게 작동하게 돼요.',
+  'Warped Read': '뒤틀린 해석',
+  'Bends your judgement at the exact moment you need it straight — you freeze, and it moves first.': '판단이 가장 곧아야 할 순간에 그걸 구부려요 — 너는 얼어붙고, 상대가 먼저 움직이죠.',
 
-  'The hand behind the others — every distraction, arriving together': '배후의 손 — 모든 방해가 한꺼번에 몰려와요',
-  'Does not chase you. Sends the other eight.': '직접 쫓아오지 않아요. 나머지 여덟을 보내죠.',
-  'Vilord commands the eight. It has watched you beat them one by one, and it does not intend to fight you the same way — it will send them all at once.': '빌로드는 여덟 빌런을 거느려요. 네가 하나씩 물리치는 걸 지켜봤고, 같은 방식으로 싸울 생각은 없어요 — 이번엔 전부 한꺼번에 보낼 거예요.',
-  'Command the Eight': '여덟을 부리다',
-  'Borrows a trick from every villain you have already beaten.': '네가 이미 물리친 빌런들의 기술을 하나씩 빌려 써요.',
+  'Mind control — strings on every choice you thought was your own': '마인드 컨트롤 — 네 것이라 믿었던 모든 선택에 매달린 실',
+  'Does not chase you. Pulls the strings the other eight already tied.': '직접 쫓아오지 않아요. 나머지 여덟이 이미 묶어둔 실을 당길 뿐이죠.',
+  'Puppet does not need to beat you itself. It has been tugging the threads the other eight left behind, and by the time you notice, half your choices were never really yours.': '퍼펫은 스스로 너를 이길 필요가 없어요. 나머지 여덟이 남겨둔 실을 계속 당겨왔고, 네가 눈치챘을 땐 이미 네 선택의 절반은 진짜 네 것이 아니었죠.',
+  'Pull the Strings': '실을 당기다',
+  'Borrows a trick from every villain you have already beaten — it scales with your own progress.': '네가 이미 물리친 빌런들의 기술을 하나씩 빌려 써요 — 네가 나아갈수록 함께 강해지죠.',
 
-  'The source — the dark that every other danger comes out of': '근원 — 모든 위험이 흘러나오는 어둠',
-  'The dark the others are made of. Beat it and the street is yours.': '다른 빌런들을 이루는 어둠 그 자체. 물리치면 거리는 네 것이에요.',
-  'Nox is not a villain who arrived; it is the dark that was always there, and every other villain is a piece of it. Put it out and the city can look up again.': '녹스는 찾아온 빌런이 아니라, 처음부터 거기 있던 어둠이에요. 다른 빌런들은 모두 그 조각이죠. 이 어둠을 걷어내면 도시가 다시 고개를 들 수 있어요.',
-  'Total Dark': '완전한 어둠',
-  'Snuffs every light, every sound and every warning at once.': '모든 빛과 소리와 경고를 한 번에 꺼버려요.',
+  'Total domination — the moment the phone stops being a tool and starts being in charge': '완전한 지배 — 폰이 도구이길 멈추고 주도권을 쥐는 순간',
+  'The pull every other villain was made of. Beat it and the choice is yours again.': '다른 모든 빌런을 이루던 그 끌림 자체. 물리치면 선택은 다시 네 것이 돼요.',
+  'Vilord is not a villain who arrived. It is what happens when Ping, Temo, Vortex and all the rest stop being separate tricks and start acting as one mind — yours, borrowed. Beat it, and the phone goes back to being just a phone.': '빌로드는 찾아온 빌런이 아니에요. 핑, 테모, 보르텍스와 나머지 모두가 각자의 수법이길 멈추고 하나의 마음처럼 움직이기 시작할 때 생기는 것이죠 — 네 마음을, 빌려서요. 물리치면 폰은 다시 그냥 폰으로 돌아가요.',
+  'Full Control': '완전 장악',
+  'Seizes courage, guard and pace all at once — and slips past whatever is left standing.': '용기와 방어와 속도를 한꺼번에 장악해요 — 그러고도 남은 걸 스쳐 지나가죠.',
 
   // ── battle / villains (A-8) ──
   'Next villain': '다음 빌런', 'Power': '파워',
@@ -990,9 +1015,9 @@ const KO = {
   'Story unlocked': '이야기 해금', 'Chapter': '챕터', 'Story chapters': '이야기 챕터',
   'Beat it to unlock its story': '물리치면 이야기가 열려요',
   // A-8 — the ending: the final boss falls, the story closes, the special reward lands
-  'Nox is out.': '녹스를 꺼뜨렸어요.', 'Ending unlocked': '엔딩 해금', 'Special reward': '특별 보상',
+  'Vilord is out.': '빌로드를 물리쳤어요.', 'Ending unlocked': '엔딩 해금', 'Special reward': '특별 보상',
   'The final villain is beaten — the ending is yours.': '최종 빌런을 물리쳤어요 — 엔딩은 네 것이에요.',
-  'The dark the others were made of is gone. The city can look up again — and so can you.': '다른 빌런들을 이루던 어둠이 사라졌어요. 이제 도시가 다시 고개를 들 수 있어요 — 너처럼요.',
+  'The pull every other villain was made of is gone. The choice is yours again — and so is your time.': '다른 빌런들을 이루던 그 끌림이 사라졌어요. 선택은 다시 네 것이에요 — 시간도요.',
   'Still earned': '그래도', 'points for trying!': '포인트를 받았어요!',
   // battle select layouts (BattleVariants.jsx)
   'Opponent': '상대', 'Matchup': '전력 비교', 'Total power': '총 파워',
@@ -1205,7 +1230,7 @@ const KO = {
   'They’ll get a request to accept.': '상대가 요청을 수락해야 친구가 돼요.', 'Clear': '지우기',
 
   // ── in-scope build (danger zones / GNSS gated off) ──
-  'Motion sensor': '모션 센서', 'You beat Rush': '러시를 물리쳤어요',
+  'Motion sensor': '모션 센서', 'You beat Vortex': '보르텍스를 물리쳤어요',
   "JoanX never reads messages, listens, or tracks location. It only uses on-device motion to notice walking, stored separately from your child's identity.": 'JoanX는 메시지를 읽거나 엿듣거나 위치를 추적하지 않아요. 걷기를 감지하는 기기 내 모션만 사용하며, 자녀의 신원과 분리해 저장해요.',
 
   // ── safe-stop reward tiers (spec #4) ──
@@ -1237,9 +1262,14 @@ const KO = {
   'Seongsu-dong · near Ttukseom Stn': '성수동 · 뚝섬역 부근',
   // parent urgent alert
   'Urgent': '긴급', 'Dismiss': '닫기',
-  'No response for 20 seconds. Please check on them right away.': '20초 동안 응답이 없어요. 지금 바로 확인해 주세요.',
+  'No response for 20 seconds. Please check right away.': '20초 동안 응답이 없어요. 지금 바로 확인해 주세요.',
   'Last known location': '마지막 위치', 'as of': '기준',
   'Make a call': '전화 걸기', 'View location': '위치 보기',
+  // parent alert detail (Alerts row → C7 impact)
+  'They asked for help during a safety check.': '안전 확인 중 도움을 요청했어요.',
+  'What happened': '무슨 일이 있었나요', 'Safety check shown on their device': '기기에 안전 확인 화면이 떴어요',
+  'Tapped “I need help”': '"도움이 필요해요"를 눌렀어요', 'No response within 20 seconds': '20초 동안 응답이 없었어요',
+  'You were notified': '보호자에게 알림이 갔어요', "I’ve checked on them": '확인했어요',
 };
 
 function L(s) { return getLang() === 'ko' ? (KO[s] != null ? KO[s] : s) : s; }

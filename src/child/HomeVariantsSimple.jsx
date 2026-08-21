@@ -1107,7 +1107,12 @@ function HomeSimpleFocus({ ctx }) {
           <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={brand} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>
+          {/* the up-shift lives on this outer wrapper, not the jx-float div itself — jx-float's
+              own keyframe animation drives that element's transform every frame, which would
+              silently stomp a static translateY set on the same node */}
+          <div style={{ transform: 'translateY(-14px)' }}>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={160} /></div>
+          </div>
         </div>
         {/* XP pill on the ring — progress toward the buddy's next level */}
         <div style={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', background: '#fff', borderRadius: 999, padding: '6px 14px', boxShadow: THEME.shadowSoft, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>

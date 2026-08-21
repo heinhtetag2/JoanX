@@ -28,6 +28,25 @@ const OUTFIT_SLOTS = [
   { id: 'accessory', label: 'Accessory', icon: 'sparkles' },
 ];
 
+// Most buddies browse the full taxonomy above, but some are scoped down to just their own
+// couple of physical layers — keyed by character id (a specific buddy's accessory set, not
+// a blanket rule for every buddy of that species). Reuses the 'clothing' slot's existing
+// items/data, just relabeled "Coat" where a buddy only ever wears the one outer layer.
+const CHAR_OUTFIT_SLOTS = {
+  c10: [   // Milo
+    { id: 'hat',      label: 'Hat',  icon: 'crown' },
+    { id: 'clothing', label: 'Coat', icon: 'shirt' },
+  ],
+};
+const outfitSlotsFor = (character) => CHAR_OUTFIT_SLOTS[character?.id] || OUTFIT_SLOTS;
+
+// A character with its own scoped slot list also gets its own scoped OUTFITS items (see
+// the `charId` note on OUTFITS in core/data.jsx) — its own art replaces the shared catalog
+// rather than sitting alongside it, so this filter and outfitSlotsFor stay in lockstep.
+const outfitItemsFor = (character, allOutfits) => CHAR_OUTFIT_SLOTS[character?.id]
+  ? allOutfits.filter(o => o.charId === character.id)
+  : allOutfits.filter(o => !o.charId);
+
 // `left` fills the leading slot on screens with no back button — tab roots that still
 // want something there (Friends puts the player's own avatar in it).
 function ScreenHeader({ title, onBack, left, right, flush, light }) {
@@ -201,4 +220,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard, OUTFIT_SLOTS };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard, OUTFIT_SLOTS, outfitSlotsFor, outfitItemsFor };

@@ -19,8 +19,8 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
   // chooser collapsed into a locked card; any other entry shows the full grid as before.
   // From a character's own fight button we get an explicit charId. The Tweaks "Versus
   // screen" preview passes none, so fall back to the ACTIVE buddy there (not owned[0]) —
-  // the demo then shows whichever buddy you've picked (e.g. Hammy) against the next
-  // villain (Noct / 녹트), rather than an arbitrary first-in-list fighter.
+  // the demo then shows whichever buddy you've picked (e.g. Rex) against the next
+  // villain (Moody / 무디), rather than an arbitrary first-in-list fighter.
   const preChar = (ctx.params?.charId && owned.find(c => c.id === ctx.params.charId))
     || (ctx.params?.preview && owned.find(c => c.id === PLAYER.activeCharId));
   const [sel, setSel] = React.useState(preChar || owned[0]);
@@ -138,7 +138,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
       setLastFoe(villain);
       setLastMath({ base: res.power, bonus: BATTLE_ODDS.safeWalkBonus, odds: res.odds });
       // a first clear opens the ladder — move the aim to the newly unlocked foe. After the
-      // finale there is none, so the aim stays on Nox, which stays re-challengeable (A-8.1).
+      // finale there is none, so the aim stays on Vilord, which stays re-challengeable (A-8.1).
       if (res.firstClear) {
         const nxt = nextVillain();          // ladder-aware: skips dark/seasonal villains
         if (nxt) setTargetLv(nxt.lv);
@@ -322,7 +322,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
             <div style={{ width: '100%', maxWidth: 320, marginTop: 18, background: 'rgba(40,58,44,.72)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 24, padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div className="jx-pop" style={{ textAlign: 'center' }}>
                 <div className="game-font" style={{ fontSize: 34, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>
-                  {!won ? L('So close!') : wasEnding ? L('Nox is out.') : L('Victory!')}
+                  {!won ? L('So close!') : wasEnding ? L('Vilord is out.') : L('Victory!')}
                 </div>
                 {/* A-8.1 — a rematch that beat the old record. This is the payoff for
                     re-challenging: proof the buddy actually grew, not just another clear. */}
@@ -392,7 +392,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
                     <Icon name="sunrise" size={16} color={THEME.gold} stroke={2.3} />
                     <span style={{ fontSize: 11.5, fontWeight: 800, color: THEME.gold, textTransform: 'uppercase', letterSpacing: .5 }}>{L('Ending unlocked')}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.88)', lineHeight: 1.6 }}>{L('The dark the others were made of is gone. The city can look up again — and so can you.')}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.88)', lineHeight: 1.6 }}>{L('The pull every other villain was made of is gone. The choice is yours again — and so is your time.')}</div>
                   {/* the special-reward egg drops behind the scenes and is met on the
                       egg-hatch screen, not announced here — same rule as every other win. */}
                 </div>

@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { CHARACTERS, ROOMS, themeOf } from '../core/data.jsx';
-import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
+import { Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot } from '../core/characters.jsx';
-import { ScreenHeader, PointsChip, screenBgActive } from './shared.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
+import { PointsChip } from './shared.jsx';
 import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 
 // ── Room decoration (A-6 / A-7 / A-12) ───────────────────────────────
@@ -33,13 +33,32 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
 
   const save = () => { ed.save(); ctx.nav('myhouse'); };
 
+  // Same chrome language as a buddy's own showcase page (CharacterVariants.jsx):
+  // a soft brand-green wash behind a floating hero, not a boxed white card — the
+  // room is a place, not a form. Always the product green (never theme-tinted),
+  // same rule the buddy showcase follows: chrome is brand, art is the only thing
+  // that carries its own colour.
+  const bg = `linear-gradient(180deg, ${shade(THEME.brand, 74)} 0%, ${tint(THEME.brand, .82)} 32%, ${THEME.surface2} 60%)`;
+
+  // ── top bar (back · title · save) — same 38px circular-button shape the buddy
+  // showcase page uses. Save lives here instead of a bottom full-width button so
+  // the two editor modes (grid/hotspot) share one save action instead of each
+  // carrying its own.
+  const TopBar = () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+      <button onClick={() => ctx.nav('myhouse')} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="chevron-left" size={20} color={THEME.fg1} stroke={2.4} /></button>
+      <span className="game-font" style={{ fontSize: 18, fontWeight: 500, color: THEME.fg1 }}>{L('Decorate')}</span>
+      <button onClick={save} style={{ width: 38, height: 38, borderRadius: 999, border: 'none', background: '#fff', boxShadow: THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon name="check" size={19} color={THEME.brand} stroke={2.8} /></button>
+    </div>
+  );
+
   return (
-    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
-      <ScreenHeader title={L('Decorate')} onBack={() => ctx.nav('myhouse')} right={<PointsChip pts={pts} />} />
-      <div style={{ padding: '0 16px' }}>
+    <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingBottom: 110, background: bg }}>
+      <div style={{ padding: '50px 18px 0' }}>
+        <TopBar />
 
         {/* room tabs — each tab is a whole theme, not a colour swatch */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 16, marginBottom: 6 }}>
           {rooms.map(r => {
             const t = themeOf(r), on = roomId === r.id;
             return (
@@ -50,7 +69,10 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
             );
           })}
         </div>
-        <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center', margin: '0 0 12px' }}>{L(theme.blurb)}</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '0 0 12px' }}>
+          <span style={{ fontSize: 12, color: THEME.fg2 }}>{L(theme.blurb)}</span>
+          <PointsChip pts={pts} />
+        </div>
 
         {/* ── hotspot editor — the room IS the interface ─────────────────
             A tall room drawn from the same theme surfaces, with a puck parked next to
@@ -62,39 +84,43 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
               <RoomStage theme={theme} draft={draft} buddies={inRoom} placedDecor={placedDecor} onPuck={setSheet} />
             </div>
             <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center', margin: '0 0 16px' }}>{L('Tap anything in the room to change it.')}</div>
-            <Button variant="primary" fullWidth icon="check" onClick={save}>{L('Save room')}</Button>
           </React.Fragment>
         )}
 
-        {/* live preview — the room itself: wall, the buddies who live here, the floor
-            they stand on, and the items placed around them */}
+        {/* live preview — the room itself, floating on the wash the same way a buddy's
+            pedestal does: no hard card edge, just a soft contact shadow grounding it. */}
         {!hot && (<React.Fragment>
-        <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 16 }}>
-          <div style={{ position: 'relative', padding: '18px 14px 0', background: theme.wall(draft.wallpaper), textAlign: 'center' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4, minHeight: 118 }}>
-              {inRoom.length ? inRoom.map(c => {
-                // a full room can hold ROOM_CAPACITY buddies — scale the mascot down as the
-                // room fills so ten still fit (wrapping to a second shelf) instead of overflowing
-                const size = inRoom.length <= 2 ? 104 : inRoom.length <= 4 ? 78 : inRoom.length <= 6 ? 58 : 46;
-                return (
-                <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />
-                  <div style={{ fontSize: 11, fontWeight: 700 }}>{c.name}</div>
-                </div>
-                );
-              }) : (
-                <span style={{ fontSize: 12, color: THEME.fg3, alignSelf: 'center' }}>{L('Add a buddy and some decorations below')}</span>
-              )}
+        <div style={{ position: 'relative', textAlign: 'center', marginBottom: 4 }}>
+          <div style={{ borderRadius: 26, overflow: 'hidden', margin: '0 4px' }}>
+            <div style={{ position: 'relative', padding: '20px 14px 0', background: theme.wall(draft.wallpaper), textAlign: 'center' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4, minHeight: 118 }}>
+                {inRoom.length ? inRoom.map(c => {
+                  // a full room can hold ROOM_CAPACITY buddies — scale the mascot down as the
+                  // room fills so ten still fit (wrapping to a second shelf) instead of overflowing
+                  const size = inRoom.length <= 2 ? 104 : inRoom.length <= 4 ? 78 : inRoom.length <= 6 ? 58 : 46;
+                  return (
+                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />
+                    <div style={{ fontSize: 11, fontWeight: 700 }}>{c.name}</div>
+                  </div>
+                  );
+                }) : (
+                  <span style={{ fontSize: 12, color: THEME.fg3, alignSelf: 'center' }}>{L('Add a buddy and some decorations below')}</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 14, minHeight: 26, marginTop: 4, marginBottom: 10 }}>
+                {placedDecor.map(d => (
+                  <Icon key={d.id} name={d.icon} size={22} color={THEME.fg2} stroke={2.1} />
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, minHeight: 26, marginTop: 4, marginBottom: 10 }}>
-              {placedDecor.map(d => (
-                <Icon key={d.id} name={d.icon} size={22} color={THEME.fg2} stroke={2.1} />
-              ))}
-            </div>
+            {/* floor — part of the theme, so it changes with the room */}
+            <div style={{ height: 30, background: theme.floor(draft.flooring), borderTop: `2px solid ${theme.accent}` }} />
           </div>
-          {/* floor — part of the theme, so it changes with the room */}
-          <div style={{ height: 30, background: theme.floor(draft.flooring), borderTop: `2px solid ${theme.accent}` }} />
+          {/* contact shadow — the same soft pedestal grounding used under a buddy on its showcase page */}
+          <div style={{ width: '70%', height: 24, borderRadius: '50%', margin: '-10px auto 0', background: `radial-gradient(ellipse at 50% 40%, ${shade(THEME.brand, 62)} 0%, ${tint(THEME.brand, .82)} 58%, ${tint(THEME.brand, .82)}00 78%)` }} />
         </div>
+        <div style={{ height: 16 }} />
 
         {/* wallpaper — the palette belongs to the theme, so a Town wallpaper can't
             end up on a Dream wall */}
@@ -145,8 +171,6 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
             );
           })}
         </div>
-
-        <Button variant="primary" fullWidth icon="check" onClick={save}>{L('Save room')}</Button>
         </React.Fragment>)}
       </div>
 
