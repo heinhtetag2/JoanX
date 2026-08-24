@@ -408,6 +408,9 @@ const KO = {
   'Tap to hatch': '눌러서 부화하기', 'Tap the egg to hatch': '알을 톡 눌러 부화하기', 'Hatching…': '부화 중…', 'or shake your phone': '또는 폰을 흔들어요',
   // outfits bought on the buddy's page (A-5)
   'Unlocks at Stage': '해금 단계',
+  'Trying on': '착용 중', 'Trying it on': '착용해 보는 중', 'Buy': '구매',
+  // room lock preview (MyHouse — Tweaks → Room lock)
+  'to unlock': '달성 시 잠금 해제', 'Not unlocked yet': '아직 잠금 해제 전이에요',
   'Dress up your buddy': '내 친구 꾸미기',
   'Outfits are bought on each buddy’s page — some unlock as they evolve.': '의상은 각 친구의 상세 화면에서 살 수 있어요 — 일부는 진화하면 열려요.',
   // level cap (A-3.2)

@@ -1,8 +1,8 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, PLAYER, REACTIONS, ROOMS, SCENES, themeOf } from '../core/data.jsx';
-import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
+import { ACHIEVEMENTS, CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, PLAYER, REACTIONS, ROOMS, roomUnlocked, SCENES, themeOf } from '../core/data.jsx';
+import { Bar, BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { LevelBadge, ScreenHeader, screenBgActive } from './shared.jsx';
@@ -23,7 +23,7 @@ const sceneBgImg = (s) => `url(${s.img}), url(${s.fallback})`;
 //   'hotspot' — your actual home room (ROOMS), edited right here by tapping it. This is
 //               the only variant where the profile and the Decorate screen show the same
 //               object, so a change here is a change a visiting friend sees.
-function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet' }) {
+function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 'tray', heroDecorStyle = 'shelf', roomSwitch = 'sheet', roomLock = 'off', roomLockStyle = 'lock' }) {
   const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
   const owned = CHARACTERS.filter(x => x.owned);
   const buddies = owned;   // owned characters — the buddies you can switch to
@@ -55,8 +55,9 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   // 'hotspot' hero — one of your rooms, edited in place. autoSave because a profile has no
   // Save button: friends see this page, so a change to it IS the change.
   //
-  // All three rooms are free, so the switcher is a plain picker: no locks, no goals, no
-  // ladder. (They used to be earned — see the note on ROOMS in core/data.jsx.)
+  // All three rooms ship free — the switcher is a plain picker by default, no locks, no
+  // goals, no ladder (they used to be earned; see the note on ROOMS in core/data.jsx).
+  // Tweaks → Room lock previews what an earned ladder could look like again, off by default.
   const homeRoom = ROOMS.find(r => r.id === PLAYER.homeRoomId) || ROOMS.find(r => r.home) || ROOMS[0];
   const [profRoomId, setProfRoomId] = React.useState(homeRoom.id);
   const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
@@ -73,7 +74,17 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const toggleGuestLike = (i) => setGuestLikes(s => s.map((v, j) => (j === i ? !v : v)));
   const profIdx = ROOMS.findIndex(r => r.id === homeEd.room.id);
   const cycleRoom = (dir) => setHomeRoom(ROOMS[(profIdx + dir + ROOMS.length) % ROOMS.length].id);
-  const tapRoom = (r) => { setHomeRoom(r.id); setRoomPicker(false); };
+  const roomLockOn = roomLock === 'on';
+  const roomLocked = (r) => !roomUnlocked(r, roomLockOn);
+  const roomAchievement = (r) => ACHIEVEMENTS.find(a => a.id === r.unlockAchievement);
+  const tapRoom = (r) => {
+    if (roomLocked(r)) {
+      const a = roomAchievement(r);
+      return say(a ? `${L(a.name)} ${a.progress}/${a.total} · ${L('to unlock')}` : L('Not unlocked yet'));
+    }
+    setHomeRoom(r.id);
+    setRoomPicker(false);
+  };
 
   const setScene = (s) => { setSceneId(s.id); PLAYER.scene = s.id; };
   const chooseScene = (s) => { setScene(s); setScenePicker(false); };
@@ -363,31 +374,74 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       {roomPicker && (
         <BottomSheet title={L('Your rooms')} onClose={() => setRoomPicker(false)}>
           <div style={{ fontSize: 12.5, color: THEME.fg2, margin: '-4px 2px 12px' }}>{L('Pick the room your friends see.')}</div>
-          {/* Three rooms, three cards, no scrolling. Every one is free, so there is nothing
-              to rank, gate or count toward — the card is a picture of the room and its name,
-              and the only state worth showing is which one you're in. */}
+          {/* Three cards, no scrolling. With Tweaks → Room lock off (the shipped default),
+              every room is free — nothing to rank or gate, the card is just a picture of the
+              room and its name, and the only state worth showing is which one you're in. With
+              the tweak on, Town previews as earned via the Popular House badge (ACHIEVEMENTS
+              'a16') — six treatments (`roomLockStyle`) for what "not yours yet" looks like on
+              a room card, all keeping the real art and the real name visible: per Badges.jsx's
+              own rule for locked content, a child should see the silhouette of the thing they
+              haven't got, not a blank box — that's what makes it worth walking for.
+                greyscale — desaturated art, a small lock badge where the checkmark would sit
+                lock      — dimmed art, one bigger lock centred over it (the DecorateBuddy look)
+                ribbon    — full-colour art, a diagonal "Locked" banner across the corner
+                progress  — desaturated art, the caption becomes a real progress bar
+                silhouette— full-colour art blurred and darkened, moodier than a flat grey wash
+                chip      — full-colour art, a small badge-icon chip instead of a lock glyph */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
             {ROOMS.map(r => {
               const t = themeOf(r), on = r.id === homeEd.room.id;
+              const locked = roomLocked(r);
+              const a = locked ? roomAchievement(r) : null;
+              const accent = THEME.brand;
+              const dim = locked && roomLockStyle !== 'ribbon' && roomLockStyle !== 'chip' && roomLockStyle !== 'silhouette';
+              const thumbFilter = locked && roomLockStyle === 'silhouette' ? 'grayscale(.6) blur(2.5px) brightness(.75)' : dim ? 'grayscale(1) opacity(.6)' : 'none';
               return (
-                <button key={r.id} onClick={() => tapRoom(r)} style={{ textAlign: 'left', border: on ? `2px solid ${THEME.brand}` : `2px solid ${THEME.border}`, borderRadius: 18, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', padding: 0, overflow: 'hidden' }}>
+                <button key={r.id} onClick={() => tapRoom(r)} style={{ textAlign: 'left', border: on ? `2px solid ${accent}` : `2px solid ${THEME.border}`, borderRadius: 18, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', padding: 0, overflow: 'hidden' }}>
                   {/* the room's own face — its art if it has any, its wallpaper if not. Big
                       enough to actually recognise the room by, which is the only reason a
                       thumbnail earns its space. */}
-                  <div style={{ height: 96, background: t.wall(r.wallpaper), backgroundImage: t.bg ? `url(${t.bg})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center 30%', position: 'relative' }}>
+                  <div style={{ height: 96, background: t.wall(r.wallpaper), backgroundImage: t.bg ? `url(${t.bg})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center 30%', position: 'relative', filter: thumbFilter, overflow: 'hidden' }}>
                     {on && (
-                      <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="check" size={14} color="#fff" stroke={3} />
+                      </div>
+                    )}
+                    {locked && (roomLockStyle === 'greyscale' || roomLockStyle === 'progress' || roomLockStyle === 'silhouette') && (
+                      <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, background: 'rgba(46,43,41,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon name="lock" size={12} color="#fff" stroke={2.6} />
+                      </div>
+                    )}
+                    {locked && roomLockStyle === 'lock' && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 999, background: 'rgba(46,43,41,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon name="lock" size={16} color="#fff" stroke={2.6} />
+                        </div>
+                      </div>
+                    )}
+                    {locked && roomLockStyle === 'ribbon' && (
+                      <div style={{ position: 'absolute', top: 11, left: -30, width: 118, transform: 'rotate(-40deg)', background: THEME.fg1, color: '#fff', fontSize: 10, fontWeight: 800, textAlign: 'center', padding: '3px 0' }}>{L('Locked')}</div>
+                    )}
+                    {locked && roomLockStyle === 'chip' && a && (
+                      <div style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 999, background: '#fff', border: `1.5px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon name={a.icon} size={12} color={accent} stroke={2.4} />
                       </div>
                     )}
                   </div>
                   <div style={{ padding: '9px 10px 11px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: THEME.fg1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: locked ? THEME.fg3 : THEME.fg1 }}>
                       <Icon name={t.icon} size={13} color={THEME.fg2} stroke={2.3} />{L(r.name)}
                     </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: on ? THEME.brand : THEME.fg3, marginTop: 3, lineHeight: 1.35 }}>
-                      {on ? L('Showing') : L('Tap to show')}
-                    </div>
+                    {locked && roomLockStyle === 'progress' && a ? (
+                      <div style={{ marginTop: 6 }}>
+                        <Bar value={a.progress} max={a.total} color={accent} height={6} />
+                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.fg3, marginTop: 3 }}>{a.progress}/{a.total} · {L(a.name)}</div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 11, fontWeight: 700, color: locked ? THEME.fg3 : on ? accent : THEME.fg3, marginTop: 3, lineHeight: 1.35 }}>
+                        {locked ? (a ? L(a.name) : L('Locked')) : on ? L('Showing') : L('Tap to show')}
+                      </div>
+                    )}
                   </div>
                 </button>
               );
@@ -396,7 +450,9 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
         </BottomSheet>
       )}
 
-      {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 20 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}
+      {/* z-index 95: above BottomSheet's own 90, since the room-lock toast above needs to
+          read while that sheet is the thing open on screen, not sit hidden behind it */}
+      {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 95 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}
 
       {/* scene picker — 3 photo thumbnails; the buddy stands in the one you pick */}
       {scenePicker && (

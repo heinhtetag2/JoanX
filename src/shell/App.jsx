@@ -111,7 +111,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -277,7 +277,7 @@ function App() {
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} eggCardRadius={tw.eggCardRadius} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
       friends: <Friends ctx={ctx} layout={tw.friendsLayout} />, friendhouse: <FriendHouse ctx={ctx} />,
-      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, decoratebuddy: <DecorateBuddy ctx={ctx} tabStyle={tw.decorateTabStyle} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
+      myhouse: <MyHouse ctx={ctx} variant={tw.roomStyle} buddySwitch={tw.buddySwitch} roomDecor={tw.roomDecor} heroDecorStyle={tw.heroDecorStyle} roomSwitch={tw.roomSwitch} roomLock={tw.roomLock} roomLockStyle={tw.roomLockStyle} />, guestbook: <Guestbook ctx={ctx} />, decorate: <DecorateRoom ctx={ctx} editor={tw.decorEditor} />, decoratebuddy: <DecorateBuddy ctx={ctx} tabStyle={tw.decorateTabStyle} buyStyle={tw.decorateBuyStyle} />, addfriend: <AddFriends ctx={ctx} layout={tw.addFriendsLayout} />,
     })[screen] || <ChildHome ctx={ctx} />;
   } else {
     if (!parentOnboarded) body = <ParentOnboarding ctx={ctx} />;
@@ -424,6 +424,27 @@ function App() {
                   <button key={v} className={'tw-chip' + (tw.decorateTabStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, decorateTabStyle: v }))}>{l}</button>
                 ))}
               </div>
+
+              <div className="tw-label">Decorate buy CTA</div>
+              <div className="tw-row">
+                {[['bar', 'Bar'], ['sheet', 'Sheet'], ['toast', 'Toast'], ['fab', 'Fab'], ['badge', 'Badge'], ['inline', 'Inline']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.decorateBuyStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, decorateBuyStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
+              <div className="tw-label">Room lock</div>
+              <div className="tw-row">
+                {[['off', 'Off (all free)'], ['on', 'On (Town earned)']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.roomLock === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomLock: v }))}>{l}</button>
+                ))}
+              </div>
+              {tw.roomLock === 'on' && (
+                <div className="tw-row">
+                  {[['greyscale', 'Greyscale'], ['lock', 'Lock'], ['ribbon', 'Ribbon'], ['progress', 'Progress'], ['silhouette', 'Silhouette'], ['chip', 'Chip']].map(([v, l]) => (
+                    <button key={v} className={'tw-chip' + (tw.roomLockStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, roomLockStyle: v }))}>{l}</button>
+                  ))}
+                </div>
+              )}
 
               {/* Room switch selector removed — the default 'sheet' (Name → sheet) is the chosen
                   behaviour; tw.roomSwitch stays defaulted so MyHouse keeps getting it. */}

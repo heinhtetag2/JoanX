@@ -296,7 +296,77 @@ function DecorateTabs({ tabStyle, slots, slotFilter, setSlotFilter, accent }) {
   );
 }
 
-function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
+// Confirming a purchase (F-5 tweak) — six treatments for "you tapped something you don't
+// own yet, now what." All six share the same two actions (buy / cancel) and the same rule:
+// nothing is charged until one of them fires — tapping the previewed tile again is always an
+// implicit cancel, regardless of style.
+//   bar    — a bottom cart-style bar: name on the left, X and Buy on the right
+//   sheet  — a caption card pinned above the category tabs, calm and contextual
+//   toast  — reuses the page's own toast slot, but persistent + actionable
+//   fab    — a floating "Buy" pill over the mascot's corner; the tile itself is the cancel
+//   badge  — a small tag floats off the mascot's shoulder, carrying just the Buy action
+//   inline — no separate element at all; the tapped tile morphs into Buy / Cancel in place
+function PreviewCta({ buyStyle, item, accent, onBuy, onCancel }) {
+  if (!item || buyStyle === 'inline') return null;
+  if (buyStyle === 'sheet') {
+    return (
+      <div className="jx-pop" style={{ background: THEME.surface2, borderRadius: 16, padding: '10px 10px 10px 12px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 999, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon name={item.icon || 'shirt'} size={15} color={accent} stroke={2.3} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(item.name)}</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg3 }}>{L('Trying it on')}</div>
+        </div>
+        <button onClick={onCancel} style={{ border: 'none', background: 'none', color: THEME.fg3, fontSize: 12, fontWeight: 800, cursor: 'pointer', padding: '8px 6px', fontFamily: 'inherit' }}>{L('Cancel')}</button>
+        <button onClick={onBuy} style={{ border: 'none', background: accent, color: '#fff', borderRadius: 999, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
+          {L('Buy')} <SafePointIcon size={11} /> {item.price}
+        </button>
+      </div>
+    );
+  }
+  if (buyStyle === 'bar') {
+    return (
+      <div className="jx-fade" style={{ position: 'fixed', left: 16, right: 16, bottom: 20, zIndex: 55, background: THEME.surface2, boxShadow: THEME.shadowCard, borderRadius: 18, padding: '8px 8px 8px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: THEME.fg3 }}>{L('Trying on')}</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(item.name)}</div>
+        </div>
+        <button onClick={onCancel} style={{ border: 'none', background: '#fff', color: THEME.fg2, borderRadius: 999, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Icon name="x" size={15} color={THEME.fg2} stroke={2.4} />
+        </button>
+        <button onClick={onBuy} style={{ border: 'none', background: accent, color: '#fff', borderRadius: 999, padding: '10px 16px', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+          {L('Buy')} · <SafePointIcon size={12} /> {item.price}
+        </button>
+      </div>
+    );
+  }
+  if (buyStyle === 'toast') {
+    return (
+      <div className="jx-fade" style={{ position: 'fixed', left: '50%', bottom: 128, transform: 'translateX(-50%)', zIndex: 60, background: THEME.fg1, color: '#fff', borderRadius: 999, padding: '8px 8px 8px 16px', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>{L(item.name)} · <SafePointIcon size={11} /> {item.price}</span>
+        <button onClick={onCancel} style={{ border: 'none', background: 'none', color: 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '6px', fontFamily: 'inherit' }}>{L('Cancel')}</button>
+        <button onClick={onBuy} style={{ border: 'none', background: accent, color: '#fff', borderRadius: 999, padding: '7px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{L('Buy')}</button>
+      </div>
+    );
+  }
+  if (buyStyle === 'fab') {
+    return (
+      <button onClick={onBuy} className="jx-pop" style={{ position: 'absolute', right: 6, bottom: 4, border: 'none', background: accent, color: '#fff', borderRadius: 999, padding: '9px 14px', fontSize: 12.5, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+        {L('Buy')} · <SafePointIcon size={11} /> {item.price}
+      </button>
+    );
+  }
+  // 'badge' — a small tag floats off the mascot's shoulder; tap it to buy, tap the tile again to cancel
+  return (
+    <div className="jx-pop" style={{ position: 'absolute', right: 10, top: 6, display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: `1.5px solid ${accent}`, borderRadius: 999, padding: '5px 5px 5px 10px' }}>
+      <span style={{ fontSize: 11, fontWeight: 800, color: accent, whiteSpace: 'nowrap' }}>{L('Trying on')}</span>
+      <button onClick={onBuy} style={{ border: 'none', background: accent, color: '#fff', borderRadius: 999, padding: '5px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{L('Buy')}</button>
+    </div>
+  );
+}
+
+function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params?.id) || CHARACTERS.find(c => c.owned) || CHARACTERS[0];
   const stage = orig.stage;
   const slots = outfitSlotsFor(orig);
@@ -338,11 +408,28 @@ function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
     setWornBySlot(s => ({ ...s, [o.slot]: s[o.slot] === o.id ? null : o.id }));
   };
   const isWorn = (o) => ownedOutfit(o) && wornBySlot[o.slot] === o.id;
-  const items = outfitItemsFor(orig, OUTFITS).map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked(o) }));
+
+  // Trying on before buying: tapping an unowned item no longer spends points on the spot —
+  // it flags that one item as `previewId`, the buy CTA (styled per `buyStyle` below) commits
+  // the actual purchase. Tapping the same tile again, or switching category tabs, drops the
+  // preview with no charge — same "no-op unless confirmed" contract as everywhere else money
+  // moves in this app.
+  const [previewId, setPreviewId] = React.useState(null);
+  const previewOutfit = previewId ? OUTFITS.find(x => x.id === previewId) : null;
+  const cancelPreview = () => setPreviewId(null);
+  const confirmPreview = () => {
+    if (!previewOutfit) return;
+    buyOutfit(previewOutfit);
+    setPreviewId(null);
+  };
+  const changeSlot = (id) => { setPreviewId(null); setSlotFilter(id); };
+
+  const items = outfitItemsFor(orig, OUTFITS).map(o => ({ ...o, on: isWorn(o), own: ownedOutfit(o), locked: locked(o), previewing: previewId === o.id }));
   const tapItem = (it) => {
     const o = OUTFITS.find(x => x.id === it.id);
     if (!o || locked(o)) return;
-    ownedOutfit(o) ? toggleWear(o) : buyOutfit(o);
+    if (ownedOutfit(o)) { setPreviewId(null); toggleWear(o); return; }
+    setPreviewId(id => id === o.id ? null : o.id);
   };
   // Every non-locked tile keeps showing its price, owned or not — the tile's own border/tint
   // already says which one is worn, so "Equipped" / "Tap to equip" was just repeating that in
@@ -407,8 +494,11 @@ function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
         </Button>
       } />
       <div style={{ padding: '0 16px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 18, marginBottom: 22 }}>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 18, marginBottom: 38 }}>
           <Mascot species={orig.species} stage={stage} color={orig.color} mood={moodForStage(stage)} size={168} />
+          {(buyStyle === 'fab' || buyStyle === 'badge') && (
+            <PreviewCta buyStyle={buyStyle} item={previewOutfit} accent={accent} onBuy={confirmPreview} onCancel={cancelPreview} />
+          )}
         </div>
       </div>
 
@@ -420,7 +510,10 @@ function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
       <div style={{ flex: 1, background: '#fff', borderRadius: '28px 28px 0 0', padding: '18px 16px 134px', boxShadow: '0 -4px 14px rgba(20,18,16,0.05)', transform: `translateY(${translateY})`, transition: drag.current.active ? 'none' : 'transform .48s cubic-bezier(.32,.72,0,1)' }}>
         <div onTouchStart={e => dragStart(e.touches[0].clientY)} onTouchMove={e => dragMove(e.touches[0].clientY)} onTouchEnd={dragEnd} onMouseDown={onGripMouseDown}
           style={{ width: 40, height: 5, borderRadius: 999, background: 'rgba(46,43,41,0.22)', margin: '-8px auto 14px', cursor: 'grab', touchAction: 'none' }} />
-        <DecorateTabs tabStyle={tabStyle} slots={slots.filter(s => items.some(it => it.slot === s.id))} slotFilter={slotFilter} setSlotFilter={setSlotFilter} accent={accent} />
+        {buyStyle === 'sheet' && (
+          <PreviewCta buyStyle={buyStyle} item={previewOutfit} accent={accent} onBuy={confirmPreview} onCancel={cancelPreview} />
+        )}
+        <DecorateTabs tabStyle={tabStyle} slots={slots.filter(s => items.some(it => it.slot === s.id))} slotFilter={slotFilter} setSlotFilter={changeSlot} accent={accent} />
 
         {/* item count for the selected category — real info (how many are here) rather
             than just repeating the tab label the selected tab already shows */}
@@ -431,20 +524,33 @@ function DecorateBuddy({ ctx, tabStyle = 'pin' }) {
         {/* catalogue — one bigger grid, not squeezed under a stats toggle */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 }}>
           {filteredItems.map(it => (
-            <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}1c` : 'transparent', border: it.on ? `2px solid ${accent}` : '2px solid transparent', padding: '12px 8px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .6 : 1 }}>
+            <button key={it.id} onClick={() => tapItem(it)} disabled={it.locked} style={{ position: 'relative', minWidth: 0, borderRadius: 16, background: it.on ? `${accent}1c` : it.previewing ? `${accent}0f` : 'transparent', border: it.on ? `2px solid ${accent}` : it.previewing ? `2px dashed ${accent}` : '2px solid transparent', padding: '12px 8px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: it.locked ? 'default' : 'pointer', fontFamily: 'inherit', opacity: it.locked ? .6 : 1 }}>
               {it.img && !it.locked
                 ? <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src={it.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
                 : <div style={{ width: 36, height: 36, borderRadius: 999, background: it.on ? accent : '#fff', boxShadow: it.on ? 'none' : 'inset 0 0 0 1px rgba(46,43,41,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon name={it.locked ? 'lock' : it.icon} size={16} color={it.locked ? THEME.fg3 : it.on ? '#fff' : THEME.fg2} stroke={2.3} />
                   </div>}
               <span style={{ fontSize: 11.5, fontWeight: 800, color: it.locked ? THEME.fg3 : THEME.fg1, textAlign: 'center', lineHeight: 1.2 }}>{L(it.name)}</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10.5, fontWeight: 800, color: it.locked ? THEME.fg3 : accent }}>
-                {it.locked ? itemStatus(it) : <><SafePointIcon size={12} /> {itemStatus(it)}</>}
-              </span>
+              {/* 'inline' buy style: the previewed tile morphs its price row into Buy/Cancel
+                  right where the price was, instead of raising a separate CTA elsewhere */}
+              {buyStyle === 'inline' && it.previewing ? (
+                <span style={{ display: 'flex', gap: 4, marginTop: 1 }}>
+                  <span onClick={(e) => { e.stopPropagation(); cancelPreview(); }} style={{ fontSize: 10, fontWeight: 800, color: THEME.fg3, padding: '3px 7px', borderRadius: 999, background: THEME.surface2 }}>{L('Cancel')}</span>
+                  <span onClick={(e) => { e.stopPropagation(); confirmPreview(); }} style={{ fontSize: 10, fontWeight: 800, color: '#fff', padding: '3px 8px', borderRadius: 999, background: accent, display: 'flex', alignItems: 'center', gap: 2 }}><SafePointIcon size={10} /> {L('Buy')}</span>
+                </span>
+              ) : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10.5, fontWeight: 800, color: it.locked ? THEME.fg3 : accent }}>
+                  {it.locked ? itemStatus(it) : <><SafePointIcon size={12} /> {itemStatus(it)}</>}
+                </span>
+              )}
             </button>
           ))}
         </div>
       </div>
+
+      {(buyStyle === 'bar' || buyStyle === 'toast') && (
+        <PreviewCta buyStyle={buyStyle} item={previewOutfit} accent={accent} onBuy={confirmPreview} onCancel={cancelPreview} />
+      )}
 
       {note && (
         <div className="jx-fade" style={{ position: 'fixed', left: '50%', bottom: 128, transform: 'translateX(-50%)', zIndex: 60, background: THEME.fg1, color: '#fff', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>{note}</div>

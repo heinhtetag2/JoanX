@@ -1703,11 +1703,13 @@ const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.floori
 //   home — the default room, the one a new child lands in and the one their profile shows
 //          until they pick another.
 //
-// All three are open from the first walk. They used to be EARNED — Town on a 5-day streak,
-// Dream on 25h of safe walking — which is what F-18 describes ("Some Rooms unlock upon
-// meeting conditions, expanding gradually"). That ladder was removed by product decision on
-// 2026-07-17: three rooms, all free. F-18 needs a signed deviation, and safe walking now
-// buys characters and items but no longer buys space.
+// All three are open from the first walk by default. They used to be EARNED — Town on a
+// 5-day streak, Dream on 25h of safe walking — which is what F-18 describes ("Some Rooms
+// unlock upon meeting conditions, expanding gradually"). That ladder was removed by product
+// decision on 2026-07-17: three rooms, all free. F-18 still needs a signed deviation before
+// this can ship for real — `unlockAchievement` below + Tweaks → Room lock is a design
+// exploration of what F-18's ladder could look like, off by default so the shipped picker
+// stays exactly the free-for-all the 2026-07-17 decision describes.
 // ROOM_CAPACITY (A-6) — how many characters may live in one Room at once. One knob,
 // not a literal sprinkled across the rooms table, so a future business policy can retune
 // it in a single place. It is capped rather than open-ended on purpose: every placed
@@ -1716,13 +1718,24 @@ const floorOf = (room) => { const t = themeOf(room); return t.floor(room?.floori
 const ROOM_CAPACITY = 10;
 
 const ROOMS = [
-  // `home: true` marks the room the profile/house opens on (MyHouse). Dream Room for now.
-  // `unlocked: true` on all three — every room ships free in the MVP roster; a future
-  // seasonal/earned room would be the one to ship `unlocked: false` on.
+  // `home: true` marks the room the profile/house opens on (MyHouse). `unlocked: true` on
+  // all three — every room ships free in the MVP roster, unaffected by `unlockAchievement`
+  // below (Decorate Room and everywhere else that reads `.unlocked` keeps seeing all three
+  // as open, exactly as the 2026-07-17 decision above describes).
+  // `unlockAchievement` names an ACHIEVEMENTS id this room previews as gated behind, when
+  // Tweaks → Room lock is switched on (see roomUnlocked below) — nothing reads it while
+  // that tweak stays at its 'off' default.
   { id: 'green', name: 'Green Room', theme: 'green', unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#e7f3e4', flooring: '#cfe3b7', placed: { plant: true, sapling: true } },
-  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true } },
+  { id: 'town',  name: 'Town Room',  theme: 'town',  unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#eaf0f6', flooring: '#dfe3e8', placed: { lamp: true }, unlockAchievement: 'a16' },
   { id: 'dream', name: 'Dream Room', theme: 'dream', home: true, unlocked: true, slots: ROOM_CAPACITY, wallpaper: '#efe8fb', flooring: '#e4d8f7', placed: {} },
 ];
+
+// Whether `room` should render as earned in the MyHouse room picker, given its Tweaks →
+// Room lock toggle. Locking is OFF by default (see the ROOMS comment above) so this always
+// returns true unless a caller explicitly opts in — a room with no `unlockAchievement`
+// (Green, Dream) is always open regardless. Scoped to that one picker; every other reader
+// of ROOMS still goes through the plain `.unlocked` field, untouched by this.
+const roomUnlocked = (room, lockOn) => !lockOn || !room.unlockAchievement || !!ACHIEVEMENTS.find(a => a.id === room.unlockAchievement)?.done;
 
 /* ── Achievement badges ────────────────────────────────────────────────
    `tier` borrows the RARITIES keys rather than inventing a second vocabulary:
@@ -2808,6 +2821,6 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', provider
 const PARENT_PREFS = { sound: false };
 
 export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, themeById, themeOf, wallOf, floorOf, decorForRoom,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, roomUnlocked, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };
