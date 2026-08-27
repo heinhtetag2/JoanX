@@ -329,24 +329,40 @@ html, body {
 /* THE KNOCKOUT — the beaten plate coming apart, on its own layer inside the plate so it plays
    over the clash rather than replacing it. Delayed to 3.34s: that is 88% of the 3.8s exchange,
    the frame the decisive blow lands, so the destruction starts ON the hit rather than after it.
-   Two halves. First it SHUDDERS — six fast oscillations, decaying, the plate failing to hold
-   together. Then it goes: sinks, tips, drains to grey, blurs out and fades. The slow half is
-   deliberately the longer one; a fast disappear reads as an element being removed, and what is
-   wanted is something being destroyed. grayscale before opacity is most of that read — colour
-   leaving first is what makes it look killed rather than hidden. */
-@keyframes jxKO {
-  0%  { transform: translate(0) rotate(0) scale(1); opacity: 1; filter: none; }
-  5%  { transform: translateX(-6px) rotate(-1.8deg); }
-  11% { transform: translateX(6px)  rotate(1.8deg); }
-  17% { transform: translateX(-5px) rotate(-1.4deg); }
-  23% { transform: translateX(5px)  rotate(1.4deg); }
-  29% { transform: translateX(-3px) rotate(-.8deg); }
-  35% { transform: translateX(2px)  rotate(.4deg); }
-  41% { transform: translate(0) rotate(0) scale(1); opacity: 1; filter: grayscale(.35); }
-  70% { opacity: .55; filter: grayscale(.9) blur(1.5px); }
-  100% { transform: translateY(30px) rotate(-2.5deg) scale(.8); opacity: 0; filter: grayscale(1) blur(5px); }
+   Two halves. First it SHUDDERS — six fast oscillations, decaying, ending back at rest
+   (translate 0, rotate 0) — the plate failing to hold together, kept to its original ~500ms
+   regardless of how long the rest runs. Then it drifts off: one clean 360° turn, up and away.
+   The move is EASE-IN-OUT, not linear — linear looked smooth on paper (one segment, no
+   stutter) but still had a hidden snap: the shudder ends at a dead stop, and linear pacing
+   jumps straight to full speed the instant the drift starts, which reads as a jolt even
+   without any mid-flight stutter. Ease-in-out spends its first moment accelerating FROM that
+   same standstill — the actual join is smooth — and eases down again at the very end, so it
+   drifts to a near-stop as it fades rather than sailing through disappearing at full speed.
+   TWO SEPARATE keyframe sets, not one, layered as two animations on the same element. A single
+   timeline with several waypoints re-applies its easing to EACH segment between them, so every
+   waypoint re-triggers its own accelerate/decelerate — with several points that reads as a
+   stutter no matter how gentle the curve is. jxKOMove owns transform and is exactly two points
+   after the shudder — one continuous arc for position/rotation/scale, nothing to stutter
+   between. jxKOFade owns opacity/filter on its own timeline: solid through the shudder and
+   the first half of the drift, then an EASE-OUT dissolve — fastest at the start of the fade,
+   trailing off slowly — so it spends longer near-transparent than it does dropping there,
+   which reads as settling into nothing rather than being switched off. */
+@keyframes jxKOMove {
+  0%  { transform: translate(0,0) rotate(0) scale(1); }
+  3%  { transform: translateX(-6px) rotate(-1.8deg); }
+  7%  { transform: translateX(6px)  rotate(1.8deg); }
+  11% { transform: translateX(-5px) rotate(-1.4deg); }
+  14% { transform: translateX(5px)  rotate(1.4deg); }
+  18% { transform: translateX(-3px) rotate(-.8deg); }
+  22% { transform: translate(0,0) rotate(0) scale(1); }
+  100% { transform: translate(70px,-104px) rotate(360deg) scale(.55); }
 }
-.jx-ko { animation: jxKO 1.5s cubic-bezier(.45,0,.65,1) 3.34s both; }
+@keyframes jxKOFade {
+  0%, 45% { opacity: 1; filter: none; }
+  72% { opacity: .78; filter: grayscale(.4) blur(.3px); }
+  100% { opacity: 0; filter: grayscale(1) blur(1.8px); }
+}
+.jx-ko { animation: jxKOMove 2.2s ease-in-out 3.34s both, jxKOFade 2.2s ease-out 3.34s both; }
 @media (prefers-reduced-motion: reduce) { .jx-ko { animation-duration: .01s; animation-delay: 3.34s; } }
 
 @media (prefers-reduced-motion: reduce) {
@@ -408,8 +424,17 @@ html, body {
 }
 .jx-dmg-pop { animation: jxDmgPop .85s cubic-bezier(.16,1,.3,1) both; }
 
+/* Badge pulse (battle-loading dev idea) — the wait carried by the shield itself breathing,
+   not a ring drawn around it or a line of copy under it. A slow, even scale loop reads as
+   "alive and working" without the shield ever looking like it is about to hit anything —
+   that read (a sharp overshoot) is exactly what .jx-shield-hits is for, and this has to stay
+   clearly calmer than that so the two are never confused for the same signal. */
+@keyframes jxBadgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.jx-badge-pulse { animation: jxBadgePulse 1.1s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .jx-streak-up, .jx-streak-down, .jx-hit-burst, .jx-dmg-float, .jx-flash-pulse, .jx-hit-bounce, .jx-dmg-pop { animation-duration: .01s; }
+  .jx-badge-pulse { animation: none; }
 }
 
 @keyframes jxPulse {

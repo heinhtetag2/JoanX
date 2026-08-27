@@ -1,9 +1,9 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, PLAYER, rarityOf, resolveBattle, STATS, statsFor, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
-import { L, getLang } from '../core/i18n.jsx';
+import { L } from '../core/i18n.jsx';
 import { Mascot, VillainMascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
@@ -11,7 +11,7 @@ import { VersusStage } from './BattleVersus.jsx';
 import { EggHatchFlow, requestMotionPermission } from './EggHatch.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
-function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'classic', loadingStyle = 'charge', eggShake = false, eggHatch = 'pop' }) {
+function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'impact', loadingStyle = 'pulse', eggShake = false, eggHatch = 'pop' }) {
   const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const owned = CHARACTERS.filter(c => c.owned);
   // Arriving from a character's own fight button (CharacterDetail's swords icon) means
@@ -47,7 +47,6 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
   // re-render now computes — `villain.defeated` flips the moment we win.
   const [wasFirstClear, setWasFirstClear] = React.useState(false);
   const [wasEnding, setWasEnding] = React.useState(false);   // A-8: the final boss just fell
-  const [wasImproved, setWasImproved] = React.useState(false);   // A-8.1: a new personal best
   const [stageUp, setStageUp] = React.useState(null);            // A-3.3: the win evolved the buddy
   // (no storyChapter state — the chapter a first win opens is not announced on this screen)
   const [lastReward, setLastReward] = React.useState(BATTLE_REWARDS.firstClear);
@@ -59,7 +58,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
   const [hatchQueued, setHatchQueued] = React.useState(null);
   // A-8.2 — the villain fought and the power/odds it was rolled against, frozen at roll time
   const [lastFoe, setLastFoe] = React.useState(null);
-  const [lastMath, setLastMath] = React.useState({ base: 0, bonus: 0, odds: 0 });
+  const [lastMath, setLastMath] = React.useState({ base: 0, bonus: 0, odds: 0, stats: null });
   // A-8: up to battlesPerDay() challenges per day (persists this session)
   const [usedCount, setUsedCount] = React.useState(PLAYER.battlesToday || 0);
   const left = Math.max(0, battlesPerDay() - usedCount);
@@ -129,6 +128,10 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
     fired.current = true;
     clearBeats();
     {
+      // captured BEFORE resolveBattle, which levels the buddy up on a win — statsFor(sel)
+      // after that would report the stats the fight was rewarded with, not the ones it was
+      // fought with.
+      const rolledStats = statsFor(sel);
       const res = resolveBattle(villain, sel);
       if (!res.ok) { setPhase('select'); return; }   // gate closed between tap and resolve
       const w = res.won;
@@ -137,7 +140,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
       // from `targetLv` — so without this the victory screen shows the face and the power of
       // the villain you just unlocked instead of the one you actually beat.
       setLastFoe(villain);
-      setLastMath({ base: res.power, bonus: BATTLE_ODDS.safeWalkBonus, odds: res.odds });
+      setLastMath({ base: res.power, bonus: BATTLE_ODDS.safeWalkBonus, odds: res.odds, stats: rolledStats });
       // a first clear opens the ladder — move the aim to the newly unlocked foe. After the
       // finale there is none, so the aim stays on Vilord, which stays re-challengeable (A-8.1).
       if (res.firstClear) {
@@ -146,7 +149,6 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
       }
       setWasEnding(res.ending);
       setWasFirstClear(res.firstClear);
-      setWasImproved(res.improved);         // A-8.1 — a new personal best against this villain
       setStageUp(res.stageUp);              // A-3.3 — battle XP carried the buddy into a new stage
       setLastReward(res.reward);
       setLastEgg(res.eggWon);
@@ -167,10 +169,10 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
         // the win/lose cue lands as the loser goes, not as the screen changes
         setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
         // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s and
-        // runs 1.5s, so the plate is not finished coming apart until 4.84s — cutting any earlier
+        // runs 2.2s, so the plate is not finished drifting off until 5.54s — cutting any earlier
         // deletes the destruction rather than showing it. This lands ~200ms after, on the winner
         // alone in the arena, which is the payoff the five blows were building to.
-        setTimeout(() => setPhase('result'), 5050),
+        setTimeout(() => setPhase('result'), 5740),
       );
     }
   };
@@ -227,7 +229,6 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
 
   if (phase === 'versus' || phase === 'result') {
     const result = phase === 'result';
-    const ko = getLang() === 'ko';
     // Who the result screen is ABOUT: the villain that was actually fought. `villain` follows
     // `targetLv`, which a first clear has already moved on to the next foe by the time this
     // renders — so on the result screen every opponent detail comes from the frozen `lastFoe`.
@@ -236,7 +237,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
     // battle math — the numbers the win was actually rolled against. On the result screen they
     // come from the snapshot taken at roll time (a level-up would otherwise rewrite history);
     // during the versus phase, nothing has been rolled yet, so they are computed live.
-    const live = { base: power(sel), bonus: BATTLE_ODDS.safeWalkBonus, odds };
+    const live = { base: power(sel), bonus: BATTLE_ODDS.safeWalkBonus, odds, stats: statsFor(sel) };
     // Frozen from the moment the roll happens — which is the CLASH, not the result screen. A win
     // awards XP and can level the buddy, so power(sel) may jump the instant resolveBattle returns;
     // with live numbers still feeding the charge readout, the count-up would see a new target
@@ -244,14 +245,32 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
     // just shown rewrite itself. `frozen` also keeps the old rule intact: a preview rolls nothing,
     // so it always reads live.
     const frozen = !preview && (result || !!clash);
-    const { base, bonus, odds: shownOdds } = frozen ? lastMath : live;
-    const myTotal = base + bonus;
+    const { base, bonus, odds: shownOdds, stats: rolledStats } = frozen ? lastMath : live;
     const mathRow = (lbl, val, color, i) => (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: i ? '1px solid rgba(255,255,255,.1)' : 'none' }}>
         <span style={{ fontSize: 13, color: 'rgba(255,255,255,.7)', fontWeight: 600 }}>{lbl}</span>
         <span className="game-font" style={{ fontSize: 15.5, fontWeight: 500, color: color || '#fff' }}>{val}</span>
       </div>
     );
+    // "Power" isn't a stat anywhere else in the game — it's HP/Courage/Protection/Speed
+    // (the same four CharacterDetail shows) rolled into one number for the fight. Showing
+    // it bare here would report a number the child never sees explained. This breaks the
+    // buddy's line back into those four real, trained stats instead — HP scaled ÷5, same
+    // as battlePower itself scales it, so the four rows add up to the "Power" line exactly,
+    // no rounding drift to explain. The villain has no such breakdown: unlike a buddy, a
+    // villain's power is not grown from stats — it is simply what that villain IS.
+    const STAT_ROW_COLOR = { hp: THEME.heart, courage: THEME.gold, protection: THEME.primary, speed: '#4b9a6b' };
+    const statRow = (key, lbl, val) => {
+      const s = STATS.find(x => x.key === key);
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0 4px 4px' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>
+            <Icon name={s.icon} size={11} color={STAT_ROW_COLOR[key]} stroke={2.4} />{lbl}
+          </span>
+          <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,.85)' }}>{val}</span>
+        </div>
+      );
+    };
     // Arena backdrop — a full-bleed painted battle scene (floating meadow island)
     // instead of the old flat near-black. Covers the whole screen; the two fighter
     // plates and the VS shield sit on top. A soft dark scrim (below) keeps the white
@@ -325,13 +344,6 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
                 <div className="game-font" style={{ fontSize: 34, fontWeight: 500, color: won ? THEME.gold : '#fff' }}>
                   {!won ? L('So close!') : wasEnding ? L('Vilord is out.') : L('Victory!')}
                 </div>
-                {/* A-8.1 — a rematch that beat the old record. This is the payoff for
-                    re-challenging: proof the buddy actually grew, not just another clear. */}
-                {won && wasImproved && !wasFirstClear && (
-                  <div className="jx-pop" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, background: 'rgba(255,255,255,.14)', color: '#fff', borderRadius: 999, padding: '5px 12px', fontSize: 12, fontWeight: 800 }}>
-                    <Icon name="trending-up" size={13} color={THEME.gold} stroke={2.4} />{L('New personal best')}
-                  </div>
-                )}
                 {/* A-8.1 — EVERY win pays the basic reward; a first win adds the first-clear
                     bonus on top. Showing the two lines separately is the point: the child can
                     see what the repeat is worth and what the first win was worth, which is the
@@ -373,15 +385,6 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
                   </React.Fragment>
                 )}
                 {!won && <div style={{ color: 'rgba(255,255,255,.8)', fontSize: 14, marginTop: 8 }}>{`${L('Still earned')} +${BATTLE_REWARDS.loss.points} ${L('points for trying!')}`}</div>}
-                {/* A-8.1 — a rematch is only worth fighting if it can beat something. The
-                    record tracks the strongest buddy you have won with, so this is the line
-                    that says the re-challenge actually meant something. */}
-                {wasImproved && !wasFirstClear && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, background: 'rgba(255,255,255,.13)', borderRadius: 999, padding: '5px 12px' }}>
-                    <Icon name="trending-up" size={13} color={THEME.gold} stroke={2.5} />
-                    <span style={{ fontSize: 12, fontWeight: 800, color: THEME.gold }}>{L('New personal best')} · {L('Power')} {lastMath.base}</span>
-                  </div>
-                )}
               </div>
 
               {/* A-8 — ENDING. Beating the final boss is the one result that is not just a
@@ -406,16 +409,17 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'cla
                   the child won. */}
               <div className="jx-pop" style={{ width: '100%', marginTop: 16, background: 'rgba(0,0,0,.2)', borderRadius: 16, padding: '10px 14px 12px', flexShrink: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 2 }}>{L('Battle math')}</div>
-                {mathRow(`${sel.name} · ${L('Power')}`, base, '#fff', 0)}
-                {mathRow(L('Safe-walk bonus'), `+${bonus}`, THEME.gold, 1)}
-                {mathRow(L('Your total'), myTotal, won ? THEME.gold : '#fff', 1)}
-                {mathRow(`${L(foeCard.name)} · ${L('Power')}`, foe.power, 'rgba(255,255,255,.85)', 1)}
+                <div style={{ fontSize: 13, color: '#fff', fontWeight: 700, padding: '7px 0 1px' }}>{sel.name}</div>
+                {rolledStats && (
+                  <React.Fragment>
+                    {statRow('hp', `${L('HP')} (÷5)`, Math.round(rolledStats.hp / 5))}
+                    {statRow('courage', L('Courage'), rolledStats.courage)}
+                    {statRow('protection', L('Protection'), rolledStats.protection)}
+                    {statRow('speed', L('Speed'), rolledStats.speed)}
+                  </React.Fragment>
+                )}
+                {mathRow(L('Power'), base, '#fff', 1)}
                 {mathRow(L('Your chance'), `${shownOdds}%`, THEME.gold, 1)}
-                <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: won ? THEME.gold : 'rgba(255,255,255,.8)', marginTop: 10 }}>
-                  {won
-                    ? (ko ? `승률 ${shownOdds}%를 뚫고 이겼어요!` : `Won on a ${shownOdds}% chance!`)
-                    : (ko ? `이번엔 안 됐어요 — 능력치를 키우면 승률이 올라가요.` : `Not this time — stronger stats mean better odds.`)}
-                </div>
               </div>
             </div>
           )}

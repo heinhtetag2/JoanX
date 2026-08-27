@@ -36,20 +36,22 @@ const CLASH_STYLES = [
   { id: 'streak', label: 'Streak Attack' },
   { id: 'charge', label: 'Charge Burst' },
   { id: 'momentum', label: 'Momentum Meter' },
-  { id: 'impact', label: 'Impact Numbers' },
+  { id: 'impact', label: 'Impact Numbers (default)' },
 ];
 
-// Two pitches for a "the server is still resolving this fight" wait, so a real backend
+// Three pitches for a "the server is still resolving this fight" wait, so a real backend
 // round-trip has somewhere to show progress instead of the versus beat just sitting there.
-// Neither is wired to an actual request yet — both just hold the pre-clash standoff so the
-// two ideas can be judged with a real screen behind them. See LoadingPercent / LoadingCharge.
-// "Charge hold" is the shipped default: a fake percent counting nothing real read as more
-// broken than no number at all, where a line of copy under the VS badge — the standoff's
-// own focal point, already clear of both mascots — just asks for a moment truthfully.
+// None are wired to an actual request yet — all three just hold the pre-clash standoff so
+// the ideas can be judged with a real screen behind them. See LoadingPercent / LoadingCharge
+// / Shield's `pulse` prop. "Badge pulse" is the shipped default: every OTHER wait in the app
+// (reconnect, pairing) is motion, not copy, over the scene, and this is what brought the
+// versus standoff in line with that — no caption at all, just the shield itself breathing
+// (a first pass drew expanding rings around it instead; a straight scale read clearer).
 const LOADING_STYLES = [
   { id: 'off', label: 'Off' },
   { id: 'percent', label: 'Percent (dev idea)' },
-  { id: 'charge', label: 'Charge hold (default)' },
+  { id: 'charge', label: 'Charge hold' },
+  { id: 'pulse', label: 'Badge pulse (default)' },
 ];
 
 // Fires a short-lived event whenever either fighter's hp drops — the shared signal
@@ -98,8 +100,13 @@ const PLATE_ART = {
 // A villain-specific plate, themed to that villain instead of the generic autumn scene —
 // same fishtail shape and ornament-LEFT orientation as PLATE_ART.red, so it drops straight
 // into the villain slot. Falls back to PLATE_ART.red for any villain without one.
+// `nameLift` — the canvas has ~7% transparent padding baked in below the visible fishtail
+// (measured: 694px tall, visible content stops 49px short of the bottom), which the generic
+// plate art doesn't carry. The img box's CSS margin to the name below is identical either
+// way, so that invisible strip alone was reading as extra gap under this one villain's
+// banner; this pulls the name back up by roughly what that padding costs at full size.
 const VILLAIN_PLATE_ART = {
-  'v-ping': { src: '/assets/battle/fishtailbanner-villain1.png', flip: false, bleedExtra: 30 },
+  'v-ping': { src: '/assets/battle/fishtailbanner-villain1.png', flip: false, bleedExtra: 30, nameLift: 9 },
 };
 const plateFor = (foeId) => VILLAIN_PLATE_ART[foeId] || PLATE_ART.red;
 
@@ -236,8 +243,10 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
         // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
         // read as one stacked unit under each banner
         transform: mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
-        // clears the plate edge below
-        marginTop: mini ? 4 : 6,
+        // clears the plate edge below; `nameLift` (see VILLAIN_PLATE_ART) trims that for a
+        // plate art with invisible padding baked into its canvas, scaled down in `mini`
+        // since that art also renders roughly a third smaller there.
+        marginTop: (mini ? 4 : 6) - (mini ? Math.round((art.nameLift || 0) * .67) : (art.nameLift || 0)),
       }}>
         <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: inClash ? 0 : 1, transition: 'opacity .3s ease' }}>
           <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
@@ -268,9 +277,13 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
 // the screen, not a constant: the versus stage starts the flip with the plates because they
 // share a curve and are meant to settle together, and the result strip has no entrance to
 // wait for at all. Anything above 0 re-opens the gap that made the old badge read as late.
-function Shield({ size = 62, delay = 0, hits }) {
+// `pulse` (Battle-loading dev idea, see LOADING_STYLES) swaps in a slow continuous breathe
+// instead of the one-shot turn-in — it takes over the flip entirely rather than playing
+// after it, a fine trade for an unshipped Tweaks demo, not something worth a wrapper div for.
+function Shield({ size = 62, delay = 0, hits, pulse }) {
   return (
-    <img src="/assets/battle/vs-shield.png" alt="VS" className={hits ? 'jx-shield-hits' : 'jx-vs-flip'}
+    <img src="/assets/battle/vs-shield.png" alt="VS"
+      className={pulse ? 'jx-badge-pulse' : hits ? 'jx-shield-hits' : 'jx-vs-flip'}
       style={{ width: size, height: size, flexShrink: 0, display: 'block', animationDelay: `${delay}s` }} />
   );
 }
@@ -365,10 +378,13 @@ function LoadingPercent() {
   );
 }
 
-// CHARGE HOLD (alternative) — no number tied to nothing real: both fighters just stay lit
-// with the game's own charging aura (the `charging` ring on Plate, below) and a short line
-// of text carries the wait instead of a counter. The dots are a plain interval, not CSS,
-// so this stays a small, removable demo rather than a new keyframe added to joanx.css.
+// CHARGE HOLD (alternative) — no number tied to nothing real: a short line of text carries
+// the wait instead of a counter. The dots are a plain interval, not CSS, so this stays a
+// small, removable demo rather than a new keyframe added to joanx.css. Bare text + shadow,
+// not a chip — every other label on this screen (names, Lv, HP) reads the same way, so a
+// pill here would be the one card floating on an otherwise chrome-free scene. Pulled in
+// tight under the badge (see the absolute offset where this renders, below) rather than
+// floating alone in the open grass, so it reads as the badge's own caption.
 function LoadingCharge() {
   const [dots, setDots] = React.useState(1);
   React.useEffect(() => {
@@ -382,7 +398,7 @@ function LoadingCharge() {
   );
 }
 
-function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'classic', loadingStyle = 'charge' }) {
+function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', loadingStyle = 'pulse' }) {
   const foeChar = { id: foe.id, species: foe.species, stage: 2, color: foe.color, level: foe.level, name: foe.name };
   // Classic keeps the mascot-shake choreography; every other style holds both
   // mascots still and carries the hit through its own fx instead (streak marks,
@@ -448,26 +464,41 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'classic', 
 
       {/* the shield sits in the gap alone — no rule behind it. The two plates already read
           as two sides; the gap is sized so the shield floats clear of both rather than
-          resting on a mascot, which breaks the neighbouring plate's top edge. Nudged up a
-          touch and sized up so it reads as the centrepiece of the gap, not a small badge
-          lost in it. Non-classic styles layer their own fx here instead of shaking the
-          plates — a shared centre because that is where the two fighters' blows meet. */}
-      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, height: 128, zIndex: 2, marginTop: -14 }}>
+          resting on a mascot, which breaks the neighbouring plate's top edge. Sized up so
+          it reads as the centrepiece of the gap, not a small badge lost in it — and centred
+          with NO extra margin: `justifyContent: 'center'` on a fixed-height box already puts
+          equal space above and below the badge inside this box, so the badge sits equidistant
+          from the villain's caption (which lives inside this gap, above the badge) and the
+          buddy's plate (which follows right after, below it) without any manual nudge. A
+          negative marginTop here previously pulled the whole box — badge AND the buddy plate
+          that follows it in flow — up as one unit, which only ever widened the bottom gap
+          relative to the top one; it did not "balance" anything.
+          Non-classic styles layer their own fx here instead of shaking the plates — a shared
+          centre because that is where the two fighters' blows meet. */}
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2 }}>
         {/* starts with the plates, not after them: the flip runs the same .6s on the same
             curve, so badge and banners decelerate together and stop on the same frame.
             The per-hit growth pulse is Classic/Streak only — Charge and Momentum carry
             the hit their own way and a badge also flinching on every blow doubles up. */}
-        <Shield size={76} hits={!!clash && (clashStyle === 'classic' || clashStyle === 'streak')} />
+        <Shield size={76} hits={!!clash && (clashStyle === 'classic' || clashStyle === 'streak')}
+          pulse={waiting && loadingStyle === 'pulse'} />
         {clashStyle === 'streak' && <StreakFx events={hitEvents} />}
         {clashStyle === 'charge' && <ChargeBurst event={decisiveHit} />}
         {clashStyle === 'momentum' && clash && (
           <MomentumBar meCur={hp?.meCur} meMax={hp?.meMax} foeCur={hp?.foeCur} foeMax={hp?.foeMax} />
         )}
         {/* Battle-loading demo, Tweaks-only — see LOADING_STYLES. Sits in the same standoff
-            a real server round-trip would occupy, so either concept can be judged against
-            the actual screen rather than a mock. */}
-        {waiting && loadingStyle === 'percent' && <LoadingPercent />}
-        {waiting && loadingStyle === 'charge' && <LoadingCharge />}
+            a real server round-trip would occupy, so any concept can be judged against the
+            actual screen rather than a mock. Only the two caption styles need anything
+            rendered here (absolutely positioned off the badge's own centre, not a flex
+            sibling, so showing one never nudges the badge itself off the true midpoint
+            between the two banners) — "Badge pulse" has no caption at all, it's handled
+            entirely by the `pulse` prop passed straight into <Shield> above. */}
+        {waiting && (loadingStyle === 'percent' || loadingStyle === 'charge') && (
+          <div style={{ position: 'absolute', top: 'calc(50% + 46px)', left: '50%', transform: 'translateX(-50%)' }}>
+            {loadingStyle === 'percent' ? <LoadingPercent /> : <LoadingCharge />}
+          </div>
+        )}
       </div>
 
       {/* buddy (our hero) on BOTTOM — GREEN grove plate (ornament right), mascot leaning
@@ -488,7 +519,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'classic', 
 // `me` and `foe` are already flattened by Battle.jsx (name / level /
 // species / colour), so no layout here reaches back into PLAYER or the villain
 // ladder — the result screen fights a frozen opponent and this must not undo it.
-function VersusStage({ variant = 'classic', clashStyle = 'classic', loadingStyle = 'charge', me, foe, result, won, clash, hp }) {
+function VersusStage({ variant = 'classic', clashStyle = 'impact', loadingStyle = 'pulse', me, foe, result, won, clash, hp }) {
   if (variant === 'banner') return <BannerStage me={me} foe={foe} result={result} won={won} clash={clash} hp={hp} clashStyle={clashStyle} loadingStyle={loadingStyle} />;
   return <ClassicStage me={me} foe={foe} result={result} won={won} />;
 }
