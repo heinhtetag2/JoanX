@@ -169,10 +169,10 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
         // the win/lose cue lands as the loser goes, not as the screen changes
         setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
         // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s and
-        // runs 2.2s, so the plate is not finished drifting off until 5.54s — cutting any earlier
+        // runs 2.5s, so the plate is not finished drifting off until 5.84s — cutting any earlier
         // deletes the destruction rather than showing it. This lands ~200ms after, on the winner
         // alone in the arena, which is the payoff the five blows were building to.
-        setTimeout(() => setPhase('result'), 5740),
+        setTimeout(() => setPhase('result'), 6040),
       );
     }
   };
@@ -550,14 +550,15 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
         })() : (
         <React.Fragment>
         {/* Choose your fighter — the one decision this screen exists for. Each buddy shows
-            its win chance against THIS villain, turning the pick into a read of the odds
-            rather than a guess. The selected one gets the buddy-tinted card + check. */}
+            its power against THIS villain's power — the pick reads as "who's bigger",
+            not a computed percentage the child has no way to sanity-check. The selected
+            one gets the buddy-tinted card + check. */}
         <SectionHead title={L('Choose your fighter')} />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
           {owned.map(c => {
             const on = sel.id === c.id;
-            const w = winPercent(c, villain);                                  // this buddy vs this villain
-            const wc = w >= 50 ? THEME.success : w >= 25 ? THEME.warning : THEME.danger;
+            const p = power(c);                                                // this buddy's power
+            const pc = p >= villain.power ? THEME.success : p >= villain.power * .7 ? THEME.warning : THEME.danger;
             return (
               <button key={c.id} onClick={() => setSel(c)} style={{ position: 'relative', textAlign: 'left', background: on ? THEME.successLight : '#fff', borderRadius: 18, padding: '12px 12px 11px', border: `2px solid ${on ? THEME.success : THEME.border}`, cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color .15s, background .15s' }}>
                 {on && <span style={{ position: 'absolute', top: 9, right: 9, width: 20, height: 20, borderRadius: 999, background: THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></span>}
@@ -565,13 +566,13 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
                   <div style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={48} /></div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {c.level} · {L('Power')} {power(c)}</div>
+                    <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {c.level}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, background: on ? '#fff' : THEME.surface2, borderRadius: 10, padding: '5px 9px' }}>
-                  <Icon name="target" size={12} color={wc} stroke={2.5} />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2 }}>{L('Win chance')}</span>
-                  <span className="game-font" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 500, color: wc }}>{w}%</span>
+                  <Icon name="zap" size={12} color={pc} stroke={2.5} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2 }}>{L('Power')}</span>
+                  <span className="game-font" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 500, color: pc }}>{p}</span>
                 </div>
               </button>
             );
