@@ -1,5 +1,5 @@
 import React from 'react';
-import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, DecorateBuddy, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, VillainDex, WarningOverlay } from '../child/index.jsx';
+import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, DecorateBuddy, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, CLASH_STYLES, LOADING_STYLES, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
@@ -91,6 +91,8 @@ function App() {
   //              product must not let them stare at mid-stride
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false, walking: false });
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
+  const [tweakQuery, setTweakQuery] = React.useState('');   // Tweaks panel search — filters the label sections below by text
+  const tweaksPanelRef = React.useRef(null);
   // Sound — one dev switch over BOTH apps' mutes (the child game reads PLAYER.prefs.sound,
   // the parent app PARENT_PREFS.sound). Both ship OFF, so a review session is silent until
   // it is asked for. The value is read straight off the prefs on every render rather than
@@ -111,7 +113,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'classic', loadingStyle: 'charge', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -129,6 +131,28 @@ function App() {
   window.JX_COMMON_EGG_ART = tw.commonEggArt;
   window.JX_DEX_HEADER = tw.dexHeader;
   const changeLang = (l) => setLangState(l);
+  // Tweaks search — sections aren't componentized (each is a `.tw-label` + whatever follows
+  // it, mixed with one-off buttons), so filtering walks the rendered DOM rather than the
+  // JSX: group every panel child under the nearest preceding `.tw-label`, hide the group when
+  // neither its label nor its option text matches the query. Content before the first label
+  // (the header, the search box itself) is left alone.
+  React.useEffect(() => {
+    const root = tweaksPanelRef.current;
+    if (!root) return;
+    const q = tweakQuery.trim().toLowerCase();
+    let section = [];
+    const flush = () => {
+      if (!section.length) return;
+      const match = !q || section.some(el => el.textContent.toLowerCase().includes(q));
+      section.forEach(el => { el.style.display = match ? '' : 'none'; });
+      section = [];
+    };
+    Array.from(root.children).forEach(el => {
+      if (el.classList.contains('tw-label')) { flush(); section = [el]; }
+      else if (section.length) section.push(el);
+    });
+    flush();
+  }, [tweakQuery, tweaksOpen, role, tw]);
   React.useEffect(() => {
     const fit = () => {
       const avail = window.innerHeight - 96;       // topbar + paddings
@@ -272,7 +296,7 @@ function App() {
       collection: tw.collectionLayout === 'shelf' ? <Collection ctx={ctx} /> : <CollectionVariant variant={tw.collectionLayout} ctx={ctx} />, character: tw.detailLayout.indexOf('legacy-') === 0 ? <CharDetailVariantLegacy layout={tw.detailLayout} ctx={ctx} /> : <CharDetailVariant layout={tw.detailLayout} ctx={ctx} />,
       // keyed on the preview target: Battle reads it once, as its initial phase, so
       // jumping from one preview to another has to remount rather than reconcile
-      battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
+      battle: <Battle key={`battle:${params.preview || ''}`} ctx={ctx} layout={tw.battleLayout} versus={tw.versusLayout} clashStyle={tw.clashStyle} loadingStyle={tw.loadingStyle} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} />, rewards: <Rewards ctx={ctx} />, streak: <StreakDetail ctx={ctx} />, notifications: <Notifications ctx={ctx} />,
       profile: tw.profileLayout === 'original' ? <Profile ctx={ctx} /> : <ProfileVariant variant={tw.profileLayout} ctx={ctx} />, help: <HelpSupport ctx={ctx} />, notices: <Notices ctx={ctx} />, about: <AboutJoanX ctx={ctx} />, legal: <LegalDetail ctx={ctx} />,
       shop: <Shop ctx={ctx} eggShake={tw.eggShake === 'on'} eggHatch={tw.eggHatch} eggShopLayout={tw.eggShopLayout} eggCardRadius={tw.eggCardRadius} />,
       chardex: tw.dexLayout === 'list' ? <CharacterDex ctx={ctx} /> : <CharacterDexVariant variant={tw.dexLayout} ctx={ctx} />, villaindex: <VillainDex ctx={ctx} layout={tw.villainLayout} />,
@@ -375,10 +399,21 @@ function App() {
 
       {/* tweaks panel */}
       {tweaksOpen && !isDocRole(role) && (
-        <div className="tweaks">
+        <div className="tweaks" ref={tweaksPanelRef}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h4>Tweaks</h4>
             <button onClick={() => setTweaksOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><Icon name="x" size={18} color={THEME.fg2} stroke={2.4} /></button>
+          </div>
+
+          <div style={{ position: 'relative', margin: '2px 0 12px' }}>
+            <Icon name="search" size={14} color={THEME.fg2} stroke={2.3} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              value={tweakQuery}
+              onChange={e => setTweakQuery(e.target.value)}
+              placeholder="Search tweaks…"
+              style={{ width: '100%', boxSizing: 'border-box', padding: '9px 10px 9px 30px', borderRadius: 10, border: '1px solid rgba(0,0,0,.15)', fontSize: 13, fontFamily: 'inherit' }}
+            />
           </div>
 
           <div className="tw-label">Language</div>
@@ -624,6 +659,29 @@ function App() {
                 {VERSUS_LAYOUTS.map(({ id, label }) => (
                   <button key={id} className={'tw-chip' + (tw.versusLayout === id ? ' on' : '')}
                     onClick={() => { setTw(s => ({ ...s, versusLayout: id })); setStack([{ screen: 'villaindex', params: {} }]); setParams({}); setScreen('battle'); }}>{label}</button>
+                ))}
+              </div>
+              {/* Only the Banner versus screen has any clash choreography to swap — Classic
+                  (the side-by-side layout) ignores this entirely, so the choice only matters
+                  once "Versus screen" above is set to Banner. */}
+              <div className="tw-label">Fight animation</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {CLASH_STYLES.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.clashStyle === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, clashStyle: id, versusLayout: 'banner' })); setStack([{ screen: 'villaindex', params: {} }]); setParams({}); setScreen('battle'); }}>{label}</button>
+                ))}
+              </div>
+              {/* The dev's ask: something to show while a real battle result is a server
+                  round-trip away, not an instant local roll. Two pitches to compare on the
+                  actual versus screen — a literal percent readout, and holding the fighters'
+                  existing charging aura with a text line instead of a number tied to nothing
+                  real. Neither is wired to a real request; both just hold the pre-tap standoff
+                  (see LOADING_STYLES / LoadingPercent / LoadingCharge in BattleVersus.jsx). */}
+              <div className="tw-label">Battle loading (dev ask)</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {LOADING_STYLES.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.loadingStyle === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, loadingStyle: id, versusLayout: 'banner' })); setStack([{ screen: 'villaindex', params: {} }]); setParams({}); setScreen('battle'); }}>{label}</button>
                 ))}
               </div>
               {/* Playing to the versus phase means picking a fighter, starting, and catching

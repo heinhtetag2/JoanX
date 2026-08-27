@@ -676,6 +676,33 @@ function MascotClient({ species = 'cat', size = 160, style }) {
   );
 }
 
+// ── Villain art — a dedicated PNG per villain, keyed by villain id rather than
+// species/color: a villain is one authored character, not a skin of the shared
+// buddy species system. Independent of the buddy `Mascot` style switcher above —
+// without this, a villain that happens to share a buddy's species (e.g. Ping is
+// species 'cat') would borrow whatever that buddy looks like under the active
+// style (the 'client' line's droplet render, for one) instead of its own look.
+// Falls back to the procedural Mascot (species-aware, style-aware) for any
+// villain not yet given art, so new villains keep working out of the box.
+const VILLAIN_ART = {
+  'v-ping': 'villain1.png',
+};
+// the source render sits inside a lot of empty canvas (see CLIENT_BASE above for the
+// same issue on the buddy line) — scaled up so it reads at the same size as the
+// procedural mascots it stands next to instead of looking small inside its frame.
+const VILLAIN_ART_BASE = 1.35;
+function VillainMascot({ id, species, stage = 2, color, mood, size = 160, style }) {
+  const file = VILLAIN_ART[id];
+  if (!file) return <Mascot species={species} stage={stage} color={color} mood={mood} size={size} style={style} />;
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
+      <img src={`/assets/villains/${encodeURIComponent(file)}`} alt="" draggable="false"
+           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
+                    transform: `scale(${VILLAIN_ART_BASE})`, transformOrigin: 'center bottom' }} />
+    </div>
+  );
+}
+
 // ── Revamp line ("revamp") — the refreshed hero mascot: a rendered 3D forest
 // sprite (leaf ears + sprout, gold brow gem, yellow scout scarf, big violet
 // eyes) supplied as a transparent PNG. Fixed render, so recolour/stage/mood
@@ -994,4 +1021,4 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-export { Mascot, MascotChip, STYLE_BUDDIES, shade, styleBrand, tint };
+export { Mascot, MascotChip, VillainMascot, STYLE_BUDDIES, shade, styleBrand, tint };

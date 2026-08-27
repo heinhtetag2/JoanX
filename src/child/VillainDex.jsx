@@ -4,7 +4,7 @@ import React from 'react';
 import { activeVillains, BATTLE_REWARDS, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
 import { Badge, Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot } from '../core/characters.jsx';
+import { VillainMascot } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
 import { music, sfx } from '../core/sound.jsx';
 
@@ -66,7 +66,7 @@ function VillainList({ ctx }) {
           return (
             <div key={v.id} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, alignItems: 'center', border: current ? `1.5px solid ${THEME.danger}` : '1.5px solid transparent' }}>
               <div style={{ width: 60, flexShrink: 0, display: 'flex', justifyContent: 'center', filter: discovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}>
-                <Mascot species={v.species} stage={2} color={v.color} mood="alert" size={56} />
+                <VillainMascot id={v.id} species={v.species} color={v.color} mood="alert" size={56} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -252,7 +252,7 @@ function VillainTrail({ ctx }) {
                     border: isCur ? `2.5px solid ${THEME.danger}` : isSel ? `2.5px solid ${THEME.fg2}` : '2.5px solid #fff',
                     boxShadow: isCur ? '0 8px 20px rgba(209,69,50,.28)' : THEME.shadowCard, transition: 'border-color .2s' }}>
                     <div style={{ filter: discovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}>
-                      <Mascot species={vi.species} stage={2} color={vi.color} mood="alert" size={size - 16} />
+                      <VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size - 16} />
                     </div>
                   </div>
                   {/* level pill / boss crown */}
@@ -284,7 +284,7 @@ function VillainTrail({ ctx }) {
       <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: '0 4px 13px rgba(46,43,41,0.06)', zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 18, background: selDiscovered ? THEME.dangerLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><Mascot species={v.species} stage={2} color={v.color} mood="alert" size={46} /></div>
+            <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><VillainMascot id={v.id} species={v.species} color={v.color} mood="alert" size={46} /></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -405,7 +405,7 @@ function VillainRoad({ ctx }) {
             stretched, so it always looks right); the stops are pinned by coordinate on top,
             so it's the PATH that adapts to the art, not the art that bends to the path. */}
         <div onClick={() => { if (sel != null) setSel(null); }} style={{ position: 'relative', height: H,
-          backgroundImage: 'url(/assets/backgrounds/villain-map.webp)',
+          backgroundImage: 'url(/assets/backgrounds/villain-mapp.png)',
           backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center top' }}>
           {/* no drawn road, footsteps, or scenery: the path and world are painted INTO the
               map art, so the only overlay is the villains themselves, dropped onto it. */}
@@ -427,7 +427,7 @@ function VillainRoad({ ctx }) {
                       the SAME on every stop — state is carried by the pulse ring (current)
                       and a gentle scale (tapped), never by recolouring the outline. */}
                   <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(.95) contrast(.9) '}${strokeOutline('#fff', 1)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
-                    <Mascot species={vi.species} stage={2} color={vi.color} mood="alert" size={size} />
+                    <VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size} />
                   </div>
                   {/* status pill — one chip at the top carries the whole state instead of a
                       check/lock floating off the circle's corner: green ✓ once defeated, a
@@ -470,7 +470,7 @@ function VillainRoad({ ctx }) {
       <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: '0 4px 13px rgba(46,43,41,0.06)', zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 18, background: selDiscovered ? THEME.dangerLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><Mascot species={v.species} stage={2} color={v.color} mood="alert" size={46} /></div>
+            <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><VillainMascot id={v.id} species={v.species} color={v.color} mood="alert" size={46} /></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>

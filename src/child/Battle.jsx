@@ -4,14 +4,14 @@ import React from 'react';
 import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, PLAYER, rarityOf, resolveBattle, underLevelled, villainByLv, winPercent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, VillainMascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 import { VersusStage } from './BattleVersus.jsx';
 import { EggHatchFlow, requestMotionPermission } from './EggHatch.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
-function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false, eggHatch = 'pop' }) {
+function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'classic', loadingStyle = 'charge', eggShake = false, eggHatch = 'pop' }) {
   const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const owned = CHARACTERS.filter(c => c.owned);
   // Arriving from a character's own fight button (CharacterDetail's swords icon) means
@@ -107,9 +107,10 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
   // afterwards would report a chance the child never fought at.
   // The versus phase in three beats. It used to be 1800ms with a .6s slide-in at the front and
   // nothing behind it — including an sfx.attack() at 700ms with no hit on screen to belong to.
-  //   arrive (0–620)   the plates slide in and the shield flips. Already built.
-  //   charge (620–2400) the buddy's power counts up through the safe-walk bonus, and the chance
-  //                    that total buys appears under it.
+  //   arrive (0–620)    the plates slide in and the shield flips. Already built.
+  //   charge (620–4000) the "Rolling the fight…" hold reads on screen here. 2400 read as a
+  //                    blink — the text barely registered before the clash cut it off — so
+  //                    this got room to actually be read, not just glimpsed.
   //   clash  (…–+5050) a five-blow exchange that escalates, holds, then finishes. The shield
   //                    snaps on every contact, and the loser is destroyed on the last one —
   //                    it shudders, greys out and breaks apart, leaving the winner alone.
@@ -220,7 +221,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
     clearBeats();
     beats.current = [
       setTimeout(() => setBeat('charge'), 620),   // once both fighters have landed
-      setTimeout(fire, 2400),                     // ~1.8s to read the charge, then it goes on its own
+      setTimeout(fire, 4000),                     // ~3.4s to read the charge, then it goes on its own
     ];
   };
 
@@ -231,7 +232,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
     // `targetLv`, which a first clear has already moved on to the next foe by the time this
     // renders — so on the result screen every opponent detail comes from the frozen `lastFoe`.
     const foe = (result && lastFoe) || villain;
-    const foeCard = { species: foe.species, name: foe.name, color: foe.color, level: foe.lv };
+    const foeCard = { id: foe.id, species: foe.species, name: foe.name, color: foe.color, level: foe.lv };
     // battle math — the numbers the win was actually rolled against. On the result screen they
     // come from the snapshot taken at roll time (a level-up would otherwise rewrite history);
     // during the versus phase, nothing has been rolled yet, so they are computed live.
@@ -287,7 +288,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
           {/* who is fighting whom — the one block both phases share, so the fighters
               do not jump position between the versus moment and the result. Layouts
               live in BattleVersus.jsx; switch via Tweaks ("Versus screen"). */}
-          <VersusStage variant={versus} result={result} won={won}
+          <VersusStage variant={versus} clashStyle={clashStyle} loadingStyle={loadingStyle} result={result} won={won}
             charge={!result && beat !== 'arrive' ? { bonus, odds: shownOdds } : null}
             clash={!result ? clash : null}
             // The real-time damage the clash bars read off — `clashHp` is the whole five-beat
@@ -509,7 +510,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', eggShake = false,
             line here, not a card. This screen's whole job is the fighter choice. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', borderRadius: 16, padding: '10px 13px', border: `1.5px solid ${THEME.border}`, marginBottom: 16 }}>
           <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Mascot species={villain.species} stage={2} color={villain.color} mood="alert" size={34} />
+            <VillainMascot id={villain.id} species={villain.species} color={villain.color} mood="alert" size={34} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: THEME.danger, textTransform: 'uppercase', letterSpacing: .4 }}>{L('Opponent')} · Lv{villain.lv}</div>
