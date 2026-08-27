@@ -419,7 +419,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
                   </React.Fragment>
                 )}
                 {mathRow(L('Power'), base, '#fff', 1)}
-                {mathRow(L('Your chance'), `${shownOdds}%`, THEME.gold, 1)}
+                {mathRow(L('Win chance'), `${shownOdds}%`, THEME.gold, 1)}
               </div>
             </div>
           )}
@@ -567,12 +567,11 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13.5, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
                     <div style={{ fontSize: 11, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {c.level}</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 5, background: on ? '#fff' : THEME.surface2, borderRadius: 999, padding: '2px 7px' }}>
+                      <Icon name="zap" size={10} color={pc} stroke={2.5} />
+                      <span className="game-font" style={{ fontSize: 11.5, fontWeight: 500, color: pc }}>{p}</span>
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, background: on ? '#fff' : THEME.surface2, borderRadius: 10, padding: '5px 9px' }}>
-                  <Icon name="zap" size={12} color={pc} stroke={2.5} />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.fg2 }}>{L('Power')}</span>
-                  <span className="game-font" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 500, color: pc }}>{p}</span>
                 </div>
               </button>
             );

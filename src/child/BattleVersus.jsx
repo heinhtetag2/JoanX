@@ -141,7 +141,7 @@ function ClassicStage({ me, foe, result, won }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey }) {
+function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey, idle }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
@@ -168,9 +168,14 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
     // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
     // (ornament left) pins + bleeds RIGHT; villain (ornament right) pins + bleeds LEFT — the
     // diagonal the reference is built on. The name stays on the inset side, on-screen.
+    // That stagger is staged FOR the painted art (clearing its ornament corner) — once the
+    // art fades for the exchange (see the img's opacity below) it's staging nothing, and a
+    // plain arena with both fighters still pinned to opposite edges just reads as crooked.
+    // `inClash` re-centres the whole plate box for that stretch, right along with the mascot.
     <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
-      width: mini ? '100%' : '95%', alignSelf: mini ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
-      marginRight: ornLeft ? -bleed : 0, marginLeft: ornLeft ? 0 : -bleed,
+      width: mini ? '100%' : '95%', alignSelf: (mini || inClash) ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
+      marginRight: inClash ? 0 : (ornLeft ? -bleed : 0), marginLeft: inClash ? 0 : (ornLeft ? 0 : -bleed),
+      transition: 'margin .3s ease',
     }}>
       {/* The plate — art, medallions, name — holds still through the exchange; it is a
           backdrop, not a fighter, so it should not be the thing recoiling from a punch. Only
@@ -194,13 +199,25 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
 
         {/* the mascot stands on the scene and breaks its top edge — the move the whole
             layout is built on. Nudged away from the ornament so it stands on open ground
-            rather than in the scroll. The clash class sits on the INNER div so the hit
-            recoil composes with (rather than replaces) this div's own translateX(-50%)
-            centering; `clashClass` is null outside the Classic style, so non-classic
-            concepts hold the mascot still and let their own fx (below) carry the hit. */}
-        <div className={pop ? 'jx-pop' : ''} style={{
-          position: 'absolute', bottom: mini ? 0 : 6, left: `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
+            rather than in the scroll. pop/idle/clashClass each get their OWN div, none of
+            them the one carrying the static translateX(-50%) centering: an `animation`
+            fully replaces any other `transform` on the same element for as long as it runs
+            (and after, under a `both`/`forwards` fill), so a class that animates transform
+            has to live below the div doing the positioning, never on it — stacking pop here
+            used to do exactly that and silently knocked the winner's mascot ~half its own
+            width off centre from its name on the result screen (only pop ever ran long
+            enough, and rarely enough noticed, for it to go unnoticed until idle needed the
+            same trick for the whole clash, where it would have been obvious immediately).
+            The `lean` offset only makes sense against the painted plate art it was tuned to
+            clear (the ornament corner) — once the exchange starts that art fades out (see
+            the img's opacity above) and the two fighters trade blows on a plain arena, so
+            leaving them shifted toward wherever their ornament used to be reads as crooked
+            rather than staged. `inClash` collapses the lean back to dead-centre for exactly
+            that stretch, matching the plain-arena backdrop it's actually standing on. */}
+        <div style={{
+          position: 'absolute', bottom: mini ? 0 : 6, left: inClash ? '50%' : `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
         }}>
+          <div className={pop ? 'jx-pop' : idle ? 'jx-float' : undefined}>
           <div className={clashClass || undefined} style={{ position: 'relative', width: mSize, height: mSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {/* sized WIDER than the mascot, not tighter — a ring behind it at the mascot's
                 own size sits entirely under the character art and never shows at all. */}
@@ -227,6 +244,7 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
               </div>
             ))}
           </div>
+          </div>
         </div>
       </div>
 
@@ -241,8 +259,9 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
         // extra nudge on the name block only (not the mascot): buddy pulls further
         // left, villain further right, so each label sits tucked toward its own side.
         // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
-        // read as one stacked unit under each banner
-        transform: mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
+        // read as one stacked unit under each banner. Collapses to dead-centre in step with
+        // the mascot above once the clash starts — see `inClash` on that div's `left`.
+        transform: inClash ? 'none' : mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
         // clears the plate edge below; `nameLift` (see VILLAIN_PLATE_ART) trims that for a
         // plate art with invisible padding baked into its canvas, scaled down in `mini`
         // since that art also renders roughly a third smaller there.
@@ -459,6 +478,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')) : null}
         koClass={clash === 'win' ? 'jx-ko' : null}
         charging={charging} auraColor={THEME.danger}
+        idle={!shake && !!clash}
         hits={foeHits} bounceKey={impact ? lastHit.foe : null}
         hpCur={hp?.foeCur} hpMax={hp?.foeMax} />
 
@@ -509,6 +529,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')) : null}
         koClass={clash === 'lose' ? 'jx-ko' : null}
         charging={charging} auraColor={THEME.brand}
+        idle={!shake && !!clash}
         hits={meHits} bounceKey={impact ? lastHit.me : null}
         hpCur={hp?.meCur} hpMax={hp?.meMax} />
     </div>
