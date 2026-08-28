@@ -1030,4 +1030,22 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
-export { Mascot, MascotChip, VillainMascot, STYLE_BUDDIES, shade, styleBrand, tint };
+// Placeholder art for the fighter-select grid — swaps the procedural Mascot render for a
+// fixed demo image per buddy id. Falls back to Mascot for any buddy without one, so this
+// only ever covers the owned buddies it was given art for. Shared (not local to one
+// screen) so whichever buddy the child picks on the fighter carousel keeps the SAME art
+// through the versus stage and the result screen, instead of reverting to the procedural
+// render the moment the fight starts.
+const DEMO_ART = { c2: 'Demo1.png', c3: 'Demo2.png', c10: 'Demo3.png', c1: 'Demo4.png', c6: 'Demo5.png' };
+function DemoMascot({ id, species, stage, color, size = 48 }) {
+  const file = DEMO_ART[id];
+  if (!file) return <Mascot species={species} stage={stage} color={color} size={size} />;
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <img src={`/assets/democharacters/${file}`} alt="" draggable="false"
+           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none' }} />
+    </div>
+  );
+}
+
+export { Mascot, MascotChip, DemoMascot, VillainMascot, STYLE_BUDDIES, shade, styleBrand, tint };
