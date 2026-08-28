@@ -442,7 +442,7 @@ function VillainRoad({ ctx }) {
                   {/* the villain as a sticker: one clean white contour hugging its shape,
                       the SAME on every stop — state is carried by the pulse ring (current)
                       and a gentle scale (tapped), never by recolouring the outline. */}
-                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(.95) contrast(.9) '}${strokeOutline('#fff', 1)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
+                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(2.1) contrast(.6) '}${strokeOutline('#fff', 1)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
                     <VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size} />
                   </div>
                   {/* status pill — one chip at the top carries the whole state instead of a

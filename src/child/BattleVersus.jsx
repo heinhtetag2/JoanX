@@ -141,28 +141,18 @@ function ClassicStage({ me, foe, result, won }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey, idle }) {
+function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, lift = 0, shift = 0, hpOffset = 0, charOffset = 0, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey, idle }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
-  // how far the plate runs PAST its pinned screen edge — the extra push that makes the
-  // stagger read as a hard diagonal rather than two plates merely offset. The medallions
-  // below are shifted inward by the same amount so they never ride off with the bleed.
-  // `art.bleedExtra` lets one specific plate art push further than the shared default —
-  // the villain1 fishtail banner's ornament curl runs closer to its canvas edge than the
-  // generic autumn plate's does, so at the standard bleed it read too close to the screen
-  // edge; the extra push gives it the same breathing room the other plate has.
-  const bleed = mini ? 0 : 30 + (art.bleedExtra || 0);
-  // which way the mascot (and the name under it) sits off the plate centre. It leans toward
-  // the ornament/inset side — into the open scene, AWAY from the bleeding edge — so the fox
-  // reads over the autumn sky (not off the right) and the panda over the grove path.
-  // In the result strip the two plates meet at a shield in the middle, so the lean points
-  // INWARD: each mascot steps toward that seam (buddy right, villain left) so the two read
-  // as facing each other rather than drifting to the outer edges of the screen.
-  // Not symmetric, though: the buddy art puts its mascot further right inside its own half
-  // than the villain art does inside its, so an equal inward lean crowded the buddy up
-  // against the shield. The buddy leans OUT instead — past its half's centre, away from the
-  // seam — which is what actually lands the two mascots mirrored across the VS.
-  const lean = mini ? (ornLeft ? -18 : -30) : (ornLeft ? -30 : 30);
+  // which way the mascot (and the name under it) sits off the plate centre. Both banners are
+  // centred now (see the outer div below), so the full-size mascot sits dead-centre too — no
+  // lean to clear an ornament corner that no longer runs off a bled edge. The result strip
+  // (`mini`) still meets at a shield in the middle, so it keeps its own inward/outward lean —
+  // buddy right, villain left, and the buddy stepping OUT past its half's centre (the art
+  // puts its mascot further right inside its own half than the villain art does inside its,
+  // so an equal inward lean would crowd the buddy up against the shield) — is what actually
+  // lands the two mascots mirrored across the VS there.
+  const lean = mini ? (ornLeft ? -18 : -30) : 0;
   // name + level, CENTERED under the mascot — the mascot leans off the plate centre by
   // `lean`, and the name tracks it by the same shift, so the two read as one stacked unit
   // rather than the name drifting to a corner. It fades out for the exchange, and an HP
@@ -170,48 +160,56 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
   // than beside it — so the fight shows what that trade actually cost each fighter instead
   // of just the two of them swinging at each other.
   const nameLift = (mini ? 4 : 6) - (mini ? Math.round((art.nameLift || 0) * .67) : (art.nameLift || 0));
-  const nameBlock = (
+  // The character's name/level and its HP readout are two SEPARATE groups, not one merged
+  // block — each owns its own styling (and, for HP, its own `hpOffset` nudge) independently.
+  // They still share the same screen position (grid-area '1 / 1'), which is what lets one
+  // fade out as the other fades in for the exchange, rather than the layout jumping.
+  const nameLevelBlock = (
+    <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: inClash ? 0 : 1, transition: 'opacity .3s ease' }}>
+      <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
+      <div className="game-font" style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{L('Lv')} {level}</div>
+    </div>
+  );
+  const hpBlock = hpMax != null && (
+    <div style={{ gridArea: '1 / 1', width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: inClash ? 1 : 0, transition: 'opacity .3s ease', marginTop: hpOffset }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <Icon name="heart" size={12} color={THEME.heart} stroke={2.5} />
+        <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{hpCur}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>/ {hpMax}</span>
+      </div>
+      <Bar value={hpCur} max={hpMax} color={THEME.heart} track="rgba(255,255,255,.22)" height={7} />
+    </div>
+  );
+  const statusGroup = (
     <div style={{
       display: 'grid', justifyItems: 'center',
-      // extra nudge on the name block only (not the mascot): buddy pulls further
-      // left, villain further right, so each label sits tucked toward its own side.
-      // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
-      // read as one stacked unit under each banner. Collapses to dead-centre in step with
-      // the mascot above once the clash starts — see `inClash` on that div's `left`.
-      transform: inClash ? 'none' : mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
+      // the name tracks its mascot's lean exactly — both dead-centre now for the full-size
+      // banners (no per-side nudge left). The result strip (`mini`) still nudges its label
+      // toward its own side. Collapses to dead-centre in step with the mascot above once the
+      // clash starts either way — see `inClash` on that div's `left`.
+      transform: (inClash || !mini) ? 'none' : `translateX(${lean}px)`,
       // clears the plate edge it sits next to; `nameLift` (see VILLAIN_PLATE_ART) trims that
       // for a plate art with invisible padding baked into its canvas, scaled down in `mini`
       // since that art also renders roughly a third smaller there.
       marginTop: nameLift,
     }}>
-      <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: inClash ? 0 : 1, transition: 'opacity .3s ease' }}>
-        <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
-        <div className="game-font" style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{L('Lv')} {level}</div>
-      </div>
-      {hpMax != null && (
-        <div style={{ gridArea: '1 / 1', width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: inClash ? 1 : 0, transition: 'opacity .3s ease' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Icon name="heart" size={12} color={THEME.heart} stroke={2.5} />
-            <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{hpCur}</span>
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>/ {hpMax}</span>
-          </div>
-          <Bar value={hpCur} max={hpMax} color={THEME.heart} track="rgba(255,255,255,.22)" height={7} />
-        </div>
-      )}
+      {nameLevelBlock}
+      {hpBlock}
     </div>
   );
   return (
-    // The two plates are staggered, not stacked flush: each is narrower than the phone and
-    // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
-    // (ornament left) pins + bleeds RIGHT; villain (ornament right) pins + bleeds LEFT — the
-    // diagonal the reference is built on. The name stays on the inset side, on-screen.
-    // That stagger is staged FOR the painted art (clearing its ornament corner) — once the
-    // art fades for the exchange (see the img's opacity below) it's staging nothing, and a
-    // plain arena with both fighters still pinned to opposite edges just reads as crooked.
-    // `inClash` re-centres the whole plate box for that stretch, right along with the mascot.
+    // Both plates are centred on the VS, then shifted sideways by the SAME amount in
+    // opposite directions (`shift`) — villain right, buddy left — so the pair reads as one
+    // mirrored diagonal instead of the old asymmetric edge-bleed. `inClash` drops the shift
+    // back to dead-centre right along with the mascot, same as it always has.
+    // The shift rides on MARGIN, not `transform` — `.jx-slide-left`/`-right` (below) animate
+    // `transform` for the entrance, and `animation` fully owns that property for as long as
+    // it runs (backwards fill included). A `transform`-based shift here would be silently
+    // overridden for the whole .6s slide-in and then SNAP into place the instant it ended —
+    // exactly the glitch this was. Margin has no such fight to lose.
     <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
-      width: mini ? '100%' : '95%', alignSelf: (mini || inClash) ? 'center' : (ornLeft ? 'flex-end' : 'flex-start'),
-      marginRight: inClash ? 0 : (ornLeft ? -bleed : 0), marginLeft: inClash ? 0 : (ornLeft ? 0 : -bleed),
+      width: mini ? '100%' : '95%', alignSelf: 'center',
+      marginTop: lift, marginLeft: inClash ? 0 : shift,
       transition: 'margin .3s ease',
     }}>
       {/* The plate — art, medallions, name — holds still through the exchange; it is a
@@ -252,7 +250,9 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
             rather than staged. `inClash` collapses the lean back to dead-centre for exactly
             that stretch, matching the plain-arena backdrop it's actually standing on. */}
         <div style={{
-          position: 'absolute', bottom: mini ? 0 : 6, left: inClash ? '50%' : `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
+          // `charOffset` moves the mascot alone, independent of `lift` (which shifts the
+          // whole plate box — mascot AND the separate HP readout together, see statusGroup).
+          position: 'absolute', bottom: (mini ? 0 : 6) - charOffset, left: inClash ? '50%' : `calc(50% + ${lean}px)`, transform: 'translateX(-50%)',
         }}>
           <div className={pop ? 'jx-pop' : idle ? 'jx-float' : undefined}>
           <div className={clashClass || undefined} style={{ position: 'relative', width: mSize, height: mSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -285,7 +285,7 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
         </div>
       </div>
 
-      {nameBlock}
+      {statusGroup}
       </div>
     </div>
   );
@@ -471,16 +471,24 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
   }
 
   return (
-    // full-bleed to the phone edges (cancels the versus screen's 24px gutter) so a plate
-    // pinned to an edge actually reaches it — the stagger needs the real screen width
+    <React.Fragment>
+    {/* full-bleed to the phone edges (cancels the versus screen's 24px gutter) so a plate
+        pinned to an edge actually reaches it — the stagger needs the real screen width */}
     <div style={{ width: '100%', margin: '0 -24px', display: 'flex', flexDirection: 'column' }}>
       {/* villain on TOP — RED autumn plate (ornament left), mascot leaning right. Enters
           from the right (position-based, so the top card always slides in from the right).
           Name/HP block sits below the art, same as the buddy plate — keeping both plates
           in the same stacking order (art, then name) also keeps the villain's name clear
           of the screen's top edge/notch, which a flipped-above block collided with. */}
+      {/* the upward nudge only applies once the clash is actually running (HP bars up, no
+          plate) — the pre-clash banner stare-down is a different moment and stays put.
+          Passed as `lift` (into Plate's own root style) rather than a wrapping div: Plate's
+          horizontal position comes from `alignSelf` on that root element, which only means
+          anything on a direct flex child — a wrapper div wraps its cross-axis stagger, not
+          us, right off the flex column's alignment and the banner drifted left. */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level}
         art={plateFor(foe.id)} ornament="left" mood="alert" enterFrom="right"
+        shift={84} lift={clash ? 96 : 0} hpOffset={clash ? 44 : 0}
         inClash={!!clash}
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')) : null}
         koClass={clash === 'win' ? 'jx-ko' : null}
@@ -489,42 +497,18 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
         hits={foeHits} bounceKey={impact ? lastHit.foe : null}
         hpCur={hp?.foeCur} hpMax={hp?.foeMax} />
 
-      {/* the shield sits in the gap alone — no rule behind it. The two plates already read
-          as two sides; the gap is sized so the shield floats clear of both rather than
-          resting on a mascot, which breaks the neighbouring plate's top edge. Sized up so
-          it reads as the centrepiece of the gap, not a small badge lost in it — and centred
-          with NO extra margin: `justifyContent: 'center'` on a fixed-height box already puts
-          equal space above and below the badge inside this box, so the badge sits equidistant
-          from the villain's caption (which lives inside this gap, above the badge) and the
-          buddy's plate (which follows right after, below it) without any manual nudge. A
-          negative marginTop here previously pulled the whole box — badge AND the buddy plate
-          that follows it in flow — up as one unit, which only ever widened the bottom gap
-          relative to the top one; it did not "balance" anything.
-          Non-classic styles layer their own fx here instead of shaking the plates — a shared
-          centre because that is where the two fighters' blows meet. */}
+      {/* the gap between the two plates — still reserves the same 128px of breathing room
+          it always did, so the plates themselves don't shift. The badge itself no longer
+          lives here (see the screen-centred overlay below): the villain and buddy plates
+          render at very different heights depending on their art/mascot, which pulled this
+          gap — and the badge inside it — off the true centre of the screen. The clash-only
+          fx (streak marks, charge flare, momentum bar) still belong to this gap, since they
+          mark where the two fighters' blows actually meet, not the badge's own position. */}
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 128, zIndex: 2 }}>
-        {/* starts with the plates, not after them: the flip runs the same .6s on the same
-            curve, so badge and banners decelerate together and stop on the same frame.
-            The per-hit growth pulse is Classic/Streak only — Charge and Momentum carry
-            the hit their own way and a badge also flinching on every blow doubles up. */}
-        <Shield size={76} hits={!!clash && (clashStyle === 'classic' || clashStyle === 'streak')}
-          pulse={waiting && loadingStyle === 'pulse'} />
         {clashStyle === 'streak' && <StreakFx events={hitEvents} />}
         {clashStyle === 'charge' && <ChargeBurst event={decisiveHit} />}
         {clashStyle === 'momentum' && clash && (
           <MomentumBar meCur={hp?.meCur} meMax={hp?.meMax} foeCur={hp?.foeCur} foeMax={hp?.foeMax} />
-        )}
-        {/* Battle-loading demo, Tweaks-only — see LOADING_STYLES. Sits in the same standoff
-            a real server round-trip would occupy, so any concept can be judged against the
-            actual screen rather than a mock. Only the two caption styles need anything
-            rendered here (absolutely positioned off the badge's own centre, not a flex
-            sibling, so showing one never nudges the badge itself off the true midpoint
-            between the two banners) — "Badge pulse" has no caption at all, it's handled
-            entirely by the `pulse` prop passed straight into <Shield> above. */}
-        {waiting && (loadingStyle === 'percent' || loadingStyle === 'charge') && (
-          <div style={{ position: 'absolute', top: 'calc(50% + 46px)', left: '50%', transform: 'translateX(-50%)' }}>
-            {loadingStyle === 'percent' ? <LoadingPercent /> : <LoadingCharge />}
-          </div>
         )}
       </div>
 
@@ -532,6 +516,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
           left. Enters from the left (bottom card always slides in from the left). */}
       <Plate char={me} name={me.name} level={me.level}
         art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left"
+        shift={-84} lift={clash ? 44 : 0} hpOffset={clash ? 88 : 0} charOffset={clash ? -15 : 0}
         inClash={!!clash}
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')) : null}
         koClass={clash === 'lose' ? 'jx-ko' : null}
@@ -540,6 +525,32 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
         hits={meHits} bounceKey={impact ? lastHit.me : null}
         hpCur={hp?.meCur} hpMax={hp?.meMax} />
     </div>
+
+    {/* the badge — pinned dead-centre of the whole screen (the versus stage's own
+        position:relative box in Battle.jsx), independent of however tall the villain vs.
+        buddy plate render. That's deliberate: the two plates' art/mascot sizes differ per
+        character, so centring the badge WITH them (as part of their flex column) let a
+        taller buddy plate drag the badge up off true centre. Pinning it here instead means
+        only the badge moves — the plates keep every position they already had. */}
+    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 2 }}>
+      {/* starts with the plates, not after them: the flip runs the same .6s on the same
+          curve, so badge and banners decelerate together and stop on the same frame.
+          The per-hit growth pulse is Classic/Streak only — Charge and Momentum carry
+          the hit their own way and a badge also flinching on every blow doubles up. */}
+      <Shield size={76} hits={!!clash && (clashStyle === 'classic' || clashStyle === 'streak')}
+        pulse={waiting && loadingStyle === 'pulse'} />
+      {/* Battle-loading demo, Tweaks-only — see LOADING_STYLES. Sits in the same standoff
+          a real server round-trip would occupy, so any concept can be judged against the
+          actual screen rather than a mock. Only the two caption styles need anything
+          rendered here (absolutely positioned off the badge's own centre) — "Badge pulse"
+          has no caption at all, it's handled entirely by the `pulse` prop above. */}
+      {waiting && (loadingStyle === 'percent' || loadingStyle === 'charge') && (
+        <div style={{ position: 'absolute', top: 'calc(50% + 46px)', left: '50%', transform: 'translateX(-50%)' }}>
+          {loadingStyle === 'percent' ? <LoadingPercent /> : <LoadingCharge />}
+        </div>
+      )}
+    </div>
+    </React.Fragment>
   );
 }
 

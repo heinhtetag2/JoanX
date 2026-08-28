@@ -281,22 +281,26 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
       // be the one thing they had to aim at. Not a <button>: there is nothing here a keyboard or
       // a screen reader should be told to press, since the beat completes on its own either way.
       <div onClick={!result ? tapVersus : undefined}
-        style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlebg.png)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
-        {/* soft overlay: a gentle flat tint across the whole scene so the vibrant arena
-            is muted a touch and the fighters read as the foreground. Both phases share it:
-            the result's own white card carries its text, so there is nothing left for a
-            heavier tint to fix — dimming the arena twice only made the screen gloomy. */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,30,.22)', pointerEvents: 'none' }} />
-        {/* legibility scrim: darkens top & bottom slightly so text/plates read; the
-            middle stays clear so the arena art shows through behind the VS */}
-        {/* the result's bottom runs much darker, and this is what keeps the CTAs legible.
-            The button is brand green and the arena's lower half is a sunlit green meadow —
-            green on green, with the disabled style being the same green at 45%, is how an
-            enabled button ends up looking greyed out. Darkening the strip the two CTAs stand
-            on separates them by value instead of by hue, so the green can stay green. */}
-        <div style={{ position: 'absolute', inset: 0, background: result
-          ? 'linear-gradient(180deg,rgba(20,18,26,.4) 0%,rgba(20,18,26,.1) 30%,rgba(20,18,26,.12) 56%,rgba(20,18,26,.66) 78%,rgba(20,18,26,.9) 100%)'
-          : 'linear-gradient(180deg,rgba(20,18,26,.45) 0%,rgba(20,18,26,.12) 32%,rgba(20,18,26,.12) 68%,rgba(20,18,26,.5) 100%)', pointerEvents: 'none' }} />
+        style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/assets/battle/battlecombactbg.png)', backgroundSize: result ? 'cover' : '150%', backgroundPosition: result ? 'center' : 'center 30%', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
+        {/* The clash itself — HP bars up, the two mascots actually trading blows — runs with
+            NO overlay: the arena art shows at full saturation there, nothing sitting on it to
+            protect. Everything else (the arrive/charge stare-down, with its painted plates and
+            name/level captions, and the result fold) keeps the tint/scrim — the plate art and
+            the result's white/gold text both need the extra contrast the bare art doesn't give
+            them. */}
+        {(result || !clash) && (
+          <React.Fragment>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(24,20,30,.22)', pointerEvents: 'none' }} />
+            {/* legibility scrim: darkens top & bottom so text/plates read; the middle stays
+                clear so the arena art shows through behind the VS. The bottom runs much
+                darker, and this is what keeps the CTAs legible — the button is brand green
+                and the arena's lower half is a sunlit green meadow, so darkening the strip
+                the two CTAs stand on separates them by value instead of by hue. */}
+            <div style={{ position: 'absolute', inset: 0, background: result
+              ? 'linear-gradient(180deg,rgba(20,18,26,.4) 0%,rgba(20,18,26,.1) 30%,rgba(20,18,26,.12) 56%,rgba(20,18,26,.66) 78%,rgba(20,18,26,.9) 100%)'
+              : 'linear-gradient(180deg,rgba(20,18,26,.45) 0%,rgba(20,18,26,.12) 32%,rgba(20,18,26,.12) 68%,rgba(20,18,26,.5) 100%)', pointerEvents: 'none' }} />
+          </React.Fragment>
+        )}
         {/* One fixed screen, centred — no scrolling. Everything the result has to say fits
             between the header and the buttons because the fighters fold to a strip (see
             BattleVersus.jsx); if a case ever stops fitting, that case gets shorter, it does

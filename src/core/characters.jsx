@@ -686,6 +686,15 @@ function MascotClient({ species = 'cat', size = 160, style }) {
 // villain not yet given art, so new villains keep working out of the box.
 const VILLAIN_ART = {
   'v-ping': 'villain1.png',
+  'v-temo': 'villain2.png',
+  'v-vortex': 'villain3.png',
+  'v-moody': 'villain4.png',
+  'v-chrono': 'villain5.png',
+  'v-hexa': 'villain6.png',
+  'v-shatter': 'villain7.png',
+  'v-twist': 'villain8.png',
+  'v-puppet': 'villain9.png',
+  'v-vilord': 'villain10.png',
 };
 // the source render sits inside a lot of empty canvas (see CLIENT_BASE above for the
 // same issue on the buddy line) — scaled up so it reads at the same size as the
