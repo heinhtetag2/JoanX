@@ -486,7 +486,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
           us, right off the flex column's alignment and the banner drifted left. */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level}
         art={plateFor(foe.id)} ornament="left" mood="alert" enterFrom="right"
-        shift={84} lift={clash ? 128 : 0} hpOffset={clash ? 64 : 0}
+        shift={84} lift={clash ? 96 : 0} hpOffset={clash ? 42 : 0}
         inClash={!!clash}
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')) : null}
         koClass={clash === 'win' ? 'jx-ko' : null}
@@ -514,7 +514,7 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
           left. Enters from the left (bottom card always slides in from the left). */}
       <Plate char={me} name={me.name} level={me.level}
         art={PLATE_ART.green} ornament="right" mood="happy" enterFrom="left" demo
-        shift={-84} lift={clash ? 24 : 0} hpOffset={clash ? 72 : 0} charOffset={clash ? -15 : 0}
+        shift={-84} lift={clash ? 0 : 0} hpOffset={clash ? 48 : 0} charOffset={clash ? -15 : 0}
         inClash={!!clash}
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-bot-win' : 'jx-clash-bot-lose')) : null}
         koClass={clash === 'lose' ? 'jx-ko' : null}
