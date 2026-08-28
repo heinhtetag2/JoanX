@@ -1,7 +1,7 @@
 // JoanX — child app · VillainDex
 
 import React from 'react';
-import { activeVillains, BATTLE_REWARDS, endingUnlocked, isBoss, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
+import { activeVillains, battlesPerDay, BATTLE_REWARDS, endingUnlocked, isBoss, PLAYER, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
 import { Badge, Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { VillainMascot } from '../core/characters.jsx';
@@ -25,6 +25,11 @@ const rewardPointsFor = v => {
   if (v.role === 'midBoss') return BATTLE_REWARDS.bossClear.points;
   return BATTLE_REWARDS.firstClear.points;
 };
+
+// A-8: how many of today's battlesPerDay() challenges are still unspent — mirrors the
+// same math Battle.jsx uses for its own "left" counter, so the card and the fight
+// screen never disagree about how many tries are left.
+const battlesLeftToday = () => Math.max(0, battlesPerDay() - (PLAYER.battlesToday || 0));
 
 // ── Villain Encyclopedia (A-9) ───────────────────────────────────────
 // Three layouts, switchable from the Tweaks panel: 'road' (the current
@@ -177,6 +182,7 @@ function VillainTrail({ ctx }) {
   const v = VILLAINS[sel];
   const selDiscovered = v.defeated || sel === firstOpen;
   const selCurrent = sel === firstOpen;
+  const battlesLeft = battlesLeftToday();
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -291,14 +297,19 @@ function VillainTrail({ ctx }) {
               <span style={{ fontSize: 10, fontWeight: 800, color: THEME.danger, background: THEME.dangerLight, padding: '2px 7px', borderRadius: 999, flexShrink: 0 }}>Lv{v.lv}</span>
               <span style={{ fontSize: 16.5, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selDiscovered ? L(v.name) : '???'}</span>
             </div>
-            {/* stat chips: power + points reward for beating it */}
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+            {/* stat chips: power + points reward for beating it, plus today's attempts left */}
+            <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface2, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: THEME.fg2 }}>
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
                 <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${rewardPointsFor(v)}P` : '???'}
               </span>
+              {selDiscovered && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: battlesLeft > 0 ? THEME.surface2 : THEME.dangerLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: battlesLeft > 0 ? THEME.fg2 : THEME.danger }}>
+                  <Icon name="swords" size={11} color={battlesLeft > 0 ? THEME.fg3 : THEME.danger} stroke={2.4} />{battlesLeft}/{battlesPerDay()} {L('tries left')}
+                </span>
+              )}
             </div>
           </div>
           {v.defeated ? <Badge variant="success">{L('Defeated')}</Badge>
@@ -333,13 +344,17 @@ function VillainTrail({ ctx }) {
         )}
 
         {selCurrent && (
-          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')}</Button>
+          battlesLeft > 0
+            ? <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')} · {battlesLeft}/{battlesPerDay()}</Button>
+            : <Button variant="danger" fullWidth size="md" icon="calendar-check" style={{ marginTop: 11 }} disabled>{L('Come back tomorrow')}</Button>
         )}
         {/* A-8.1 — an already-beaten villain stays re-challengeable, just at the lower
             repeat reward (rewardPointsFor above already shows that number). */}
         {!selCurrent && v.defeated && (
           <React.Fragment>
-            <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')}</Button>
+            {battlesLeft > 0
+              ? <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')} · {battlesLeft}/{battlesPerDay()}</Button>
+              : <Button variant="outline" fullWidth size="md" icon="calendar-check" style={{ marginTop: 11 }} disabled>{L('Come back tomorrow')}</Button>}
             <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 7, lineHeight: 1.4 }}>{L('First-clear reward already earned — rematches pay the repeat reward.')}</div>
           </React.Fragment>
         )}
@@ -389,6 +404,7 @@ function VillainRoad({ ctx }) {
   const v = sel != null ? VILLAINS[sel] : null;
   const selDiscovered = v != null && (v.defeated || sel === firstOpen);
   const selCurrent = sel === firstOpen;
+  const battlesLeft = battlesLeftToday();
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -477,14 +493,19 @@ function VillainRoad({ ctx }) {
               <span style={{ fontSize: 10, fontWeight: 800, color: THEME.danger, background: THEME.dangerLight, padding: '2px 7px', borderRadius: 999, flexShrink: 0 }}>Lv{v.lv}</span>
               <span style={{ fontSize: 16.5, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selDiscovered ? L(v.name) : '???'}</span>
             </div>
-            {/* stat chips: power + points reward for beating it */}
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+            {/* stat chips: power + points reward for beating it, plus today's attempts left */}
+            <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface2, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: THEME.fg2 }}>
                 <Icon name="zap" size={11} color={THEME.danger} stroke={2.4} />{L('Power')} {selDiscovered ? v.power : '???'}
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.successLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: '#274427' }}>
                 <SafePointIcon size={14} />{L('Reward')} {selDiscovered ? `+${rewardPointsFor(v)}P` : '???'}
               </span>
+              {selDiscovered && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: battlesLeft > 0 ? THEME.surface2 : THEME.dangerLight, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: battlesLeft > 0 ? THEME.fg2 : THEME.danger }}>
+                  <Icon name="swords" size={11} color={battlesLeft > 0 ? THEME.fg3 : THEME.danger} stroke={2.4} />{battlesLeft}/{battlesPerDay()} {L('tries left')}
+                </span>
+              )}
             </div>
           </div>
           {v.defeated ? <Badge variant="success">{L('Defeated')}</Badge>
@@ -519,13 +540,17 @@ function VillainRoad({ ctx }) {
         )}
 
         {selCurrent && (
-          <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')}</Button>
+          battlesLeft > 0
+            ? <Button variant="danger" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Start battle')} · {battlesLeft}/{battlesPerDay()}</Button>
+            : <Button variant="danger" fullWidth size="md" icon="calendar-check" style={{ marginTop: 11 }} disabled>{L('Come back tomorrow')}</Button>
         )}
         {/* A-8.1 — an already-beaten villain stays re-challengeable, just at the lower
             repeat reward (rewardPointsFor above already shows that number). */}
         {!selCurrent && v.defeated && (
           <React.Fragment>
-            <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')}</Button>
+            {battlesLeft > 0
+              ? <Button variant="outline" fullWidth size="md" icon="swords" style={{ marginTop: 11 }} onClick={() => ctx.nav('battle', { lv: v.lv })}>{L('Challenge again')} · {battlesLeft}/{battlesPerDay()}</Button>
+              : <Button variant="outline" fullWidth size="md" icon="calendar-check" style={{ marginTop: 11 }} disabled>{L('Come back tomorrow')}</Button>}
             <div style={{ fontSize: 11, color: THEME.fg3, textAlign: 'center', marginTop: 7, lineHeight: 1.4 }}>{L('First-clear reward already earned — rematches pay the repeat reward.')}</div>
           </React.Fragment>
         )}

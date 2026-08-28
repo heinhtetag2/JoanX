@@ -141,7 +141,7 @@ function ClassicStage({ me, foe, result, won }) {
 // `mini` is the result-screen fold: the plate keeps its painted scene and its mascot but
 // drops every device that only pays off at full size — the off-screen bleed, the lean, the
 // stat medallions — and sits centred in its half of a row instead.
-function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey, idle }) {
+function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFrom, inClash, clashClass, koClass, hpCur, hpMax, charging, auraColor, hits, bounceKey, idle, flip }) {
   const ornLeft = ornament === 'left';
   const mSize = mini ? 88 : 132;
   // how far the plate runs PAST its pinned screen edge — the extra push that makes the
@@ -163,6 +163,54 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
   // against the shield. The buddy leans OUT instead — past its half's centre, away from the
   // seam — which is what actually lands the two mascots mirrored across the VS.
   const lean = mini ? (ornLeft ? -18 : -30) : (ornLeft ? -30 : 30);
+  // name + level, CENTERED under (or, flipped, above) the mascot — the mascot leans off the
+  // plate centre by `lean`, and the name tracks it by the same shift, so the two read as one
+  // stacked unit rather than the name drifting to a corner. It fades out for the exchange,
+  // and an HP bar fades in on the SAME spot (a CSS grid overlap, both children in cell 1/1)
+  // rather than beside it — so the fight shows what that trade actually cost each fighter
+  // instead of just the two of them swinging at each other.
+  // `flip` (full-size versus stage only, top/villain plate) puts this block ABOVE the art
+  // instead of below it: without it, BOTH plates stack art-then-name in the same order
+  // regardless of which side of the shield they're on, so the top plate's name ends up on
+  // its INNER edge (right next to the shield) while the bottom plate's sits on its OUTER
+  // edge — the name block's own height (not a fixed amount, and not the same for every
+  // plate art) was landing entirely inside one gap and not the other, which is what made
+  // the two gaps around the shield read as different sizes. Moving it to the outer edge for
+  // both plates means each gap is governed by the same thing — how far the mascot breaks its
+  // plate's edge — so they end up close by construction, not by a tuned pixel offset that
+  // would only happen to fit this one villain's art.
+  const nameLift = (mini ? 4 : 6) - (mini ? Math.round((art.nameLift || 0) * .67) : (art.nameLift || 0));
+  const nameBlock = (
+    <div style={{
+      display: 'grid', justifyItems: 'center',
+      // extra nudge on the name block only (not the mascot): buddy pulls further
+      // left, villain further right, so each label sits tucked toward its own side.
+      // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
+      // read as one stacked unit under each banner. Collapses to dead-centre in step with
+      // the mascot above once the clash starts — see `inClash` on that div's `left`.
+      transform: inClash ? 'none' : mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
+      // clears the plate edge it sits next to; `nameLift` (see VILLAIN_PLATE_ART) trims that
+      // for a plate art with invisible padding baked into its canvas, scaled down in `mini`
+      // since that art also renders roughly a third smaller there. Lands as marginBottom
+      // instead of marginTop when flipped — same clearance, the other side of the block.
+      marginTop: flip ? 0 : nameLift, marginBottom: flip ? nameLift : 0,
+    }}>
+      <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: inClash ? 0 : 1, transition: 'opacity .3s ease' }}>
+        <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
+        <div className="game-font" style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{L('Lv')} {level}</div>
+      </div>
+      {hpMax != null && (
+        <div style={{ gridArea: '1 / 1', width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: inClash ? 1 : 0, transition: 'opacity .3s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Icon name="heart" size={12} color={THEME.heart} stroke={2.5} />
+            <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{hpCur}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>/ {hpMax}</span>
+          </div>
+          <Bar value={hpCur} max={hpMax} color={THEME.heart} track="rgba(255,255,255,.22)" height={7} />
+        </div>
+      )}
+    </div>
+  );
   return (
     // The two plates are staggered, not stacked flush: each is narrower than the phone and
     // pinned to the edge OPPOSITE its ornament, then pushed further past that edge. Buddy
@@ -185,6 +233,7 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
           The loser reads as GREYED OUT, not faded — desaturated + darkened rather than
           see-through, the "disabled" look rather than a ghost. */}
       <div className={koClass || undefined} style={{ filter: dim ? 'grayscale(1) contrast(.5) brightness(1.15)' : 'none', transition: 'filter .4s' }}>
+      {flip && nameBlock}
       <div style={{ position: 'relative', width: '100%' }}>
         {/* the scene, at its own aspect — the plate's height is the art's height at this
             width. The buddy art is drawn ornament-right and flipped to put it left.
@@ -248,40 +297,7 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, enterFr
         </div>
       </div>
 
-      {/* name + level below the plate, CENTERED under the mascot — the mascot leans off the
-          plate centre by `lean`, and the name tracks it by the same shift, so the two read as
-          one stacked unit rather than the name drifting to a corner. It fades out for the
-          exchange, and an HP bar fades in on the SAME spot (a CSS grid overlap, both children
-          in cell 1/1) rather than beside it — so the fight shows what that trade actually cost
-          each fighter instead of just the two of them swinging at each other. */}
-      <div style={{
-        display: 'grid', justifyItems: 'center',
-        // extra nudge on the name block only (not the mascot): buddy pulls further
-        // left, villain further right, so each label sits tucked toward its own side.
-        // the name tracks its mascot's lean exactly (no extra nudge in the strip) so the two
-        // read as one stacked unit under each banner. Collapses to dead-centre in step with
-        // the mascot above once the clash starts — see `inClash` on that div's `left`.
-        transform: inClash ? 'none' : mini ? `translateX(${lean}px)` : `translateX(${lean + (ornLeft ? -30 : 30)}px)`,
-        // clears the plate edge below; `nameLift` (see VILLAIN_PLATE_ART) trims that for a
-        // plate art with invisible padding baked into its canvas, scaled down in `mini`
-        // since that art also renders roughly a third smaller there.
-        marginTop: (mini ? 4 : 6) - (mini ? Math.round((art.nameLift || 0) * .67) : (art.nameLift || 0)),
-      }}>
-        <div style={{ gridArea: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', opacity: inClash ? 0 : 1, transition: 'opacity .3s ease' }}>
-          <div className="game-font" style={{ color: '#fff', fontSize: mini ? 18 : 20, fontWeight: 500, lineHeight: 1.1 }}>{name}</div>
-          <div className="game-font" style={{ fontSize: mini ? 11.5 : 12, fontWeight: 700, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{L('Lv')} {level}</div>
-        </div>
-        {hpMax != null && (
-          <div style={{ gridArea: '1 / 1', width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, opacity: inClash ? 1 : 0, transition: 'opacity .3s ease' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Icon name="heart" size={12} color={THEME.heart} stroke={2.5} />
-              <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>{hpCur}</span>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.55)' }}>/ {hpMax}</span>
-            </div>
-            <Bar value={hpCur} max={hpMax} color={THEME.heart} track="rgba(255,255,255,.22)" height={7} />
-          </div>
-        )}
-      </div>
+      {!flip && nameBlock}
       </div>
     </div>
   );
@@ -471,9 +487,12 @@ function BannerStage({ me, foe, result, won, clash, hp, clashStyle = 'impact', l
     // pinned to an edge actually reaches it — the stagger needs the real screen width
     <div style={{ width: '100%', margin: '0 -24px', display: 'flex', flexDirection: 'column' }}>
       {/* villain on TOP — RED autumn plate (ornament left), mascot leaning right. Enters
-          from the right (position-based, so the top card always slides in from the right). */}
+          from the right (position-based, so the top card always slides in from the right).
+          `flip` puts its name/HP block on the OUTER edge (above the art) instead of the
+          inner one (against the shield) — see the comment on `nameBlock` in Plate for why
+          that's what actually keeps the two gaps around the shield the same size. */}
       <Plate char={foeChar} name={L(foe.name)} level={foe.level}
-        art={plateFor(foe.id)} ornament="left" mood="alert" enterFrom="right"
+        art={plateFor(foe.id)} ornament="left" mood="alert" enterFrom="right" flip
         inClash={!!clash}
         clashClass={shake ? (clash && (clash === 'win' ? 'jx-clash-top-lose' : 'jx-clash-top-win')) : null}
         koClass={clash === 'win' ? 'jx-ko' : null}
