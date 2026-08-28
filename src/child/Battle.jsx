@@ -89,6 +89,14 @@ function FighterCarousel({ owned, sel, setSel, villain, power }) {
   );
 }
 
+// how long the cloud curtain HOLDS fully opaque before it's told to start parting (see
+// fire()) — the clash itself (and every beat that follows it) is held back until this
+// fires, so the reveal always uncovers a fight that's already staged and ready, never the
+// standoff it's replacing. Independent of the parting animation's own CSS duration
+// (.jx-cloud-part-top/-bottom, joanx.css) — that's just how long the reveal itself takes
+// once it starts, not part of the hold.
+const CLOUD_MS = 250;
+
 function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'impact', loadingStyle = 'pulse', eggShake = false, eggHatch = 'pop' }) {
   const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const owned = CHARACTERS.filter(c => c.owned);
@@ -239,31 +247,40 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
       setLastEgg(res.eggWon);
       setUsedCount(PLAYER.battlesToday);
       setWon(w);
-      // The clash SHOWS the outcome — winner drives through, loser is knocked back — so it has
-      // to be told which is which. Its own state rather than reading `won`, so the animation
-      // can never render a frame against a stale value.
-      setClash(w ? 'win' : 'lose');
       // the cloud curtain: fighters have already arrived and stood off (names/levels on
-      // screen) — THIS is the beat it belongs to, covering the screen right as the punches
-      // start and parting over the opening blows, so the reveal is the fight already
-      // under way (HP bars, first hit) rather than the standoff it interrupted.
+      // screen) — THIS is the beat it belongs to. It mounts fully opaque right now and
+      // HOLDS still — no motion — for CLOUD_MS, while the clash itself (below) stages
+      // underneath it. Only once that stage flip actually happens does the cloud get told
+      // to move (see the className on the two boxes further down), so the reveal always
+      // shows the fight ready to go, never the standoff it's replacing.
       setCloudIntro(true);
-      setClashHp(res.clashHp);
-      setHpStep(0);
-      // one cue per blow, on the frames the plates actually meet — 24% / 46% / 84% of the 1.5s
-      // exchange. A single attack sound over a three-blow trade was the old version's problem in
-      // miniature: the fight had more in it than the soundtrack admitted. The HP bars step
-      // forward on these exact same timers, so a bar drains on the frame the blow lands.
-      beats.current.push(
-        ...[646, 1254, 1862, 2432, 3344].map((at, i) => setTimeout(() => { sfx.attack(); setHpStep(i + 1); }, at)),
-        // the win/lose cue lands as the loser goes, not as the screen changes
-        setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
-        // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s and
-        // runs 2.5s, so the plate is not finished drifting off until 5.84s — cutting any earlier
-        // deletes the destruction rather than showing it. This lands ~200ms after, on the winner
-        // alone in the arena, which is the payoff the five blows were building to.
-        setTimeout(() => setPhase('result'), 6040),
-      );
+      beats.current.push(setTimeout(() => {
+        // The clash SHOWS the outcome — winner drives through, loser is knocked back — so
+        // it has to be told which is which. Its own state rather than reading `won`, so
+        // the animation can never render a frame against a stale value. Flips together with
+        // the cloud's own parting className (both keyed off `clash`, both this same tick),
+        // and everything below it — the shake, the attack sfx, the HP steps — starts
+        // counting from THIS moment too, so nothing about the fight is running on a
+        // timeline the child couldn't see yet.
+        setClash(w ? 'win' : 'lose');
+        setClashHp(res.clashHp);
+        setHpStep(0);
+        // one cue per blow, on the frames the plates actually meet — 24% / 46% / 84% of the
+        // 1.5s exchange. A single attack sound over a three-blow trade was the old version's
+        // problem in miniature: the fight had more in it than the soundtrack admitted. The
+        // HP bars step forward on these exact same timers, so a bar drains on the frame the
+        // blow lands.
+        beats.current.push(
+          ...[646, 1254, 1862, 2432, 3344].map((at, i) => setTimeout(() => { sfx.attack(); setHpStep(i + 1); }, at)),
+          // the win/lose cue lands as the loser goes, not as the screen changes
+          setTimeout(() => (w ? sfx.win() : sfx.lose()), 3700),
+          // …and the result waits for the knockout. .jx-ko starts on the decisive blow at 3.34s
+          // and runs 2.5s, so the plate is not finished drifting off until 5.84s — cutting any
+          // earlier deletes the destruction rather than showing it. This lands ~200ms after, on
+          // the winner alone in the arena, which is the payoff the five blows were building to.
+          setTimeout(() => setPhase('result'), 6040),
+        );
+      }, CLOUD_MS));
     }
   };
 
@@ -373,35 +390,43 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
       // a screen reader should be told to press, since the beat completes on its own either way.
       <div onClick={!result ? tapVersus : undefined}
         style={{ position: 'absolute', inset: 0, backgroundImage: (!result && !clash) ? 'url(/assets/backgrounds/battleonboarding.png)' : 'url(/assets/battle/battlecombactbg.png)', backgroundSize: result ? 'cover' : '150%', backgroundPosition: result ? 'center' : 'center 30%', display: 'flex', flexDirection: 'column', zIndex: 50, paddingTop: result ? 'calc(env(safe-area-inset-top) + 24px)' : 60 }}>
-        {/* the cloud curtain — covers the arena at full opacity the instant the clash
-            starts (see fire()), then TEARS OPEN rather than sliding through as one sheet:
-            the same cloud image split into a top half and a bottom half (each box shows
-            only its half of the art via overflow:hidden + a 200%-tall image nudged to
-            keep the two halves lined up as one continuous sky), and the two halves part
-            straight up/off and down/off together. The seam itself is FEATHERED, not a hard
-            rectangular cut — each half's own edge along the tear fades to transparent over
-            its last ~14%, via a mask on the box (not the image, so it travels with the
-            half as it slides) — so it reads as cloud dispersing rather than a diced crop.
-            Kept deliberately plain otherwise (see the CSS comment on .jx-cloud-part-top) —
-            one slide, one clean deceleration, nothing stacked on top of it. What it reveals
-            is the fight already under way — HP bars, the first hit — not the standoff it
-            cut in front of. Never plays on the result fold: `cloudIntro` only ever gets set
-            true by fire(), and the result screen is reached later, from inside this same
-            phase, with no re-trigger of its own. */}
+        {/* the cloud curtain — two beats, not one. It mounts fully opaque and HOLDS still
+            (no motion at all) for CLOUD_MS while fire() quietly finishes staging the clash
+            underneath (arena background, fighters' clash pose, full-HP bars) — that stage
+            change is instant, it just happens to be invisible under a static cloud. Only
+            once `clash` actually flips does the parting className below get added, and
+            THAT is the one and only moment the cloud starts moving: it tears open — split
+            into a top half and a bottom half (each box shows only its own half of the art
+            via overflow:hidden + a 200%-tall image), parting straight up/off and down/off —
+            and what it reveals is the clash already staged and waiting, not the standoff
+            it replaced. Skipping this split (hold, then reveal-on-cue) was the actual bug:
+            parting from frame zero meant the reveal was well underway before the scene
+            underneath had anything new to show, so most of it uncovered the same pre-battle
+            standoff the child had already been looking at. The seam itself is FEATHERED
+            during the reveal ONLY — not a hard rectangular cut, each half's own edge along
+            the tear fades to transparent over its last ~14% once it's actually moving — but
+            during the HOLD the mask is off entirely: a feathered edge is a translucent band
+            sitting right at screen-centre, and screen-centre is exactly where the VS badge
+            lives, so leaving the mask on through the hold let the badge glow straight
+            through the "fully opaque" cloud the whole time it was meant to be hidden. Solid
+            until it's told to move, feathered only once it is.
+            Never plays on the result fold: `cloudIntro` only ever gets set true by fire(),
+            and the result screen is reached later, from inside this same phase, with no
+            re-trigger of its own. */}
         {cloudIntro && !result && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 200, pointerEvents: 'none' }}>
-            <div className="jx-cloud-part-top" style={{
+            <div className={clash ? 'jx-cloud-part-top' : undefined} style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '50%', overflow: 'hidden',
-              WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)',
+              WebkitMaskImage: clash ? 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)' : 'none',
+              maskImage: clash ? 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)' : 'none',
             }} onAnimationEnd={() => setCloudIntro(false)}>
               <img src="/assets/backgrounds/cloud.png" alt=""
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '200%', objectFit: 'cover' }} />
             </div>
-            <div className="jx-cloud-part-bottom" style={{
+            <div className={clash ? 'jx-cloud-part-bottom' : undefined} style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', overflow: 'hidden',
-              WebkitMaskImage: 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)',
-              maskImage: 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)',
+              WebkitMaskImage: clash ? 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)' : 'none',
+              maskImage: clash ? 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)' : 'none',
             }}>
               <img src="/assets/backgrounds/cloud.png" alt=""
                 style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '200%', objectFit: 'cover' }} />
