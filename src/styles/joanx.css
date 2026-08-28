@@ -221,11 +221,17 @@ html, body {
    Battle.jsx), sitting together as one full-bleed sky already in place; the two halves then
    part straight up and down off the two screen edges, like the cloud itself tearing open,
    rather than one flat sheet sliding through. Both halves share the same duration/curve so
-   the seam opens evenly. */
+   the seam opens evenly.
+   Deliberately PLAIN: an earlier pass added scale, blur and a seam flare on top of the
+   slide, and stacking that many things moving at once read as busy/over-produced rather
+   than premium. One property (transform), one clean deceleration, nothing else — the
+   feathered edge (see the mask in Battle.jsx) is what sells "cloud" now, not extra motion.
+   1.3s is slow on purpose: this is a scene change the child gets a beat to register, not
+   something to blink through. */
 @keyframes jxCloudPartTop    { from { transform: translateY(0); } to { transform: translateY(-100%); } }
 @keyframes jxCloudPartBottom { from { transform: translateY(0); } to { transform: translateY(100%); } }
-.jx-cloud-part-top    { animation: jxCloudPartTop    .85s cubic-bezier(.65,0,.35,1) forwards; }
-.jx-cloud-part-bottom { animation: jxCloudPartBottom .85s cubic-bezier(.65,0,.35,1) forwards; }
+.jx-cloud-part-top    { animation: jxCloudPartTop    1.3s cubic-bezier(.16,.84,.44,1) forwards; }
+.jx-cloud-part-bottom { animation: jxCloudPartBottom 1.3s cubic-bezier(.16,.84,.44,1) forwards; }
 
 /* versus plates enter from opposite sides — top slides in from the right,
    bottom from the left, meeting at the VS. Soft ease-out so they glide, not snap. */

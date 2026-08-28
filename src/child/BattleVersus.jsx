@@ -203,10 +203,14 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, lift = 
     // it runs (backwards fill included). A `transform`-based shift here would be silently
     // overridden for the whole .6s slide-in and then SNAP into place the instant it ended —
     // exactly the glitch this was. Margin has no such fight to lose.
+    // NOT transitioned: `lift`/`shift` only ever change once, at the exact instant the clash
+    // starts, which is also the instant the cloud curtain (Battle.jsx) covers the screen —
+    // an animated .3s glide here used to be a visible jump the cloud didn't reliably outrun
+    // (image decode/paint timing isn't guaranteed to line up with a CSS transition's start).
+    // Snapping straight to the clash position removes the race outright.
     <div className={enterFrom === 'left' ? 'jx-slide-left' : enterFrom === 'right' ? 'jx-slide-right' : ''} style={{
       width: mini ? '100%' : '95%', alignSelf: 'center',
       marginTop: lift, marginLeft: inClash ? 0 : shift,
-      transition: 'margin .3s ease',
     }}>
       {/* The plate — art, medallions, name — holds still through the exchange; it is a
           backdrop, not a fighter, so it should not be the thing recoiling from a punch. Only

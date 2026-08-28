@@ -378,19 +378,31 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
             the same cloud image split into a top half and a bottom half (each box shows
             only its half of the art via overflow:hidden + a 200%-tall image nudged to
             keep the two halves lined up as one continuous sky), and the two halves part
-            straight up/off and down/off together. What it reveals is the fight already
-            under way — HP bars, the first hit — not the standoff it cut in front of.
-            Never plays on the result fold: `cloudIntro` only ever gets set true by fire(),
-            and the result screen is reached later, from inside this same phase, with no
-            re-trigger of its own. */}
+            straight up/off and down/off together. The seam itself is FEATHERED, not a hard
+            rectangular cut — each half's own edge along the tear fades to transparent over
+            its last ~14%, via a mask on the box (not the image, so it travels with the
+            half as it slides) — so it reads as cloud dispersing rather than a diced crop.
+            Kept deliberately plain otherwise (see the CSS comment on .jx-cloud-part-top) —
+            one slide, one clean deceleration, nothing stacked on top of it. What it reveals
+            is the fight already under way — HP bars, the first hit — not the standoff it
+            cut in front of. Never plays on the result fold: `cloudIntro` only ever gets set
+            true by fire(), and the result screen is reached later, from inside this same
+            phase, with no re-trigger of its own. */}
         {cloudIntro && !result && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 200, pointerEvents: 'none' }}>
-            <div className="jx-cloud-part-top" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', overflow: 'hidden' }}
-              onAnimationEnd={() => setCloudIntro(false)}>
+            <div className="jx-cloud-part-top" style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '50%', overflow: 'hidden',
+              WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%)',
+            }} onAnimationEnd={() => setCloudIntro(false)}>
               <img src="/assets/backgrounds/cloud.png" alt=""
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '200%', objectFit: 'cover' }} />
             </div>
-            <div className="jx-cloud-part-bottom" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', overflow: 'hidden' }}>
+            <div className="jx-cloud-part-bottom" style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', overflow: 'hidden',
+              WebkitMaskImage: 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)',
+              maskImage: 'linear-gradient(to top, #000 0%, #000 86%, transparent 100%)',
+            }}>
               <img src="/assets/backgrounds/cloud.png" alt=""
                 style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '200%', objectFit: 'cover' }} />
             </div>
