@@ -1085,7 +1085,10 @@ function HomeSimpleFocus({ ctx }) {
 
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 50, paddingBottom: 110, background: bg }}>
-      <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* sticky so the identity + currency bar stays put while the ring/buddy/tasks
+          scroll underneath it — no background, so it stays part of the same wash
+          rather than becoming an opaque bar */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 5, padding: '10px 18px 14px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         {/* the buddy's face leads the greeting, and doubles as the way into the profile */}
         <button onClick={() => ctx.nav('profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
           <div>

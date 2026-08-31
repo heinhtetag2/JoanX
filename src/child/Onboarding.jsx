@@ -145,8 +145,9 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           white copy, and a bottom-aligned CTA (mirrors the parent onboarding). */}
       {slide && (
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }}>
-          {/* background: full-screen hero photo (reusing the parent intro image for now) */}
-          <img src="/assets/onboarding/intro.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '58% 36%' }} />
+          {/* background: flat brand-green park scene (path, buddy, phone + app
+              chips) baked to a static image — replaces the old glossy stock photo */}
+          <img src="/assets/onboarding/intro-flat.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 30%' }} />
           {/* soft dark scrims top & bottom keep the copy and CTA legible */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330, background: 'linear-gradient(180deg, rgba(12,14,22,.74) 0%, rgba(12,14,22,0) 100%)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 280, background: 'linear-gradient(0deg, rgba(10,12,20,.92) 8%, rgba(10,12,20,0) 100%)' }} />
