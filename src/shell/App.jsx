@@ -113,7 +113,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'text', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -271,7 +271,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle },
+    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle, xpAddStyle: tw.xpAddStyle, xpBarStyle: tw.xpBarStyle, statStyle: tw.statStyle },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -718,6 +718,39 @@ function App() {
                   'char-showcase' (no Color tab) is the chosen behaviour; tw.detailLayout stays
                   defaulted so a buddy tap keeps getting it. The legacy component/layouts stay
                   in code as a frozen snapshot, just no longer offered as a live option here. */}
+
+              {/* the XP readout itself — 'inline' is the thin bar+number row every layout
+                  already had (untouched, still the default); 'card' is the boxed readout
+                  (hex XP badge, big current/total, thicker bar+%, "to next level" caption)
+                  requested from a reference mock — kept as an addition, not a replacement. */}
+              <div className="tw-label">XP bar style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['inline', 'Inline'], ['card', 'Card']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.xpBarStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, xpBarStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
+              {/* Add-XP style — the points→EXP tap under the XP bar. 'text' is the shipped
+                  default (bare icon+label, muted point-icon cost, no chip); the rest are real
+                  alternatives — see CharacterVariants.jsx's xpAdd for what each one is doing. */}
+              <div className="tw-label">Add-XP style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['text', 'Text'], ['chip', 'Chip'], ['row', 'Row'], ['sticker', 'Sticker'], ['badge', 'Badge'], ['stack', 'Stack'], ['outline', 'Outline']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.xpAddStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, xpAddStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
+              {/* Buddy stat display — 'ring' (default, untouched) is the tinted progress ring
+                  with icon+value nested inside; 'bars' is a labeled horizontal meter row
+                  (icon+label, current/max, filled bar) — the shape from a reference mock,
+                  reinterpreted in this app's own flat sand/stat-color palette rather than
+                  copied as a dark sci-fi panel. See CharacterVariants.jsx's traitsContentBars. */}
+              <div className="tw-label">Stat style</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['ring', 'Ring'], ['bars', 'Bars']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.statStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, statStyle: v }))}>{l}</button>
+                ))}
+              </div>
 
               <div className="tw-label">Dex layout</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

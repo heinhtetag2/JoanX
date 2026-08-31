@@ -1,10 +1,10 @@
 // JoanX — child app · CharacterDetail
 
 import React from 'react';
-import { buyItem, canBuyItem, CHARACTERS, OUTFITS, PLAYER, STATS, statsFor } from '../core/data.jsx';
-import { Badge, Bar, Button, Icon, RARITY, THEME } from '../core/primitives.jsx';
+import { buyItem, canBuyItem, canConvertPoints, CHARACTERS, convertPointsToXp, EXCHANGE, OUTFITS, PLAYER, pointsForXp, STATS, statsFor } from '../core/data.jsx';
+import { Badge, Bar, Button, Icon, RARITY, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, shade, tint } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, outfitSlotsFor, outfitItemsFor } from './shared.jsx';
 
 // ── Character detail / customize / evolve ────────────────────────────
@@ -79,6 +79,138 @@ function CharacterDetail({ ctx }) {
   // their per-stat hues)
   const accent = THEME.brand;
 
+  // A-1.2 — the points→EXP exchange, spec'd and built in data.jsx (convertPointsToXp) but
+  // never wired into a screen. Lives here, on the buddy's own page, rather than the Points
+  // shop — you're already looking at the one buddy you'd spend on. One fixed-size tap
+  // (EXCHANGE.stepXp at a time), matching CharacterVariants.jsx's own xpAdd. Tweaks: Add-XP
+  // style — 'text' is the shipped default; 'chip'/'row'/'sticker' are real alternatives.
+  const xpAddStyle = ctx.tweaks?.xpAddStyle || 'text';
+  const xpAdd = () => {
+    if (!(orig.owned && !orig.maxed)) return null;
+    const verdict = canConvertPoints(EXCHANGE.stepXp, orig, PLAYER);
+    const cost = pointsForXp(EXCHANGE.stepXp);
+    const on = verdict.ok;
+    const onTap = () => {
+      const res = convertPointsToXp(EXCHANGE.stepXp, orig, PLAYER);
+      if (!res.ok) return toast(L('Not enough points yet'));
+      setPts(PLAYER.points);
+      toast(res.stageUp ? `${orig.name} ${L('Evolved!')}` : res.levels ? `${orig.name} ${L('Level up!')}` : `+${EXCHANGE.stepXp} XP`);
+    };
+    const ink = on ? shade(THEME.gold, -30) : THEME.fg3;
+
+    // 'text' — bare icon + bold label, muted cost alongside, no chip fill at all — the
+    // same bare-button idiom as "Skip"/"Not now" and an outfit tile's price line.
+    if (xpAddStyle === 'text') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', background: 'none', padding: '4px 2px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <Icon name="zap" size={13} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>{L('Add')} {EXCHANGE.stepXp} XP</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 600, color: THEME.fg3 }}><SafePointIcon size={12} />{cost}</span>
+        </button>
+      );
+    }
+    // 'chip' — the same content, given an actual flat tap-target: a gold-tinted pill (no
+    // shadow, per the app's flat chrome) with a hairline divider before the cost, so it
+    // reads as one control instead of text floating free under the bar.
+    if (xpAddStyle === 'chip') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: 'none', borderRadius: 999, background: on ? tint(THEME.gold, .84) : THEME.surface2, padding: '7px 14px 7px 12px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <Icon name="zap" size={13} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>{L('Add')} {EXCHANGE.stepXp} XP</span>
+          <span style={{ width: 1, height: 14, background: on ? shade(THEME.gold, -6) : THEME.border, opacity: .5 }} />
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: ink }}><SafePointIcon size={13} />{cost}</span>
+        </button>
+      );
+    }
+    // 'row' — a full-width action row (plain "Add XP" label left, a solid gold cost pill
+    // right) — the same weight as the daily-task "Go" row, for when the control wants
+    // more presence than a small inline chip.
+    if (xpAddStyle === 'row') {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 800, color: THEME.fg1 }}>
+            <Icon name="zap" size={14} color={THEME.gold} fill={THEME.gold} stroke={2.4} />{L('Add')} {EXCHANGE.stepXp} XP
+          </span>
+          <button onClick={onTap} className={on ? 'jx-press' : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', borderRadius: 999, background: on ? THEME.gold : THEME.surface2, color: on ? '#fff' : THEME.fg3, padding: '7px 13px', fontSize: 12.5, fontWeight: 800, cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+            <SafePointIcon size={13} />{cost}
+          </button>
+        </div>
+      );
+    }
+    // 'sticker' — a tilted dashed-border tag, the app's own "collectible" framing (see
+    // outfit price tags), with the real point icon in place of a ★ glyph.
+    if (xpAddStyle === 'sticker') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: `1.5px dashed ${on ? shade(THEME.gold, -6) : THEME.border}`, background: on ? shade(THEME.gold, 82) : THEME.surface2, borderRadius: 10, padding: '5px 10px', transform: 'rotate(-2.5deg)', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <Icon name="zap" size={12} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: ink }}>+{EXCHANGE.stepXp} XP</span>
+          <span style={{ width: 1, height: 11, background: on ? shade(THEME.gold, -6) : THEME.border, opacity: .6 }} />
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11, fontWeight: 700, color: ink }}><SafePointIcon size={11} />{cost}</span>
+        </button>
+      );
+    }
+    // 'badge' — not a bespoke button at all: the real Badge primitive this exact card
+    // already uses for Rare/Stage 3, just wrapped in a bare tap target — nothing reads
+    // less "invented" than reusing the actual design-system component in place.
+    if (xpAddStyle === 'badge') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', background: 'none', padding: 0, cursor: on ? 'pointer' : 'default', opacity: on ? 1 : .6, fontFamily: 'inherit' }}>
+          <Badge variant="gold"><Icon name="zap" size={10} color="#9e7300" stroke={2.8} />{L('Add')} {EXCHANGE.stepXp} XP</Badge>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: THEME.fg3 }}><SafePointIcon size={12} />{cost}</span>
+        </button>
+      );
+    }
+    // 'stack' — a compact two-line tile (label on top, cost big underneath), the same
+    // icon+number+label skeleton the stat rings just below already use, instead of every
+    // other style's single-line row.
+    if (xpAddStyle === 'stack') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, border: 'none', borderRadius: 14, background: on ? tint(THEME.gold, .86) : THEME.surface2, padding: '8px 16px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: ink }}>
+            <Icon name="zap" size={11} color={ink} stroke={2.4} fill={on ? ink : 'none'} />{L('Add')} {EXCHANGE.stepXp} XP
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 13, fontWeight: 800, color: ink }}><SafePointIcon size={13} />{cost}</span>
+        </button>
+      );
+    }
+    // 'outline' — a lightweight bordered button, no fill — lighter weight than 'chip'/
+    // 'row', matching the outlined idiom the stepper/decorate-tab chips use elsewhere.
+    return (
+      <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, border: `1.5px solid ${on ? THEME.gold : THEME.border}`, borderRadius: 999, background: '#fff', padding: '6px 13px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+        <Icon name="zap" size={13} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>{L('Add')} {EXCHANGE.stepXp} XP</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: on ? shade(THEME.gold, -10) : THEME.fg3 }}><SafePointIcon size={12} />{cost}</span>
+      </button>
+    );
+  };
+
+  // Tweaks: Character detail · XP bar style — 'inline' (default, untouched) is the thin
+  // bar+number row above; 'card' is the boxed XP readout from the reference mock (hex XP
+  // badge, big current/total, thicker bar+%, "to next level" caption), recolored to this
+  // app's own XP gold rather than the reference's green (gold-reserved-for-points-xp).
+  // Kept in sync with CharacterVariants.jsx's xpCard.
+  const xpBarStyle = ctx.tweaks?.xpBarStyle || 'inline';
+  const xpCard = (
+    <div style={{ maxWidth: 320, margin: '14px auto 0', background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 20, padding: 16, textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="game-font" style={{ width: 44, height: 44, flexShrink: 0, clipPath: 'polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)', background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: shade(THEME.gold, -20) }}>XP</div>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+          <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1 }}>{orig.xp.toLocaleString()}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: THEME.fg3 }}>/ {orig.xpMax.toLocaleString()} XP</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+        <Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow />
+        <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2, flexShrink: 0 }}>{Math.round(orig.xp / orig.xpMax * 100)}%</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
+        <Icon name="star" size={12} color={THEME.fg3} stroke={2.2} />
+        <span style={{ fontSize: 12, color: THEME.fg3, fontWeight: 600 }}>{(orig.xpMax - orig.xp).toLocaleString()} {L('XP to next level')}</span>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 8 }}>{xpAdd()}</div>
+    </div>
+  );
+
   return (
     <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: 'auto', paddingTop: 102, paddingBottom: 110, background: screenBgActive() }}>
       {/* the fighter is already chosen — it's the buddy you're looking at. Carry its id
@@ -97,11 +229,18 @@ function CharacterDetail({ ctx }) {
           </div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: 4 }}>{orig.name}</div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {level}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
-            <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow /></div>
-            <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
-          </div>
+          {xpBarStyle === 'card' ? xpCard : (
+            <React.Fragment>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
+                <div style={{ flex: 1 }}>
+                  <Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow />
+                </div>
+                <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
+              </div>
+              <div style={{ textAlign: 'center' }}>{xpAdd()}</div>
+            </React.Fragment>
+          )}
         </div>
 
         {/* stats (A-3.3) + accessories (A-5.1) — one frosted segmented toggle over the
@@ -178,6 +317,13 @@ function CharacterDetail({ ctx }) {
           </div>
         </div>
 
+        <div style={{ height: 76 }} />
+      </div>
+
+      {/* pinned to the screen frame, not the scroll container — same fixed-bottom-CTA
+          idiom as ParentDetail's danger actions, so the buddy action is always in reach
+          regardless of scroll position. */}
+      <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
         <Button variant="primary" size="lg" fullWidth style={{ background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
 

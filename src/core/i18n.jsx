@@ -417,7 +417,8 @@ const KO = {
   'MAX': '최대', 'Fully grown — in your Collection': '완전히 성장했어요 — 컬렉션에 등록됐어요',
   // point → EXP exchange (A-1.2)
   'Grow your buddy': '친구 키우기', 'Turn points into EXP for a buddy.': '포인트를 친구의 EXP로 바꿔요.',
-  'Convert': '교환하기', 'Max': '최대로', 'More': '늘리기', 'Less': '줄이기', 'Level up!': '레벨 업!',
+  'Convert': '교환하기', 'Max': '최대로', 'More': '늘리기', 'Less': '줄이기', 'Level up!': '레벨 업!', 'Evolved!': '진화했어요!',
+  'XP to next level': '다음 레벨까지 XP', 'Add XP': 'XP 추가',
   'This buddy finished growing. Pick another one.': '이 친구는 다 자랐어요. 다른 친구를 골라요.',
   'Almost at the level cap': '최고 레벨에 거의 도달했어요',
   // egg shop (A-2.1)
