@@ -113,7 +113,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'text', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -730,9 +730,10 @@ function App() {
                 ))}
               </div>
 
-              {/* Add-XP style — the points→EXP tap under the XP bar. 'text' is the shipped
-                  default (bare icon+label, muted point-icon cost, no chip); the rest are real
-                  alternatives — see CharacterVariants.jsx's xpAdd for what each one is doing. */}
+              {/* Add-XP style — the points→EXP tap under the XP bar. 'cta' is the shipped
+                  default (full-width primary Button in the fixed footer, "Set as my buddy"
+                  demoted to its outline secondary above it); the rest are real alternatives
+                  — see CharacterVariants.jsx's xpAdd for what each one is doing. */}
               <div className="tw-label">Add-XP style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
                 {[['text', 'Text'], ['chip', 'Chip'], ['row', 'Row'], ['sticker', 'Sticker'], ['badge', 'Badge'], ['stack', 'Stack'], ['outline', 'Outline'], ['cta', 'CTA']].map(([v, l]) => (

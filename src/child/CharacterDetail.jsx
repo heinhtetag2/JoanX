@@ -83,8 +83,9 @@ function CharacterDetail({ ctx }) {
   // never wired into a screen. Lives here, on the buddy's own page, rather than the Points
   // shop — you're already looking at the one buddy you'd spend on. One fixed-size tap
   // (EXCHANGE.stepXp at a time), matching CharacterVariants.jsx's own xpAdd. Tweaks: Add-XP
-  // style — 'text' is the shipped default; 'chip'/'row'/'sticker' are real alternatives.
-  const xpAddStyle = ctx.tweaks?.xpAddStyle || 'text';
+  // style — 'cta' is the shipped default (see xpAdd's own 'cta' branch below); 'text'/
+  // 'chip'/'row'/'sticker' etc. are real alternatives.
+  const xpAddStyle = ctx.tweaks?.xpAddStyle || 'cta';
   const xpAdd = () => {
     if (!(orig.owned && !orig.maxed)) return null;
     const verdict = canConvertPoints(EXCHANGE.stepXp, orig, PLAYER);
