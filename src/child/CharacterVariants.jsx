@@ -587,10 +587,11 @@ function CharVariant({ ctx, variant }) {
     // repeatable, stay-on-the-page action a child taps over and over while grinding a
     // buddy up, so it earns the solid weight; "Set as my buddy" (a one-off, page-ending
     // choice) drops to the outline secondary beneath it — see the fixed-footer stack below.
-    // Solid fill borrows the buddy's own color (same rule "Set as my buddy" used to use),
-    // not gold — gold stays reserved for the small points-cost readout only.
+    // Solid fill is the app's own brand green (not the buddy's own color, which can land on
+    // something like orange and clash) — not gold either, gold stays reserved for the small
+    // points-cost readout only.
     return (
-      <Button variant="primary" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap} style={{ background: color, boxShadow: 'none' }}>
+      <Button variant="primary" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap} style={{ background: THEME.brand, boxShadow: 'none' }}>
         {L('Add')} {EXCHANGE.stepXp} XP
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><SafePointIcon size={14} />{cost}</span>
       </Button>
