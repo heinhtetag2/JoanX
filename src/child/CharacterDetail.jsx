@@ -342,7 +342,7 @@ function CharacterDetail({ ctx }) {
           page-ending choice) demoted to the outline secondary above it, matching the
           app's own solid-primary-at-the-bottom stacking order (ParentDetail's billing pair). */}
       <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <Button variant={xpAddStyle === 'cta' ? 'outline' : 'primary'} size="lg" fullWidth style={xpAddStyle === 'cta' ? { borderColor: THEME.fg1 } : { background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
+        <Button variant={xpAddStyle === 'cta' ? 'outline' : 'primary'} size="lg" fullWidth style={xpAddStyle === 'cta' ? { borderColor: THEME.fg2 } : { background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
         {xpAddStyle === 'cta' && xpAdd()}
       </div>
 
