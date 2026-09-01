@@ -184,17 +184,15 @@ function CharacterDetail({ ctx }) {
         </button>
       );
     }
-    // 'cta' — the whole control becomes one solid full-width button, the same weight as
-    // this screen's own "Set as my buddy" CTA at the bottom, instead of a small inline
-    // control tucked under the bar. Gold fill (gold-reserved-for-points-xp), flat — no
-    // shadow — with the cost folded in past a hairline divider rather than floating beside it.
+    // 'cta' — not a bespoke shape at all: the app's own Button primitive (gold variant —
+    // gold-reserved-for-points-xp), pinned in the fixed footer directly above "Set as my
+    // buddy" (see the fixed-footer stack below) instead of tucked under the bar — the
+    // buddy's two big actions read as one stacked group at the same size and weight.
     return (
-      <button onClick={onTap} disabled={!on} className={on ? 'jx-press' : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', maxWidth: 280, margin: '12px auto 0', border: 'none', borderRadius: 16, background: on ? THEME.gold : THEME.surface2, padding: '13px 18px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit', opacity: on ? 1 : .65 }}>
-        <Icon name="zap" size={15} color={on ? '#fff' : THEME.fg3} fill={on ? '#fff' : 'none'} stroke={2.4} />
-        <span style={{ fontSize: 14, fontWeight: 800, color: on ? '#fff' : THEME.fg3 }}>{L('Upgrade XP')}</span>
-        <span style={{ width: 1, height: 16, background: on ? 'rgba(255,255,255,.4)' : THEME.border }} />
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 800, color: on ? '#fff' : THEME.fg3 }}><SafePointIcon size={14} />{cost}</span>
-      </button>
+      <Button variant="gold" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap} style={{ boxShadow: 'none' }}>
+        {L('Upgrade XP')}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 800 }}><SafePointIcon size={14} />{cost}</span>
+      </Button>
     );
   };
 
@@ -221,7 +219,8 @@ function CharacterDetail({ ctx }) {
         <Icon name="star" size={12} color={THEME.fg3} stroke={2.2} />
         <span style={{ fontSize: 12, color: THEME.fg3, fontWeight: 600 }}>{(orig.xpMax - orig.xp).toLocaleString()} {L('XP to next level')}</span>
       </div>
-      <div style={{ textAlign: 'center', marginTop: 8 }}>{xpAdd()}</div>
+      {/* 'cta' rides in the fixed footer above "Set as my buddy" instead — see below */}
+      {xpAddStyle !== 'cta' && <div style={{ textAlign: 'center', marginTop: 8 }}>{xpAdd()}</div>}
     </div>
   );
 
@@ -252,7 +251,7 @@ function CharacterDetail({ ctx }) {
                 </div>
                 <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
               </div>
-              <div style={{ textAlign: 'center' }}>{xpAdd()}</div>
+              {xpAddStyle !== 'cta' && <div style={{ textAlign: 'center' }}>{xpAdd()}</div>}
             </React.Fragment>
           )}
         </div>
@@ -336,8 +335,10 @@ function CharacterDetail({ ctx }) {
 
       {/* pinned to the screen frame, not the scroll container — same fixed-bottom-CTA
           idiom as ParentDetail's danger actions, so the buddy action is always in reach
-          regardless of scroll position. */}
-      <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40 }}>
+          regardless of scroll position. Add-XP's 'cta' style stacks directly above
+          "Set as my buddy" here instead of living up under the bar. */}
+      <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {xpAddStyle === 'cta' && xpAdd()}
         <Button variant="primary" size="lg" fullWidth style={{ background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
 
