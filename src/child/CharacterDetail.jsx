@@ -184,14 +184,17 @@ function CharacterDetail({ ctx }) {
         </button>
       );
     }
-    // 'cta' — not a bespoke shape at all: the app's own Button primitive (gold variant —
-    // gold-reserved-for-points-xp), pinned in the fixed footer directly above "Set as my
-    // buddy" (see the fixed-footer stack below) instead of tucked under the bar — the
-    // buddy's two big actions read as one stacked group at the same size and weight.
+    // 'cta' — the app's own Button primitive, pinned in the fixed footer directly above
+    // "Set as my buddy" (see the fixed-footer stack below) instead of tucked under the bar.
+    // 'outline', not solid gold: this app never stacks two solid-fill buttons together
+    // (ParentDetail's billing pair, ParentSchedule's save/delete pair — always one solid +
+    // one outline/tinted). Gold stays an ACCENT here — icon and text ink — never the fill,
+    // matching gold-reserved-for-points-xp; the solid button in this pair is "Set as my buddy".
     return (
-      <Button variant="gold" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap} style={{ boxShadow: 'none' }}>
-        {L('Upgrade XP')}
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 800 }}><SafePointIcon size={14} />{cost}</span>
+      <Button variant="outline" size="lg" fullWidth disabled={!on} onClick={onTap} style={{ borderColor: on ? THEME.gold : THEME.border, background: '#fff' }}>
+        <Icon name="zap" size={18} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+        <span style={{ color: ink, fontWeight: 800 }}>{L('Upgrade XP')}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: ink, fontWeight: 800 }}><SafePointIcon size={14} />{cost}</span>
       </Button>
     );
   };
