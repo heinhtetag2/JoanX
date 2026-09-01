@@ -579,15 +579,15 @@ function CharVariant({ ctx, variant }) {
         </button>
       );
     }
-    // 'cta' — the app's own 'secondary' Button variant (soft ocean tint, no border, no
-    // bespoke color of its own), pinned in the fixed footer directly above "Set as my
-    // buddy" — the exact stacked pair ParentDetail's billing section uses (secondary on
-    // top, solid primary below). No gold at all here: this button never competes with, or
-    // borrows the color of, the real CTA under it. Copy matches every other Add-XP style's
-    // own wording instead of inventing new text, so it inherits that string's real Korean
+    // 'cta' — the app's own plain 'outline' Button variant, completely uncolored (no gold,
+    // no ocean tint — every other candidate here was a semantic app color competing with
+    // the real CTA under it). Neutral border + ink lets "Set as my buddy" stay the only
+    // colored action in the stacked pair, which is the actual point of pairing a solid
+    // primary with a quieter secondary. Copy matches every other Add-XP style's own
+    // wording instead of inventing new text, so it inherits that string's real Korean
     // translation (XP 추가) rather than leaking English under a Korean UI.
     return (
-      <Button variant="secondary" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap}>
+      <Button variant="outline" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap}>
         {L('Add')} {EXCHANGE.stepXp} XP
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><SafePointIcon size={14} />{cost}</span>
       </Button>
