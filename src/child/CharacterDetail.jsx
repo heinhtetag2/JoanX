@@ -184,15 +184,14 @@ function CharacterDetail({ ctx }) {
         </button>
       );
     }
-    // 'cta' — the app's own plain 'outline' Button variant, completely uncolored (no gold,
-    // no ocean tint — every other candidate here was a semantic app color competing with
-    // the real CTA under it). Neutral border + ink lets "Set as my buddy" stay the only
-    // colored action in the stacked pair, which is the actual point of pairing a solid
-    // primary with a quieter secondary. Copy matches every other Add-XP style's own
-    // wording instead of inventing new text, so it inherits that string's real Korean
-    // translation (XP 추가) rather than leaking English under a Korean UI.
+    // 'cta' — promoted to the PRIMARY action of the stacked footer pair: this is the
+    // repeatable, stay-on-the-page action a child taps over and over while grinding a
+    // buddy up, so it earns the solid weight; "Set as my buddy" (a one-off, page-ending
+    // choice) drops to the outline secondary beneath it — see the fixed-footer stack below.
+    // Solid fill borrows the buddy's own color (same rule "Set as my buddy" used to use),
+    // not gold — gold stays reserved for the small points-cost readout only.
     return (
-      <Button variant="outline" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap}>
+      <Button variant="primary" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap} style={{ background: color, boxShadow: 'none' }}>
         {L('Add')} {EXCHANGE.stepXp} XP
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><SafePointIcon size={14} />{cost}</span>
       </Button>
@@ -338,11 +337,13 @@ function CharacterDetail({ ctx }) {
 
       {/* pinned to the screen frame, not the scroll container — same fixed-bottom-CTA
           idiom as ParentDetail's danger actions, so the buddy action is always in reach
-          regardless of scroll position. Add-XP's 'cta' style stacks directly above
-          "Set as my buddy" here instead of living up under the bar. */}
+          regardless of scroll position. Add-XP's 'cta' style takes over as the PRIMARY
+          (solid) action here — the repeatable one — with "Set as my buddy" (a one-off,
+          page-ending choice) demoted to the outline secondary above it, matching the
+          app's own solid-primary-at-the-bottom stacking order (ParentDetail's billing pair). */}
       <div style={{ position: 'fixed', left: 16, right: 16, bottom: 24, zIndex: 40, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <Button variant={xpAddStyle === 'cta' ? 'outline' : 'primary'} size="lg" fullWidth style={xpAddStyle === 'cta' ? undefined : { background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
         {xpAddStyle === 'cta' && xpAdd()}
-        <Button variant="primary" size="lg" fullWidth style={{ background: (CHARACTERS.find(x => x.id === PLAYER.activeCharId) || orig).color, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
       </div>
 
       {/* outfit purchase feedback */}
