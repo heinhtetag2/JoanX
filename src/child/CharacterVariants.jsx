@@ -360,7 +360,7 @@ function CharVariant({ ctx, variant }) {
   // block) decides whether this stays the primary action or steps down to the outline
   // secondary once Add-XP's 'cta' style takes over as primary — see the fixed footer below.
   const setBtn = () => (
-    <Button key="set" variant={xpAddStyle === 'cta' ? 'outline' : 'primary'} size="lg" fullWidth style={xpAddStyle === 'cta' ? { marginTop: 2, borderColor: THEME.fg2 } : { marginTop: 2, background: appAccent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
+    <Button key="set" variant={xpAddStyle === 'cta' ? 'outline' : 'primary'} size="lg" fullWidth style={xpAddStyle === 'cta' ? { marginTop: 2, borderColor: THEME.fg3 } : { marginTop: 2, background: appAccent, boxShadow: 'none' }} onClick={() => { ctx.setBuddy(orig.id, { color, stage, level, species: orig.species, name: orig.name }); ctx.nav('home'); }}>{L('Set as my buddy')}</Button>
   );
   // wave gets its own panel — rounded pill tabs (accent-filled active),
   // semicircle gauges for stats, and 2×2 item cards.
