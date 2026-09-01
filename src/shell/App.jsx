@@ -735,7 +735,7 @@ function App() {
                   alternatives — see CharacterVariants.jsx's xpAdd for what each one is doing. */}
               <div className="tw-label">Add-XP style</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
-                {[['text', 'Text'], ['chip', 'Chip'], ['row', 'Row'], ['sticker', 'Sticker'], ['badge', 'Badge'], ['stack', 'Stack'], ['outline', 'Outline']].map(([v, l]) => (
+                {[['text', 'Text'], ['chip', 'Chip'], ['row', 'Row'], ['sticker', 'Sticker'], ['badge', 'Badge'], ['stack', 'Stack'], ['outline', 'Outline'], ['cta', 'CTA']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.xpAddStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, xpAddStyle: v }))}>{l}</button>
                 ))}
               </div>

@@ -570,11 +570,25 @@ function CharVariant({ ctx, variant }) {
     }
     // 'outline' — a lightweight bordered button, no fill — lighter weight than 'chip'/
     // 'row', matching the outlined idiom the stepper/decorate-tab chips use elsewhere.
+    if (xpAddStyle === 'outline') {
+      return (
+        <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 8, border: `1.5px solid ${on ? THEME.gold : THEME.border}`, borderRadius: 999, background: '#fff', padding: '6px 13px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <Icon name="zap" size={13} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>{L('Add')} {EXCHANGE.stepXp} XP</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: on ? shade(THEME.gold, -10) : THEME.fg3 }}><SafePointIcon size={12} />{cost}</span>
+        </button>
+      );
+    }
+    // 'cta' — the whole control becomes one solid full-width button, the same weight as
+    // this screen's own bottom "Set as my buddy" CTA, instead of a small inline control
+    // tucked under the bar. Gold fill (gold-reserved-for-points-xp), flat — no shadow —
+    // with the cost folded in past a hairline divider rather than floating beside it.
     return (
-      <button onClick={onTap} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 8, border: `1.5px solid ${on ? THEME.gold : THEME.border}`, borderRadius: 999, background: '#fff', padding: '6px 13px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit' }}>
-        <Icon name="zap" size={13} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
-        <span style={{ fontSize: 12.5, fontWeight: 800, color: ink }}>{L('Add')} {EXCHANGE.stepXp} XP</span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: on ? shade(THEME.gold, -10) : THEME.fg3 }}><SafePointIcon size={12} />{cost}</span>
+      <button onClick={onTap} disabled={!on} className={on ? 'jx-press' : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', maxWidth: 280, margin: '12px auto 0', border: 'none', borderRadius: 16, background: on ? THEME.gold : THEME.surface2, padding: '13px 18px', cursor: on ? 'pointer' : 'default', fontFamily: 'inherit', opacity: on ? 1 : .65 }}>
+        <Icon name="zap" size={15} color={on ? '#fff' : THEME.fg3} fill={on ? '#fff' : 'none'} stroke={2.4} />
+        <span style={{ fontSize: 14, fontWeight: 800, color: on ? '#fff' : THEME.fg3 }}>{L('Upgrade XP')}</span>
+        <span style={{ width: 1, height: 16, background: on ? 'rgba(255,255,255,.4)' : THEME.border }} />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 800, color: on ? '#fff' : THEME.fg3 }}><SafePointIcon size={14} />{cost}</span>
       </button>
     );
   };
