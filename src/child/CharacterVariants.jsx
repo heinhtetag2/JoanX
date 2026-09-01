@@ -579,17 +579,17 @@ function CharVariant({ ctx, variant }) {
         </button>
       );
     }
-    // 'cta' — the app's own Button primitive, pinned in the fixed footer directly above
-    // "Set as my buddy" (see the fixed-footer stack below) instead of tucked under the bar.
-    // 'outline', not solid gold: this app never stacks two solid-fill buttons together
-    // (ParentDetail's billing pair, ParentSchedule's save/delete pair — always one solid +
-    // one outline/tinted). Gold stays an ACCENT here — icon and text ink — never the fill,
-    // matching gold-reserved-for-points-xp; the solid button in this pair is "Set as my buddy".
+    // 'cta' — the app's own 'secondary' Button variant (soft ocean tint, no border, no
+    // bespoke color of its own), pinned in the fixed footer directly above "Set as my
+    // buddy" — the exact stacked pair ParentDetail's billing section uses (secondary on
+    // top, solid primary below). No gold at all here: this button never competes with, or
+    // borrows the color of, the real CTA under it. Copy matches every other Add-XP style's
+    // own wording instead of inventing new text, so it inherits that string's real Korean
+    // translation (XP 추가) rather than leaking English under a Korean UI.
     return (
-      <Button variant="outline" size="lg" fullWidth disabled={!on} onClick={onTap} style={{ borderColor: on ? THEME.gold : THEME.border, background: '#fff' }}>
-        <Icon name="zap" size={18} color={ink} stroke={2.4} fill={on ? ink : 'none'} />
-        <span style={{ color: ink, fontWeight: 800 }}>{L('Upgrade XP')}</span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: ink, fontWeight: 800 }}><SafePointIcon size={14} />{cost}</span>
+      <Button variant="secondary" size="lg" fullWidth icon="zap" disabled={!on} onClick={onTap}>
+        {L('Add')} {EXCHANGE.stepXp} XP
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><SafePointIcon size={14} />{cost}</span>
       </Button>
     );
   };
