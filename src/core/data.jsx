@@ -1383,9 +1383,10 @@ const hatchFromInventory = (egg, player = PLAYER, rnd = Math.random) => {
   const dup = buddy.owned;
   let xp = 0;
   if (dup) {
-    // already collected → the duplicate converts to XP for the active buddy (F-15)
+    // already collected → the duplicate converts to XP for THAT buddy, not whichever
+    // one is active — "got a dupe of Hammy" should mean Hammy levels up (F-15)
     xp = rarityOf(buddy.rarity).dupXp;
-    gainXp(CHARACTERS.find(c => c.id === player.activeCharId), xp, player);
+    gainXp(buddy, xp, player);
   } else {
     // joins the collection — and for an Epic this is the moment it stops being hidden
     // from the dex at all (F-15.2). Level 1, and applyXpCurve derives xpMax AND the stage.
