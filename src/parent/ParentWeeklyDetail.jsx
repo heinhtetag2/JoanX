@@ -4,13 +4,13 @@
 // chevron with { childId }. Reads the same per-child series the card charts
 // (CHILD_REPORTS[id].risk + .reactions), so the two can never disagree — here
 // it's expanded into the full bars-and-line week (reusing the card's own
-// StdBarChart), a per-day table, and a grounded insight (safest / riskiest day),
-// all computed from that data. Same header, background, cards and eyebrow
-// labels as the response detail, so it reads as one system, not a bolt-on.
+// StdBarChart) and a per-day table, computed from that data. Same header,
+// background, cards and eyebrow labels as the response detail, so it reads
+// as one system, not a bolt-on.
 
 import React from 'react';
 import { CHILDREN, CHILD_REPORTS, PARENT_METRICS, REACTIONS_7D, RISK_TREND } from '../core/data.jsx';
-import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
+import { THEME, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 import { StdBarChart } from './ParentReports.jsx';
@@ -45,7 +45,6 @@ function ParentWeeklyDetail({ ctx }) {
   const riskReduction = base3 > 0 ? Math.round(((base3 - recent3) / base3) * 100) : 0;
   const improving = riskReduction >= 0;
 
-  const bestDayIdx = stopsByDay.indexOf(Math.max(...stopsByDay));
   const riskiestIdx = risk.indexOf(Math.max(...risk));
 
   // chart series — mirrors the card exactly (light-blue risky bars + blue safe-stop line)
@@ -119,25 +118,6 @@ function ParentWeeklyDetail({ ctx }) {
               <span style={{ width: 74, textAlign: 'right', fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{r.stops}</span>
             </div>
           ))}
-        </div>
-
-        {/* grounded insight — pulled straight from the week, not generic advice */}
-        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{ko ? '이번 주 눈여겨볼 점' : 'Worth noticing'}</div>
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', gap: 12, padding: '13px 14px', alignItems: 'center' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="shield-check" size={17} color={THEME.success} stroke={2.3} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{ko ? `가장 안전했던 날 · ${dayFull(bestDayIdx)}` : `Safest day · ${dayFull(bestDayIdx)}`}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{ko ? `안전하게 ${stopsByDay[bestDayIdx]}번 멈췄어요.` : `Stopped safely ${stopsByDay[bestDayIdx]} times.`}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 12, padding: '13px 14px', alignItems: 'center', borderTop: `1px solid ${THEME.border}` }}>
-            <div style={{ width: 34, height: 34, borderRadius: 11, background: '#fbf1e6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="alert-triangle" size={17} color={THEME.warning} stroke={2.3} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{ko ? `주의가 많던 날 · ${dayFull(riskiestIdx)}` : `Most alerts · ${dayFull(riskiestIdx)}`}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{ko ? `위험한 순간이 ${risk[riskiestIdx]}번 있었어요. 그날 이야기를 나눠 보세요.` : `${risk[riskiestIdx]} risky moments — a good day to check in about.`}</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

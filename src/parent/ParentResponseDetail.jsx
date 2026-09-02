@@ -3,12 +3,12 @@
 // Detail view for the Reports "How they respond to warnings" card. Opens from
 // that card's chevron with { childId }. Reads the same per-child reactions
 // (CHILD_REPORTS[id].reactions) the card charts, so the two never disagree —
-// here it's expanded into a tappable weekly chart, a per-type breakdown, and a
-// grounded insight (safest day / a day to watch), all computed from that data.
+// here it's expanded into a tappable weekly chart and a per-type breakdown,
+// both computed from that data.
 
 import React from 'react';
 import { CHILDREN, CHILD_REPORTS, REACTIONS_7D } from '../core/data.jsx';
-import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
+import { THEME, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -39,12 +39,6 @@ function ParentResponseDetail({ ctx }) {
   const dayTot = d => d.immediate + d.delayed + d.ignored;
   const maxTot = Math.max(1, ...reactions.map(dayTot));
   const AREA = 150;
-
-  // grounded insight — safest day (highest immediate share) and, if any, the day to watch
-  const shareOf = d => d.immediate / (dayTot(d) || 1);
-  let safest = 0;
-  reactions.forEach((d, i) => { if (shareOf(d) > shareOf(reactions[safest])) safest = i; });
-  const watch = reactions.map((d, i) => ({ i, n: d.ignored })).filter(x => x.n > 0).sort((a, b) => b.n - a.n)[0];
 
   const TYPES = [
     { key: 'immediate', label: L('Immediate'), color: RESP.immediate, count: tot.immediate,
@@ -143,27 +137,6 @@ function ParentResponseDetail({ ctx }) {
               </div>
             );
           })}
-        </div>
-
-        {/* grounded insight — pulled straight from the week, not generic advice */}
-        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{ko ? '이번 주 눈여겨볼 점' : 'Worth noticing'}</div>
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', gap: 12, padding: '13px 14px', alignItems: 'center' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 11, background: THEME.successLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="shield-check" size={17} color={THEME.success} stroke={2.3} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{ko ? `가장 안전했던 날 · ${dayFull(safest)}` : `Safest day · ${dayFull(safest)}`}</div>
-              <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{ko ? `경고의 ${Math.round(shareOf(reactions[safest]) * 100)}%에 바로 멈췄어요.` : `Stopped right away for ${Math.round(shareOf(reactions[safest]) * 100)}% of warnings.`}</div>
-            </div>
-          </div>
-          {watch && (
-            <div style={{ display: 'flex', gap: 12, padding: '13px 14px', alignItems: 'center', borderTop: `1px solid ${THEME.border}` }}>
-              <div style={{ width: 34, height: 34, borderRadius: 11, background: '#fbecec', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="alert-triangle" size={17} color={RESP.ignored} stroke={2.3} /></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{ko ? `살펴볼 날 · ${dayFull(watch.i)}` : `Day to watch · ${dayFull(watch.i)}`}</div>
-                <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{ko ? `경고를 ${watch.n}번 무시했어요. 그날 이야기를 나눠 보세요.` : `Ignored ${watch.n} warning${watch.n > 1 ? 's' : ''} — a good day to check in about.`}</div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
