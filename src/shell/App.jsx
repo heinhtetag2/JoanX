@@ -113,7 +113,7 @@ function App() {
   const initialHome = __q.get('home') || 'simple-focus';
   // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
   // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', narrator: 'kingCubix', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -271,7 +271,7 @@ function App() {
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
     demo, setDemo,
-    tweaks: { overlay: tw.overlay, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle, xpAddStyle: tw.xpAddStyle, xpBarStyle: tw.xpBarStyle, statStyle: tw.statStyle },
+    tweaks: { overlay: tw.overlay, narrator: tw.narrator, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle, xpAddStyle: tw.xpAddStyle, xpBarStyle: tw.xpBarStyle, statStyle: tw.statStyle },
     openOverlay: () => setOverlay(true),
     closeOverlay: () => { setOverlay(false); setHold(false); },
     openAppIntro: () => setAppIntro(true),
@@ -612,6 +612,14 @@ function App() {
               </div>
               {/* Message style selector removed — 'sheet' is the chosen behaviour for the
                   repeating-message step; it stays defaulted in tw so that stage keeps getting it. */}
+
+              <div className="tw-label">Warning narrator</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['kingCubix', 'King Cubix'], ['buddy', 'Buddy']].map(([v, l]) => (
+                  <button key={v} className={'tw-chip' + (tw.narrator === v ? ' on' : '')}
+                    onClick={() => setTw(s => ({ ...s, narrator: v }))}>{l}</button>
+                ))}
+              </div>
 
               <div className="tw-label">App states</div>
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>

@@ -828,7 +828,7 @@ function ParentReports({ ctx, kpiStyle = 'cards', homeExtras = 'off', highlightS
             <button onClick={() => ctx.nav('p_weekactivity', { childId: child.id })} aria-label={L('Weekly activity')} style={{ width: 28, height: 28, borderRadius: 999, background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', padding: 0, cursor: 'pointer' }}><Icon name="chevron-right" size={16} color={THEME.fg2} stroke={2.4} /></button>
           </div>
           <StdBarChart data={actData} series={[{ key: 'risk', color: '#bdd2ee' }]} line={{ key: 'stops', color: SERIES.trend }} yMax={Math.ceil(riskMax / 2) * 2} yStep={2} barW={14}
-            tooltip={(d, i) => ({ title: dayFull(i), rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
+            tooltip={(d, i) => ({ title: ko ? `${dayFull(i)}만` : `${dayFull(i)} only`, rows: [{ label: L('Risky moments'), value: d.risk, color: '#bdd2ee' }, { label: L('Safe stops'), value: d.stops, color: SERIES.trend }] })} />
         </div>
 
         {/* insight — tone adapts to whether this child is trending well */}

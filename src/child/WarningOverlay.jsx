@@ -172,6 +172,46 @@ const mascotDegrade = (tier) => MASCOT_TIER_STYLE[tier.key] || {};
 // of the mascot (signal / strip).
 const TIER_ICON = { gentle: 'eye', firm: 'triangle-alert', urgent: 'hand' };
 
+// Tweaks → Warning narrator: King Cubix stands in for the buddy as the voice of the
+// escalation, and unlike MascotComic it actually has a pose per tone — Stop at the first
+// on-screen warning, Stern Glare once ignored, Sobbing at the last, "I'm really struggling"
+// tier — so it needs no CSS degrade filter of its own (mascotDegrade stays buddy-only).
+const KC_POSE_BY_TIER = { gentle: 'Stop', firm: 'Stern Glare', urgent: 'Sobbing' };
+const KC_GRACE_POSE = 'Alert';
+const kcSrc = (pose) => `/mascot-kingcubic/${encodeURIComponent(`King Cubix – ${pose}.png`)}`;
+
+function KingCubix({ pose, size = 96, style }) {
+  return (
+    <img src={kcSrc(pose)} alt="" draggable="false"
+      style={{ width: size, height: size, objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none', ...style }} />
+  );
+}
+
+function KingCubixChip({ pose, size = 48, bg }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: 16, background: bg || THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+      <KingCubix pose={pose} size={size * 0.92} />
+    </div>
+  );
+}
+
+// Swaps buddy ⇄ King Cubix at every spot the overlay speaks through a character, so the
+// escalation logic (which tier, which phase) is written once instead of at each call site.
+function Narrator({ narrator, c, tier, size, style }) {
+  if (narrator === 'kingCubix') {
+    const pose = tier ? (KC_POSE_BY_TIER[tier.key] || 'Stop') : KC_GRACE_POSE;
+    return <KingCubix pose={pose} size={size} />;
+  }
+  return <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={size} style={style} />;
+}
+
+function NarratorChip({ narrator, c, tier, size, bg }) {
+  if (narrator === 'kingCubix') {
+    return <KingCubixChip pose={KC_POSE_BY_TIER[tier?.key] || 'Stop'} size={size} bg={bg} />;
+  }
+  return <MascotChip species={c.species} stage={c.stage} color={c.color} size={size} bg={bg} />;
+}
+
 // Four message layouts, all built on the design-system tokens (DESIGN-SYSTEM.md §4/§5):
 // card radius 20 · padding 16 · screen gutter 18 · shadowCard (hairline ring + whisper,
 // "not a big floaty blur") · child-app CTAs render flat. Flip between them in Tweaks →
@@ -198,7 +238,7 @@ const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5
 // voice, not an in-game action, so the ocean primary would read as a stranger here.
 const ctaStyle = () => ({ ...FLAT, background: THEME.brand });
 
-function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond }) {
+function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, narrator }) {
   const pool = interventionMessages(round);
   const [i, setI] = React.useState((round - 1) % pool.length);
   const [show, setShow] = React.useState(true);   // the LINE's opacity — the card behind it never leaves
@@ -261,7 +301,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
         <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 14px' }} />
         {round > 1 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} style={mascotDegrade(tier)} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Narrator narrator={narrator} c={c} tier={tier} size={104} style={mascotDegrade(tier)} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}>
             {line(19, 13, 4)}
           </div>
@@ -281,7 +321,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ flexShrink: 0, width: 84, height: 84, borderRadius: 22, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={74} style={mascotDegrade(tier)} /></div>
+            <div className="jx-float"><Narrator narrator={narrator} c={c} tier={tier} size={74} style={mascotDegrade(tier)} /></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {line(22, 12.5, 5)}
@@ -296,7 +336,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={84} style={mascotDegrade(tier)} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><Narrator narrator={narrator} c={c} tier={tier} size={84} style={mascotDegrade(tier)} /></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '16px 16px 16px 4px', padding: '12px 14px', marginBottom: 6 }}>
             {line(19, 12.5, 3)}
           </div>
@@ -310,7 +350,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
     hero: (
       <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
         <div className="jx-float" style={{ marginTop: -42, marginBottom: 2 }}>
-          <Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} style={mascotDegrade(tier)} />
+          <Narrator narrator={narrator} c={c} tier={tier} size={92} style={mascotDegrade(tier)} />
         </div>
         {round > 1 && <div style={{ marginBottom: 8 }}><Badge_ /></div>}
         {line(21, 13, 4)}
@@ -324,7 +364,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <MascotChip species={c.species} stage={c.stage} color={c.color} size={56} bg={tone.chip} />
+          <NarratorChip narrator={narrator} c={c} tier={tier} size={56} bg={tone.chip} />
           <div style={{ flex: 1, minWidth: 0 }}>
             {line(18, 12.5, 2)}
           </div>
@@ -371,6 +411,10 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond })
 
 function WarningOverlay({ ctx }) {
   const variant = ctx.tweaks.overlay || 'spotlight';
+  // Tweaks → Warning narrator: 'kingCubix' swaps every buddy render in this overlay for
+  // King Cubix's own tone-matched pose (see Narrator/NarratorChip above); 'buddy' is the
+  // untouched original behaviour.
+  const narrator = ctx.tweaks.narrator === 'kingCubix' ? 'kingCubix' : 'buddy';
   // Tweaks → Hold. A prototype-only freeze: the escalation is time-driven, so every stage is
   // gone in a few seconds and none of them can be looked at properly. Hold stops the clock on
   // whatever is on screen — phase timers, the line rotation, the countdown bars, the reward's
@@ -522,7 +566,7 @@ function WarningOverlay({ ctx }) {
         <div className="jx-overlay-in" style={{ position: 'absolute', top: 92, left: 16, right: 16 }}>
           <div style={{ background: '#fff', borderRadius: 20, padding: '13px 15px', boxShadow: THEME.shadowXl }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div className="jx-char-in" style={{ flexShrink: 0 }}><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={46} /></div></div>
+              <div className="jx-char-in" style={{ flexShrink: 0 }}><div className="jx-float"><Narrator narrator={narrator} c={c} size={46} /></div></div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: THEME.fg1 }}>{L('Walking — heads up in a sec')}</div>
                 <div style={{ fontSize: 12, color: THEME.fg2, marginTop: 1 }}>{L('Eyes up now and no warning is needed.')}</div>
@@ -572,7 +616,7 @@ function WarningOverlay({ ctx }) {
 
           {/* ── STAGE 3: repeating character message — ignoring it for IGNORE_MS logs
               an "ignored" event and starts the next, firmer round ── */}
-          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} hold={hold} onRespond={respond} />}
+          {phase === 'message' && <CharMessageToast c={c} round={round} tier={tier} layout={ctx.tweaks.msgLayout} hold={hold} onRespond={respond} narrator={narrator} />}
 
           {/* ── STAGE 2: the on-screen warning (chosen variant) ── */}
           {phase === 'warn' && (<React.Fragment>
@@ -585,7 +629,7 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '18px 18px 20px', boxShadow: THEME.shadowXl }}>
               {round > 1 && <RoundBadge round={round} tier={tier} />}
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                <div className="jx-char-in"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={104} style={mascotDegrade(tier)} /></div>
+                <div className="jx-char-in"><Narrator narrator={narrator} c={c} tier={tier} size={104} style={mascotDegrade(tier)} /></div>
                 <div style={{ flex: 1, background: THEME.surface2, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}><Msg /></div>
               </div>
               <div style={{ marginTop: 14 }}>
@@ -599,7 +643,7 @@ function WarningOverlay({ ctx }) {
           {variant === 'spotlight' && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center' }}>
               {/* spec #6 — the character scales in first, then the copy and CTA cascade in behind it */}
-              <div className="jx-char-in"><div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={172} style={mascotDegrade(tier)} /></div></div>
+              <div className="jx-char-in"><div className="jx-float"><Narrator narrator={narrator} c={c} tier={tier} size={172} style={mascotDegrade(tier)} /></div></div>
               {round > 1 && <div className="jx-content-in" style={{ marginTop: 10, animationDelay: '.14s' }}><RoundBadge round={round} tier={tier} inline /></div>}
               <div className="game-font jx-content-in" style={{ fontSize: 24, fontWeight: 500, margin: '10px 0 22px', lineHeight: 1.35, animationDelay: '.18s' }}>{L(tier.title)}</div>
               {/* One thing on this screen, and it is the safe action: looking up is the child's
@@ -615,7 +659,7 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', top: 94, left: 14, right: 14 }}>
               <div style={{ background: '#fff', borderRadius: 20, padding: '12px 14px', boxShadow: THEME.shadowXl }}>
                 <div onClick={respond} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <div className="jx-char-in" style={{ flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={56} style={mascotDegrade(tier)} /></div>
+                  <div className="jx-char-in" style={{ flexShrink: 0 }}><Narrator narrator={narrator} c={c} tier={tier} size={56} style={mascotDegrade(tier)} /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 800 }}>{L(tier.title)}</div>
                   </div>
@@ -638,7 +682,7 @@ function WarningOverlay({ ctx }) {
             <div className="jx-overlay-in" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom) + 18px)', background: '#fff', borderRadius: 28, padding: '0 20px 20px', boxShadow: THEME.shadowXl, textAlign: 'center' }}>
               <div className="jx-char-in" style={{ marginTop: -46, display: 'flex', justifyContent: 'center' }}>
                 <div style={{ width: 108, height: 108, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={92} style={mascotDegrade(tier)} /></div>
+                  <div className="jx-float"><Narrator narrator={narrator} c={c} tier={tier} size={92} style={mascotDegrade(tier)} /></div>
                 </div>
               </div>
               {round > 1 && <div style={{ marginTop: 12 }}><RoundBadge round={round} tier={tier} inline /></div>}
@@ -663,7 +707,7 @@ function WarningOverlay({ ctx }) {
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="jx-char-in" style={{ position: 'relative', width: 200, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: (TOAST_TONE[tier.key] || TOAST_TONE.gentle).chip }} />
-                  <div className="jx-float" style={{ position: 'relative' }}><Mascot species={c.species} stage={c.stage} color={c.color} mood="alert" size={168} style={mascotDegrade(tier)} /></div>
+                  <div className="jx-float" style={{ position: 'relative' }}><Narrator narrator={narrator} c={c} tier={tier} size={168} style={mascotDegrade(tier)} /></div>
                 </div>
               </div>
               <div className="jx-content-in" style={{ animationDelay: '.2s' }}>
@@ -690,7 +734,7 @@ function WarningOverlay({ ctx }) {
                 {round > 1 && <div className="jx-content-in" style={{ marginTop: 16 }}><RoundBadge round={round} tier={tier} inline /></div>}
                 <div className="jx-content-in game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: round > 1 ? 12 : 18, textAlign: 'center', color: '#fff', lineHeight: 1.3, maxWidth: 300 }}>{L(tier.title)}</div>
                 <div className="jx-content-in" style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.14)', borderRadius: 999, padding: '5px 14px 5px 5px' }}>
-                  <MascotChip species={c.species} stage={c.stage} color={c.color} size={30} bg="rgba(255,255,255,.92)" />
+                  <NarratorChip narrator={narrator} c={c} tier={tier} size={30} bg="rgba(255,255,255,.92)" />
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{c.name} · {L('still walking')}</span>
                 </div>
                 <div style={{ flex: 1 }} />

@@ -82,11 +82,16 @@ function ParentWeeklyDetail({ ctx }) {
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('This week')}</div>
         <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, padding: '16px 14px 14px', marginBottom: 18 }}>
           <StdBarChart data={actData} series={[{ key: 'risk', color: RISK_C }]} line={{ key: 'stops', color: STOP_C }} yMax={yMax} yStep={2} barW={16} height={180}
-            tooltip={(d, i) => ({ title: dayFull(i), rows: [{ label: L('Risky moments'), value: d.risk, color: RISK_C }, { label: L('Safe stops'), value: d.stops, color: STOP_C }] })} />
+            tooltip={(d, i) => ({ title: ko ? `${dayFull(i)}만` : `${dayFull(i)} only`, rows: [{ label: L('Risky moments'), value: d.risk, color: RISK_C }, { label: L('Safe stops'), value: d.stops, color: STOP_C }] })} />
         </div>
 
-        {/* headline totals — the week rolled up, one number each */}
-        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{ko ? '이번 주 합계' : "This week's totals"}</div>
+        {/* headline totals — the week rolled up, one number each. "all 7 days" pairs
+            with the chart readout's "<day> only" so the two scopes read as
+            deliberately different, not as numbers that disagree */}
+        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>
+          {ko ? '이번 주 합계' : "This week's totals"}
+          <span style={{ fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}>{ko ? ' · 7일 전체' : ' · all 7 days'}</span>
+        </div>
         <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
           {[
             { v: riskTotal, l: L('Risky moments'), c: RISK_C },
