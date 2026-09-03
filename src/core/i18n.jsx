@@ -907,6 +907,10 @@ const KO = {
   'Walking — heads up in a sec': '걷는 중 — 잠시 후 알려줄게요', 'Eyes up now and no warning is needed.': '지금 고개를 들면 경고가 필요 없어요.', "I've got it": '알겠어요',
   // staged escalation (F-08) + timed character message (F-09)
   'Buzz': '진동', 'Warning': '경고', 'Message': '메시지',
+  // King Cubix's 3-tier escalation ladder (F-08.3) — gentle → firm → urgent
+  'Hey, you should look ahead.': '어이, 앞은 보고 가야지?',
+  "You're looking again. Now really look ahead.": '또 보고 있네. 이제 진짜 앞을 봐.',
+  "Wait... I'm really struggling. Put the screen down.": '잠깐... 나 진짜 힘들어. 이제 화면 내려줘.',
   'Eyes up!': '고개 들어요!', 'Phone away for now': '폰은 잠깐 넣어둬요', 'Look ahead!': '앞을 봐요!',
   // rotating message pools per tone tier (F-09) — no line repeats back-to-back
   'Watch your step!': '발밑 조심해요!',

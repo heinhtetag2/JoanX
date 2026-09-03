@@ -1,7 +1,7 @@
 // JoanX — child app · WarningOverlay
 
 import React from 'react';
-import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, evaluateSafeStop, interventionMessages, interventionTier, logRiskEvent } from '../core/data.jsx';
+import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, evaluateSafeStop, interventionTier, logRiskEvent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, MascotChip } from '../core/characters.jsx';
@@ -20,7 +20,6 @@ const WARN_ACTIVE = ['grace', 'buzz', 'warn', 'message'];
 const BUZZ_HOLD_MS = INTERVENTION.buzzHoldSeconds * 1000;   // F-08.1 — risk must persist 2s past the buzz
 const MESSAGE_MS = INTERVENTION.messageSeconds * 1000;      // F-09 — how long one line stays up
 const MESSAGE_GAP_MS = INTERVENTION.messageGapSeconds * 1000; // F-09 — minimum gap between lines
-const SWAP_MS = Math.max(220, MESSAGE_GAP_MS - MESSAGE_MS);   // the beat it takes to swap one line for the next
 const RECHECK_MS = INTERVENTION.recheckSeconds * 1000; // F-08.2 — 5s quiet cooldown, then re-assess
 const SAFE_CONFIRM_MS = INTERVENTION.safeConfirmSeconds * 1000; // F-08.4 — safe must hold this long to remove the overlay
 const REWARD_MS = 2800;   // the "Nice save!" payoff, before the overlay hands the screen back
@@ -134,13 +133,18 @@ function RoundBadge({ round, tier, inline }) {
 // F-09 — timed character message: a bottom toast (~20% height). The toast itself HOLDS for as
 // long as the risk does — it is the surface carrying "Okay, got it", and a safety CTA that blinks
 // out from under a child's thumb is worse than no CTA. What is timed is the *copy*: each line
-// reads for MESSAGE_MS, then cross-fades to the next, with MESSAGE_GAP_MS between one line and
+// reads for MESSAGE_MS, then hands off to the next, with MESSAGE_GAP_MS between one line and
 // the next so the same line can never return inside the minimum interval.
 // (Fading the whole card on that cycle — mascot, copy and both buttons — is what made the step
-// unreadable: a line was gone before it could be finished, and the buttons went with it.)
-// Lines rotate through the tier's pool (never twice in a row) to blunt message fatigue,
-// and each round starts at a different point in the pool so a repeat offender doesn't hear
-// the same opening nudge every time.
+// unreadable: a line was gone before it could be finished, and the buttons went with it. The
+// card and its CTA now stay put; only the line + character block below re-enters.)
+// The step dramatizes the FULL gentle → firm → urgent ladder every time it plays, always
+// starting calm: all three canonical lines rotate through in fixed order (never the round's
+// single tier repeated), each swap replaying a fresh rise-in (jx-rise) for the copy and a
+// bouncy pop (jx-char-in) for King Cubix's pose, so it reads as a new beat arriving from the
+// bottom — not a text substitution. `round`/`tier` (the outer, ignore-driven escalation) still
+// govern the round badge count and what gets logged; this ladder is the performance inside
+// a single message step, independent of how many rounds have already been ignored.
 // Tone tier → the toast's visual weight. The message step is the *last* thing the child
 // sees before the round is logged, so it must not read lighter than the buzz and the
 // warning that preceded it. Gentle stays calm; urgent gets the danger rail, the firmer
@@ -239,38 +243,28 @@ const FLAT = { boxShadow: 'none' };   // child app renders filled CTAs flat (§5
 const ctaStyle = () => ({ ...FLAT, background: THEME.brand });
 
 function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, narrator }) {
-  const pool = interventionMessages(round);
-  const [i, setI] = React.useState((round - 1) % pool.length);
-  const [show, setShow] = React.useState(true);   // the LINE's opacity — the card behind it never leaves
+  // The ladder this step performs — always all three tiers, always starting at gentle,
+  // regardless of which round (outer `tier`) triggered this message step.
+  const pool = INTERVENTION.tiers;
+  const [i, setI] = React.useState(0);
   React.useEffect(() => {
-    // Tweaks → Hold: freeze on a READABLE line. Returning early alone left `show` stuck at 0 if the
-    // freeze (or any re-render) landed inside the fade-out window — an empty bubble mid-swap. Force
-    // it visible so every held step shows its copy instead of flashing blank.
-    if (hold) { setShow(true); return; }
-    if (pool.length < 2) return;   // nothing to rotate to: the one line simply stays
-    const swaps = [];
-    const iv = setInterval(() => {
-      setShow(false);              // the line has had its read; fade it out...
-      swaps.push(setTimeout(() => {
-        setI(x => (x + 1) % pool.length);   // ...advance — never the line just shown...
-        setShow(true);                      // ...and fade the next one in
-      }, SWAP_MS));
-    }, MESSAGE_GAP_MS);
-    return () => { swaps.forEach(clearTimeout); clearInterval(iv); };
+    if (hold) return;   // Tweaks → Hold: freeze on whichever line is showing
+    const iv = setInterval(() => setI(x => (x + 1) % pool.length), MESSAGE_GAP_MS);
+    return () => clearInterval(iv);
   }, [pool.length, hold]);
 
-  const tone = TOAST_TONE[tier.key] || TOAST_TONE.gentle;
-  const urgent = tier.key === 'urgent';
+  const curTier = pool[i];   // the tier THIS line belongs to — drives its own tone + pose
+  const tone = TOAST_TONE[curTier.key] || TOAST_TONE.gentle;
+  const urgent = curTier.key === 'urgent';
   const sub = urgent ? L('Last warning — ignoring this ends the session') : `${c.name} · ${L('still walking')}`;
   const ink = urgent ? THEME.danger : THEME.fg1;
 
-  // The one thing that changes between lines. It carries the fade, so the card, the buddy and
-  // the buttons under it stay put while the copy swaps — the child never loses the CTA mid-read.
-  // Called, not mounted as <Line/>: a component declared in here is a new type on every render,
-  // so React would remount the node and the opacity would jump instead of easing.
+  // Keyed on `i` so every swap remounts this block and replays jx-rise — a fresh entrance from
+  // the bottom for each line, distinct from a crossfade-in-place — while the card and the CTA
+  // beneath it stay mounted throughout, so the safety button never blinks out mid-read.
   const line = (size, subSize, gap) => (
-    <div style={{ opacity: show ? 1 : 0, transform: show ? 'none' : 'translateY(3px)', transition: `opacity ${SWAP_MS}ms ease, transform ${SWAP_MS}ms ease` }}>
-      <div className="game-font" style={{ fontSize: size, fontWeight: 500, lineHeight: 1.25, color: ink }}>{L(pool[i])}</div>
+    <div key={i} className="jx-rise">
+      <div className="game-font" style={{ fontSize: size, fontWeight: 500, lineHeight: 1.25, color: ink }}>{L(curTier.title)}</div>
       <div style={{ fontSize: subSize, color: THEME.fg2, marginTop: gap, lineHeight: 1.4 }}>{sub}</div>
     </div>
   );
@@ -301,7 +295,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, n
         <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 14px' }} />
         {round > 1 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Narrator narrator={narrator} c={c} tier={tier} size={104} style={mascotDegrade(tier)} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><div key={i} className="jx-char-in"><Narrator narrator={narrator} c={c} tier={curTier} size={104} style={mascotDegrade(curTier)} /></div></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '18px 18px 18px 4px', padding: '12px 14px', marginBottom: 8 }}>
             {line(19, 13, 4)}
           </div>
@@ -321,7 +315,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, n
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ flexShrink: 0, width: 84, height: 84, borderRadius: 22, background: tone.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <div className="jx-float"><Narrator narrator={narrator} c={c} tier={tier} size={74} style={mascotDegrade(tier)} /></div>
+            <div className="jx-float"><div key={i} className="jx-char-in"><Narrator narrator={narrator} c={c} tier={curTier} size={74} style={mascotDegrade(curTier)} /></div></div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {line(22, 12.5, 5)}
@@ -336,7 +330,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, n
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-          <div className="jx-float" style={{ flexShrink: 0 }}><Narrator narrator={narrator} c={c} tier={tier} size={84} style={mascotDegrade(tier)} /></div>
+          <div className="jx-float" style={{ flexShrink: 0 }}><div key={i} className="jx-char-in"><Narrator narrator={narrator} c={c} tier={curTier} size={84} style={mascotDegrade(curTier)} /></div></div>
           <div style={{ flex: 1, minWidth: 0, background: tone.bubble, borderRadius: '16px 16px 16px 4px', padding: '12px 14px', marginBottom: 6 }}>
             {line(19, 12.5, 3)}
           </div>
@@ -350,7 +344,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, n
     hero: (
       <div style={{ padding: '0 16px 16px', textAlign: 'center' }}>
         <div className="jx-float" style={{ marginTop: -42, marginBottom: 2 }}>
-          <Narrator narrator={narrator} c={c} tier={tier} size={92} style={mascotDegrade(tier)} />
+          <div key={i} className="jx-char-in"><Narrator narrator={narrator} c={c} tier={curTier} size={92} style={mascotDegrade(curTier)} /></div>
         </div>
         {round > 1 && <div style={{ marginBottom: 8 }}><Badge_ /></div>}
         {line(21, 13, 4)}
@@ -364,7 +358,7 @@ function CharMessageToast({ c, round, tier, layout = 'sheet', hold, onRespond, n
       <div style={{ padding: 16 }}>
         {round > 1 && <div style={{ marginBottom: 12 }}><Badge_ /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <NarratorChip narrator={narrator} c={c} tier={tier} size={56} bg={tone.chip} />
+          <div key={i} className="jx-char-in"><NarratorChip narrator={narrator} c={c} tier={curTier} size={56} bg={tone.chip} /></div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {line(18, 12.5, 2)}
           </div>
