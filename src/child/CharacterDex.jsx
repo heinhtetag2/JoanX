@@ -24,7 +24,7 @@ function CharacterDex({ ctx }) {
           return (
             <div key={c.id} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, cursor: c.owned ? 'pointer' : 'default', alignItems: 'center' }}>
               <div style={{ width: 66, flexShrink: 0, display: 'flex', justifyContent: 'center', filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.45)' }}>
-                <Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={60} />
+                <Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={60} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

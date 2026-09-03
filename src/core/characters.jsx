@@ -412,11 +412,15 @@ const STYLE_BUDDIES = {
     ['bird', 'Pip',   '#4f93c4'],
     ['owl',  'Blaze', '#e0554a'],
   ],
-  // Client — a locked, single-buddy preset around the comic cat art approved for review:
-  // same fixed illustration as comic/cat.svg, just isolated from the rest of the comic
-  // roster so switching buddy can't wander off this one approved look.
+  // Client — a preset around whichever buddies have real reference art approved for
+  // review (see CLIENT_SRC): isolated from the rest of the comic roster so switching
+  // buddy can't wander off onto a species with no approved look yet. Every species NOT
+  // listed here still gets snapped onto one of these on select (App.jsx's roster-sync
+  // effect) — so a species has to be added the moment it gets its own CLIENT_SRC entry,
+  // or picking it as your buddy silently overwrites it back to the first row here.
   client: [
     ['cat', 'Milo', THEME.brand],
+    ['fox', 'Lumi', '#d8a657'],
   ],
   toy: [
     ['cat',  'Mochi', '#e79a52'],   // only Mochi has a real 3D render for now
@@ -657,21 +661,64 @@ function MascotComic({ species = 'fox', size = 160, style, float }) {
 // not a flat redraw like every other line here: this style exists to review the reference
 // literally (see character-references/characters/02-milo/base-form/plain/plain.png), so it
 // renders that source render as-is rather than the app's own hand-drawn illustration.
+// Keyed by character id, NOT species — Rex is species 'fox' too, and keying this by
+// species used to hand Rex Lumi's exact photo, so the two looked like duplicate "Lumi"
+// cards side by side in the Collection grid. A character without its own dedicated
+// reference render falls back to the procedural Mascot instead (see MascotClient below),
+// same precedent as VILLAIN_ART's own id-keyed fallback further down this file.
 const CLIENT_SRC = {
-  cat: 'milo-plain.png',   // Milo — the droplet reference render supplied for review
+  c10: 'milo-plain.png',   // Milo — the droplet reference render supplied for review
+  c15: 'lumi/lumi.png',    // Lumi, nothing worn — the star reference render (character-references/characters/05-lumi/base-form-with-accessories/lumi.png)
 };
-// The reference render sits inside a lot of empty canvas — bumped up a touch so it reads
-// closer to the app's own mascot size, and nudged down so it grounds in its frame like the
-// others instead of floating high inside the extra headroom the source image carries.
-const CLIENT_BASE = 1.22;
-const CLIENT_SHIFT_Y = 0.15;
-function MascotClient({ species = 'cat', size = 160, style }) {
-  const file = CLIENT_SRC[species] || CLIENT_SRC.cat;
+// Lumi also has a real photo for every hat/coat combination she can wear (same source
+// folder as CLIENT_SRC.c15 above) — one PNG per outfit, not a procedural overlay — so the
+// 'client' preview swaps to the exact matching shot instead of always showing her bare.
+// Combo filenames are `<hat-slug>+<coat-slug>.png`; a single slug alone covers "just the
+// hat"/"just the coat"; CLIENT_SRC.c15 is the fallback when nothing is worn.
+const CLIENT_OUTFIT_DIR = {
+  c15: 'lumi',   // Lumi
+};
+// Each reference photoshoot sits inside a different amount of empty canvas, so a single
+// scale/shift can't fit all of them — Lumi's set (2288×2779, character ~76% of the frame
+// height) carries far more headroom than Milo's own render (480×644, ~91%), so applying
+// Milo's tuning to Lumi's photos left her looking noticeably smaller and floating higher
+// than she should inside the same size box. Bumped/shifted proportionally more per
+// measured bbox fill so both read at the same visual weight.
+const CLIENT_FRAME = {
+  c10: { base: 1.22, shiftY: 0.15 },   // Milo — the droplet reference render supplied for review
+  c15: { base: 1.46, shiftY: 0.23 },   // Lumi — much more headroom/footroom in her source canvas
+};
+// When a caller doesn't know which specific character it's drawing (a bare species
+// preview, no `id` given), fall back to whichever id owns that species' approved art —
+// the same "everyone snaps to a listed buddy" rule STYLE_BUDDIES.client already documents.
+const CLIENT_SPECIES_FALLBACK = { cat: 'c10', fox: 'c15' };
+function MascotClient({ id, species = 'cat', stage = 2, color, mood, size = 160, style, wornHat, wornClothing }) {
+  // a NAMED character (id given) with no reference render of their own must not borrow
+  // another buddy's real photo (that's how Rex ended up looking like a duplicate Lumi) —
+  // fall back to the app's own flat art instead. Only a caller with no id at all (an
+  // anonymous species preview) gets the species→buddy snap-to fallback below.
+  const artId = id ? (CLIENT_SRC[id] ? id : null) : (CLIENT_SPECIES_FALLBACK[species] || 'c10');
+  if (id && !artId) return <MascotClassic species={species} stage={stage} color={color} mood={mood} size={size} style={style} />;
+  const dir = CLIENT_OUTFIT_DIR[artId];
+  const comboKey = dir && (wornHat || wornClothing)
+    ? [wornHat, wornClothing].filter(Boolean).join('+')
+    : null;
+  const file = comboKey ? `${dir}/${comboKey}.png` : (CLIENT_SRC[artId] || CLIENT_SRC.c10);
+  const { base: CLIENT_BASE, shiftY: CLIENT_SHIFT_Y } = CLIENT_FRAME[artId] || CLIENT_FRAME.c10;
   return (
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
-      <img src={`/assets/characters/client/${encodeURIComponent(file)}`} alt="" draggable="false"
-           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
-                    transform: `translateY(${CLIENT_SHIFT_Y * 100}%) scale(${CLIENT_BASE})`, transformOrigin: 'center bottom' }} />
+      {/* keyed on `file` so swapping outfit combos remounts this wrapper and replays the
+          jx-pop bounce — each combo photo is scaled/framed slightly differently (real
+          reference renders, not a procedural composite), so a hard cut between them reads
+          as a glitch; the little pop hides that mismatch instead of masking it with a fade.
+          Only applied when an actual combo photo is in play (comboKey) — the plain base
+          species image (e.g. every buddy tile in the Collection House grid) must render
+          still, not pop in on every mount/navigation. */}
+      <div key={file} className={comboKey ? 'jx-pop' : ''} style={{ width: '100%', height: '100%' }}>
+        <img src={`/assets/characters/client/${file}`} alt="" draggable="false"
+             style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none',
+                      transform: `translateY(${CLIENT_SHIFT_Y * 100}%) scale(${CLIENT_BASE})`, transformOrigin: 'center bottom' }} />
+      </div>
     </div>
   );
 }
@@ -1037,9 +1084,9 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
 // through the versus stage and the result screen, instead of reverting to the procedural
 // render the moment the fight starts.
 const DEMO_ART = { c2: 'Demo1.png', c3: 'Demo2.png', c10: 'Demo3.png', c1: 'Demo4.png', c6: 'Demo5.png' };
-function DemoMascot({ id, species, stage, color, size = 48 }) {
+function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothing }) {
   const file = DEMO_ART[id];
-  if (!file) return <Mascot species={species} stage={stage} color={color} size={size} />;
+  if (!file) return <Mascot species={species} stage={stage} color={color} size={size} wornHat={wornHat} wornClothing={wornClothing} />;
   return (
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <img src={`/assets/democharacters/${file}`} alt="" draggable="false"

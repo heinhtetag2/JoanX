@@ -5,7 +5,7 @@ import { buyItem, canBuyItem, CHARACTERS, moodForStage, OUTFITS, PLAYER } from '
 import { Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { ScreenHeader, outfitSlotsFor, outfitItemsFor } from './shared.jsx';
+import { ScreenHeader, outfitSlotsFor, outfitItemsFor, wornSlugFor } from './shared.jsx';
 
 // ── Decorate a buddy (A-5) ────────────────────────────────────────────
 // A dedicated page for the same outfit system the character detail screen's
@@ -374,15 +374,23 @@ function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
   const [bought, setBought] = React.useState(() => new Set());
   const locked = (o) => stage < o.minStage;
   // One worn item per slot (a hat, a coat — never two hats at once), keyed by slot id.
-  // Seeded from whichever free item in each slot is already unlocked, so a buddy still
-  // shows up dressed the first time this sheet opens, same as before.
+  // Seeded from whatever was saved on the buddy last time (orig.worn), falling back to
+  // whichever free item in each slot is already unlocked so a buddy still shows up
+  // dressed the very first time this sheet ever opens for it.
   const [wornBySlot, setWornBySlot] = React.useState(() => {
-    const init = {};
+    const init = { ...(orig.worn || {}) };
     outfitItemsFor(orig, OUTFITS).forEach(o => {
       if (!init[o.slot] && o.price === 0 && stage >= o.minStage) init[o.slot] = o.id;
     });
     return init;
   });
+  // Every other action on this sheet already applies the instant you tap it (buying,
+  // wearing) — Save used to be a pure no-op for that reason. Now that Save is what
+  // writes `worn` onto the shared buddy record, leaving it save-gated would make the
+  // back arrow / swipe-to-dismiss silently discard whatever was just equipped, which
+  // breaks that "applies on tap" contract. So this mirrors it straight onto the buddy
+  // the moment it changes — Save (and back, and the swipe) are all just navigation now.
+  React.useEffect(() => { orig.worn = { ...wornBySlot }; }, [wornBySlot]);
   const [note, setNote] = React.useState(null);
 
   const ownedOutfit = (o) => o.owned || bought.has(o.id) || (o.price === 0 && !locked(o));
@@ -489,13 +497,16 @@ function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
       {/* header + buddy preview — a plain page, not part of the sheet below: never dims,
           never drags, always exactly where it is */}
       <ScreenHeader title={`${L('Decorate')} ${orig.name}`} onBack={() => ctx.back()} right={
+        // worn is already written onto the shared CHARACTERS row by the effect above the
+        // moment it changes, so this is just the exit — same as the back arrow and the
+        // swipe-to-dismiss drag, all three just navigate now.
         <Button variant="play" size="md" onClick={() => ctx.back()} style={{ flexShrink: 0, whiteSpace: 'nowrap', borderRadius: 999, padding: '10px 20px' }}>
           {L('Save')}
         </Button>
       } />
       <div style={{ padding: '0 16px' }}>
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 18, marginBottom: 38 }}>
-          <Mascot species={orig.species} stage={stage} color={orig.color} mood={moodForStage(stage)} size={168} />
+          <Mascot species={orig.species} stage={stage} color={orig.color} mood={moodForStage(stage)} size={168} wornHat={wornSlugFor(wornBySlot, OUTFITS, 'hat')} wornClothing={wornSlugFor(wornBySlot, OUTFITS, 'clothing')} />
           {(buyStyle === 'fab' || buyStyle === 'badge') && (
             <PreviewCta buyStyle={buyStyle} item={previewOutfit} accent={accent} onBuy={confirmPreview} onCancel={cancelPreview} />
           )}

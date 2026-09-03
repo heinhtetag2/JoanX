@@ -5,8 +5,30 @@ import { buyItem, canBuyItem, canConvertPoints, CHARACTERS, convertPointsToXp, E
 import { Badge, Bar, Button, Icon, RARITY, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { isNeon, mixHue, pastelHue, outfitSlotsFor, outfitItemsFor } from './shared.jsx';
+import { isNeon, mixHue, pastelHue, outfitSlotsFor, outfitItemsFor, wornSlugFor } from './shared.jsx';
 import { CharacterDetail } from './CharacterDetail.jsx';
+
+// Hoisted out of CharVariant on purpose: an inline `const Buddy = () => (...)`
+// component defined inside CharVariant's own body is a NEW function identity every
+// render, so React unmounts/remounts this whole subtree — replaying jx-float/jx-pop
+// from scratch — on every re-render, not just when something the mascot actually
+// shows (worn items, stage, the bounce key) changes. That was invisible while
+// re-renders were rare, but the XP count-up's requestAnimationFrame tween re-renders
+// CharVariant ~30x over 550ms, so the mount-triggered jx-pop was replaying that many
+// times in a row — read as the buddy bouncing nonstop instead of once. A stable,
+// module-level component fixes it: React now updates props in place across those
+// re-renders instead of tearing the DOM down and back up each tick.
+function BuddyView({ id, species, stage, color, worn, size, charBounce }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div className={window.JX_CHAR_STYLE === 'client' ? 'jx-float' : ''}>
+        <div key={charBounce || 'still'} className={charBounce ? 'jx-pop' : ''}>
+          <Mascot id={id} species={species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" wornHat={wornSlugFor(worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(worn, OUTFITS, 'clothing')} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CharVariant({ ctx, variant }) {
   const orig = CHARACTERS.find(x => x.id === ctx.params.id) || CHARACTERS[0];
@@ -30,6 +52,44 @@ function CharVariant({ ctx, variant }) {
   const [bought, setBought] = React.useState(() => new Set());
   const [worn, setWorn] = React.useState(() => new Set());
   const [note, setNote] = React.useState(null);
+  // Add-XP feedback: the bar/number already jump instantly since orig.xp mutates
+  // synchronously in convertPointsToXp — xpAnim tweens the *displayed* value from
+  // its pre-tap amount up to the new one, and xpFx replays a small gold "+10 XP"
+  // that rises off the button, so the tap itself reads as a gain rather than a
+  // silent number swap. (gold, since gold-reserved-for-points-xp; the toast stays
+  // reserved for the rarer stage/level events.) Kept in sync with CharacterDetail.jsx.
+  const [xpAnim, setXpAnim] = React.useState(null); // { from, to, max } while counting up
+  const [xpShown, setXpShown] = React.useState(orig.xp);
+  const [xpFx, setXpFx] = React.useState(null); // unique key while the '+10 XP' float plays
+  // the buddy itself gets ONE clean jx-pop bounce on a successful tap (not a loop, and
+  // separate from the client style's own continuous jx-float below) — same single-shot
+  // idiom as xpFx, keyed by the tap's own timestamp. Deliberately never reset back to
+  // null: jx-pop's `both` fill-mode already holds its resting frame once it finishes, so
+  // clearing it on a timer served no visual purpose — it only flipped the key back to a
+  // shared 'still' value, which remounted BuddyView a SECOND time per tap. For a combo
+  // outfit photo (comboKey truthy in MascotClient) that second remount replayed THAT
+  // component's own unconditional jx-pop too, reading as two bounces instead of one.
+  const [charBounce, setCharBounce] = React.useState(null);
+  React.useEffect(() => {
+    if (!xpAnim) return undefined;
+    const { from, to } = xpAnim;
+    const start = performance.now(), dur = 550;
+    let raf;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      setXpShown(Math.round(from + (to - from) * p));
+      if (p < 1) raf = requestAnimationFrame(tick); else setXpAnim(null);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [xpAnim]);
+  React.useEffect(() => {
+    if (xpFx == null) return undefined;
+    const t = setTimeout(() => setXpFx(null), 850);
+    return () => clearTimeout(t);
+  }, [xpFx]);
+  const displayXp = xpAnim ? xpShown : orig.xp;
+  const displayXpMax = xpAnim ? xpAnim.max : orig.xpMax;
 
   const locked = (o) => stage < o.minStage;                      // needs a later stage
   // A-5.1 — an outfit can arrive three ways: granted at price 0, bought here, or EARNED
@@ -463,13 +523,11 @@ function CharVariant({ ctx, variant }) {
   // The Client reference render is otherwise still — every other style already floats via
   // its own call sites (home hero, onboarding), so bring this one screen in line with them
   // rather than turning it on for every style here and changing established behaviour.
-  const Buddy = ({ size }) => (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <div className={window.JX_CHAR_STYLE === 'client' ? 'jx-float' : ''}>
-        <Mascot species={orig.species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" />
-      </div>
-    </div>
-  );
+  // Rendered via the module-level BuddyView (see its own comment above), called directly
+  // at each call site below with this props bag — NOT wrapped in a locally-defined
+  // component, which would be a fresh identity every render and force a remount (see
+  // BuddyView's own comment for why that mattered here).
+  const buddyProps = { id: orig.id, species: orig.species, stage, color, worn: orig.worn, charBounce };
   const Badges = (
     <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
       <Badge variant={orig.rarity === 'epic' ? 'epic' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
@@ -490,10 +548,17 @@ function CharVariant({ ctx, variant }) {
     const cost = pointsForXp(EXCHANGE.stepXp);
     const on = verdict.ok;
     const onTap = () => {
+      const beforeXp = orig.xp, beforeMax = orig.xpMax;
       const res = convertPointsToXp(EXCHANGE.stepXp, orig, PLAYER);
       if (!res.ok) return toast(L('Not enough points yet'));
       setPts(PLAYER.points);
-      toast(res.stageUp ? `${orig.name} ${L('Evolved!')}` : res.levels ? `${orig.name} ${L('Level up!')}` : `+${EXCHANGE.stepXp} XP`);
+      setXpAnim({ from: beforeXp, to: orig.xp, max: orig.xpMax });
+      setXpFx(Date.now());
+      setCharBounce(Date.now());
+      // the routine gain now reads through the count-up + floating "+10 XP" below;
+      // the toast stays reserved for the rarer, bigger moments.
+      if (res.stageUp) toast(`${orig.name} ${L('Evolved!')}`);
+      else if (res.levels) toast(`${orig.name} ${L('Level up!')}`);
     };
     const ink = on ? shade(THEME.gold, -30) : THEME.fg3;
 
@@ -612,14 +677,15 @@ function CharVariant({ ctx, variant }) {
     <div style={{ maxWidth: 320, margin: '14px auto 0', background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 20, padding: 16, textAlign: 'left' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div className="game-font" style={{ width: 44, height: 44, flexShrink: 0, clipPath: HEX, background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: shade(THEME.gold, -20) }}>XP</div>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-          <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1 }}>{orig.xp.toLocaleString()}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: THEME.fg3 }}>/ {orig.xpMax.toLocaleString()} XP</span>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', position: 'relative' }}>
+          <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1 }}>{displayXp.toLocaleString()}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: THEME.fg3 }}>/ {displayXpMax.toLocaleString()} XP</span>
+          {xpFx && <span key={xpFx} className="jx-dmg-pop" style={{ position: 'absolute', right: 0, top: -4, fontSize: 13, fontWeight: 800, color: shade(THEME.gold, -15), pointerEvents: 'none' }}>+{EXCHANGE.stepXp} XP</span>}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
-        <Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} track={THEME.goldLight} height={10} />
-        <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2, flexShrink: 0 }}>{Math.round(orig.xp / orig.xpMax * 100)}%</span>
+        <Bar value={displayXp} max={displayXpMax} color={THEME.gold} track={THEME.goldLight} height={10} />
+        <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2, flexShrink: 0 }}>{Math.round(displayXp / displayXpMax * 100)}%</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
         <Icon name="star" size={12} color={THEME.fg3} stroke={2.2} />
@@ -632,10 +698,11 @@ function CharVariant({ ctx, variant }) {
 
   const xpRow = (inkSub) => xpBarStyle === 'card' ? xpCard : (
     <div style={{ maxWidth: 260, margin: '0 auto', textAlign: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0 0', position: 'relative' }}>
         <span style={{ fontSize: 11.5, fontWeight: 700, color: inkSub || THEME.fg2 }}>XP</span>
-        <div style={{ flex: 1 }}><Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} track={THEME.goldLight} height={12} /></div>
-        <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: inkSub || THEME.fg1 }}>{orig.xp}/{orig.xpMax}</span>
+        <div style={{ flex: 1 }}><Bar value={displayXp} max={displayXpMax} color={THEME.gold} track={THEME.goldLight} height={12} /></div>
+        <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: inkSub || THEME.fg1 }}>{displayXp}/{displayXpMax}</span>
+        {xpFx && <span key={xpFx} className="jx-dmg-pop" style={{ position: 'absolute', right: 0, top: -14, fontSize: 12.5, fontWeight: 800, color: shade(THEME.gold, -15), pointerEvents: 'none' }}>+{EXCHANGE.stepXp} XP</span>}
       </div>
       {xpAddStyle !== 'cta' && xpAdd()}
     </div>
@@ -668,7 +735,7 @@ function CharVariant({ ctx, variant }) {
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ textAlign: 'center', marginTop: 6 }}>
           {Badges}
-          <div style={{ marginTop: 6 }}><Buddy size={150} /></div>
+          <div style={{ marginTop: 6 }}><BuddyView {...buddyProps} size={150} /></div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, color: THEME.fg1 }}>{orig.name}</div>
           <div style={{ fontSize: 12.5, color: ink, opacity: .8, fontWeight: 600 }}>{L('Level')} {level}</div>
           {xpRow(ink)}
@@ -681,7 +748,7 @@ function CharVariant({ ctx, variant }) {
         <TopBar />
         <div style={{ textAlign: 'center', marginTop: 6, paddingBottom: 30 }}>
           {Badges}
-          <div style={{ marginTop: 6 }}><Buddy size={150} /></div>
+          <div style={{ marginTop: 6 }}><BuddyView {...buddyProps} size={150} /></div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, color: THEME.fg1 }}>{orig.name}</div>
           <div style={{ fontSize: 12.5, color: ink, opacity: .8, fontWeight: 600 }}>{L('Level')} {level}</div>
           {xpRow(ink)}
@@ -701,7 +768,7 @@ function CharVariant({ ctx, variant }) {
             <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={THEME.border} strokeWidth={SW} />
             <circle cx={R + SW} cy={R + SW} r={R} fill="none" stroke={brand} strokeWidth={SW} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} />
           </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Buddy size={148} /></div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BuddyView {...buddyProps} size={148} /></div>
         </div>
         <div style={{ textAlign: 'center', padding: '18px 24px 0' }}>
           {Badges}
@@ -716,7 +783,7 @@ function CharVariant({ ctx, variant }) {
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ textAlign: 'center', marginTop: 8 }}>
           {Badges}
-          <div style={{ marginTop: 6 }}><Buddy size={158} /></div>
+          <div style={{ marginTop: 6 }}><BuddyView {...buddyProps} size={158} /></div>
           <div className="game-font" style={{ fontSize: 26, fontWeight: 500, color: THEME.fg1 }}>{orig.name}</div>
           <div style={{ fontSize: 12.5, color: ink, opacity: .82, fontWeight: 600 }}>{L('Level')} {level}</div>
           {xpRow(ink)}
@@ -728,7 +795,7 @@ function CharVariant({ ctx, variant }) {
       <div style={{ padding: '50px 18px 0' }}>
         <TopBar />
         <div onClick={() => ctx.nav('character', { id: orig.id })} style={{ position: 'relative', textAlign: 'center', marginTop: 8, cursor: 'pointer' }}>
-          <div style={{ position: 'relative' }}><Buddy size={162} /></div>
+          <div style={{ position: 'relative', marginTop: 34 }}><BuddyView {...buddyProps} size={162} /></div>
           {/* contact shadow. shade() clamps on a neon brand colour (shade(#E00477,62)
               → #ff42b5), so the "shadow" came out hotter than the buddy — pastelise it.
               Skipped for Client: the reference render is its own finished image, and this

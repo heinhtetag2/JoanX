@@ -50,7 +50,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
       {all.map(c => (
         <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ background: '#fff', borderRadius: 18, padding: '18px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', fontFamily: 'inherit' }}>
           {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-          <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
+          <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
           <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{nameOf(c)}</div>
           <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
         </button>
@@ -63,7 +63,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
     <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', border: 'none', cursor: c.owned ? 'pointer' : 'default', background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 12, display: 'block' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ width: 78, height: 78, borderRadius: 999, background: c.owned ? shade(c.color, 76) : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-          <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={70} /></div>
+          <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={70} /></div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -82,7 +82,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>
       {all.map(c => (
         <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ border: 'none', fontFamily: 'inherit', cursor: c.owned ? 'pointer' : 'default', borderRadius: 20, padding: '18px 12px 14px', boxShadow: THEME.shadowCard, background: c.owned ? `linear-gradient(180deg, ${shade(c.color, 74)} 0%, #fff 78%)` : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={88} /></div>
+          <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={88} /></div>
           <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 6 }}>{nameOf(c)}</div>
           {c.owned
             ? <div style={{ fontSize: 11, color: THEME.fg3, fontWeight: 600, marginTop: 2 }}>{L(infoOf(c).label)} · Lv {c.level}</div>
@@ -98,7 +98,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
     <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
       {all.map((c, i) => (
         <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', background: 'none', border: 'none', cursor: c.owned ? 'pointer' : 'default', fontFamily: 'inherit', textAlign: 'left' }}>
-          <div style={{ width: 38, height: 38, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={38} /></div>
+          <div style={{ width: 38, height: 38, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={38} /></div>
           <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800 }}>{nameOf(c)}</span>
           {c.owned
             ? <React.Fragment>
@@ -115,7 +115,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
   else if (variant === 'stats') body = all.map(c => (
     <div key={c.id} onClick={() => open(c)} style={{ background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, cursor: c.owned ? 'pointer' : 'default' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 48, height: 48, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={48} /></div>
+        <div style={{ width: 48, height: 48, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={48} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14.5, fontWeight: 800 }}>{nameOf(c)}</span>
@@ -139,7 +139,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
           {group.map(c => (
             <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ background: '#fff', borderRadius: 16, padding: '10px 6px', border: `1.5px solid ${RARITY[rar].bg}`, boxShadow: THEME.shadowCard, cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'inherit' }}>
-              <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={56} /></div>
+              <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={56} /></div>
               <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 3 }}>{nameOf(c)}</div>
             </button>
           ))}
@@ -164,7 +164,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
           {group.map(c => (
             <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ border: 'none', background: 'transparent', padding: 0, cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'inherit', width: 62 }}>
               <div style={{ width: 54, height: 54, borderRadius: 999, background: c.owned ? shade(c.color, 76) : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={50} /></div>
+                <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={50} /></div>
               </div>
               <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4 }}>{nameOf(c)}</div>
             </button>
@@ -180,7 +180,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
     body = (
       <React.Fragment>
         <button disabled={!lead.owned} onClick={() => open(lead)} style={{ width: '100%', border: 'none', fontFamily: 'inherit', cursor: lead.owned ? 'pointer' : 'default', borderRadius: 24, padding: '22px 16px 18px', marginBottom: 16, boxShadow: THEME.shadowCard, background: lead.owned ? `linear-gradient(180deg, ${shade(lead.color, 72)} 0%, #fff 82%)` : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ filter: lockedFilter(lead.owned) }}><Mascot species={lead.species} stage={lead.owned ? lead.stage : 1} color={lead.color} size={124} /></div>
+          <div style={{ filter: lockedFilter(lead.owned) }}><Mascot id={lead.id} species={lead.species} stage={lead.owned ? lead.stage : 1} color={lead.color} size={124} /></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
             <span style={{ fontSize: 19, fontWeight: 800 }}>{nameOf(lead)}</span>
             <RarityPill rarity={lead.rarity} />
@@ -191,7 +191,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
         <div className="no-sb" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '2px 2px 8px', margin: '0 -2px' }}>
           {rest.map(c => (
             <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ flexShrink: 0, width: 116, borderRadius: 18, border: 'none', fontFamily: 'inherit', cursor: c.owned ? 'pointer' : 'default', background: '#fff', boxShadow: THEME.shadowCard, padding: '14px 8px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={68} /></div>
+              <div style={{ filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={68} /></div>
               <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 5 }}>{nameOf(c)}</div>
               <RarityPill rarity={c.rarity} />
             </button>
@@ -207,7 +207,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
       {all.map(c => (
         <button key={c.id} disabled={!c.owned} onClick={() => open(c)} style={{ position: 'relative', overflow: 'hidden', minHeight: 128, border: 'none', fontFamily: 'inherit', textAlign: 'left', cursor: c.owned ? 'pointer' : 'default', borderRadius: 20, padding: 14, boxShadow: THEME.shadowCard, background: c.owned ? shade(c.color, 80) : THEME.surface2 }}>
           <div style={{ position: 'absolute', right: -12, bottom: -10, filter: lockedFilter(c.owned) }}>
-            <Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={86} />
+            <Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={86} />
           </div>
           <div style={{ position: 'relative', fontSize: 14.5, fontWeight: 800 }}>{nameOf(c)}</div>
           {c.owned
@@ -227,7 +227,7 @@ function CharacterDexVariant({ variant = 'grid', ctx }) {
           <span className="game-font" style={{ fontSize: 12, fontWeight: 500, color: THEME.fg3, width: 32, flexShrink: 0 }}>
             {'No.' + String(i + 1).padStart(2, '0')}
           </span>
-          <div style={{ width: 44, height: 44, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={44} /></div>
+          <div style={{ width: 44, height: 44, flexShrink: 0, filter: lockedFilter(c.owned) }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={44} /></div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 800 }}>{nameOf(c)}</div>
             {c.owned

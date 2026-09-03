@@ -10,10 +10,11 @@
 // changes and joined to it by a leader line. You edit the room by touching the room.
 
 import React from 'react';
-import { buyItem, CHARACTERS, DECOR, decorForRoom, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
+import { buyItem, CHARACTERS, DECOR, decorForRoom, OUTFITS, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
 import { BottomSheet, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot } from '../core/characters.jsx';
+import { wornSlugFor } from './shared.jsx';
 import { RoomPucks } from './RoomPuckStyles.jsx';
 import { sfx } from '../core/sound.jsx';
 
@@ -188,7 +189,8 @@ function RoomStage({ theme, draft, buddies, placedDecor, onPuck = () => {}, heig
             the eye can't settle on any of them. */}
         {buddies.map(c => (
           <Mascot key={c.id} species={c.species} stage={c.stage} color={c.color} float={buddies.length <= 1}
-            size={buddies.length <= 1 ? (buddySize || 132) : buddies.length <= 2 ? 96 : buddies.length <= 4 ? 72 : 54} />
+            size={buddies.length <= 1 ? (buddySize || 132) : buddies.length <= 2 ? 96 : buddies.length <= 4 ? 72 : 54}
+            wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
         ))}
       </div>
 

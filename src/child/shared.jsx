@@ -37,6 +37,10 @@ const CHAR_OUTFIT_SLOTS = {
     { id: 'hat',      label: 'Hat',  icon: 'crown' },
     { id: 'clothing', label: 'Coat', icon: 'shirt' },
   ],
+  c15: [   // Lumi
+    { id: 'hat',      label: 'Hat',  icon: 'crown' },
+    { id: 'clothing', label: 'Coat', icon: 'shirt' },
+  ],
 };
 const outfitSlotsFor = (character) => CHAR_OUTFIT_SLOTS[character?.id] || OUTFIT_SLOTS;
 
@@ -46,6 +50,15 @@ const outfitSlotsFor = (character) => CHAR_OUTFIT_SLOTS[character?.id] || OUTFIT
 const outfitItemsFor = (character, allOutfits) => CHAR_OUTFIT_SLOTS[character?.id]
   ? allOutfits.filter(o => o.charId === character.id)
   : allOutfits.filter(o => !o.charId);
+
+// Looks up the real-photo slug MascotClient's CLIENT_OUTFIT_DIR needs for one worn slot
+// (e.g. 'green-beret') straight from that item's own image filename, so it can't drift
+// out of sync with whatever art actually ships. `worn` is a character's saved
+// { [slot]: outfitId } map (see DecorateBuddy.jsx's Save button).
+const wornSlugFor = (worn, allOutfits, slot) => {
+  const o = allOutfits.find(x => x.id === worn?.[slot]);
+  return o?.img ? o.img.split('/').pop().replace(/\.png$/, '') : undefined;
+};
 
 // `left` fills the leading slot on screens with no back button — tab roots that still
 // want something there (Friends puts the player's own avatar in it).
@@ -220,4 +233,4 @@ function StatCard({ icon, color, bg, value, label, big }) {
   );
 }
 
-export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard, OUTFIT_SLOTS, outfitSlotsFor, outfitItemsFor };
+export { isNeon, mixHue, pastelHue, screenBgFor, screenBgActive, ScreenHeader, HatchCelebration, StageUpMoment, Confetti, RarityPill, LevelBadge, DexProgress, PointsChip, StatCard, OUTFIT_SLOTS, outfitSlotsFor, outfitItemsFor, wornSlugFor };

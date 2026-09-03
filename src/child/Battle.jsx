@@ -1,11 +1,11 @@
 // JoanX — child app · Battle
 
 import React from 'react';
-import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, PLAYER, rarityOf, resolveBattle, STATS, statsFor, villainByLv, winPercent } from '../core/data.jsx';
+import { activeVillains, BATTLE_ODDS, battlesPerDay, BATTLE_REWARDS, BATTLE_RULES, battlePower, canChallenge, CHARACTERS, eggById, nextVillain, OUTFITS, PLAYER, rarityOf, resolveBattle, STATS, statsFor, villainByLv, winPercent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, VillainMascot, DemoMascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader, Confetti, StageUpMoment } from './shared.jsx';
+import { screenBgActive, ScreenHeader, Confetti, StageUpMoment, wornSlugFor } from './shared.jsx';
 import { BattleSelect } from './BattleVariants.jsx';
 import { VersusStage } from './BattleVersus.jsx';
 import { EggHatchFlow, requestMotionPermission } from './EggHatch.jsx';
@@ -61,7 +61,7 @@ function FighterCarousel({ owned, sel, setSel, villain, power }) {
               justifyContent: 'center', alignItems: 'flex-end', cursor: 'pointer',
               opacity: on ? 1 : .82, transform: `scale(${on ? 1 : .82})`, transition: 'opacity .25s ease, transform .25s ease',
             }}>
-              <DemoMascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={170} />
+              <DemoMascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={170} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
             </div>
           );
         })}
@@ -689,7 +689,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
             <React.Fragment>
               <SectionHead title={L('Your fighter')} action={L('Change')} onAction={() => setChooserOpen(true)} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: THEME.successLight, borderRadius: 18, padding: '12px 14px', border: `2px solid ${THEME.success}`, marginBottom: 16 }}>
-                <div style={{ flexShrink: 0 }}><DemoMascot id={sel.id} species={sel.species} stage={sel.stage} color={sel.color} size={52} /></div>
+                <div style={{ flexShrink: 0 }}><DemoMascot id={sel.id} species={sel.species} stage={sel.stage} color={sel.color} size={52} wornHat={wornSlugFor(sel.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(sel.worn, OUTFITS, 'clothing')} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sel.name}</div>
                   <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {sel.level} · {L('Power')} {power(sel)}</div>
@@ -758,7 +758,7 @@ function WalkingBlock({ ctx, buddy }) {
           <div className="jx-ring-slow" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-ring" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-float" style={{ position: 'relative' }}>
-            <Mascot species={buddy.species} stage={buddy.stage} color={buddy.color} size={140} />
+            <Mascot species={buddy.species} stage={buddy.stage} color={buddy.color} size={140} wornHat={wornSlugFor(buddy.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(buddy.worn, OUTFITS, 'clothing')} />
           </div>
         </div>
 

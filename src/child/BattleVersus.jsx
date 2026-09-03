@@ -21,6 +21,8 @@ import React from 'react';
 import { Bar, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, VillainMascot, DemoMascot } from '../core/characters.jsx';
+import { OUTFITS } from '../core/data.jsx';
+import { wornSlugFor } from './shared.jsx';
 
 const VERSUS_LAYOUTS = [
   { id: 'classic', label: 'Classic' },
@@ -112,7 +114,7 @@ function ClassicStage({ me, foe, result, won }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-around' }}>
       <div style={{ textAlign: 'center', filter: result && !won ? 'grayscale(1) contrast(.5) brightness(1.15)' : 'none', transition: 'filter .4s' }}>
-        <div className={result && won ? 'jx-pop' : ''}><DemoMascot id={me.id} species={me.species} stage={me.stage} color={me.color} size={120} /></div>
+        <div className={result && won ? 'jx-pop' : ''}><DemoMascot id={me.id} species={me.species} stage={me.stage} color={me.color} size={120} wornHat={wornSlugFor(me.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(me.worn, OUTFITS, 'clothing')} /></div>
         <div className="game-font" style={{ color: '#fff', fontSize: 16, fontWeight: 500, marginTop: 4 }}>{me.name}</div>
         <div style={{ color: 'rgba(255,255,255,.7)', fontSize: 12 }}>Lv {me.level}</div>
       </div>
@@ -269,7 +271,7 @@ function Plate({ char, name, level, art, ornament, mood, dim, pop, mini, lift = 
                 CSS animation on an element that never otherwise re-renders. */}
             <div key={bounceKey || 'still'} className={bounceKey ? 'jx-hit-bounce' : undefined}>
               {demo
-                ? <DemoMascot id={char.id} species={char.species} stage={char.stage} color={char.color} size={mSize} />
+                ? <DemoMascot id={char.id} species={char.species} stage={char.stage} color={char.color} size={mSize} wornHat={wornSlugFor(char.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(char.worn, OUTFITS, 'clothing')} />
                 : <VillainMascot id={char.id} species={char.species} stage={char.stage} color={char.color} mood={mood} size={mSize} />}
             </div>
             {/* the number reads real damage off the same hp track the HP bar below draws

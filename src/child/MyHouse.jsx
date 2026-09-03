@@ -1,11 +1,11 @@
 // JoanX — child app · MyHouse
 
 import React from 'react';
-import { ACHIEVEMENTS, CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, PLAYER, REACTIONS, ROOMS, roomUnlocked, SCENES, themeOf } from '../core/data.jsx';
+import { ACHIEVEMENTS, CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, OUTFITS, PLAYER, REACTIONS, ROOMS, roomUnlocked, SCENES, themeOf } from '../core/data.jsx';
 import { Bar, BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { LevelBadge, ScreenHeader, screenBgActive } from './shared.jsx';
+import { LevelBadge, ScreenHeader, screenBgActive, wornSlugFor } from './shared.jsx';
 import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 import { GuestbookPanel } from './GuestbookPatterns.jsx';
 
@@ -268,10 +268,10 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
           {/* the buddy itself is the switcher — 'row' mode uses the avatar row below instead */}
           {buddySwitch !== 'row'
             ? <button onClick={onChangeBuddy} aria-label={L('Change buddy')} className="jx-float" style={{ display: 'block', margin: '0 auto', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer', position: 'relative' }}>
-                <Mascot species={c.species} stage={c.stage} color={c.color} size={150} />
+                <Mascot species={c.species} stage={c.stage} color={c.color} size={150} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
                 <span style={{ position: 'absolute', right: scene ? 26 : 10, bottom: 6, width: 30, height: 30, borderRadius: 999, background: scene ? 'rgba(0,0,0,.34)' : '#fff', boxShadow: scene ? 'none' : THEME.shadowCard, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="repeat" size={15} color={scene ? '#fff' : THEME.brand} stroke={2.5} /></span>
               </button>
-            : <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={150} /></div>}
+            : <div className="jx-float" style={{ display: 'flex', justifyContent: 'center' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={150} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /></div>}
           {/* accessories placed on the stage — three looks, switchable in Tweaks:
               'shelf' = dark chip row · 'grounded' = bare props on the grass · 'bar' = one shelf bar */}
           {scene && heroPlaced.length > 0 && heroDecorStyle === 'shelf' && (

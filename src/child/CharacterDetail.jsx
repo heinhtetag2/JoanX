@@ -24,6 +24,40 @@ function CharacterDetail({ ctx }) {
   const [bought, setBought] = React.useState(() => new Set());
   const [worn, setWorn] = React.useState(() => new Set());
   const [note, setNote] = React.useState(null);
+  // Add-XP feedback: the bar/number already jump instantly since orig.xp mutates
+  // synchronously in convertPointsToXp — xpAnim tweens the *displayed* value from
+  // its pre-tap amount up to the new one, and xpFx replays a small gold "+10 XP"
+  // that rises off the button, so the tap itself reads as a gain rather than a
+  // silent number swap. (gold, since gold-reserved-for-points-xp; the toast below
+  // stays reserved for the rarer stage/level events.)
+  const [xpAnim, setXpAnim] = React.useState(null); // { from, to, max } while counting up
+  const [xpShown, setXpShown] = React.useState(orig.xp);
+  const [xpFx, setXpFx] = React.useState(null); // unique key while the '+10 XP' float plays
+  // the buddy itself gets ONE clean jx-pop bounce on a successful tap (not a loop) — same
+  // single-shot idiom as xpFx, keyed by the tap's own timestamp. Deliberately never reset
+  // back to null — see CharacterVariants.jsx's own charBounce for why a clear-on-a-timer
+  // caused a second, spurious remount (and, for a worn combo photo, a second bounce).
+  const [charBounce, setCharBounce] = React.useState(null);
+  React.useEffect(() => {
+    if (!xpAnim) return undefined;
+    const { from, to } = xpAnim;
+    const start = performance.now(), dur = 550;
+    let raf;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      setXpShown(Math.round(from + (to - from) * p));
+      if (p < 1) raf = requestAnimationFrame(tick); else setXpAnim(null);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [xpAnim]);
+  React.useEffect(() => {
+    if (xpFx == null) return undefined;
+    const t = setTimeout(() => setXpFx(null), 850);
+    return () => clearTimeout(t);
+  }, [xpFx]);
+  const displayXp = xpAnim ? xpShown : orig.xp;
+  const displayXpMax = xpAnim ? xpAnim.max : orig.xpMax;
   const slots = outfitSlotsFor(orig);
   const [slotFilter, setSlotFilter] = React.useState(slots[0].id);
   const [tab, setTab] = React.useState('stat');
@@ -92,10 +126,17 @@ function CharacterDetail({ ctx }) {
     const cost = pointsForXp(EXCHANGE.stepXp);
     const on = verdict.ok;
     const onTap = () => {
+      const beforeXp = orig.xp, beforeMax = orig.xpMax;
       const res = convertPointsToXp(EXCHANGE.stepXp, orig, PLAYER);
       if (!res.ok) return toast(L('Not enough points yet'));
       setPts(PLAYER.points);
-      toast(res.stageUp ? `${orig.name} ${L('Evolved!')}` : res.levels ? `${orig.name} ${L('Level up!')}` : `+${EXCHANGE.stepXp} XP`);
+      setXpAnim({ from: beforeXp, to: orig.xp, max: orig.xpMax });
+      setXpFx(Date.now());
+      setCharBounce(Date.now());
+      // the routine gain now reads through the count-up + floating "+10 XP" below;
+      // the toast stays reserved for the rarer, bigger moments.
+      if (res.stageUp) toast(`${orig.name} ${L('Evolved!')}`);
+      else if (res.levels) toast(`${orig.name} ${L('Level up!')}`);
     };
     const ink = on ? shade(THEME.gold, -30) : THEME.fg3;
 
@@ -210,14 +251,15 @@ function CharacterDetail({ ctx }) {
     <div style={{ maxWidth: 320, margin: '14px auto 0', background: '#fff', border: `1.5px solid ${THEME.border}`, borderRadius: 20, padding: 16, textAlign: 'left' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div className="game-font" style={{ width: 44, height: 44, flexShrink: 0, clipPath: 'polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)', background: THEME.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: shade(THEME.gold, -20) }}>XP</div>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-          <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1 }}>{orig.xp.toLocaleString()}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: THEME.fg3 }}>/ {orig.xpMax.toLocaleString()} XP</span>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', position: 'relative' }}>
+          <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: THEME.fg1 }}>{displayXp.toLocaleString()}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: THEME.fg3 }}>/ {displayXpMax.toLocaleString()} XP</span>
+          {xpFx && <span key={xpFx} className="jx-dmg-pop" style={{ position: 'absolute', right: 0, top: -4, fontSize: 13, fontWeight: 800, color: shade(THEME.gold, -15), pointerEvents: 'none' }}>+{EXCHANGE.stepXp} XP</span>}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
-        <Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow />
-        <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2, flexShrink: 0 }}>{Math.round(orig.xp / orig.xpMax * 100)}%</span>
+        <Bar value={displayXp} max={displayXpMax} color={THEME.gold} glow />
+        <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg2, flexShrink: 0 }}>{Math.round(displayXp / displayXpMax * 100)}%</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
         <Icon name="star" size={12} color={THEME.fg3} stroke={2.2} />
@@ -241,19 +283,22 @@ function CharacterDetail({ ctx }) {
             <Badge variant={orig.rarity === 'epic' ? 'epic' : orig.rarity === 'rare' ? 'primary' : 'default'}>{L(RARITY[orig.rarity].label)}</Badge>
             <Badge variant="gold">{L('Stage')} {stage}</Badge>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Mascot species={orig.species} stage={stage} color={color} size={172} />
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 64 }}>
+            <div key={charBounce || 'still'} className={charBounce ? 'jx-pop' : ''}>
+              <Mascot id={orig.id} species={orig.species} stage={stage} color={color} size={172} />
+            </div>
           </div>
           <div className="game-font" style={{ fontSize: 25, fontWeight: 500, marginTop: 4 }}>{orig.name}</div>
           <div style={{ fontSize: 13, color: THEME.fg2, fontWeight: 600 }}>{L('Level')} {level}</div>
           {xpBarStyle === 'card' ? xpCard : (
             <React.Fragment>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, position: 'relative' }}>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: THEME.fg2 }}>XP</span>
                 <div style={{ flex: 1 }}>
-                  <Bar value={orig.xp} max={orig.xpMax} color={THEME.gold} glow />
+                  <Bar value={displayXp} max={displayXpMax} color={THEME.gold} glow />
                 </div>
-                <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{orig.xp}/{orig.xpMax}</span>
+                <span className="game-font" style={{ fontSize: 12, fontWeight: 500 }}>{displayXp}/{displayXpMax}</span>
+                {xpFx && <span key={xpFx} className="jx-dmg-pop" style={{ position: 'absolute', right: 0, top: -14, fontSize: 12.5, fontWeight: 800, color: shade(THEME.gold, -15), pointerEvents: 'none' }}>+{EXCHANGE.stepXp} XP</span>}
               </div>
               {xpAddStyle !== 'cta' && <div style={{ textAlign: 'center' }}>{xpAdd()}</div>}
             </React.Fragment>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Badge, Bar, Icon, PhotoAvatar, RARITY, SafePointIcon, SealCheck, ShopIcon, THEME } from '../core/primitives.jsx';
-import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, totalEggs, xpToCap } from '../core/data.jsx';
+import { battlePower, battlesPerDay, CHARACTERS, CHILD_REPORTS, FRIENDS, OUTFITS, PLAYER, SAFE_PT_PER_MIN, TODAY_TASKS, grantAllPermissions, missingPermissions, totalEggs, xpToCap } from '../core/data.jsx';
 import { getLang, L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
-import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor } from './shared.jsx';
+import { HatchCelebration, isNeon, mixHue, pastelHue, screenBgFor, wornSlugFor } from './shared.jsx';
 import { EggShape } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
 
@@ -1114,7 +1114,7 @@ function HomeSimpleFocus({ ctx }) {
               own keyframe animation drives that element's transform every frame, which would
               silently stomp a static translateY set on the same node */}
           <div style={{ transform: 'translateY(-14px)' }}>
-            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={160} /></div>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={160} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /></div>
           </div>
         </div>
         {/* XP pill on the ring — progress toward the buddy's next level */}

@@ -259,6 +259,9 @@ const KO = {
   // Milo's own hat/coat catalog (character-references/characters/02-milo/accessories)
   'Aviator Goggles': '비행 고글', 'Bucket Hat': '벙거지 모자', 'Captain’s Cap': '선장 모자',
   'Pirate Coat': '해적 코트', 'Pocket Watch': '회중시계', 'Suspenders': '멜빵',
+  // Lumi's own hat/coat catalog (character-references/characters/05-lumi/accessories)
+  'Gold Hat': '골드 모자', 'Green Beret': '그린 베레모', 'Riding Helmet': '라이딩 헬멧',
+  'Navy Duffle Coat': '네이비 더플코트', 'Red Button Jacket': '레드 버튼 재킷', 'Tan Trench Coat': '탄 트렌치코트',
   'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
   // buddy bios — the character detail screen's Story tab

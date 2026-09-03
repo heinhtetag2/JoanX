@@ -3,11 +3,11 @@
 // Switch via the Tweaks panel ("Collection layout").
 
 import React from 'react';
-import { ACHIEVEMENTS, CHARACTERS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
+import { ACHIEVEMENTS, CHARACTERS, OUTFITS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
-import { screenBgActive, ScreenHeader } from './shared.jsx';
+import { screenBgActive, ScreenHeader, wornSlugFor } from './shared.jsx';
 import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
 
 const COLLECTION_LAYOUTS = [
@@ -65,7 +65,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   // clickable big mascot tile (shelf / carousel / bookshelf)
   const bigTile = (c, i, size = 74) => c ? (
     <button key={c.id} onClick={() => openC(c)} style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 }}>
-      <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />
+      <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={size} />
       <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
       {rarBadge(c, { marginTop: 3, fontSize: 9.5, padding: '2px 7px' })}
     </button>
@@ -98,7 +98,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         {all.map(c => (
           <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
             {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
+            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
             <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
             <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>
@@ -117,7 +117,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           <div className="no-sb" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '2px 2px 8px', margin: '0 -2px' }}>
             {(placed.length ? placed : [null]).map((c, i) => c ? (
               <button key={c.id} onClick={() => openC(c)} style={{ flexShrink: 0, width: 132, borderRadius: 20, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: `linear-gradient(180deg, ${shade(c.color, 74)}, #fff 90%)`, boxShadow: THEME.shadowCard, padding: '16px 10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Mascot species={c.species} stage={c.stage} color={c.color} size={86} />
+                <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={86} />
                 <div style={{ fontSize: 13.5, fontWeight: 800, marginTop: 4 }}>{c.name}</div>
                 {rarBadge(c, { marginTop: 5 })}
               </button>
@@ -141,7 +141,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
               const c = placed[i];
               return c ? (
                 <button key={c.id} onClick={() => openC(c)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 }}>
-                  <Mascot species={c.species} stage={c.stage} color={c.color} size={70} />
+                  <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={70} />
                   <div style={{ fontSize: 11.5, fontWeight: 700 }}>{c.name}</div>
                 </button>
               ) : <div key={'e' + i} style={{ flex: 1, minHeight: 72, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 4 }}><div style={{ width: 40, height: 40, borderRadius: 12, border: `2px dashed ${shade(wood, 40)}` }} /></div>;
@@ -163,7 +163,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, overflow: 'hidden' }}>
           {placed.map((c, i) => (
             <button key={c.id} onClick={() => openC(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-              <div style={{ width: 46, height: 46, borderRadius: 14, background: shade(c.color, 70), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={44} /></div>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: shade(c.color, 70), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={44} /></div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ fontSize: 14, fontWeight: 800 }}>{c.name}</span><span style={{ fontSize: 11, fontWeight: 800, color: RARITY[c.rarity].fg }}>{L(RARITY[c.rarity].label)}</span></div>
                 <div style={{ marginTop: 5 }}><Bar value={c.xp} max={c.xpMax} color={c.color} height={5} /></div>
@@ -189,7 +189,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           {list.map(c => (
             <button key={c.id} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', border: `1.5px solid ${R.fg}22`, boxShadow: THEME.shadowCard, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={62} />
+              <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} />
               <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.name}</div>
               {rarBadge(c, { marginTop: 4, fontSize: 9, padding: '2px 6px' })}
             </button>
@@ -207,7 +207,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         {owned.map(c => (
           <button key={c.id} onClick={() => openC(c)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 16, padding: 7, background: '#f4ece0', boxShadow: THEME.shadowCard }}>
             <div style={{ borderRadius: 12, border: `3px solid ${shade('#b98a5a', 10)}`, background: `linear-gradient(160deg, ${shade(c.color, 72)}, #fff)`, padding: '14px 8px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={92} />
+              <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={92} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 7, marginBottom: 2 }}>
               <span style={{ fontSize: 13.5, fontWeight: 800 }}>{c.name}</span>{rarBadge(c, { fontSize: 9, padding: '2px 6px' })}
@@ -227,7 +227,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         {hero && (
           <button onClick={() => openC(hero)} style={{ width: '100%', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 24, padding: '22px 18px', marginBottom: 16, background: `linear-gradient(165deg, ${shade(hero.color, 66)}, #fff 92%)`, boxShadow: THEME.shadowCard, textAlign: 'center', position: 'relative' }}>
             <span style={{ position: 'absolute', top: 14, left: 14, fontSize: 10.5, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase', color: THEME.fg3 }}>{L('Featured')}</span>
-            <div className="jx-float"><Mascot species={hero.species} stage={hero.stage} color={hero.color} size={132} /></div>
+            <div className="jx-float"><Mascot id={hero.id} species={hero.species} stage={hero.stage} color={hero.color} size={132} /></div>
             <div className="game-font" style={{ fontSize: 24, fontWeight: 500, marginTop: 4 }}>{hero.name}</div>
             <div style={{ display: 'inline-flex', gap: 6, marginTop: 8 }}>{rarBadge(hero, {})}</div>
           </button>
@@ -236,7 +236,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 9 }}>
           {rest.map(c => (
             <button key={c.id} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 15, padding: '9px 4px', boxShadow: THEME.shadowCard, border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={48} />
+              <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={48} />
               <div style={{ fontSize: 10.5, fontWeight: 700, marginTop: 2 }}>{c.name}</div>
             </button>
           ))}
@@ -264,7 +264,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
               {(
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
                   {placed.map(c => (
-                    <button key={c.id} onClick={() => openC(c)} style={{ width: 52, height: 52, borderRadius: 999, background: shade(c.color, 70), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={50} /></button>
+                    <button key={c.id} onClick={() => openC(c)} style={{ width: 52, height: 52, borderRadius: 999, background: shade(c.color, 70), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={50} /></button>
                   ))}
                   {/* one add circle while there's room (up to room.slots); the rest of the
                       empty slots stay implied rather than drawn ten-deep off the card edge */}
@@ -293,7 +293,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
                 <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{c.name}</span>
                 <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>Lv{c.level}</span>
               </div>
-              <div style={{ background: `linear-gradient(180deg, ${R.bg}, #fff)`, padding: '10px 8px 6px', display: 'flex', justifyContent: 'center' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={84} /></div>
+              <div style={{ background: `linear-gradient(180deg, ${R.bg}, #fff)`, padding: '10px 8px 6px', display: 'flex', justifyContent: 'center' }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={84} /></div>
               <div style={{ display: 'flex', gap: 6, padding: '8px 10px 11px' }}>
                 {STATS.map(s => [s.icon, t[s.key]]).map(([ic, v], i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, background: THEME.surface2, borderRadius: 8, padding: '4px 0' }}>
@@ -315,7 +315,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         const big = i % 5 === 0;
         return (
           <button key={c.id} onClick={() => openC(c)} style={{ gridColumn: big ? 'span 2' : 'span 1', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 18, background: `linear-gradient(150deg, ${shade(c.color, 70)}, #fff 88%)`, boxShadow: THEME.shadowCard, padding: big ? '18px 12px' : '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Mascot species={c.species} stage={c.stage} color={c.color} size={big ? 104 : 62} />
+            <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={big ? 104 : 62} />
             <div style={{ fontSize: big ? 15 : 12.5, fontWeight: 800, marginTop: 4 }}>{c.name}</div>
             {rarBadge(c, { marginTop: 4, fontSize: 9.5, padding: '2px 7px' })}
           </button>
@@ -327,7 +327,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
   // 12 · STACK — full-width banner cards: mascot + name + rarity + XP bar
   else if (variant === 'stack') body = owned.map(c => (
     <button key={c.id} onClick={() => openC(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', borderRadius: 20, background: `linear-gradient(110deg, ${shade(c.color, 68)}, #fff 78%)`, boxShadow: THEME.shadowCard, padding: '12px 16px 12px 12px' }}>
-      <div style={{ width: 72, height: 72, borderRadius: 18, background: 'rgba(255,255,255,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={68} /></div>
+      <div style={{ width: 72, height: 72, borderRadius: 18, background: 'rgba(255,255,255,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={68} /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><span style={{ fontSize: 16, fontWeight: 800 }}>{c.name}</span><span style={{ fontSize: 11, fontWeight: 800, color: RARITY[c.rarity].fg }}>{L(RARITY[c.rarity].label)}</span></div>
         <div style={{ margin: '7px 0 4px' }}><Bar value={c.xp} max={c.xpMax} color={c.color} height={6} /></div>
@@ -345,7 +345,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, background: '#fff', borderRadius: 20, boxShadow: THEME.shadowCard, padding: '18px 14px' }}>
           {placed.map(c => (
             <button key={c.id} onClick={() => openC(c)} style={{ width: 78, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: 0 }}>
-              <div style={{ width: 66, height: 66, borderRadius: 999, background: shade(c.color, 66), border: `2.5px solid ${c.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><Mascot species={c.species} stage={c.stage} color={c.color} size={62} /></div>
+              <div style={{ width: 66, height: 66, borderRadius: 999, background: shade(c.color, 66), border: `2.5px solid ${c.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} /></div>
               <span style={{ fontSize: 11.5, fontWeight: 700 }}>{c.name}</span>
             </button>
           ))}
@@ -360,7 +360,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       {all.map((c, i) => (
         <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', background: 'none', border: 'none', cursor: c.owned ? 'pointer' : 'default', fontFamily: 'inherit', textAlign: 'left' }}>
           <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: THEME.fg3, width: 26 }}>#{String(i + 1).padStart(2, '0')}</span>
-          <div style={{ width: 42, height: 42, flexShrink: 0, filter: c.owned ? 'none' : 'grayscale(1) brightness(1.6) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={42} /></div>
+          <div style={{ width: 42, height: 42, flexShrink: 0, filter: c.owned ? 'none' : 'grayscale(1) brightness(1.6) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={42} /></div>
           <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: c.owned ? THEME.fg1 : THEME.fg3 }}>{c.owned ? c.name : '???'}</span>
           {c.owned ? <span style={{ fontSize: 11, fontWeight: 800, color: RARITY[c.rarity].fg }}>{L(RARITY[c.rarity].label)}</span> : <Icon name="lock" size={14} color={THEME.fg3} stroke={2.4} />}
         </button>
@@ -420,7 +420,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>
           {Array.from({ length: room ? room.slots : 0 }).map((_, i) => { const c = placed[i]; return c ? (
             <button key={c.id} onClick={() => openC(c)} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 20, background: `linear-gradient(180deg, ${shade(c.color, 72)}, #fff 92%)`, boxShadow: THEME.shadowCard, padding: '18px 10px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Mascot species={c.species} stage={c.stage} color={c.color} size={90} /><div style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>{c.name}</div>{rarBadge(c, { marginTop: 5 })}
+              <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={90} /><div style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>{c.name}</div>{rarBadge(c, { marginTop: 5 })}
             </button>
           ) : <div key={'e' + i} style={{ borderRadius: 20, border: `2px dashed ${THEME.border}`, minHeight: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={24} color={THEME.fg3} stroke={2.2} /></div>; })}
         </div>
@@ -435,7 +435,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         const sz = c.rarity === 'epic' ? 108 : c.rarity === 'rare' ? 86 : 66;
         return (
           <button key={c.id} onClick={() => openC(c)} style={{ display: 'inline-flex', width: '100%', breakInside: 'avoid', marginBottom: 10, flexDirection: 'column', alignItems: 'center', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 18, background: `linear-gradient(180deg, ${shade(c.color, 72)}, #fff)`, boxShadow: THEME.shadowCard, padding: '16px 10px 12px' }}>
-            <Mascot species={c.species} stage={c.stage} color={c.color} size={sz} />
+            <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={sz} />
             <div style={{ fontSize: 13, fontWeight: 800, marginTop: 5 }}>{c.name}</div>
             {rarBadge(c, { marginTop: 4, fontSize: 9.5, padding: '2px 7px' })}
           </button>
@@ -449,7 +449,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
     <div className="no-sb" style={{ display: 'flex', gap: 14, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '2px 2px 10px', margin: '0 -16px', paddingLeft: 16, paddingRight: 16 }}>
       {owned.map(c => (
         <button key={c.id} onClick={() => openC(c)} style={{ flexShrink: 0, width: '78%', scrollSnapAlign: 'center', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 26, background: `linear-gradient(165deg, ${shade(c.color, 64)}, #fff 92%)`, boxShadow: THEME.shadowCard, padding: '26px 16px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={140} /></div>
+          <div className="jx-float"><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={140} /></div>
           <div className="game-font" style={{ fontSize: 24, fontWeight: 500, marginTop: 6 }}>{c.name}</div>
           <div style={{ marginTop: 8 }}>{rarBadge(c, {})}</div>
         </button>
@@ -463,7 +463,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       {all.map(c => (
         <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 14, padding: '9px 3px 7px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
           {!c.owned && <div style={{ position: 'absolute', top: 5, right: 5 }}><Icon name="lock" size={11} color={THEME.fg3} stroke={2.4} /></div>}
-          <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={44} /></div>
+          <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={44} /></div>
           <div style={{ fontSize: 9.5, fontWeight: 700, marginTop: 2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.owned ? c.name : '???'}</div>
         </button>
       ))}
@@ -484,7 +484,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
             const rank = top.indexOf(c);
             return (
               <button key={c.id} onClick={() => openC(c)} style={{ flex: 1, maxWidth: 108, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Mascot species={c.species} stage={c.stage} color={c.color} size={rank === 0 ? 78 : 58} />
+                <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={rank === 0 ? 78 : 58} />
                 <div style={{ fontSize: 12.5, fontWeight: 800, margin: '2px 0 6px' }}>{c.name}</div>
                 <div style={{ width: '100%', height: podH[rank], borderRadius: '12px 12px 0 0', background: `linear-gradient(${shade(c.color, 40)}, ${c.color})`, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 6 }}>
                   <span className="game-font" style={{ fontSize: 18, fontWeight: 500, color: '#fff' }}>{rank + 1}</span>
@@ -497,7 +497,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
           {rest.map((c, i) => (
             <button key={c.id} onClick={() => openC(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
               <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: THEME.fg3, width: 22 }}>{i + 4}</span>
-              <div style={{ width: 40, height: 40, flexShrink: 0 }}><Mascot species={c.species} stage={c.stage} color={c.color} size={40} /></div>
+              <div style={{ width: 40, height: 40, flexShrink: 0 }}><Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={40} /></div>
               <span style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>{c.name}</span>
               <span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: THEME.fg2 }}>Lv{c.level}</span>
             </button>
@@ -526,7 +526,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         {buddiesSorted.map(c => (
           <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '20px 8px 11px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
             {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
+            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /></div>
             <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
             <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>

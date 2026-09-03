@@ -56,7 +56,19 @@ function App() {
   // localStorage.removeItem('jx.buddy') to return to the seed default.
   const BUDDY_KEY = 'jx.buddy';
   const savedBuddy = (() => { try { return JSON.parse(localStorage.getItem(BUDDY_KEY) || 'null'); } catch { return null; } })();
-  if (savedBuddy?.activeCharId && CHARACTERS.some(x => x.id === savedBuddy.activeCharId)) PLAYER.activeCharId = savedBuddy.activeCharId;
+  // Restoring PLAYER.activeCharId from localStorage must happen ONLY on the very first
+  // render, not this bare statement's old behaviour of re-applying on every re-render. A
+  // plain body statement re-ran on every render — including the one setBuddy() itself
+  // triggers — and since the persist effect below hasn't flushed the new pick to
+  // localStorage yet at that point (effects run after commit), it read back the STALE
+  // saved id and stomped the buddy you'd just picked right back to whoever was saved
+  // before. "Set as my buddy" would flip activeCharId to the new pick and then, one
+  // render later in the very same click, silently flip it back.
+  const appliedSavedBuddy = React.useRef(false);
+  if (!appliedSavedBuddy.current) {
+    appliedSavedBuddy.current = true;
+    if (savedBuddy?.activeCharId && CHARACTERS.some(x => x.id === savedBuddy.activeCharId)) PLAYER.activeCharId = savedBuddy.activeCharId;
+  }
 
   const [screen, setScreen] = React.useState(initialScreen || (initialDetail ? 'character' : 'home'));
   const [params, setParams] = React.useState(initialDetail ? { id: PLAYER.activeCharId } : {});
@@ -187,12 +199,23 @@ function App() {
   // keeps the level, stage and stats telling one story.
   React.useEffect(() => {
     const c = CHARACTERS.find(x => x.id === PLAYER.activeCharId);
-    c.species = tw.species; c.color = tw.color;
+    c.species = tw.species;
     const gate = STAGES.find(s => s.stage === tw.stage);
     if (gate) { c.level = Math.max(c.level, gate.minLevel); applyXpCurve([c]); }
-    if (tw.name) c.name = tw.name;
+    // Client — a per-character photo review, not a fixed illustrated line (same reasoning
+    // as the roster-sync effect's own charStyle==='client' guard below): tw.name/tw.color
+    // here can carry a species-roster pairing meant for a DIFFERENT character that happens
+    // to share a species (e.g. "Lumi"/gold for species fox, when the active buddy is
+    // actually Rex) — including a stale one restored from localStorage from before this
+    // guard existed. Stamping that onto the real CHARACTERS record permanently mislabeled
+    // Rex as "Lumi" (and re-persisted the corruption on every save). Under 'client', the
+    // character's own name/colour are authoritative; only species/stage/level still sync.
+    if (tw.charStyle !== 'client') {
+      c.color = tw.color;
+      if (tw.name) c.name = tw.name;
+    }
     setBump(b => b + 1);
-  }, [tw.species, tw.color, tw.stage, tw.name]);
+  }, [tw.species, tw.color, tw.stage, tw.name, tw.charStyle]);
 
   // Save the active buddy (id + identity) whenever it changes, so a refresh restores it rather
   // than re-stamping the seed default. `bump` is bumped by setBuddy and the stamp effect above,
@@ -224,6 +247,14 @@ function App() {
       if (tw.color !== locked || name !== tw.name) setTw(s => ({ ...s, color: locked, name }));
       return;
     }
+    // Client — a per-character photo review, not a fixed illustrated line: MascotClient
+    // already falls back to the app's own flat art (keyed by character id, not species —
+    // see CLIENT_SRC in characters.jsx) for anyone without a dedicated reference render, so
+    // there's no need to rename the active buddy to whichever OTHER character happens to
+    // share its species. Without this, the moment `row` existed for a species (e.g. fox →
+    // Lumi), the snap below silently rebranded the actual buddy (Rex, also a fox) as
+    // "Lumi" — on first load, since Rex is the seed default.
+    if (tw.charStyle === 'client') return;
     // if the current species isn't offered in this style, snap to its first buddy
     const pick = row || roster[0];
     if (!pick) return;
@@ -251,6 +282,13 @@ function App() {
   const resetBuddy = () => {
     try { localStorage.removeItem('jx.buddy'); } catch { /* storage unavailable */ }
     PLAYER.activeCharId = 'c1';
+    // Corrects the real CHARACTERS record directly, not just tw: the stamp effect above
+    // now skips applying tw.name/tw.color onto it under 'client' (that guard is what stops
+    // a stale species-roster name from re-corrupting it — see that effect's own comment),
+    // so this button needs to heal an already-mislabeled buddy itself rather than relying
+    // on that effect to do it.
+    const c = CHARACTERS.find(x => x.id === 'c1');
+    if (c) { c.species = 'fox'; c.color = '#4b814f'; c.name = 'Rex'; }
     setTw(s => ({ ...s, charStyle: 'client', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3 }));
     setBump(b => b + 1);
   };
