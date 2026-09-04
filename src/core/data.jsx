@@ -258,19 +258,31 @@ const DECOR = [
   // earned as well as bought — the grant rules below hand this one out (A-5.1)
   { id: 'shelf',     name: 'Bookshelf',   rooms: ['town'], category: 'room', slot: 'furniture', icon: 'library',  owned: false, price: 120 },
 
-  // ── Dream Room · imagination & fantasy ──
-  { id: 'moonlamp',  name: 'Moon Lamp',     rooms: ['dream'], category: 'room', slot: 'furniture', icon: 'moon-star', owned: true,  price: 0 },
-  { id: 'cloud',     name: 'Cloud',         rooms: ['dream'], category: 'room', slot: 'object',    icon: 'cloud',     owned: true,  price: 0 },
-  { id: 'rocket',    name: 'Toy Rocket',    rooms: ['dream'], category: 'room', slot: 'object',    icon: 'rocket',    owned: false, price: 150 },
-  { id: 'crystal',   name: 'Dream Crystal', rooms: ['dream'], category: 'room', slot: 'object',    icon: 'gem',       owned: false, price: 180 },
-  { id: 'rainbow',   name: 'Rainbow',       rooms: ['dream'], category: 'room', slot: 'object',    icon: 'rainbow',   owned: false, price: 200 },
-  { id: 'telescope', name: 'Telescope',     rooms: ['dream'], category: 'room', slot: 'furniture', icon: 'telescope', owned: false, price: 240 },
+  // Dream Room's old plain-icon Shelf/Furniture set (Moon Lamp, Cloud, Toy Rocket,
+  // Dream Crystal, Rainbow, Telescope) lived here — retired now that the moodboard
+  // set below covers Dream Room's decor with real illustrated art. All six were
+  // dream-exclusive (no other room listed them), so nothing else lost a piece by
+  // this leaving; the Shelf/Furniture pucks disappear on their own once Dream's
+  // catalogue has nothing left in the 'object'/'furniture' slots (see the
+  // `catalogSlot` puck-visibility check in RoomStage.jsx).
 
-  // ── fits any room ──
-  { id: 'rug',     name: 'Rug',       rooms: ['*'], category: 'room', slot: 'furniture', icon: 'square',       owned: false, price: 80 },
-  { id: 'poster',  name: 'Poster',    rooms: ['*'], category: 'room', slot: 'object',    icon: 'image',        owned: false, price: 90 },
-  { id: 'balloon', name: 'Balloons',  rooms: ['*'], category: 'room', slot: 'object',    icon: 'party-popper', owned: false, price: 60 },
-  { id: 'trophy',  name: 'Champion Trophy', rooms: ['*'], category: 'room', slot: 'object', icon: 'trophy', owned: false, price: 260 },
+  // ── Dream Room · moodboard set (each its own slot — see HOTSPOTS in RoomStage.jsx
+  //    — so all four sit in the room together instead of competing with each other or
+  //    with the pieces above) ──
+  { id: 'flowerrug', name: 'Flower Rug',         rooms: ['dream'], category: 'room', slot: 'rug',      icon: 'square',    img: '/assets/rooms/decor/dream/flower-rug/flowerrug.png',                    owned: false, price: 180 },
+  { id: 'armchair',  name: 'Cozy Armchair',      rooms: ['dream'], category: 'room', slot: 'armchair', icon: 'armchair',  img: '/assets/rooms/decor/dream/cozy-armchair/armchair.png',                  owned: false, price: 260 },
+  { id: 'ornament',  name: 'Celestial Ornament', rooms: ['dream'], category: 'room', slot: 'ornament', icon: 'moon-star', img: '/assets/rooms/decor/dream/celestial-hanging-ornament/ornament.png',     owned: false, price: 200 },
+  { id: 'cabinet',   name: 'Enchanted Cabinet',  rooms: ['dream'], category: 'room', slot: 'cabinet',  icon: 'archive',   img: '/assets/rooms/decor/dream/enchanted-shelf-cabinet/cabinet.png',         owned: false, price: 240 },
+
+  // ── fits any room ── (except Dream, which grew its own moodboard set above with
+  // real illustrated art — these plain square/line-icon pieces would just be worse
+  // duplicates sitting in Dream's Furniture/Shelf, competing with proper art for the
+  // same spot. Green/Town don't have a moodboard set of their own yet, so they keep
+  // the full universal catalogue.)
+  { id: 'rug',     name: 'Rug',       rooms: ['green', 'town'], category: 'room', slot: 'furniture', icon: 'square', owned: false, price: 80 },
+  { id: 'poster',  name: 'Poster',    rooms: ['green', 'town'], category: 'room', slot: 'object',    icon: 'image',        owned: false, price: 90 },
+  { id: 'balloon', name: 'Balloons',  rooms: ['green', 'town'], category: 'room', slot: 'object',    icon: 'party-popper', owned: false, price: 60 },
+  { id: 'trophy',  name: 'Champion Trophy', rooms: ['green', 'town'], category: 'room', slot: 'object', icon: 'trophy', owned: false, price: 260 },
 
   // ── seasonal · dark until ops turns the set on (A-5.1) ──
   { id: 'lantern', name: 'Star Lantern', rooms: ['dream'],           category: 'room', slot: 'object', icon: 'lamp-ceiling', owned: false, price: 340, limited: true, set: 'winter-2026' },
@@ -279,7 +291,10 @@ const DECOR = [
 
 // The catalogue a given room offers. Room-scoped items plus the universal ones —
 // so "what can I put in here?" is answered by the theme, not by a hand-kept list.
-const decorForRoom = (roomId) => DECOR.filter(d => d.rooms.includes('*') || d.rooms.includes(roomId));
+// `limited` items (the seasonal sets, e.g. Star Lantern/Snow Globe above) stay out of
+// this list entirely — they're "dark until ops turns the set on" per their own comment,
+// and there is no ops switch yet, so dark is every room's only state for them for now.
+const decorForRoom = (roomId) => DECOR.filter(d => !d.limited && (d.rooms.includes('*') || d.rooms.includes(roomId)));
 
 // messages friends have left on MY profile (F-32 guestbook, received side)
 // Every note in a guestbook — received or left — is one of the GUEST_STAMPS below. Nothing
@@ -1675,21 +1690,21 @@ const ROOM_THEMES = [
     // and an empty floor at the bottom for the buddy to stand on. The HOTSPOTS in
     // child/RoomStage.jsx aim at that shared layout, once, for all three. Keep a replacement
     // on the same grammar and nothing needs re-aiming; break it and every room needs its own.
-    bg: '/assets/backgrounds/greenroom.png',
+    bg: '/assets/rooms/green-room.png',
     wallpapers: ['#e7f3e4', '#dff0e6', '#eef5dd', '#e3efe8'],
     wall: t => `radial-gradient(circle at 84% 14%, rgba(255,255,255,.5) 0 42px, transparent 43px), linear-gradient(180deg, ${t} 0%, ${shade(t, 8)} 100%)`,
     floorings: ['#cfe3b7', '#d8cbb0', '#c3ddc9'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#8bb46a' },
 
   { id: 'town', name: 'Town Room', icon: 'building-2', blurb: 'School, park and the streets between.',
-    bg: '/assets/backgrounds/moderntownroom.png',
+    bg: '/assets/rooms/town-room.png',
     wallpapers: ['#eaf0f6', '#f1eee9', '#e7eef2', '#f4efe6'],
     wall: t => `linear-gradient(180deg, ${shade(t, -6)} 0%, #fbfbfc 100%)`,
     floorings: ['#dfe3e8', '#d9cfc2', '#cdd8dd'],
     floor: f => `linear-gradient(180deg, ${f}, ${shade(f, -12)})`, accent: '#a7b0bc' },
 
   { id: 'dream', name: 'Dream Room', icon: 'moon-star', blurb: 'Stars, clouds and soft impossible things.',
-    bg: '/assets/backgrounds/magicroom.png',
+    bg: '/assets/rooms/dream-room.png',
     wallpapers: ['#efe8fb', '#e8e6fa', '#f7e9f5', '#e6effb'],
     wall: t => `radial-gradient(circle at 20% 24%, rgba(255,255,255,.75) 0 2.5px, transparent 3.5px) 0 0/34px 34px, linear-gradient(180deg, ${t} 0%, ${shade(t, 10)} 100%)`,
     floorings: ['#e4d8f7', '#d9dcf5', '#efd9ec'],

@@ -1223,6 +1223,10 @@ const KO = {
   // dream room decor
   'Moon Lamp': '달 조명', 'Cloud': '구름', 'Toy Rocket': '장난감 로켓', 'Dream Crystal': '드림 크리스털',
   'Rainbow': '무지개', 'Telescope': '망원경', 'Snow Globe': '스노볼',
+  // dream room moodboard set (puck labels + item names)
+  'Cabinet': '캐비닛', 'Armchair': '안락의자',
+  'Flower Rug': '꽃 러그', 'Cozy Armchair': '아늑한 안락의자',
+  'Celestial Ornament': '천체 오너먼트', 'Enchanted Cabinet': '마법의 캐비닛',
   // fits any room
   'Rug': '러그', 'Poster': '포스터', 'Balloons': '풍선',
   'Edit your buddy, background & rooms': '친구·배경·방을 꾸며요', 'Your friends': '내 친구',

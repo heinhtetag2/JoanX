@@ -342,18 +342,124 @@ function Modal({ title, onClose, children }) {
 // card than a long one — jarring when the same trigger can open either. Callers that
 // want a steady card height across their own set of contents pass it; most sheets
 // (a fixed list, a form) are fine shrink-wrapping and leave it unset.
-function BottomSheet({ title, onClose, children, minHeight }) {
+// `scrim` — the dim backdrop is the default everywhere, but a sheet whose picker acts
+// ON the surface behind it (dragging a catalogue item onto the room it's decorating)
+// needs that surface visible at full brightness to be a usable drop target, so that
+// caller passes false to skip the dim. It also drops the backdrop's own "tap outside
+// to dismiss": with the surface behind it a legitimate drop target rather than just
+// backdrop, a drag that ends outside the sheet card (which is the whole point of
+// dragging something onto the room) would otherwise register as a tap-to-close and
+// slam the sheet shut on every successful drop. The explicit X stays as how you close.
+// A transparent backdrop still SITS there, though — an invisible full-screen div
+// absorbs every tap same as a dim one would unless told not to, which would silently
+// eat taps on the room's own puck buttons underneath it (switching category mid-sheet
+// would never register). `pointerEvents: 'none'` on the backdrop when scrim is off
+// lets those taps fall through to whatever's actually there; the sheet card opts back
+// into `auto` so its own contents (catalogue grid, close button) keep working.
+// Drag-to-dismiss — grabbing the handle (or the title row above the scrollable
+// content) and pulling down past DISMISS_PX closes the sheet on release, same
+// as tapping the X. `onDragProgress(0..1)` fires through the drag so a caller
+// with something else on screen (RoomPucks' right-edge column, sat beside
+// rather than under the sheet) can fade in step with the gesture instead of
+// looking frozen while the sheet itself is visibly sliding away. Resets to 0
+// on release whether or not the drag actually closed the sheet — a closed
+// sheet unmounts anyway, and a cancelled drag has nothing left to reflect.
+const SHEET_DISMISS_PX = 90;
+// `pulledAway` — a caller mid-drag on something the sheet was showing (a catalogue
+// item being carried out onto the room) needs the room fully visible to place it
+// accurately, so it slides the whole card off the bottom edge for as long as that's
+// true rather than leaving it sitting over the exact area a child is trying to see.
+// Distinct from the sheet's own drag-to-dismiss `drag` state above — that one tracks
+// a finger still on the card; this one is driven from outside by a gesture that has
+// nothing to do with the sheet chrome at all.
+function BottomSheet({ title, onClose, children, minHeight, scrim = true, onDragProgress, pulledAway = false }) {
+  const [drag, setDrag] = React.useState(null);   // { startY, offset } — offset drives the transform
+  // onUp needs the offset at release time to decide whether to dismiss, but it runs in
+  // an effect closed over the `drag` from whenever that effect was set up (only on
+  // startY change) — not the latest one onMove has since written via a setDrag updater.
+  // A ref sidesteps that stale-closure read without also having to call onClose() from
+  // inside a setDrag updater, which fires it while React is still processing this
+  // component's own state update — the "setState while rendering a different component"
+  // trap; onClose has to run as a plain step in the onUp handler instead.
+  const offsetRef = React.useRef(0);
+  // The scrollable content div doesn't stretch to the card's own minHeight — a short
+  // catalogue (one row) leaves real card background below it that isn't part of that
+  // div at all (see minHeight below), so "is the content scrolled" has to be read off
+  // this ref rather than off whatever element the pointerdown actually landed on.
+  const contentRef = React.useRef(null);
+
+  // Entrance slide-up done as a plain state-driven transition rather than the CSS
+  // `jx-sheet-up` keyframe animation most other sheets use (see DecorateBuddy.jsx for
+  // the same fix, first found there) — an animation with `fill-mode: both` keeps
+  // pinning its own end-state `transform` after it finishes, which outranks a later
+  // inline style in the cascade and would silently swallow every drag/pulledAway
+  // update this component makes afterward. Double rAF: a single frame isn't reliably
+  // enough for the browser to have painted the starting translateY(100%) before the
+  // transition-triggering state flips — without the second frame this occasionally
+  // skips straight to the end state instead of sliding.
+  const [entered, setEntered] = React.useState(false);
+  React.useEffect(() => {
+    let id2;
+    const id1 = requestAnimationFrame(() => { id2 = requestAnimationFrame(() => setEntered(true)); });
+    return () => { cancelAnimationFrame(id1); if (id2) cancelAnimationFrame(id2); };
+  }, []);
+
+  const startDrag = (clientY) => { offsetRef.current = 0; setDrag({ startY: clientY, offset: 0 }); };
+  const onHandleDown = (e) => startDrag(e.clientY);
+  // Most of a sheet is its content, not the thin handle strip above it — a child
+  // pulling down on empty space in the body (this screen's whole draw for most sheets,
+  // a short catalogue leaving a lot of blank card below it) expects the same dismiss,
+  // not just the handle exactly. Attached to the whole card (not just the content div)
+  // so that leftover card background below a short list is covered too. Scoped so it
+  // can't hijack anything already spoken for: a tap/drag that started on a button (a
+  // catalogue tile's own drag-to-place gesture, the buddy row, the close button) is
+  // left alone, and so is a list that's mid-scroll (scrollTop > 0) — only from the top
+  // of the content does a further pull down have nowhere left to go but to read as
+  // "let go of the sheet".
+  const onBodyDown = (e) => {
+    if (e.target.closest('button')) return;
+    if (contentRef.current && contentRef.current.scrollTop > 0) return;
+    startDrag(e.clientY);
+  };
+
+  React.useEffect(() => {
+    if (!drag) return;
+    const onMove = (e) => {
+      const offset = Math.max(0, e.clientY - drag.startY);
+      offsetRef.current = offset;
+      setDrag(d => d && { ...d, offset });
+      if (onDragProgress) onDragProgress(Math.min(1, offset / SHEET_DISMISS_PX));
+    };
+    const onUp = () => {
+      const dismiss = offsetRef.current > SHEET_DISMISS_PX;
+      setDrag(null);
+      if (onDragProgress) onDragProgress(0);
+      if (dismiss) onClose();
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag && drag.startY]);
+
+  const translateY = pulledAway ? '100vh' : drag ? `${drag.offset}px` : entered ? '0' : '100%';
+  const transitionTransform = drag ? 'none' : pulledAway ? 'transform .22s ease' : 'transform .4s cubic-bezier(.16,1,.3,1)';
+
   return (
-    <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(20,18,16,0.42)' }}>
-      <div className="jx-sheet-up" onClick={e => e.stopPropagation()} style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', minHeight, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 12px' }} />
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
+    <div onClick={scrim ? onClose : undefined} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: scrim ? 'rgba(20,18,16,0.42)' : 'transparent', pointerEvents: scrim ? 'auto' : 'none' }}>
+      <div className="jx-sheet-card" onClick={e => e.stopPropagation()} onPointerDown={onBodyDown}
+        style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', minHeight, display: 'flex', flexDirection: 'column', pointerEvents: pulledAway ? 'none' : 'auto',
+                 transform: `translateY(${translateY})`, transition: transitionTransform }}>
+        <div onPointerDown={onHandleDown} style={{ padding: '4px 0 8px', margin: '-4px 0 4px', touchAction: 'none', cursor: 'grab' }}>
+          <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto' }} />
+        </div>
+        <div onPointerDown={onHandleDown} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14, touchAction: 'none' }}>
           <div style={{ flex: 1, fontSize: 17, fontWeight: 800, color: THEME.fg1, lineHeight: 1.3 }}>{title}</div>
           <button type="button" onClick={onClose} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <Icon name="x" size={17} color={THEME.fg2} stroke={2.4} />
           </button>
         </div>
-        <div className="no-sb" style={{ overflowY: 'auto' }}>{children}</div>
+        <div ref={contentRef} className="no-sb" style={{ overflowY: 'auto' }}>{children}</div>
       </div>
     </div>
   );

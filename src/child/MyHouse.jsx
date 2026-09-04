@@ -6,7 +6,7 @@ import { Bar, BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { LevelBadge, ScreenHeader, screenBgActive, wornSlugFor } from './shared.jsx';
-import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
+import { CatalogTile, RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 import { GuestbookPanel } from './GuestbookPatterns.jsx';
 
 // A themed room can render two ways: 'theme' (flat wallpaper + floor band) or
@@ -31,11 +31,16 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 1800); };
   const [sceneId, setSceneId] = React.useState(PLAYER.scene);
   const [scenePicker, setScenePicker] = React.useState(false);
-  const [buddyPicker, setBuddyPicker] = React.useState(false);
-  // 'sheet' = tap buddy / button opens a picker sheet · 'row' = inline avatar row ·
-  // 'collection' = jump to the full Collection page. Switchable in Tweaks.
-  const swapBuddy = (b) => { ctx.setBuddy(b.id); setBuddyPicker(false); };
-  const onChangeBuddy = () => buddySwitch === 'sheet' ? setBuddyPicker(true) : ctx.nav('collection');
+  // 'row' = inline avatar row (see buddySwitch below) · anything else (tap the buddy
+  // itself) jumps to the full Collection page instead of a picker sheet.
+  const onChangeBuddy = () => ctx.nav('collection');
+  // hotspot's own buddy switch — a puck in the room's right-edge column (same style as
+  // the ornament/cabinet/... pucks), opening a card-grid sheet styled like their catalogue
+  // pickers rather than the Decorate 'buddy' sheet's horizontal row, since that one is about
+  // who lives in a room (room.slots), not which owned buddy is featured on this page.
+  // It shares `homeSheet` rather than keeping its own boolean — one sheet slot for every
+  // puck in that column, same as the room's own, so opening this one always closes
+  // whatever else was open instead of the two stacking on top of each other.
 
   // profile-scene decor — the items you place around the buddy in the hero itself
   // (what the user pointed at). Owned objects from any room can dress the stage.
@@ -62,6 +67,8 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const [profRoomId, setProfRoomId] = React.useState(homeRoom.id);
   const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
   const [homeSheet, setHomeSheet] = React.useState(null);
+  const [homeSheetDrag, setHomeSheetDrag] = React.useState(0);   // 0..1 — how far homeSheet has been dragged toward dismissal
+  const [homeSelectedId, setHomeSelectedId] = React.useState(null);   // the placed piece the room highlights green
   const [roomPicker, setRoomPicker] = React.useState(false);
   // persisted on PLAYER, same as `scene` below — a profile has no Save button, so the
   // room a friend visits has to survive past this component unmounting, not just a render.
@@ -178,13 +185,19 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                   rug at the very bottom, so a buddy standing lower than this reads as parked
                   behind the room rather than in it. To move her DOWN, shorten the stage —
                   pushing her past its edge only walks her back into the name.
-                  placedDecor is empty on purpose: the room's decor renders as lucide line
-                  icons in little translucent boxes — fine on a flat gradient, but over painted
-                  art they read as debug UI stuck to the screen. They come back when decor
-                  ships as sprites that can sit in the room instead of floating over it. */}
+                  placedDecor used to stay empty here on purpose: the room's decor renders
+                  as lucide line icons in little translucent boxes — fine on a flat gradient,
+                  but over painted art they read as debug UI stuck to the screen. That held
+                  until placement became a drag onto this exact room (see RoomStage's
+                  useDecorDrag) — a drop with no visible result reads as broken, which is a
+                  worse look than a floating icon chip, so the real list is back. They can
+                  go back to floating chips-on-flat-gradient only the day decor ships as
+                  sprites that actually sit in the room instead of hovering over it. */}
               <RoomStage theme={homeEd.theme} draft={homeEd.draft} buddies={[c]} backdrop={!homeEd.theme.bg}
-                placedDecor={[]} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%"
-                onPuck={(slot) => slot === 'buddy' ? setBuddyPicker(true) : setHomeSheet(slot)} />
+                placedDecor={homeEd.placedDecor} catalog={homeEd.catalog} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%"
+                onPuck={setHomeSheet} hidePucks={['buddy']}
+                extraPucks={[{ slot: 'featured', icon: 'repeat', label: 'Change buddy' }]}
+                activeSlot={homeSheet} stageRef={homeEd.stageRef} puckOpacity={1 - homeSheetDrag} selectedId={homeSelectedId} />
 
               {/* 'arrows' — the carousel the photo-scene profile already used: step through
                   the rooms you've opened, one tap at a time. */}
@@ -367,8 +380,12 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       <ScreenHeader light title={L('My Profile')} onBack={() => ctx.back()}
         right={<div style={{ display: 'flex', alignItems: 'center', gap: 4, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}><Icon name="heart" size={15} color="#fff" fill="#fff" stroke={2} /><span className="game-font" style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{PLAYER.likes}</span></div>} />
 
-      {/* the hotspot hero's pickers — same sheets the Decorate screen uses */}
-      {homeSheet && <RoomSlotSheet slot={homeSheet} onClose={() => setHomeSheet(null)} ed={homeEd} />}
+      {/* the hotspot hero's pickers — same sheets the Decorate screen uses. 'featured' (the
+          buddy-switch puck) isn't one of HOTSPOTS' own slots, so it renders its own sheet
+          below instead of going through RoomSlotSheet — but both live behind the one
+          `homeSheet` value, so opening either always replaces whatever else was open rather
+          than the two stacking. */}
+      {homeSheet && homeSheet !== 'featured' && <RoomSlotSheet slot={homeSheet} onClose={() => { setHomeSheet(null); setHomeSelectedId(null); }} ed={homeEd} onDragProgress={setHomeSheetDrag} onSelect={setHomeSelectedId} />}
 
       {/* 'sheet' switcher — the whole ladder in one place, earned and unearned together */}
       {roomPicker && (
@@ -450,6 +467,29 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
         </BottomSheet>
       )}
 
+      {/* hotspot buddy puck's sheet — the exact same CatalogTile the room's own catalogue
+          pickers use (RoomStage's isCatalog branch, e.g. the Armchair sheet): art tile,
+          checkmark on the one in effect, "Placed"/"Owned" status underneath. Tapping a
+          different buddy swaps it in and the sheet stays open (same as tapping a new
+          armchair swaps the old one out) — there's no close-on-select step to match, since
+          the catalogue tiles this is copying don't have one either. scrim off too, same as
+          those catalogue sheets (RoomSlotSheet's own `scrim={!isCatalog && ...}`) — the room
+          behind it should read at full brightness, not dimmed the way a plain picker is. */}
+      {homeSheet === 'featured' && (
+        <BottomSheet title={L('Change buddy')} onClose={() => setHomeSheet(null)} onDragProgress={setHomeSheetDrag} scrim={false}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+            {buddies.map(b => {
+              const on = b.id === c.id;
+              return (
+                <CatalogTile key={b.id} on={on} onClick={() => ctx.setBuddy(b.id)}
+                  icon={<Mascot species={b.species} stage={b.stage} color={b.color} size={44} />}
+                  name={b.name} statusColor={THEME.success} status={on ? L('Placed') : L('Owned')} />
+              );
+            })}
+          </div>
+        </BottomSheet>
+      )}
+
       {/* z-index 95: above BottomSheet's own 90, since the room-lock toast above needs to
           read while that sheet is the thing open on screen, not sit hidden behind it */}
       {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 95 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}
@@ -469,26 +509,6 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
               );
             })}
           </div>
-        </BottomSheet>
-      )}
-
-      {/* buddy picker — tap a buddy to become it; full manage flow is one tap deeper */}
-      {buddyPicker && (
-        <BottomSheet title={L('Choose your buddy')} onClose={() => setBuddyPicker(false)}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-            {buddies.map(b => {
-              const on = b.id === c.id;
-              return (
-                <button key={b.id} onClick={() => swapBuddy(b)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 6px', background: on ? THEME.brandLight : THEME.surface2, border: on ? `2px solid ${THEME.brand}` : '2px solid transparent', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <div style={{ width: 60, height: 60, borderRadius: 999, background: shade(b.color, 90), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><Mascot species={b.species} stage={b.stage} color={b.color} size={56} /></div>
-                  <span style={{ fontSize: 12.5, fontWeight: on ? 800 : 700, color: on ? THEME.brandDark : THEME.fg1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{b.name}</span>
-                </button>
-              );
-            })}
-          </div>
-          <button onClick={() => { setBuddyPicker(false); ctx.nav('collection'); }} style={{ width: '100%', marginTop: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: THEME.surface2, color: THEME.fg2, fontWeight: 800, fontSize: 13, padding: '12px', borderRadius: 14 }}>
-            {L('See all in Collection')}
-          </button>
         </BottomSheet>
       )}
 

@@ -10,6 +10,7 @@
 // changes and joined to it by a leader line. You edit the room by touching the room.
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { buyItem, CHARACTERS, DECOR, decorForRoom, OUTFITS, PLAYER, ROOMS, themeOf } from '../core/data.jsx';
 import { BottomSheet, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
@@ -45,6 +46,11 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
   const inRoom = CHARACTERS.filter(c => c.owned && homes[c.id] === room.id);
   const placedDecor = catalog.filter(d => draft.placed[d.id]);
 
+  // the room canvas's own element — a catalogue item dragged out of its sheet is
+  // "placed" by landing a pointer inside this box, so the drag needs the box's live
+  // screen position (getBoundingClientRect), not just its React props
+  const stageRef = React.useRef(null);
+
   // commit — drafts win over whatever the rows currently hold
   const commit = (nextDrafts = drafts, nextHomes = homes) => {
     rooms.forEach(r => {
@@ -66,19 +72,27 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
   // holds ONE furniture piece. Placing a new one clears whatever was there in the same
   // group first, rather than stacking a shelf full of icons; tapping the one that's
   // already on just takes it back, same "tap to take back" gesture reactions use.
-  const tapDecor = (d) => {
-    const turningOn = !draft.placed[d.id];
-    if (!ownedDecor[d.id]) {
+  // A placed entry is `true` (default spot for its slot — see DEFAULT_DECOR_POS in
+  // RoomStage) or `{x,y}` (percent of the room canvas — where a drag dropped it).
+  // Both read as "placed" (`!!draft.placed[d.id]`), so nothing that only checks
+  // on/off — the sheet's checkmark, `placedDecor` — had to change for freeform to work.
+  // shared by both gestures: a tap toggles (see tapDecor below) at the slot's default
+  // spot, a drag only ever sets the item down at the point it was dropped (dragging an
+  // already-placed item back onto the room isn't a "take it back" gesture — that's
+  // still a tap, same as everywhere else in the app).
+  const setPlaced = (d, on, pos) => {
+    if (on && !ownedDecor[d.id]) {
       const verdict = buyItem(d, PLAYER);
       if (!verdict.ok) { say(L(verdict.reason === 'level' ? 'Unlocks at Lv' : 'Not enough points yet')); return; }
       sfx.purchase();   // same cue Shop's egg purchase plays — spending points gets a sound either place
       setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
     }
     const nextPlaced = { ...draft.placed };
-    if (turningOn) catalog.forEach(item => { if (item.slot === d.slot) nextPlaced[item.id] = false; });
-    nextPlaced[d.id] = turningOn;
+    if (on) catalog.forEach(item => { if (item.slot === d.slot) nextPlaced[item.id] = false; });
+    nextPlaced[d.id] = on ? (pos || true) : false;
     editDraft({ placed: nextPlaced });
   };
+  const tapDecor = (d) => setPlaced(d, !draft.placed[d.id]);
 
   // free placement (A-6) — a buddy lives in exactly one room, and a room holds `slots`
   const tapChar = (c) => {
@@ -91,34 +105,53 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
     });
   };
 
-  return { room, theme, draft, drafts, editDraft, pts, ownedDecor, homes, tapChar, tapDecor,
-           catalog, inRoom, placedDecor, toast, say, save: () => commit() };
+  return { room, theme, draft, drafts, editDraft, pts, ownedDecor, homes, tapChar, tapDecor, setPlaced,
+           catalog, inRoom, placedDecor, stageRef, toast, say, save: () => commit() };
 }
 
-// `puck` is where the button sits, `aim` the point on the surface it points at —
-// both percentages of the canvas, so the room can be any height.
-// The three illustrated rooms are one set, drawn to a shared layout: a shelf standing on the
-// left, a seat on the right, a window centred above them, and an empty floor for the buddy.
-// So these aim at that layout once and hold for every room — Green's stump chair, Town's desk
-// and Magic's armchair all sit under the same dot. A phone crops ~9% off each side of the art,
-// which is why nothing aims past ~85%: the wall decor drawn at the far edges (the framed leaf,
-// the pinboard, the dreamcatcher) is only half there on a real screen, so it can't hold a dot.
+// Each entry is one button in RoomPucks' fixed right-edge column, top to bottom in
+// this array's own order — there's no per-room aiming any more (see RoomPuckStyles.jsx),
+// so the order here is the only layout decision left to make.
+// `catalogSlot` — the DECOR `.slot` value this button's picker filters the catalogue by,
+// and also what gates the button's very presence: `pucks` below drops any entry whose
+// room has nothing in that slot, so Green/Town don't grow four buttons for a moodboard
+// set only Dream has pieces for. Slot and catalogSlot used to be the same two strings
+// (`shelf` button showing `object`-slot rows, `furniture` button showing
+// `furniture`-slot rows); kept separate so a button can point at a DECOR slot with a
+// different name (the moodboard set below) without the picker logic caring which.
 const HOTSPOTS = [
-  { slot: 'wallpaper', icon: 'paint-roller', label: 'Wallpaper', puck: [14, 17], aim: [45, 8] },
-  // The shelf, and the only way to the object catalogue — plants, lanterns, the small things
-  // that stand ON furniture rather than being it. Every room in the set puts a full-height
-  // shelf here: Green's tree-trunk bookcase, Town's toy shelf, Magic's crystal cabinet.
-  { slot: 'shelf',     icon: 'sprout',       label: 'Shelf',     puck: [27, 30], aim: [12, 45] },
-  // The seat, opposite it. Dot on the seat rather than its back: the line only has to reach
-  // the object, not travel the length of it — and a puck parked ON its own subject points at
-  // nothing, since both ends land on the same thing and the line says nothing.
-  { slot: 'furniture', icon: 'armchair',     label: 'Furniture', puck: [62, 32], aim: [80, 45] },
-  // aim low on the buddy, not at her head — a dot on the face covers the one part of her
-  // that carries any expression, and that face is what the page is for. The puck sits on
-  // bare floor to the right, where every room in the set leaves it empty.
-  { slot: 'buddy',     icon: 'paw-print',    label: 'Buddies',   puck: [89, 88], aim: [58, 82] },
-  { slot: 'flooring',  icon: 'grid-3x3',     label: 'Flooring',  puck: [17, 86], aim: [45, 91] },
+  { slot: 'wallpaper', icon: 'paint-roller', label: 'Wallpaper' },
+  // The only way to the object catalogue — plants, lanterns, the small things that
+  // stand ON furniture rather than being it.
+  { slot: 'shelf',     icon: 'sprout',       label: 'Shelf',     catalogSlot: 'object' },
+  { slot: 'furniture', icon: 'armchair',     label: 'Furniture', catalogSlot: 'furniture' },
+  { slot: 'buddy',     icon: 'paw-print',    label: 'Buddies' },
+  { slot: 'flooring',  icon: 'grid-3x3',     label: 'Flooring' },
+
+  // ── Dream Room moodboard set — each on its own DECOR slot (see data.jsx) so all
+  // four can be placed at once instead of bumping the shelf/furniture buttons above
+  // off their own pieces.
+  { slot: 'ornament', icon: 'moon-star', label: 'Ornaments', catalogSlot: 'ornament' },
+  { slot: 'cabinet',  icon: 'archive',   label: 'Cabinet',   catalogSlot: 'cabinet' },
+  { slot: 'armchair', icon: 'armchair',  label: 'Armchair',  catalogSlot: 'armchair' },
+  { slot: 'rug',      icon: 'square',    label: 'Rug',       catalogSlot: 'rug' },
 ];
+
+// Where a placed item sits when nobody's dragged it there — an object (shelf item)
+// starts up near where a shelf usually stands, a furniture piece down on the floor.
+// Percent of the room canvas, same coordinate space a drag drop writes into draft.placed.
+// Moodboard-set defaults land near their puck's `aim` above rather than sharing the
+// generic object/furniture spot, since all four can be on screen together.
+const DEFAULT_DECOR_POS = {
+  object: { x: 50, y: 22 }, furniture: { x: 50, y: 78 },
+  ornament: { x: 27, y: 24 }, cabinet: { x: 20, y: 60 }, armchair: { x: 72, y: 62 }, rug: { x: 50, y: 82 },
+};
+
+// Real illustrated art (an `img`, not a lucide glyph) renders at its own footprint per
+// slot rather than the small icon-badge size — a rug drawn as a 30px glyph is illegible.
+// Height is the driving dimension (`width: auto`) so a wide piece (the rug) and a tall
+// one (the armchair) both read at a natural scale without stretching.
+const DECOR_IMG_SIZE = { rug: 130, armchair: 150, cabinet: 130, ornament: 90 };
 
 // ── RoomStage — the canvas, and the pucks that edit it ───────────────
 // `buddies` is whoever the host wants standing here — the caller decides, because the
@@ -141,17 +174,37 @@ const HOTSPOTS = [
 // buddy still render, but the edit pucks don't — a dot that opens nothing on tap reads as
 // broken, not as "not yours to touch". `onPuck` still defaults to a no-op underneath that,
 // since interactive-but-handlerless is also a valid state to fail quietly on.
-function RoomStage({ theme, draft, buddies, placedDecor, onPuck = () => {}, height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', interactive = true }) {
+// `extraPucks` — buttons a host bolts onto the same right-edge column that don't come
+// from HOTSPOTS at all (the profile's "change featured buddy" puck below `PLAYER.activeCharId`
+// is not a room-occupancy slot — that's the existing 'buddy' hotspot, a different concept —
+// so it can't just un-hide 'buddy' without picking up that sheet's semantics). Prepended
+// ahead of the room's own pucks since it's the one action every hotspot room shares.
+// `puckOpacity` — the right-edge column fades to match a sheet being dragged
+// toward dismissal (see BottomSheet's onDragProgress in RoomSlotSheet below);
+// callers with no sheet drag to report just leave it at the default 1.
+// `selectedId` — the placed piece a child just dropped (see RoomSlotSheet's onSelect)
+// gets a green ring in place, the same colour the drag ghost carries the whole way
+// out of the sheet, so "this is the one you're working on" reads continuously across
+// pick-up, carry and landing instead of stopping the moment it's set down.
+function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = () => {}, activeSlot, hidePucks = [], extraPucks = [], height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', interactive = true, stageRef, puckOpacity = 1, selectedId = null }) {
   // A room drawn as one illustration has no repaintable wall or floor, so those two pucks
   // would open a picker whose effect nobody can see. They come back the day the art ships
   // as separate wall/floor layers — which is what A-7's wallpaper and flooring really need.
-  const pucks = interactive ? HOTSPOTS.filter(h => !(theme.bg && (h.slot === 'wallpaper' || h.slot === 'flooring'))) : [];
-  // a hairline of ink reads on a pale gradient and disappears into illustration, so the
-  // leader lines flip to white the moment there's art under them
-  const onArt = !!theme.bg || !backdrop;
+  // A puck with its own `catalogSlot` (the moodboard set) only shows once this room's
+  // catalogue actually has something in it — Green/Town don't carry Rug or Cabinet yet,
+  // so those pucks remain a Dream Room thing without a room-by-room allowlist to maintain.
+  // `hidePucks` drops specific slots for callers that don't want them at all — the profile
+  // hero has no room-occupancy concept (see MyHouse), so it hides 'buddy' rather than
+  // wiring it to a picker.
+  const pucks = interactive ? [...extraPucks, ...HOTSPOTS.filter(h => {
+    if (hidePucks.includes(h.slot)) return false;
+    if (theme.bg && (h.slot === 'wallpaper' || h.slot === 'flooring')) return false;
+    if (h.catalogSlot && !catalog.some(d => d.slot === h.catalogSlot)) return false;
+    return true;
+  })] : [];
 
   return (
-    <div style={{ position: 'relative', height, borderRadius: radius, overflow: backdrop ? 'hidden' : 'visible' }}>
+    <div ref={stageRef} style={{ position: 'relative', height, borderRadius: radius, overflow: backdrop ? 'hidden' : 'visible' }}>
       {backdrop && (
         <React.Fragment>
           {/* the two painted surfaces — also the fallback under a theme with no art */}
@@ -166,20 +219,34 @@ function RoomStage({ theme, draft, buddies, placedDecor, onPuck = () => {}, heig
         </React.Fragment>
       )}
 
-      {/* ornaments hang on the wall, furniture stands on the floor line — the slot
-          decides where a piece lives, so no item needs coordinates of its own */}
-      <div style={{ position: 'absolute', top: '20%', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 18 }}>
-        {placedDecor.filter(d => d.slot === 'object').map(d => (
-          <div key={d.id} style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,.7)', border: `2px solid ${theme.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name={d.icon} size={22} color={THEME.fg2} stroke={2.1} />
+      {/* each piece sits at wherever it was dropped (a drag writes {x,y} into
+          draft.placed) or, tapped on rather than dragged, at its slot's default spot —
+          see DEFAULT_DECOR_POS. Both are percent of this box, so free placement scales
+          with whatever size the room is drawn at (Decorate's card vs. the profile's
+          full-bleed hero). */}
+      {placedDecor.map(d => {
+        const raw = draft.placed[d.id];
+        const isObject = d.slot === 'object';
+        const pos = (raw && typeof raw === 'object') ? raw : (DEFAULT_DECOR_POS[d.slot] || DEFAULT_DECOR_POS[isObject ? 'object' : 'furniture']);
+        // Finished art (`img`) renders at the real illustration's own footprint — see
+        // DECOR_IMG_SIZE — instead of the small icon-badge treatment icon-only rows
+        // (Green/Town's tent, bench, busstop, ...) still get below.
+        const imgSize = DECOR_IMG_SIZE[d.slot];
+        const selected = d.id === selectedId;
+        return (
+          <div key={d.id} style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', borderRadius: 14, boxShadow: selected ? `0 0 0 3px ${THEME.success}, 0 0 16px 3px rgba(75,129,79,.4)` : 'none', transition: 'box-shadow .2s ease' }}>
+            {d.img ? (
+              <img src={d.img} alt={L(d.name)} style={{ height: imgSize, width: 'auto', maxWidth: 'none', display: 'block', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.25))' }} />
+            ) : isObject ? (
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,.7)', border: `2px solid ${theme.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name={d.icon} size={22} color={THEME.fg2} stroke={2.1} />
+              </div>
+            ) : (
+              <Icon name={d.icon} size={30} color={THEME.fg2} stroke={2.1} />
+            )}
           </div>
-        ))}
-      </div>
-      <div style={{ position: 'absolute', bottom: floorLine, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 16 }}>
-        {placedDecor.filter(d => d.slot !== 'object').map(d => (
-          <Icon key={d.id} name={d.icon} size={30} color={THEME.fg2} stroke={2.1} />
-        ))}
-      </div>
+        );
+      })}
 
       {/* standing on the floor line — a full room holds ROOM_CAPACITY, so the mascot
           shrinks as the room fills instead of overflowing */}
@@ -194,26 +261,139 @@ function RoomStage({ theme, draft, buddies, placedDecor, onPuck = () => {}, heig
         ))}
       </div>
 
-      <RoomPucks pucks={pucks} onPuck={onPuck} onArt={onArt} />
+      <RoomPucks pucks={pucks} onPuck={onPuck} activeSlot={activeSlot} opacity={puckOpacity} />
     </div>
+  );
+}
+
+// ── useDecorDrag — drag a shelf/furniture item out of its sheet and drop it on the
+// room to place it. A plain tap still toggles (see tapDecor) — this only decides
+// whether a *pointer that moved* landed inside the room's own box (ed.stageRef) when
+// it lifted. Dropped outside the room, or outside the sheet without moving far,
+// cancels rather than guessing at intent. `onDropped(d)` fires only on that
+// successful-drag-lands-in-the-room case — a plain tap doesn't need a confirm step,
+// it already has one (tap the same tile again to take it back), but freehand placement
+// just moved something to an arbitrary spot with no undo in sight, so the caller uses
+// this to show one.
+function useDecorDrag(ed, onDropped) {
+  const [drag, setDrag] = React.useState(null);   // { d, x, y, over }
+  const movedRef = React.useRef(false);
+  const startRef = React.useRef({ x: 0, y: 0 });
+
+  // null outside the room; inside, the drop point as a percent of the room box —
+  // the same {x,y} shape draft.placed stores, clamped off the very edge so a piece
+  // dropped against the wall still shows whole rather than clipping out of the art.
+  const stagePos = (x, y) => {
+    const box = ed.stageRef.current;
+    if (!box) return null;
+    const r = box.getBoundingClientRect();
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null;
+    return {
+      x: Math.min(94, Math.max(6, ((x - r.left) / r.width) * 100)),
+      y: Math.min(90, Math.max(8, ((y - r.top) / r.height) * 100)),
+    };
+  };
+
+  const onDown = (e, d) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    startRef.current = { x: e.clientX, y: e.clientY };
+    movedRef.current = false;
+    setDrag({ d, x: e.clientX, y: e.clientY, over: false });
+  };
+
+  React.useEffect(() => {
+    if (!drag) return;
+    const onMove = (e) => {
+      if (!movedRef.current && Math.hypot(e.clientX - startRef.current.x, e.clientY - startRef.current.y) > 6) movedRef.current = true;
+      setDrag(g => g && { ...g, x: e.clientX, y: e.clientY, over: !!stagePos(e.clientX, e.clientY) });
+    };
+    const onUp = (e) => {
+      if (movedRef.current) {
+        const pos = stagePos(e.clientX, e.clientY);
+        if (pos) { ed.setPlaced(drag.d, true, pos); onDropped && onDropped(drag.d); }
+      } else ed.tapDecor(drag.d);
+      setDrag(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag && drag.d]);
+
+  return { drag, onDown };
+}
+
+// ── CatalogTile — the card shape every "pick one" grid sheet uses: a rounded tile,
+// a green checkmark badge when it's the one in effect, a status line underneath
+// saying why (owned-but-not-placed, placed, or a price if you don't own it yet).
+// Shared by the room's own catalogue pickers below (isCatalog) and the profile's
+// buddy-switch sheet (MyHouse) so a "pick one of these" moment looks and behaves
+// the same everywhere it shows up, not just similar.
+function CatalogTile({ img, icon, name, on, status, statusColor, onClick, onPointerDown, dimmed }) {
+  return (
+    <button onClick={onClick} onPointerDown={onPointerDown} style={{ background: on ? THEME.brandLight : THEME.surface2, border: on ? `2px solid ${THEME.brand}` : '2px solid transparent', outline: 'none', borderRadius: 16, padding: '14px 6px 10px', cursor: onPointerDown ? 'grab' : 'pointer', touchAction: onPointerDown ? 'none' : 'auto', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative', opacity: dimmed ? 0.4 : 1 }}>
+      {on && <div style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></div>}
+      {img ? <img src={img} alt="" style={{ width: 48, height: 48, objectFit: 'contain' }} /> : icon}
+      <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{name}</div>
+      <span style={{ fontSize: 10.5, fontWeight: 800, color: statusColor, display: 'inline-flex', alignItems: 'center', gap: 2 }}>{status}</span>
+    </button>
   );
 }
 
 // ── RoomSlotSheet — one puck, one picker ────────────────────────────
 // Each sheet edits only the surface its puck points at, so a child never meets a
 // piece that wouldn't land where they just tapped.
-function RoomSlotSheet({ slot, onClose, ed }) {
-  const { room, theme, draft, editDraft, catalog, ownedDecor, homes, tapChar, tapDecor, inRoom } = ed;
+function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
+  const { room, theme, draft, editDraft, catalog, ownedDecor, homes, tapChar, inRoom } = ed;
   const hs = HOTSPOTS.find(h => h.slot === slot);
+  const isCatalog = !!hs.catalogSlot;
+  // Rows this particular slot's catalogue actually needs (3 tiles per row), so a
+  // single-item slot (Ornament, Cabinet, ...) gets a sheet sized to fit it instead of
+  // the tall card a many-item slot (Shelf) needs — see minHeight below.
+  const catalogRows = isCatalog ? Math.ceil(catalog.filter(d => d.slot === hs.catalogSlot).length / 3) : 0;
 
+  // The piece a drag just dropped into the room — not a tap-placed one, and not
+  // whatever was already sitting there before this sheet opened. A drop is a bigger
+  // commitment than a tap (it chose WHERE, not just on/off), so it earns a moment to
+  // confirm or take back before the confirmation goes away. Cleared on slot change so
+  // switching categories doesn't leave a stale confirm bar pointing at last sheet's item.
+  const [justDropped, setJustDropped] = React.useState(null);
+  React.useEffect(() => { setJustDropped(null); }, [slot]);
+  const { drag, onDown } = useDecorDrag(ed, setJustDropped);
+
+  // Same "fade the right-edge column" channel the sheet's own drag-to-dismiss drives
+  // (see BottomSheet/onDragProgress) — a catalogue item being carried out onto the
+  // room is a second, unrelated reason to want both the sheet and the puck column out
+  // of the way, so it drives the same signal rather than inventing a parallel one.
+  React.useEffect(() => { if (onDragProgress) onDragProgress(drag ? 1 : 0); }, [!!drag]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // The just-placed piece is also "the selected one" — RoomStage draws a green ring
+  // around whichever placed item matches this id (see `selectedId` there), so a child
+  // dragging a piece out gets the same "yes, this is the one you're moving" read once
+  // it lands as the confirm bar already gives with its check/delete pair.
+  React.useEffect(() => { if (onSelect) onSelect(justDropped ? justDropped.id : null); }, [justDropped]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The drag ghost and the room highlight ring below are portalled straight to
+  // document.body, not rendered in place. The whole app lives inside a `transform:
+  // scale(...)` phone-mockup wrapper (shell/App.jsx) — CSS makes ANY transformed
+  // ancestor the containing block for a `position: fixed` descendant, so without the
+  // portal, `left`/`top` would resolve against that scaled wrapper's own box instead
+  // of the real viewport, landing the ghost somewhere other than the pointer (often
+  // clipped out entirely). Escaping to body is what makes drag.x/y (raw
+  // e.clientX/clientY) and stageRef's getBoundingClientRect() — both already
+  // viewport-accurate — line up with where things actually paint.
   return (
-    // furniture/shelf share one grid layout but not one item count — Shelf's catalogue
-    // runs three rows deep, Furniture sometimes just one, and the sheet used to
-    // shrink-wrap to whichever you'd tapped. minHeight keeps the two catalogue slots at
-    // the same card height either way, so switching between them doesn't visibly resize
-    // the sheet out from under you. Wallpaper/flooring/buddy stay shrink-wrapped —
-    // their own content shapes are steady enough not to need it.
-    <BottomSheet title={L(hs.label)} onClose={onClose} minHeight={(slot === 'furniture' || slot === 'shelf') ? 440 : undefined}>
+    <React.Fragment>
+    {/* Catalogue sheets size to their own row count (catalogRows above) rather than one
+        shared figure — Shelf's handful of items run three rows deep, but most of the
+        moodboard slots (Ornament, Cabinet, Armchair, Rug) hold exactly one tile today,
+        and forcing those to the same tall card left most of the sheet empty. An empty
+        catalogue (0 rows) shrink-wraps to its "nothing here yet" line, same as
+        wallpaper/flooring below, which stay shrink-wrapped either way.
+        scrim off for the catalogue sheets AND buddy — dragging a piece onto the room, or
+        checking who's already standing in it, means the room has to read at full
+        brightness while the sheet is open, not dimmed the way a plain picker's backdrop
+        dims. */}
+    <BottomSheet title={L(hs.label)} onClose={onClose} minHeight={catalogRows > 0 ? Math.min(560, catalogRows * 150 + 230) : undefined} scrim={!isCatalog && slot !== 'buddy'} onDragProgress={onDragProgress} pulledAway={!!drag}>
       {(slot === 'wallpaper' || slot === 'flooring') && (
         <div style={{ display: 'flex', gap: 10 }}>
           {(slot === 'wallpaper' ? theme.wallpapers : theme.floorings).map(t => {
@@ -256,28 +436,69 @@ function RoomSlotSheet({ slot, onClose, ed }) {
           pointer, not a swap. (There used to be a third, 'tv', offering this same furniture
           list from a second dot; the room it pointed at is gone and it was never a distinct
           choice, so it went with the art.) */}
-      {(slot === 'furniture' || slot === 'shelf') && (() => {
-        const forSlot = catalog.filter(d => slot === 'shelf' ? d.slot === 'object' : d.slot !== 'object');
+      {isCatalog && (() => {
+        const forSlot = catalog.filter(d => d.slot === hs.catalogSlot);
         if (!forSlot.length) return <div style={{ fontSize: 13, color: THEME.fg2, textAlign: 'center', padding: '18px 0' }}>{L('Nothing for this spot in this room yet.')}</div>;
         return (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
             {forSlot.map(d => {
               const own = ownedDecor[d.id], isOn = !!draft.placed[d.id];
+              const beingDragged = drag && drag.d.id === d.id;
               return (
-                <button key={d.id} onClick={() => tapDecor(d)} style={{ background: isOn ? THEME.brandLight : THEME.surface2, border: isOn ? `2px solid ${THEME.brand}` : '2px solid transparent', outline: 'none', borderRadius: 16, padding: '14px 6px 10px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative' }}>
-                  {isOn && <div style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></div>}
-                  <Icon name={d.icon} size={26} color={isOn ? THEME.brand : THEME.fg2} stroke={2.1} />
-                  <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{L(d.name)}</div>
-                  {own ? <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.success }}>{isOn ? L('Placed') : L('Owned')}</span>
-                       : <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.gold, display: 'inline-flex', alignItems: 'center', gap: 2 }}><SafePointIcon size={13} />{d.price}</span>}
-                </button>
+                <CatalogTile key={d.id} onPointerDown={(e) => onDown(e, d)} dimmed={beingDragged} on={isOn}
+                  img={d.img} icon={!d.img && <Icon name={d.icon} size={26} color={isOn ? THEME.brand : THEME.fg2} stroke={2.1} />}
+                  name={L(d.name)} statusColor={own ? THEME.success : THEME.gold}
+                  status={own ? (isOn ? L('Placed') : L('Owned')) : <React.Fragment><SafePointIcon size={13} />{d.price}</React.Fragment>} />
               );
             })}
           </div>
         );
       })()}
+
     </BottomSheet>
+
+    {/* the drag itself — a ghost card that tracks the pointer. Green the whole time it's
+        airborne (this is the piece you're moving — same colour the room highlights it
+        with once it lands, see RoomStage's `selectedId`), thickening once it's over the
+        room so that alone also carries the separate "this will land here" feedback.
+        Portalled to document.body (see the comment above) so position:fixed is truly
+        viewport-fixed. */}
+    {drag && createPortal(
+      <div style={{ position: 'fixed', left: drag.x, top: drag.y, transform: 'translate(-50%,-50%)', zIndex: 100, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 14px', borderRadius: 16, background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.28)', border: `${drag.over ? 3 : 2}px solid ${THEME.success}` }}>
+        {drag.d.img ? <img src={drag.d.img} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                    : <Icon name={drag.d.icon} size={24} color={THEME.brand} stroke={2.1} />}
+        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.fg1, whiteSpace: 'nowrap' }}>{L(drag.d.name)}</span>
+      </div>,
+      document.body
+    )}
+
+    {/* the just-dropped confirm bar — Done keeps it exactly where it landed (already
+        saved; setPlaced wrote it the moment the drag ended), Delete takes it back off
+        the room. Sits near the room's own bottom edge, not the dropped item's exact
+        spot: a piece dropped near the top of the room would otherwise push this bar up
+        past where a thumb can reach it, and the room only ever holds the one thing this
+        sheet is currently about, so "the room" is unambiguous enough to point at. Guards
+        on `draft.placed[justDropped.id]` so it can't outlive the placement it's about —
+        tapping the same tile off elsewhere in the sheet, or opening a fresh drag, both
+        make the bar disappear rather than confirm/delete something no longer there. */}
+    {justDropped && !drag && !!draft.placed[justDropped.id] && ed.stageRef.current && (() => {
+      const r = ed.stageRef.current.getBoundingClientRect();
+      return createPortal(
+        <div style={{ position: 'fixed', left: r.left + r.width / 2, top: r.bottom - 66, transform: 'translateX(-50%)', zIndex: 97, display: 'flex', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, background: '#fff', boxShadow: '0 8px 22px rgba(0,0,0,.28)' }}>
+          <button onClick={() => setJustDropped(null)} aria-label={L('Done')}
+            style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="check" size={19} color="#fff" stroke={2.8} />
+          </button>
+          <button onClick={() => { ed.setPlaced(justDropped, false); setJustDropped(null); }} aria-label={L('Delete')}
+            style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="trash-2" size={18} color={THEME.danger} stroke={2.3} />
+          </button>
+        </div>,
+        document.body
+      );
+    })()}
+    </React.Fragment>
   );
 }
 
-export { RoomStage, RoomSlotSheet, useRoomEditing };
+export { RoomStage, RoomSlotSheet, useRoomEditing, CatalogTile };
