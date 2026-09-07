@@ -130,8 +130,17 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
           fold, so a light scroll used to be possible even though nothing sat below it worth
           scrolling to: the pill would scroll out from under the header and the room would
           shift up over empty floor, then settle back once you let go. Locked to `hidden` so
-          the room reads as one fixed scene, not a page. */}
-      <div className="no-sb" style={{ position: 'absolute', inset: 0, overflowY: variant === 'hotspot' ? 'hidden' : 'auto', paddingTop: 102, paddingBottom: 110,
+          the room reads as one fixed scene, not a page.
+          `bottom: -160` (rather than the plain 0 every other inset side uses) — this box's
+          own background is what's on screen behind the room (the art or the flat gradient,
+          see below), so shifting it up by the same 160px a sheet's open state does would
+          otherwise walk its bottom edge 160px short of `.screen`'s own bottom, uncovering
+          `.screen`'s bare white behind it (see index.html's `.screen` rule) — a white bar
+          exactly 160px tall wherever a sheet is open, drag included. Extending the box past
+          the visible frame by that same 160px means the shift just reveals more of its OWN
+          background instead of the layer under it, at every point along the shift, not only
+          at rest. */}
+      <div className="no-sb" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: -160, overflowY: variant === 'hotspot' ? 'hidden' : 'auto', paddingTop: 102, paddingBottom: 110,
         transform: homeSheet ? 'translateY(-160px)' : 'none', transition: 'transform .32s cubic-bezier(.2,.8,.2,1)',
         ...(roomPage
           ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
@@ -209,48 +218,60 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
-              <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)' }}>{PLAYER.name}</span>
-              <LevelBadge level={PLAYER.level} />
-            </div>
-
-            {/* one dot per room — which one you're in, and how many there are */}
-            {roomSwitch === 'arrows' && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
-                {ROOMS.map(r => {
-                  const on = r.id === homeEd.room.id;
-                  return (
-                    <button key={r.id} onClick={() => tapRoom(r)} aria-label={L(r.name)}
-                      style={{ width: on ? 18 : 6, height: 6, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', background: on ? '#fff' : 'rgba(255,255,255,.55)', transition: 'width .18s ease' }} />
-                  );
-                })}
+            {/* name, reactions and the guestbook all fade out together while a catalogue
+                piece is airborne, or sitting in its post-drop confirm bar (see
+                RoomSlotSheet's onDragProgress, held through `justDropped` too) — the same
+                "give the room a clear stage"
+                signal that already fades RoomPucks' own column above, just handed to
+                everything below it as well. None of it means anything mid-placement, and
+                the guestbook book in particular sits right where a piece dropped near the
+                bottom of the room would land, fighting the very thing the child is looking
+                at. `pointerEvents: 'none'` while faded so a stray tap here can't register on
+                a reaction/guestbook that isn't really meant to be interacted with right now. */}
+            <div style={{ opacity: 1 - homeSheetDrag, pointerEvents: homeSheetDrag > 0 ? 'none' : 'auto', transition: 'opacity .15s ease' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
+                <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)' }}>{PLAYER.name}</span>
+                <LevelBadge level={PLAYER.level} />
               </div>
-            )}
 
-            {/* What friends left when they visited — the return leg of A-10 / F-32, which the
-                profile never had. A visiting friend can leave a reaction and a note on
-                FriendHouse; on your own room the reaction went nowhere at all, and the notes
-                sat on a screen with nothing here pointing at it.
-                It stays ONE row of chips, deliberately. A note preview used to live further
-                down this page and was pulled (see below) because the profile is the room, not
-                a feed under it — that still holds. A count is not a feed: it says someone came
-                and left something, and the reading of it happens on the Guestbook screen.
-                The breakdown is the top three only. All five would be a row of near-zeros
-                saying less than the three that actually happened, and it is a summary — the
-                exact tally of 👏 is not what a child comes to this row for. */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-              {topReactions.map(r => (
-                <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 10px' }}>
-                  <Icon name={r.icon} size={13} color={r.color} stroke={2.3} />
-                  <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg1 }}>{r.n}</span>
+              {/* one dot per room — which one you're in, and how many there are */}
+              {roomSwitch === 'arrows' && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
+                  {ROOMS.map(r => {
+                    const on = r.id === homeEd.room.id;
+                    return (
+                      <button key={r.id} onClick={() => tapRoom(r)} aria-label={L(r.name)}
+                        style={{ width: on ? 18 : 6, height: 6, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', background: on ? '#fff' : 'rgba(255,255,255,.55)', transition: 'width .18s ease' }} />
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* the notes friends left — always rendered, even at zero, so this stays the one
-                thing on the room that says a guestbook exists. */}
-            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 18 }}>
-              <GuestbookPanel notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} roomTheme={homeEd.room.theme} />
+              {/* What friends left when they visited — the return leg of A-10 / F-32, which the
+                  profile never had. A visiting friend can leave a reaction and a note on
+                  FriendHouse; on your own room the reaction went nowhere at all, and the notes
+                  sat on a screen with nothing here pointing at it.
+                  It stays ONE row of chips, deliberately. A note preview used to live further
+                  down this page and was pulled (see below) because the profile is the room, not
+                  a feed under it — that still holds. A count is not a feed: it says someone came
+                  and left something, and the reading of it happens on the Guestbook screen.
+                  The breakdown is the top three only. All five would be a row of near-zeros
+                  saying less than the three that actually happened, and it is a summary — the
+                  exact tally of 👏 is not what a child comes to this row for. */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                {topReactions.map(r => (
+                  <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.85)', borderRadius: 999, padding: '5px 10px' }}>
+                    <Icon name={r.icon} size={13} color={r.color} stroke={2.3} />
+                    <span className="game-font" style={{ fontSize: 12.5, fontWeight: 500, color: THEME.fg1 }}>{r.n}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* the notes friends left — always rendered, even at zero, so this stays the one
+                  thing on the room that says a guestbook exists. */}
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 18 }}>
+                <GuestbookPanel notes={MY_GUESTBOOK} likes={guestLikes} onLike={toggleGuestLike} roomTheme={homeEd.room.theme} />
+              </div>
             </div>
           </div>
         )}

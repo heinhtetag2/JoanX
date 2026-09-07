@@ -219,6 +219,23 @@ function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = 
         </React.Fragment>
       )}
 
+      {/* standing on the floor line — a full room holds ROOM_CAPACITY, so the mascot
+          shrinks as the room fills instead of overflowing. Painted BEFORE the decor
+          below on purpose (was after — see the comment on that block) so a piece
+          freely dropped near where the buddy stands stays in front of them rather
+          than disappearing behind, since the whole point of a freeform drop is the
+          child chose that exact spot. */}
+      <div style={{ position: 'absolute', bottom: floorLine, left: 0, right: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4 }}>
+        {/* the lone featured buddy gets Home's idle bob — it's the thing you came to look
+            at. A roomful doesn't: a shelf of buddies all bobbing is a list in motion, and
+            the eye can't settle on any of them. */}
+        {buddies.map(c => (
+          <Mascot key={c.id} species={c.species} stage={c.stage} color={c.color} float={buddies.length <= 1}
+            size={buddies.length <= 1 ? (buddySize || 132) : buddies.length <= 2 ? 96 : buddies.length <= 4 ? 72 : 54}
+            wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
+        ))}
+      </div>
+
       {/* each piece sits at wherever it was dropped (a drag writes {x,y} into
           draft.placed) or, tapped on rather than dragged, at its slot's default spot —
           see DEFAULT_DECOR_POS. Both are percent of this box, so free placement scales
@@ -248,19 +265,6 @@ function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = 
         );
       })}
 
-      {/* standing on the floor line — a full room holds ROOM_CAPACITY, so the mascot
-          shrinks as the room fills instead of overflowing */}
-      <div style={{ position: 'absolute', bottom: floorLine, left: 0, right: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'flex-end', gap: 4 }}>
-        {/* the lone featured buddy gets Home's idle bob — it's the thing you came to look
-            at. A roomful doesn't: a shelf of buddies all bobbing is a list in motion, and
-            the eye can't settle on any of them. */}
-        {buddies.map(c => (
-          <Mascot key={c.id} species={c.species} stage={c.stage} color={c.color} float={buddies.length <= 1}
-            size={buddies.length <= 1 ? (buddySize || 132) : buddies.length <= 2 ? 96 : buddies.length <= 4 ? 72 : 54}
-            wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
-        ))}
-      </div>
-
       <RoomPucks pucks={pucks} onPuck={onPuck} activeSlot={activeSlot} opacity={puckOpacity} />
     </div>
   );
@@ -283,11 +287,18 @@ function useDecorDrag(ed, onDropped) {
   // null outside the room; inside, the drop point as a percent of the room box —
   // the same {x,y} shape draft.placed stores, clamped off the very edge so a piece
   // dropped against the wall still shows whole rather than clipping out of the art.
+  // The bottom edge is deliberately NOT one of the reject bounds below, unlike the
+  // other three — a host that hides its own content below the room stage while a
+  // drag is live (see MyHouse's fade-out during onDragProgress) leaves the room's
+  // art the only thing a child can actually see down there, so a piece let go past
+  // this box's own bottom still reads as "dropped in the room", just resolved to
+  // the lowest spot the room can hold rather than silently rejected because the
+  // interactive box itself is shorter than what's on screen.
   const stagePos = (x, y) => {
     const box = ed.stageRef.current;
     if (!box) return null;
     const r = box.getBoundingClientRect();
-    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return null;
+    if (x < r.left || x > r.right || y < r.top) return null;
     return {
       x: Math.min(94, Math.max(6, ((x - r.left) / r.width) * 100)),
       y: Math.min(90, Math.max(8, ((y - r.top) / r.height) * 100)),
@@ -353,10 +364,12 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
   const catalogRows = isCatalog ? Math.ceil(catalog.filter(d => d.slot === hs.catalogSlot).length / 3) : 0;
 
   // The piece a drag just dropped into the room — not a tap-placed one, and not
-  // whatever was already sitting there before this sheet opened. A drop is a bigger
-  // commitment than a tap (it chose WHERE, not just on/off), so it earns a moment to
-  // confirm or take back before the confirmation goes away. Cleared on slot change so
-  // switching categories doesn't leave a stale confirm bar pointing at last sheet's item.
+  // whatever was already sitting there before this sheet opened. setPlaced already
+  // wrote the placement the moment the drag ended (see useDecorDrag's onUp), so this
+  // isn't a save step; it earns a moment to LOOK at where it landed and back out via
+  // Delete if that spot was wrong, rather than having to reopen the sheet and hunt for
+  // the tile again. Cleared on slot change so switching categories doesn't leave a
+  // stale confirm bar pointing at last sheet's item.
   const [justDropped, setJustDropped] = React.useState(null);
   React.useEffect(() => { setJustDropped(null); }, [slot]);
   const { drag, onDown } = useDecorDrag(ed, setJustDropped);
@@ -365,11 +378,14 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
   // (see BottomSheet/onDragProgress) — a catalogue item being carried out onto the
   // room is a second, unrelated reason to want both the sheet and the puck column out
   // of the way, so it drives the same signal rather than inventing a parallel one.
-  React.useEffect(() => { if (onDragProgress) onDragProgress(drag ? 1 : 0); }, [!!drag]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // Held through `justDropped` too, not just `drag` — the confirm bar below reads
+  // against the room, so the same clear stage that served the drag itself keeps
+  // serving the look-and-decide moment right after, not just the drag.
+  React.useEffect(() => { if (onDragProgress) onDragProgress((drag || justDropped) ? 1 : 0); }, [!!drag, justDropped]);   // eslint-disable-line react-hooks/exhaustive-deps
   // The just-placed piece is also "the selected one" — RoomStage draws a green ring
   // around whichever placed item matches this id (see `selectedId` there), so a child
   // dragging a piece out gets the same "yes, this is the one you're moving" read once
-  // it lands as the confirm bar already gives with its check/delete pair.
+  // it lands as the confirm bar below gives with its check/delete pair.
   React.useEffect(() => { if (onSelect) onSelect(justDropped ? justDropped.id : null); }, [justDropped]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // The drag ghost and the room highlight ring below are portalled straight to

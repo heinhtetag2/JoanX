@@ -345,33 +345,34 @@ function Modal({ title, onClose, children }) {
 // `scrim` — the dim backdrop is the default everywhere, but a sheet whose picker acts
 // ON the surface behind it (dragging a catalogue item onto the room it's decorating)
 // needs that surface visible at full brightness to be a usable drop target, so that
-// caller passes false to skip the dim. It also drops the backdrop's own "tap outside
-// to dismiss": with the surface behind it a legitimate drop target rather than just
-// backdrop, a drag that ends outside the sheet card (which is the whole point of
-// dragging something onto the room) would otherwise register as a tap-to-close and
-// slam the sheet shut on every successful drop. The explicit X stays as how you close.
-// A transparent backdrop still SITS there, though — an invisible full-screen div
-// absorbs every tap same as a dim one would unless told not to, which would silently
-// eat taps on the room's own puck buttons underneath it (switching category mid-sheet
-// would never register). `pointerEvents: 'none'` on the backdrop when scrim is off
-// lets those taps fall through to whatever's actually there; the sheet card opts back
-// into `auto` so its own contents (catalogue grid, close button) keep working.
-// Drag-to-dismiss — grabbing the handle (or the title row above the scrollable
-// content) and pulling down past DISMISS_PX closes the sheet on release, same
-// as tapping the X. `onDragProgress(0..1)` fires through the drag so a caller
-// with something else on screen (RoomPucks' right-edge column, sat beside
-// rather than under the sheet) can fade in step with the gesture instead of
-// looking frozen while the sheet itself is visibly sliding away. Resets to 0
-// on release whether or not the drag actually closed the sheet — a closed
-// sheet unmounts anyway, and a cancelled drag has nothing left to reflect.
+// caller passes false to skip the dim. A transparent backdrop still SITS there,
+// though — an invisible full-screen div absorbs every tap same as a dim one would
+// unless told not to, which would silently eat taps on the room's own puck buttons
+// underneath it (switching category mid-sheet would never register).
+// `pointerEvents: 'none'` on the backdrop when scrim is off lets those taps fall
+// through to whatever's actually there; the sheet card opts back into `auto` so its
+// own contents (catalogue grid, close button) keep working.
+// Closing — the explicit X is the only thing that closes a sheet. Neither tapping
+// the scrim nor dragging the handle down dismisses it: a child mid-edit (placing a
+// catalogue item, scrolling a long list) can brush either without warning, and losing
+// the sheet over an accidental touch reads as the app eating their work. The handle
+// still drags (see `drag` below) so the card has somewhere to go while a finger holds
+// it, but it only ever snaps back on release — never closes.
+// `onDragProgress(0..1)` fires through that drag so a caller with something else on
+// screen (RoomPucks' right-edge column, sat beside rather than under the sheet) can
+// fade in step with the gesture instead of looking frozen while the sheet itself is
+// visibly sliding. Resets to 0 on release, same as the card snapping back.
 const SHEET_DISMISS_PX = 90;
 // `pulledAway` — a caller mid-drag on something the sheet was showing (a catalogue
 // item being carried out onto the room) needs the room fully visible to place it
 // accurately, so it slides the whole card off the bottom edge for as long as that's
 // true rather than leaving it sitting over the exact area a child is trying to see.
-// Distinct from the sheet's own drag-to-dismiss `drag` state above — that one tracks
-// a finger still on the card; this one is driven from outside by a gesture that has
-// nothing to do with the sheet chrome at all.
+// Distinct from the sheet's own handle-drag `drag` state above — that one tracks a
+// finger still on the card; this one is driven from outside by a gesture that has
+// nothing to do with the sheet chrome at all. It only tracks the drag itself, not
+// whatever happens after — once the item lands, the sheet slides back to let the
+// child confirm or delete it from within the sheet that's still open, not a gap
+// where it used to be.
 function BottomSheet({ title, onClose, children, minHeight, scrim = true, onDragProgress, pulledAway = false }) {
   const [drag, setDrag] = React.useState(null);   // { startY, offset } — offset drives the transform
   // onUp needs the offset at release time to decide whether to dismiss, but it runs in
@@ -431,10 +432,10 @@ function BottomSheet({ title, onClose, children, minHeight, scrim = true, onDrag
       if (onDragProgress) onDragProgress(Math.min(1, offset / SHEET_DISMISS_PX));
     };
     const onUp = () => {
-      const dismiss = offsetRef.current > SHEET_DISMISS_PX;
+      // Drag only ever snaps back — closing a sheet is the explicit X's job alone,
+      // so a pull-down (however far) cancels rather than dismissing.
       setDrag(null);
       if (onDragProgress) onDragProgress(0);
-      if (dismiss) onClose();
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp, { once: true });
@@ -445,8 +446,12 @@ function BottomSheet({ title, onClose, children, minHeight, scrim = true, onDrag
   const translateY = pulledAway ? '100vh' : drag ? `${drag.offset}px` : entered ? '0' : '100%';
   const transitionTransform = drag ? 'none' : pulledAway ? 'transform .22s ease' : 'transform .4s cubic-bezier(.16,1,.3,1)';
 
+  // Tapping the scrim no longer closes the sheet — the explicit X is the only close
+  // control, so a stray tap outside the card (reaching for something behind it, or
+  // just missing) can't lose an in-progress edit. The scrim's tap-catching stays: it
+  // still keeps a tap from falling through to whatever's behind it.
   return (
-    <div onClick={scrim ? onClose : undefined} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: scrim ? 'rgba(20,18,16,0.42)' : 'transparent', pointerEvents: scrim ? 'auto' : 'none' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: scrim ? 'rgba(20,18,16,0.42)' : 'transparent', pointerEvents: scrim ? 'auto' : 'none' }}>
       <div className="jx-sheet-card" onClick={e => e.stopPropagation()} onPointerDown={onBodyDown}
         style={{ position: 'relative', background: '#fff', borderRadius: '26px 26px 0 0', padding: '10px 20px calc(env(safe-area-inset-bottom) + 20px)', maxHeight: '82%', minHeight, display: 'flex', flexDirection: 'column', pointerEvents: pulledAway ? 'none' : 'auto',
                  transform: `translateY(${translateY})`, transition: transitionTransform }}>
