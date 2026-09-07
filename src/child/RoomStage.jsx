@@ -51,6 +51,17 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
   // screen position (getBoundingClientRect), not just its React props
   const stageRef = React.useRef(null);
 
+  // The piece a drag just dropped — lives here, not inside the picker sheet that
+  // triggered it, so the confirm/delete bubble it drives (see RoomSlotSheet) survives
+  // that sheet closing. Closing the picker is "I'm done choosing", not "throw away
+  // what I just placed" — the piece was already saved the moment the drag ended (see
+  // setPlaced below), so a child should still be able to look at where it landed and
+  // back out with Delete after closing, not just in the instant before. Cleared on
+  // room switch — a confirm bubble has nowhere sensible to point once its room isn't
+  // the one on screen.
+  const [justDropped, setJustDropped] = React.useState(null);
+  React.useEffect(() => { setJustDropped(null); }, [room.id]);
+
   // commit — drafts win over whatever the rows currently hold
   const commit = (nextDrafts = drafts, nextHomes = homes) => {
     rooms.forEach(r => {
@@ -86,6 +97,13 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
       if (!verdict.ok) { say(L(verdict.reason === 'level' ? 'Unlocks at Lv' : 'Not enough points yet')); return; }
       sfx.purchase();   // same cue Shop's egg purchase plays — spending points gets a sound either place
       setPts(PLAYER.points); setOwnedDecor(o => ({ ...o, [d.id]: true }));
+    } else {
+      // an already-owned item being placed/removed/re-dropped — every path lands here:
+      // a tap (tapDecor), a catalogue drag-drop, a re-drag of a piece already in the
+      // room (RoomStage's `ed`-driven moveDrag), and JustDroppedBar's own Delete button
+      // all call setPlaced directly, so putting the cue here covers all four instead of
+      // wrapping each call site separately.
+      sfx.toggle(on);
     }
     const nextPlaced = { ...draft.placed };
     if (on) catalog.forEach(item => { if (item.slot === d.slot) nextPlaced[item.id] = false; });
@@ -98,6 +116,7 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
   const tapChar = (c) => {
     const leaving = homes[c.id] === room.id;
     if (!leaving && inRoom.length >= room.slots) { say(`${L(room.name)} · ${L('Room is full')}`); return; }
+    sfx.toggle(!leaving);
     setHomes(h => {
       const next = { ...h, [c.id]: leaving ? null : room.id };
       if (autoSave) commit(drafts, next);
@@ -106,7 +125,8 @@ function useRoomEditing(rooms, roomId, { autoSave = false } = {}) {
   };
 
   return { room, theme, draft, drafts, editDraft, pts, ownedDecor, homes, tapChar, tapDecor, setPlaced,
-           catalog, inRoom, placedDecor, stageRef, toast, say, save: () => commit() };
+           catalog, inRoom, placedDecor, stageRef, toast, say, save: () => commit(),
+           justDropped, setJustDropped };
 }
 
 // Each entry is one button in RoomPucks' fixed right-edge column, top to bottom in
@@ -182,11 +202,28 @@ const DECOR_IMG_SIZE = { rug: 130, armchair: 150, cabinet: 130, ornament: 90 };
 // `puckOpacity` — the right-edge column fades to match a sheet being dragged
 // toward dismissal (see BottomSheet's onDragProgress in RoomSlotSheet below);
 // callers with no sheet drag to report just leave it at the default 1.
-// `selectedId` — the placed piece a child just dropped (see RoomSlotSheet's onSelect)
+// `selectedId` — the placed piece a child just dropped (the host reads this straight
+// off `ed.justDropped`, same source JustDroppedBar's confirm/delete bubble uses)
 // gets a green ring in place, the same colour the drag ghost carries the whole way
 // out of the sheet, so "this is the one you're working on" reads continuously across
 // pick-up, carry and landing instead of stopping the moment it's set down.
-function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = () => {}, activeSlot, hidePucks = [], extraPucks = [], height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', interactive = true, stageRef, puckOpacity = 1, selectedId = null }) {
+// `ed` — optional. When given, the selected piece (above) becomes grabbable right
+// where it stands: a second use of useDecorDrag (see below), pointed at the room
+// itself rather than a catalogue tile, so a child who wants to nudge a piece they
+// just placed doesn't have to reopen the sheet and re-drag its tile to do it. Only
+// the selected piece gets this — every other placed item is inert until IT becomes
+// the selected one (open its sheet, or drop it fresh). Omitted by a caller with
+// nothing to wire it to (FriendHouse's read-only visit).
+// `onDragProgress` — fires through this second drag exactly like RoomSlotSheet's own,
+// so a host can point both at the same setter and get one "something's being
+// dragged" signal regardless of which of the two drags is actually live.
+function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = () => {}, activeSlot, hidePucks = [], extraPucks = [], height = 340, radius = 22, backdrop = true, buddySize, floorLine = '24%', interactive = true, stageRef, puckOpacity = 1, selectedId = null, ed, onDragProgress }) {
+  // A stable stand-in when no `ed` was passed, so the hook below can always be called
+  // (rules of hooks) without ever actually doing anything — stagePos bails out the
+  // instant it sees a null stageRef, so this drag can start but can never land.
+  const noEd = React.useRef({ stageRef: { current: null }, setPlaced: () => {} }).current;
+  const { drag: moveDrag, onDown: onMoveDown } = useDecorDrag(ed || noEd, ed && ed.setJustDropped);
+  React.useEffect(() => { if (onDragProgress) onDragProgress(moveDrag ? 1 : 0); }, [!!moveDrag]);   // eslint-disable-line react-hooks/exhaustive-deps
   // A room drawn as one illustration has no repaintable wall or floor, so those two pucks
   // would open a picker whose effect nobody can see. They come back the day the art ships
   // as separate wall/floor layers — which is what A-7's wallpaper and flooring really need.
@@ -250,10 +287,22 @@ function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = 
         // (Green/Town's tent, bench, busstop, ...) still get below.
         const imgSize = DECOR_IMG_SIZE[d.slot];
         const selected = d.id === selectedId;
+        // Grabbable in place only while selected AND a host actually wired `ed` up —
+        // hidden (not just static) the instant it's actually being carried, since the
+        // ghost below is already showing it; two copies on screen would read as a
+        // second piece rather than the same one mid-move.
+        const canMove = selected && !!ed;
+        const beingMoved = moveDrag && moveDrag.d.id === d.id;
         return (
-          <div key={d.id} style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', borderRadius: 14, boxShadow: selected ? `0 0 0 3px ${THEME.success}, 0 0 16px 3px rgba(75,129,79,.4)` : 'none', transition: 'box-shadow .2s ease' }}>
+          <div key={d.id} onPointerDown={canMove ? (e) => onMoveDown(e, d) : undefined}
+            style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', borderRadius: 14, boxShadow: selected ? `0 0 0 3px ${THEME.success}, 0 0 16px 3px rgba(75,129,79,.4)` : 'none', transition: 'box-shadow .2s ease', opacity: beingMoved ? 0 : 1, cursor: canMove ? 'grab' : undefined, touchAction: canMove ? 'none' : undefined }}>
             {d.img ? (
-              <img src={d.img} alt={L(d.name)} style={{ height: imgSize, width: 'auto', maxWidth: 'none', display: 'block', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.25))' }} />
+              // `draggable={false}` — an <img> is natively draggable by the browser (the
+              // "drag this picture to a new tab" gesture); left on, starting a pointer-drag
+              // ON one races the browser's own drag-and-drop, which wins and fires
+              // pointercancel a couple pixels in, silently killing our onMove/onUp listeners.
+              // Only ever hits a piece with `canMove` (see above), but harmless either way.
+              <img src={d.img} alt={L(d.name)} draggable={false} style={{ height: imgSize, width: 'auto', maxWidth: 'none', display: 'block', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.25))' }} />
             ) : isObject ? (
               <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,.7)', border: `2px solid ${theme.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name={d.icon} size={22} color={THEME.fg2} stroke={2.1} />
@@ -266,6 +315,32 @@ function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = 
       })}
 
       <RoomPucks pucks={pucks} onPuck={onPuck} activeSlot={activeSlot} opacity={puckOpacity} />
+
+      {/* the re-drag ghost — same bare piece RoomSlotSheet's own catalogue drag uses
+          (see DragGhost, and there for why this is a portal, not rendered in place),
+          just carrying the piece from its OWN spot in the room instead of from a
+          sheet's tile. */}
+      {moveDrag && createPortal(<DragGhost d={moveDrag.d} x={moveDrag.x} y={moveDrag.y} over={moveDrag.over} />, document.body)}
+    </div>
+  );
+}
+
+// ── DragGhost — the piece itself, floating under the pointer ─────────────────────
+// No card, no white background, no name label under it — just the piece, at the same
+// footprint (DECOR_IMG_SIZE) and drop-shadow it renders with once it's actually placed
+// in the room, so what you're carrying looks exactly like what you're about to see land
+// there. The green ring is the same one a selected placed piece wears (see `selected` in
+// RoomStage above) — thicker while `over` a valid drop, same "this will land here" cue
+// the border used to carry. Icon-only decor (no `.img` yet) falls back to a bare Icon.
+function DragGhost({ d, x, y, over }) {
+  const imgSize = DECOR_IMG_SIZE[d.slot] || 44;
+  return (
+    <div style={{ position: 'fixed', left: x, top: y, transform: 'translate(-50%,-50%)', zIndex: 100, pointerEvents: 'none', borderRadius: 14, boxShadow: `0 0 0 ${over ? 4 : 3}px ${THEME.success}, 0 0 16px 3px rgba(75,129,79,.4)` }}>
+      {d.img ? (
+        <img src={d.img} alt="" draggable={false} style={{ height: imgSize, width: 'auto', maxWidth: 'none', display: 'block', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.25))' }} />
+      ) : (
+        <Icon name={d.icon} size={30} color={THEME.brand} stroke={2.1} />
+      )}
     </div>
   );
 }
@@ -291,17 +366,31 @@ function useDecorDrag(ed, onDropped) {
   // other three — a host that hides its own content below the room stage while a
   // drag is live (see MyHouse's fade-out during onDragProgress) leaves the room's
   // art the only thing a child can actually see down there, so a piece let go past
-  // this box's own bottom still reads as "dropped in the room", just resolved to
-  // the lowest spot the room can hold rather than silently rejected because the
-  // interactive box itself is shorter than what's on screen.
+  // this box's own bottom still reads as "dropped in the room".
   const stagePos = (x, y) => {
     const box = ed.stageRef.current;
     if (!box) return null;
     const r = box.getBoundingClientRect();
     if (x < r.left || x > r.right || y < r.top) return null;
+    // How far down a piece can actually land. A flat 90% used to cap this regardless
+    // of where the pointer let go — so accepting a drop past the room box's own bottom
+    // (above) still didn't matter: the piece snapped back up to 90% of a box that's
+    // often much shorter than the floor a child can actually see (that box is sized to
+    // the room's OWN art, not to how far a host has hidden its other chrome to reveal
+    // more floor — see MyHouse). Basing the cap on the real screen's bottom edge instead
+    // lets a piece go exactly as low as there's visible floor for it, in every host this
+    // renders in, not just the ones tall enough to make 90% look reasonable.
+    // 100px clearance, not just a thumb's worth — the anchor point IS the piece's own
+    // center (`transform: translate(-50%,-50%)` on the rendered piece), and the tallest
+    // pieces (DECOR_IMG_SIZE's armchair/rug, ~130-150px) reach nearly half that far
+    // below it, so a slim margin let a piece's own bottom edge run off the visible
+    // screen even while its anchor point was still comfortably on it.
+    const screenEl = document.querySelector('.screen');
+    const screenBottom = screenEl ? screenEl.getBoundingClientRect().bottom : r.bottom;
+    const maxYPercent = Math.max(90, ((screenBottom - 100 - r.top) / r.height) * 100);
     return {
       x: Math.min(94, Math.max(6, ((x - r.left) / r.width) * 100)),
-      y: Math.min(90, Math.max(8, ((y - r.top) / r.height) * 100)),
+      y: Math.min(maxYPercent, Math.max(8, ((y - r.top) / r.height) * 100)),
     };
   };
 
@@ -325,9 +414,18 @@ function useDecorDrag(ed, onDropped) {
       } else ed.tapDecor(drag.d);
       setDrag(null);
     };
+    // A real pointercancel (an incoming call, the OS switching apps, ...) just drops
+    // the drag in place rather than placing or toggling anything — the pointer never
+    // told us where it meant to end up.
+    const onCancel = () => setDrag(null);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp, { once: true });
-    return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    window.addEventListener('pointercancel', onCancel, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drag && drag.d]);
 
@@ -344,7 +442,7 @@ function CatalogTile({ img, icon, name, on, status, statusColor, onClick, onPoin
   return (
     <button onClick={onClick} onPointerDown={onPointerDown} style={{ background: on ? THEME.brandLight : THEME.surface2, border: on ? `2px solid ${THEME.brand}` : '2px solid transparent', outline: 'none', borderRadius: 16, padding: '14px 6px 10px', cursor: onPointerDown ? 'grab' : 'pointer', touchAction: onPointerDown ? 'none' : 'auto', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative', opacity: dimmed ? 0.4 : 1 }}>
       {on && <div style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 999, background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="check" size={12} color="#fff" stroke={3} /></div>}
-      {img ? <img src={img} alt="" style={{ width: 48, height: 48, objectFit: 'contain' }} /> : icon}
+      {img ? <img src={img} alt="" draggable={false} style={{ width: 48, height: 48, objectFit: 'contain' }} /> : icon}
       <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{name}</div>
       <span style={{ fontSize: 10.5, fontWeight: 800, color: statusColor, display: 'inline-flex', alignItems: 'center', gap: 2 }}>{status}</span>
     </button>
@@ -354,7 +452,12 @@ function CatalogTile({ img, icon, name, on, status, statusColor, onClick, onPoin
 // ── RoomSlotSheet — one puck, one picker ────────────────────────────
 // Each sheet edits only the surface its puck points at, so a child never meets a
 // piece that wouldn't land where they just tapped.
-function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
+// The just-dropped confirm/delete bubble is NOT rendered here — see JustDroppedBar,
+// mounted by the host next to RoomStage instead. This component (and everything it
+// holds) unmounts the instant its own X is tapped; the bubble is meant to survive
+// that, so it can't live in state that dies with it. `ed.justDropped` — see
+// useRoomEditing — is what makes that possible.
+function RoomSlotSheet({ slot, onClose, ed, onDragProgress }) {
   const { room, theme, draft, editDraft, catalog, ownedDecor, homes, tapChar, inRoom } = ed;
   const hs = HOTSPOTS.find(h => h.slot === slot);
   const isCatalog = !!hs.catalogSlot;
@@ -363,30 +466,38 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
   // the tall card a many-item slot (Shelf) needs — see minHeight below.
   const catalogRows = isCatalog ? Math.ceil(catalog.filter(d => d.slot === hs.catalogSlot).length / 3) : 0;
 
-  // The piece a drag just dropped into the room — not a tap-placed one, and not
-  // whatever was already sitting there before this sheet opened. setPlaced already
-  // wrote the placement the moment the drag ended (see useDecorDrag's onUp), so this
-  // isn't a save step; it earns a moment to LOOK at where it landed and back out via
-  // Delete if that spot was wrong, rather than having to reopen the sheet and hunt for
-  // the tile again. Cleared on slot change so switching categories doesn't leave a
-  // stale confirm bar pointing at last sheet's item.
-  const [justDropped, setJustDropped] = React.useState(null);
-  React.useEffect(() => { setJustDropped(null); }, [slot]);
-  const { drag, onDown } = useDecorDrag(ed, setJustDropped);
+  // A confirm bubble left over from a DIFFERENT slot's sheet (Ornament's, say, while
+  // this one just opened Cabinet) doesn't belong on screen while this sheet is open —
+  // it'd float there pointing at a piece this catalogue has nothing to do with. Opening
+  // this sheet clears it if so. Opening the SAME slot again, or just closing this sheet,
+  // leaves it alone — see ed.justDropped's own comment for why closing doesn't clear it.
+  React.useEffect(() => {
+    if (ed.justDropped && ed.justDropped.slot !== hs.catalogSlot) ed.setJustDropped(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slot]);
+  // A successful drag-drop closes the picker itself, not just marks the piece placed —
+  // the child just chose exactly where it goes (that's the whole point of dragging
+  // rather than tapping), and the sheet card sitting there afterward only eats the room
+  // space they'd want next if they nudge it further (see RoomStage's own re-drag on the
+  // selected piece). The confirm bubble survives the close regardless — see
+  // JustDroppedBar and `ed.justDropped`'s own comment — so Check/Delete are still one
+  // tap away with the room now fully clear to look at. A plain tap (no real drag; see
+  // useDecorDrag's onUp) doesn't go through this at all — that's still a quick toggle
+  // meant to leave the sheet open for picking something else.
+  // `onDragProgress(0)` fires HERE rather than being left to the effect below — closing
+  // the sheet in the same breath unmounts this whole component before that effect's
+  // next run would ever see `drag` go back to null, so nothing would otherwise tell the
+  // host the drag is over. Left unset, the host's "something's being dragged" signal
+  // (see MyHouse's homeSheetDrag) gets stuck on, hiding the pucks and the very bubble
+  // this drop was supposed to reveal.
+  const { drag, onDown } = useDecorDrag(ed, (d) => { ed.setJustDropped(d); if (onDragProgress) onDragProgress(0); onClose(); });
 
-  // Same "fade the right-edge column" channel the sheet's own drag-to-dismiss drives
-  // (see BottomSheet/onDragProgress) — a catalogue item being carried out onto the
-  // room is a second, unrelated reason to want both the sheet and the puck column out
-  // of the way, so it drives the same signal rather than inventing a parallel one.
-  // Held through `justDropped` too, not just `drag` — the confirm bar below reads
-  // against the room, so the same clear stage that served the drag itself keeps
-  // serving the look-and-decide moment right after, not just the drag.
-  React.useEffect(() => { if (onDragProgress) onDragProgress((drag || justDropped) ? 1 : 0); }, [!!drag, justDropped]);   // eslint-disable-line react-hooks/exhaustive-deps
-  // The just-placed piece is also "the selected one" — RoomStage draws a green ring
-  // around whichever placed item matches this id (see `selectedId` there), so a child
-  // dragging a piece out gets the same "yes, this is the one you're moving" read once
-  // it lands as the confirm bar below gives with its check/delete pair.
-  React.useEffect(() => { if (onSelect) onSelect(justDropped ? justDropped.id : null); }, [justDropped]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // Fades the right-edge puck column (see BottomSheet/onDragProgress) for as long as a
+  // piece is actually airborne — a clear stage to see where it's landing. Only `drag`,
+  // not the confirm bubble that follows: once a piece has landed the room goes back to
+  // reading normally, bubble included, rather than staying dimmed until someone taps
+  // Check or Delete.
+  React.useEffect(() => { if (onDragProgress) onDragProgress(drag ? 1 : 0); }, [!!drag]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // The drag ghost and the room highlight ring below are portalled straight to
   // document.body, not rendered in place. The whole app lives inside a `transform:
@@ -415,7 +526,7 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
           {(slot === 'wallpaper' ? theme.wallpapers : theme.floorings).map(t => {
             const on = (slot === 'wallpaper' ? draft.wallpaper : draft.flooring) === t;
             return (
-              <button key={t} onClick={() => editDraft({ [slot]: t })} aria-label={L(hs.label)}
+              <button key={t} onClick={() => { if (!on) sfx.select(); editDraft({ [slot]: t }); }} aria-label={L(hs.label)}
                 style={{ flex: 1, height: 56, borderRadius: 14, background: t, border: on ? `3px solid ${THEME.brand}` : `1.5px solid ${THEME.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {on && <Icon name="check" size={18} color={THEME.brand} stroke={3} />}
               </button>
@@ -473,48 +584,56 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress, onSelect }) {
 
     </BottomSheet>
 
-    {/* the drag itself — a ghost card that tracks the pointer. Green the whole time it's
-        airborne (this is the piece you're moving — same colour the room highlights it
-        with once it lands, see RoomStage's `selectedId`), thickening once it's over the
-        room so that alone also carries the separate "this will land here" feedback.
-        Portalled to document.body (see the comment above) so position:fixed is truly
-        viewport-fixed. */}
-    {drag && createPortal(
-      <div style={{ position: 'fixed', left: drag.x, top: drag.y, transform: 'translate(-50%,-50%)', zIndex: 100, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 14px', borderRadius: 16, background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.28)', border: `${drag.over ? 3 : 2}px solid ${THEME.success}` }}>
-        {drag.d.img ? <img src={drag.d.img} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-                    : <Icon name={drag.d.icon} size={24} color={THEME.brand} stroke={2.1} />}
-        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.fg1, whiteSpace: 'nowrap' }}>{L(drag.d.name)}</span>
-      </div>,
-      document.body
-    )}
-
-    {/* the just-dropped confirm bar — Done keeps it exactly where it landed (already
-        saved; setPlaced wrote it the moment the drag ended), Delete takes it back off
-        the room. Sits near the room's own bottom edge, not the dropped item's exact
-        spot: a piece dropped near the top of the room would otherwise push this bar up
-        past where a thumb can reach it, and the room only ever holds the one thing this
-        sheet is currently about, so "the room" is unambiguous enough to point at. Guards
-        on `draft.placed[justDropped.id]` so it can't outlive the placement it's about —
-        tapping the same tile off elsewhere in the sheet, or opening a fresh drag, both
-        make the bar disappear rather than confirm/delete something no longer there. */}
-    {justDropped && !drag && !!draft.placed[justDropped.id] && ed.stageRef.current && (() => {
-      const r = ed.stageRef.current.getBoundingClientRect();
-      return createPortal(
-        <div style={{ position: 'fixed', left: r.left + r.width / 2, top: r.bottom - 66, transform: 'translateX(-50%)', zIndex: 97, display: 'flex', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, background: '#fff', boxShadow: '0 8px 22px rgba(0,0,0,.28)' }}>
-          <button onClick={() => setJustDropped(null)} aria-label={L('Done')}
-            style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="check" size={19} color="#fff" stroke={2.8} />
-          </button>
-          <button onClick={() => { ed.setPlaced(justDropped, false); setJustDropped(null); }} aria-label={L('Delete')}
-            style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="trash-2" size={18} color={THEME.danger} stroke={2.3} />
-          </button>
-        </div>,
-        document.body
-      );
-    })()}
+    {/* the drag itself — the bare piece (see DragGhost) tracking the pointer, no card
+        or label around it: what you're carrying should look like what you're about to
+        see land in the room. Portalled to document.body (see the comment above) so
+        position:fixed is truly viewport-fixed. */}
+    {drag && createPortal(<DragGhost d={drag.d} x={drag.x} y={drag.y} over={drag.over} />, document.body)}
     </React.Fragment>
   );
 }
 
-export { RoomStage, RoomSlotSheet, useRoomEditing, CatalogTile };
+// ── JustDroppedBar — the confirm/delete bubble for a piece that was just dropped ──
+// Mounted by the host ALONGSIDE RoomStage (not inside RoomSlotSheet, which unmounts
+// the moment its own X is tapped) so closing the picker doesn't take this down with
+// it — see the comment on `justDropped` in useRoomEditing for why that matters. Done
+// keeps the piece exactly where it landed (already saved; setPlaced wrote it the
+// moment the drag ended), Delete takes it back off the room. Sits near the room's own
+// bottom edge, not the dropped item's exact spot: a piece dropped near the top of the
+// room would otherwise push this bar up past where a thumb can reach it, and a room
+// only ever has the one thing `justDropped` is currently about, so "the room" is
+// unambiguous enough to point at. Guards on `draft.placed[justDropped.id]` so it can't
+// outlive the placement it's about — tapping the same tile off elsewhere in the sheet
+// makes the bar disappear rather than confirm/delete something no longer there.
+// `sheetOpen` — true while the picker card itself is still on screen, which claims
+// the room's own bottom edge (see BottomSheet), so the bar sits right above it there.
+// Once the picker's closed, the host has faded out everything below the room too (see
+// MyHouse's name/reactions/guestbook block) freeing the rest of the screen — the bar
+// drops down to use that space instead of floating awkwardly mid-room, closer to
+// where a thumb already rests.
+// `hidden` — true while the piece itself is actively being re-dragged (see RoomStage's
+// `ed`/`onDragProgress`) — the bubble still names the OLD position until the drag
+// ends, so showing it mid-carry would read as a second, stale copy of the piece.
+function JustDroppedBar({ ed, sheetOpen = false, hidden = false }) {
+  const { justDropped, setJustDropped, draft, stageRef } = ed;
+  if (hidden || !justDropped || !draft.placed[justDropped.id] || !stageRef.current) return null;
+  const r = stageRef.current.getBoundingClientRect();
+  const screenEl = document.querySelector('.screen');
+  const screenRect = !sheetOpen && screenEl ? screenEl.getBoundingClientRect() : null;
+  const top = screenRect ? screenRect.bottom - 64 : r.bottom - 66;
+  return createPortal(
+    <div style={{ position: 'fixed', left: r.left + r.width / 2, top, transform: 'translateX(-50%)', zIndex: 97, display: 'flex', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, background: '#fff', boxShadow: '0 8px 22px rgba(0,0,0,.28)', transition: 'top .2s ease' }}>
+      <button onClick={() => setJustDropped(null)} aria-label={L('Done')}
+        style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.brand, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="check" size={19} color="#fff" stroke={2.8} />
+      </button>
+      <button onClick={() => { ed.setPlaced(justDropped, false); setJustDropped(null); }} aria-label={L('Delete')}
+        style={{ width: 40, height: 40, borderRadius: 999, border: 'none', cursor: 'pointer', background: THEME.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="trash-2" size={18} color={THEME.danger} stroke={2.3} />
+      </button>
+    </div>,
+    document.body
+  );
+}
+
+export { RoomStage, RoomSlotSheet, JustDroppedBar, useRoomEditing, CatalogTile };

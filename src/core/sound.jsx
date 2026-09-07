@@ -61,10 +61,9 @@ function bus(ac) {
 
 // The active app's Sound-effects toggle owns everything. Each app has its OWN
 // mute (they run on different devices): the parent app reads PARENT_PREFS.sound,
-// the child game reads PLAYER.prefs.sound. Both of those flags START FALSE — the
-// apps open muted and sound is something you switch on (Profile → Sound effects, or
-// the Tweaks panel). A missing flag still falls back to on, and a read never throws
-// a play.
+// the child game reads PLAYER.prefs.sound. Both of those flags START TRUE — sound
+// is switched off from Profile → Sound effects (or the Tweaks panel), not switched
+// on. A missing flag still falls back to on, and a read never throws a play.
 const on = () => {
   try {
     if (typeof window !== 'undefined' && window.JX_ROLE === 'parent') {

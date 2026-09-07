@@ -6,7 +6,7 @@ import { Icon, SafePointIcon, SectionHead, THEME } from '../core/primitives.jsx'
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade, tint } from '../core/characters.jsx';
 import { PointsChip } from './shared.jsx';
-import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
+import { JustDroppedBar, RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 
 // ── Room decoration (A-6 / A-7 / A-12) ───────────────────────────────
 // One screen, three rooms. Picking a room switches the whole environment — wall,
@@ -23,8 +23,7 @@ import { RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 function DecorateRoom({ ctx, editor = 'grid' }) {
   const hot = editor === 'hotspot';
   const [sheet, setSheet] = React.useState(null);   // which hotspot's picker is open
-  const [sheetDrag, setSheetDrag] = React.useState(0);   // 0..1 — how far its sheet has been dragged toward dismissal
-  const [selectedDecorId, setSelectedDecorId] = React.useState(null);   // the placed piece the room highlights green
+  const [sheetDrag, setSheetDrag] = React.useState(0);   // 0..1 — how far a piece is being dragged (fades the puck column)
   const rooms = ROOMS.filter(r => r.unlocked);
   const [roomId, setRoomId] = React.useState(
     rooms.some(r => r.id === ctx.params?.roomId) ? ctx.params.roomId : rooms[0].id);
@@ -83,7 +82,8 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
         {hot && (
           <React.Fragment>
             <div style={{ borderRadius: 22, overflow: 'hidden', boxShadow: THEME.shadowCard, marginBottom: 12 }}>
-              <RoomStage theme={theme} draft={draft} buddies={inRoom} placedDecor={placedDecor} catalog={ed.catalog} onPuck={setSheet} activeSlot={sheet} stageRef={ed.stageRef} puckOpacity={1 - sheetDrag} selectedId={selectedDecorId} />
+              <RoomStage theme={theme} draft={draft} buddies={inRoom} placedDecor={placedDecor} catalog={ed.catalog} onPuck={setSheet} activeSlot={sheet} stageRef={ed.stageRef} puckOpacity={ed.justDropped ? 0 : 1 - sheetDrag} selectedId={ed.justDropped?.id ?? null}
+                ed={ed} onDragProgress={setSheetDrag} />
             </div>
             <div style={{ fontSize: 12, color: THEME.fg2, textAlign: 'center', margin: '0 0 16px' }}>{L('Tap anything in the room to change it.')}</div>
           </React.Fragment>
@@ -176,7 +176,8 @@ function DecorateRoom({ ctx, editor = 'grid' }) {
         </React.Fragment>)}
       </div>
 
-      {sheet && <RoomSlotSheet slot={sheet} onClose={() => { setSheet(null); setSelectedDecorId(null); }} ed={ed} onDragProgress={setSheetDrag} onSelect={setSelectedDecorId} />}
+      {sheet && <RoomSlotSheet slot={sheet} onClose={() => setSheet(null)} ed={ed} onDragProgress={setSheetDrag} />}
+      <JustDroppedBar ed={ed} sheetOpen={!!sheet} hidden={sheetDrag > 0} />
 
       {toast && <div style={{ position: 'absolute', bottom: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 20 }} className="jx-fade"><div style={{ background: 'rgba(43,41,38,.9)', color: '#fff', fontSize: 13, fontWeight: 700, padding: '10px 18px', borderRadius: 999 }}>{toast}</div></div>}
     </div>

@@ -5,8 +5,9 @@ import { ACHIEVEMENTS, CHARACTERS, DECOR, HOUSE_BGS, MY_GUESTBOOK, OUTFITS, PLAY
 import { Bar, BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
+import { sfx } from '../core/sound.jsx';
 import { LevelBadge, ScreenHeader, screenBgActive, wornSlugFor } from './shared.jsx';
-import { CatalogTile, RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
+import { CatalogTile, JustDroppedBar, RoomSlotSheet, RoomStage, useRoomEditing } from './RoomStage.jsx';
 import { GuestbookPanel } from './GuestbookPatterns.jsx';
 
 // A themed room can render two ways: 'theme' (flat wallpaper + floor band) or
@@ -67,8 +68,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
   const [profRoomId, setProfRoomId] = React.useState(homeRoom.id);
   const homeEd = useRoomEditing(ROOMS, profRoomId, { autoSave: true });
   const [homeSheet, setHomeSheet] = React.useState(null);
-  const [homeSheetDrag, setHomeSheetDrag] = React.useState(0);   // 0..1 — how far homeSheet has been dragged toward dismissal
-  const [homeSelectedId, setHomeSelectedId] = React.useState(null);   // the placed piece the room highlights green
+  const [homeSheetDrag, setHomeSheetDrag] = React.useState(0);   // 0..1 — how far a piece is being dragged (fades the puck column)
   const [roomPicker, setRoomPicker] = React.useState(false);
   // persisted on PLAYER, same as `scene` below — a profile has no Save button, so the
   // room a friend visits has to survive past this component unmounting, not just a render.
@@ -89,6 +89,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
       const a = roomAchievement(r);
       return say(a ? `${L(a.name)} ${a.progress}/${a.total} · ${L('to unlock')}` : L('Not unlocked yet'));
     }
+    if (r.id !== homeEd.room.id) sfx.select();
     setHomeRoom(r.id);
     setRoomPicker(false);
   };
@@ -141,7 +142,18 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
           background instead of the layer under it, at every point along the shift, not only
           at rest. */}
       <div className="no-sb" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: -160, overflowY: variant === 'hotspot' ? 'hidden' : 'auto', paddingTop: 102, paddingBottom: 110,
-        transform: homeSheet ? 'translateY(-160px)' : 'none', transition: 'transform .32s cubic-bezier(.2,.8,.2,1)',
+        // Not shifted while `homeSheetDrag` is live — the sheet card itself is already
+        // pulled off-screen for the whole time a piece is airborne (see BottomSheet's
+        // `pulledAway`), so this box gains nothing from also moving during that stretch.
+        // It cost something real, too: a drag's own drop math (RoomStage's stagePos)
+        // reads this box's live screen position via getBoundingClientRect() at the
+        // instant of the drop, which happens WHILE `homeSheet` is still truthy (the
+        // auto-close in RoomSlotSheet fires just after) — shifted up 160px at that
+        // exact moment, it read the pointer's position against a box that was about to
+        // jump back down once the sheet closed, throwing every drop lower than intended
+        // by exactly that 160px. Skipping the shift for the drag's whole duration keeps
+        // the box at the position it'll actually settle at throughout, not just at rest.
+        transform: homeSheet && !homeSheetDrag ? 'translateY(-160px)' : 'none', transition: 'transform .32s cubic-bezier(.2,.8,.2,1)',
         ...(roomPage
           ? { backgroundImage: `url(${homeEd.theme.bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: homeEd.theme.accent }
           : { background: screenBgActive() }) }}>
@@ -206,7 +218,8 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                 placedDecor={homeEd.placedDecor} catalog={homeEd.catalog} height={460} radius={homeEd.theme.bg ? 0 : 22} buddySize={168} floorLine="9%"
                 onPuck={setHomeSheet} hidePucks={['buddy']}
                 extraPucks={[{ slot: 'featured', icon: 'repeat', label: 'Change buddy' }]}
-                activeSlot={homeSheet} stageRef={homeEd.stageRef} puckOpacity={1 - homeSheetDrag} selectedId={homeSelectedId} />
+                activeSlot={homeSheet} stageRef={homeEd.stageRef} puckOpacity={homeEd.justDropped ? 0 : 1 - homeSheetDrag} selectedId={homeEd.justDropped?.id ?? null}
+                ed={homeEd} onDragProgress={setHomeSheetDrag} />
 
               {/* 'arrows' — the carousel the photo-scene profile already used: step through
                   the rooms you've opened, one tap at a time. */}
@@ -219,16 +232,18 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             </div>
 
             {/* name, reactions and the guestbook all fade out together while a catalogue
-                piece is airborne, or sitting in its post-drop confirm bar (see
-                RoomSlotSheet's onDragProgress, held through `justDropped` too) — the same
-                "give the room a clear stage"
-                signal that already fades RoomPucks' own column above, just handed to
-                everything below it as well. None of it means anything mid-placement, and
-                the guestbook book in particular sits right where a piece dropped near the
-                bottom of the room would land, fighting the very thing the child is looking
-                at. `pointerEvents: 'none'` while faded so a stray tap here can't register on
-                a reaction/guestbook that isn't really meant to be interacted with right now. */}
-            <div style={{ opacity: 1 - homeSheetDrag, pointerEvents: homeSheetDrag > 0 ? 'none' : 'auto', transition: 'opacity .15s ease' }}>
+                piece is airborne, AND for as long as its confirm/delete bubble
+                (JustDroppedBar) is still up asking a child to look at where it landed —
+                same "give the room a clear stage" signal that already fades RoomPucks'
+                own column above, just handed to everything below it as well. None of it
+                means anything mid-placement, and the guestbook book in particular sits
+                right where a piece dropped near the bottom of the room would land,
+                fighting the very thing the child is looking at — including the bubble
+                itself, which anchors low enough (see JustDroppedBar) to overlap this
+                block if it were left showing. `pointerEvents: 'none'` while faded so a
+                stray tap here can't register on a reaction/guestbook that isn't really
+                meant to be interacted with right now. */}
+            <div style={{ opacity: homeEd.justDropped ? 0 : 1 - homeSheetDrag, pointerEvents: homeSheetDrag > 0 || homeEd.justDropped ? 'none' : 'auto', transition: 'opacity .15s ease' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
                 <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)' }}>{PLAYER.name}</span>
                 <LevelBadge level={PLAYER.level} />
@@ -373,7 +388,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
               {buddies.map(b => {
                 const on = b.id === c.id;
                 return (
-                  <button key={b.id} onClick={() => ctx.setBuddy(b.id)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 0, width: 62 }}>
+                  <button key={b.id} onClick={() => { if (!on) sfx.select(); ctx.setBuddy(b.id); }} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 0, width: 62 }}>
                     <div style={{ width: 58, height: 58, borderRadius: 999, background: shade(b.color, 90), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: on ? `2.5px solid ${THEME.brand}` : '2.5px solid transparent' }}><Mascot species={b.species} stage={b.stage} color={b.color} size={54} /></div>
                     <span style={{ fontSize: 11, fontWeight: on ? 800 : 600, color: on ? THEME.fg1 : THEME.fg2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 62 }}>{b.name}</span>
                   </button>
@@ -406,7 +421,17 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
           below instead of going through RoomSlotSheet — but both live behind the one
           `homeSheet` value, so opening either always replaces whatever else was open rather
           than the two stacking. */}
-      {homeSheet && homeSheet !== 'featured' && <RoomSlotSheet slot={homeSheet} onClose={() => { setHomeSheet(null); setHomeSelectedId(null); }} ed={homeEd} onDragProgress={setHomeSheetDrag} onSelect={setHomeSelectedId} />}
+      {homeSheet && homeSheet !== 'featured' && <RoomSlotSheet slot={homeSheet} onClose={() => setHomeSheet(null)} ed={homeEd} onDragProgress={setHomeSheetDrag} />}
+
+      {/* the confirm/delete bubble for whatever was last dropped — mounted here,
+          independent of whether a picker sheet is open, so closing one (the line right
+          above) doesn't take this down with it. See JustDroppedBar's own comment.
+          Hidden (not just faded, like the name/reactions/guestbook below) while
+          `homeSheetDrag` is live — that setter now hears from BOTH drags, a catalogue
+          tile's and the piece's own re-drag right here in the room (see RoomStage's
+          `ed`/`onDragProgress`), and a bubble sitting at the OLD spot while the SAME
+          piece is being carried to a new one would read as a second, stale copy. */}
+      <JustDroppedBar ed={homeEd} sheetOpen={!!homeSheet} hidden={homeSheetDrag > 0} />
 
       {/* 'sheet' switcher — the whole ladder in one place, earned and unearned together */}
       {roomPicker && (
@@ -502,7 +527,7 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
             {buddies.map(b => {
               const on = b.id === c.id;
               return (
-                <CatalogTile key={b.id} on={on} onClick={() => ctx.setBuddy(b.id)}
+                <CatalogTile key={b.id} on={on} onClick={() => { if (!on) sfx.select(); ctx.setBuddy(b.id); }}
                   icon={<Mascot species={b.species} stage={b.stage} color={b.color} size={44} />}
                   name={b.name} statusColor={THEME.success} status={on ? L('Placed') : L('Owned')} />
               );

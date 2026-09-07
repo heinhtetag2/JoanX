@@ -6,6 +6,7 @@ import { BottomSheet, Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { moderate, REASON_TEXT } from '../core/moderation.jsx';
 import { shade } from '../core/characters.jsx';
+import { sfx } from '../core/sound.jsx';
 import { LevelBadge, ScreenHeader } from './shared.jsx';
 import { RoomStage } from './RoomStage.jsx';
 import { GuestbookPanel } from './GuestbookPatterns.jsx';
@@ -38,7 +39,11 @@ function FriendHouse({ ctx }) {
   const [mine, setMine] = React.useState(f.myReaction);
   const [counts, setCounts] = React.useState(() => ({ ...f.reactions }));
   const likes = reactionTotal({ reactions: counts });
-  const leaveReaction = (key) => { setMine(react(f, key)); setCounts({ ...f.reactions }); };
+  const leaveReaction = (key) => {
+    const next = react(f, key);
+    sfx.toggle(!!next);   // on when a reaction lands, off when tapping the same one takes it back
+    setMine(next); setCounts({ ...f.reactions });
+  };
 
   // Copy, don't alias: f.guest is mutated below to persist the note across visits, and a
   // shared reference would make the state prepend and that mutation both show up — the
