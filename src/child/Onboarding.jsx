@@ -4,7 +4,7 @@ import React from 'react';
 import { CHARACTERS, PARENT_PROFILE, PERMISSIONS, PLAYER, guardianOwner, setPermGrant } from '../core/data.jsx';
 import { Badge, Button, Icon, PairQR, PhotoAvatar, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, KingCubix, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
 import { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
 import { sfx } from '../core/sound.jsx';
@@ -261,7 +261,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
   const denyActive = () => { deny(modal); setModal(null); };    // "Not now" in the sheet → limited fallback
 
   const modalPerm = modal && perms.find(p => p.id === modal);
-  const Buddy = ({ size }) => <Mascot species={c.species} stage={c.stage} color={c.color} size={size} />;
+  const Buddy = ({ size }) => <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={size} />;
 
   // live 5-minute validity countdown — shared by the code and QR connect screens
   const [codeLeft, setCodeLeft] = React.useState(300);
@@ -324,27 +324,18 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               cut gets a taller picture instead of a taller gap.
               Keyed by slide so the rise animation replays on every advance. */}
           <div key={introIdx} style={{ position: 'relative', zIndex: 1, flex: '0 0 auto', padding: '20px 26px 0', animation: 'jxRise .34s cubic-bezier(.2,.8,.3,1) both' }}>
-            {/* The chip names the beat before the sentence does — a bell for the alerts, a
-                cracked heart for the buddies being drained, a crown for the boss. It also
-                carries the tone colour, so the switch from purple to green at cut 7 reads
-                as the story turning even to a child who skips the words entirely. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 11 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 11, background: tone.chipBg, flexShrink: 0 }}>
-                <Icon name={slide.icon} size={19} color={tone.ink} stroke={2.1} />
-              </div>
-              {/* Tilted, because a sound effect that sits perfectly level is not a sound
-                  effect. Small and in the tone colour, so it reads as noise coming off the
-                  picture rather than as a second headline competing with the sentence. */}
-              {slide.kick && (
-                <span className="game-font" style={{ fontSize: 13, fontWeight: 800, letterSpacing: .3, color: tone.ink, opacity: .92, transform: 'rotate(-3deg)', transformOrigin: 'left center', whiteSpace: 'nowrap' }}>{L(slide.kick)}</span>
-              )}
-            </div>
             <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.36, margin: 0, color: tone.fg, wordBreak: 'keep-all' }}>{renderCopy(L(slide.title), tone.ink)}</h1>
             {slide.sub && <p style={{ fontSize: 14.5, lineHeight: 1.5, margin: '9px 0 0', color: tone.sub, wordBreak: 'keep-all' }}>{L(slide.sub)}</p>}
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, flex: '0 0 auto', padding: '18px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(step + 1)}>{L('Continue')}</Button>
+            {/* Trailing chevron, not a leading one — it's the same "go" mark the rest of the
+                app puts at the end of a tappable row, so the story's own forward tap reads
+                as the same gesture instead of a bespoke arrow-button. */}
+            <Button variant="primary" size="lg" fullWidth style={{ ...pBrandBtn, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setStep(step + 1)}>
+              {L('Continue')}
+              <Icon name="chevron-right" size={18} color="#fff" stroke={2.6} />
+            </Button>
           </div>
         </div>
       )}
@@ -362,9 +353,11 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
               <h1 className="game-font" style={{ flex: 1, fontSize: 22, fontWeight: 500, margin: 0, lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('To keep you safe,\nwe need a little help')}</h1>
               <button onClick={() => setShowFallback(true)} style={{ flexShrink: 0, marginTop: 3, padding: '4px 2px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800, color: P_BRAND.primary, cursor: 'pointer' }}>{L('Skip')}</button>
             </div>
-            {/* the buddy does the asking — keeps the request in the game's voice */}
+            {/* King Cubix does the asking, not the child's own buddy — permissions are the
+                app's own safety voice (the same narrator WarningOverlay hands the mic to),
+                not something the child's pet would plausibly be asking for itself. */}
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', margin: '0 0 18px' }}>
-              <div style={{ flexShrink: 0 }}><Buddy size={58} /></div>
+              <div style={{ flexShrink: 0 }}><KingCubix pose="Pleading" size={58} /></div>
               <p style={{ flex: 1, background: '#fff', borderRadius: '16px 16px 16px 4px', padding: '11px 13px', fontSize: 13, color: THEME.fg2, lineHeight: 1.5, margin: 0 }}>{L('For JoanX to notice danger while you walk, the permissions below are needed. Turn them on together with your parents.')}</p>
             </div>
 
@@ -707,7 +700,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
                 <EggHalf color={STARTER_EGG_C} />
                 <EggHalf color={STARTER_EGG_C} flip />
               </div>
-              <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot species={b.species} stage={b.stage} color={b.color} size={188} /></div>
+              <div className="jx-float" style={{ position: 'relative', zIndex: 2 }}><Mascot id={b.id} species={b.species} stage={b.stage} color={b.color} size={188} /></div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, position: 'relative', marginTop: 8 }}>
               {/* dark ink even over the painted backdrop, same call as EggHatch.jsx's
@@ -736,7 +729,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           <div key={modalPerm.id} className="jx-sheet-up" style={{ position: 'relative', background: '#fff', borderRadius: '30px 30px 0 0', padding: '10px 24px calc(env(safe-area-inset-bottom) + 22px)', boxShadow: '0 -16px 44px rgba(20,18,16,0.28)' }}>
             <div style={{ width: 40, height: 5, borderRadius: 999, background: THEME.border, margin: '0 auto 16px' }} />
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-              <Buddy size={84} />
+              <KingCubix pose="Pleading" size={84} />
             </div>
             <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, margin: '0 8px 8px', lineHeight: 1.2, textAlign: 'center' }}>{L(modalPerm.name)}</h1>
             <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 2px 15px', textAlign: 'center' }}>{L(modalPerm.detail)}</p>

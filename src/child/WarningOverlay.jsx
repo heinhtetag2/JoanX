@@ -4,7 +4,7 @@ import React from 'react';
 import { CHARACTERS, FEATURES, INTERVENTION, PLAYER, evaluateSafeStop, interventionTier, logRiskEvent } from '../core/data.jsx';
 import { Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, MascotChip } from '../core/characters.jsx';
+import { Mascot, MascotChip, KingCubix, KingCubixChip } from '../core/characters.jsx';
 import { Confetti } from './shared.jsx';
 import { sfx, music } from '../core/sound.jsx';
 
@@ -182,22 +182,6 @@ const TIER_ICON = { gentle: 'eye', firm: 'triangle-alert', urgent: 'hand' };
 // tier — so it needs no CSS degrade filter of its own (mascotDegrade stays buddy-only).
 const KC_POSE_BY_TIER = { gentle: 'Stop', firm: 'Stern Glare', urgent: 'Sobbing' };
 const KC_GRACE_POSE = 'Alert';
-const kcSrc = (pose) => `/mascot-kingcubic/${encodeURIComponent(`King Cubix – ${pose}.png`)}`;
-
-function KingCubix({ pose, size = 96, style }) {
-  return (
-    <img src={kcSrc(pose)} alt="" draggable="false"
-      style={{ width: size, height: size, objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none', ...style }} />
-  );
-}
-
-function KingCubixChip({ pose, size = 48, bg }) {
-  return (
-    <div style={{ width: size, height: size, borderRadius: 16, background: bg || THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-      <KingCubix pose={pose} size={size * 0.92} />
-    </div>
-  );
-}
 
 // Swaps buddy ⇄ King Cubix at every spot the overlay speaks through a character, so the
 // escalation logic (which tier, which phase) is written once instead of at each call site.

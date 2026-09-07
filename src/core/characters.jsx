@@ -1077,6 +1077,25 @@ function MascotChip({ species, stage = 2, color, size = 48, bg }) {
   );
 }
 
+// King Cubix — a fixed-art narrator that stands in for the procedural buddy wherever the
+// app needs to speak in its own voice rather than the child's pet's (safety warnings,
+// permission asks). Shared here (not local to one screen) so every call site draws the
+// same pose set from the same path instead of re-deriving it.
+const kcSrc = (pose) => `/mascot-kingcubic/${encodeURIComponent(`King Cubix – ${pose}.png`)}`;
+function KingCubix({ pose, size = 96, style }) {
+  return (
+    <img src={kcSrc(pose)} alt="" draggable="false"
+      style={{ width: size, height: size, objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none', ...style }} />
+  );
+}
+function KingCubixChip({ pose, size = 48, bg }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: 16, background: bg || THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+      <KingCubix pose={pose} size={size * 0.92} />
+    </div>
+  );
+}
+
 // Placeholder art for the fighter-select grid — swaps the procedural Mascot render for a
 // fixed demo image per buddy id. Falls back to Mascot for any buddy without one, so this
 // only ever covers the owned buddies it was given art for. Shared (not local to one
@@ -1095,4 +1114,4 @@ function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothin
   );
 }
 
-export { Mascot, MascotChip, DemoMascot, VillainMascot, STYLE_BUDDIES, shade, styleBrand, tint };
+export { Mascot, MascotChip, DemoMascot, VillainMascot, KingCubix, KingCubixChip, STYLE_BUDDIES, shade, styleBrand, tint };
