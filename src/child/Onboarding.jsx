@@ -32,9 +32,161 @@ const STARTER_EGG_C = eggColorFor('common');
 // screen that needs a QR (this pairing step is the only one today) reuses the same object
 // instead of a hand-rolled one that could drift.
 
+// Intro slides, one per step from 1. The first is cut 1 of the onboarding storyline
+// (design/onboarding-image-prompts.md) — the hook, told from the buddies' side, before
+// the two value-prop slides explain the product. Each slide carries its own hero image;
+// `sub` is optional, since a story beat is a single line.
+// Story cuts are drawn 9:16 and named by their cut number (1.png = cut 1), with the bottom
+// third left deliberately empty for copy. They are shown in a stage that is WIDER than 9:16
+// (full width, ~60% of the screen), so `cover` scales by width and crops top and bottom —
+// which trims that empty third away by itself. `objectPosition` biases the crop upward so
+// the trim comes off the empty pavement rather than the sky.
+// `zoom` therefore exists only for a cut whose subject still needs pushing; cut 1 carried
+// one for the old full-bleed layout and no longer needs it.
+// A story beat is one long sentence, and a 7-year-old skims it. Each title marks its own
+// key words with *asterisks* — the phrase that carries the beat — and `renderCopy` colours
+// what falls between them. The marks live INSIDE the i18n key, so the Korean line chooses
+// its own words to stress rather than inheriting an English word order that does not apply.
+// `tone` decides both the highlight colour and the icon chip: 'bad' while the villains are
+// winning, 'good' from the moment the child can do something about it. That flip lands on
+// cut 7, where the buddies stop being victims and start fighting back.
+// `kick` is the comic sound effect over the sentence. It does the job a still picture
+// cannot: a frame of Pings swarming a phone is silent, and "삐빅! 삐빅!" makes it noisy in
+// the child's head. It is also the one line here that is not the approved storyline copy —
+// the sentences stay faithful to design/onboarding-image-prompts.md, and the noise sits
+// above them, so the client's script is intact and the page still reads like a comic.
+const SLIDES = [
+  { title: 'Psst… something *strange* is happening lately.', kick: 'Psst…', img: '/assets/onboarding/1.png', icon: 'sparkles', tone: 'bad' },
+  { title: 'These pests keep us from *looking away*!', kick: 'Bzzt! Bzzt!', img: '/assets/onboarding/2.png', icon: 'bell-ring', tone: 'bad' },
+  { title: 'Keep staring *while you walk*… and *we start to hurt* too.', kick: 'Ouch…', img: '/assets/onboarding/3.png', icon: 'heart-crack', tone: 'bad' },
+  { title: 'The *weaker* we get, the *bigger* they grow!', kick: 'Bigger… bigger…', img: '/assets/onboarding/4.png', icon: 'trending-up', tone: 'bad' },
+  { title: '*Ping* is just the baby one. Much worse ones are waiting…', kick: 'Dun dun…', img: '/assets/onboarding/5.png', icon: 'skull', tone: 'boss' },
+  { title: 'And their *leader*… is after our *hearts* too.', kick: 'Rumble…', img: '/assets/onboarding/6.png', icon: 'crown', tone: 'boss' },
+  { title: "So that's who *we're fighting*! Easy? …Nope.", kick: 'Here we go!', img: '/assets/onboarding/7.png', icon: 'users', tone: 'good' },
+  // Cut 8 is the only story cut with app UI baked into the artwork, and that UI is Korean.
+  // It ships as-is for the Korean launch; Japan/Hong Kong need this one frame re-rendered.
+  { title: 'When we *signal* while you walk — *look up* for a second!', kick: 'Tap tap!', img: '/assets/onboarding/8.png', icon: 'hand', tone: 'good' },
+  { title: 'See? They get weaker, and *we get our power back*!', kick: 'Woo-hoo!', img: '/assets/onboarding/9.png', icon: 'heart', tone: 'good' },
+  // The thesis of the whole story, and the only cut that shows both outcomes in one frame —
+  // so it closes the story rather than opening it. Stated last, it lands as the point the
+  // previous nine cuts were making; stated first, it would be an abstract claim about a
+  // world the child has not seen yet.
+  { title: "The phone isn't the bad guy — *staring while you walk* is.", kick: 'Look!', img: '/assets/onboarding/10.png', icon: 'smartphone', tone: 'good' },
+  // The reward loop, and the last story beat before the product slides. Pairs 11.png with
+  // the storyline's CUT 10 line, not its cut 11 one: cut 11 is about evolving a single buddy
+  // and this frame is about earning — coins rising off a safe walk. The doc's own cut 11
+  // copy belongs with a before/after picture, which this is not.
+  { title: 'Every time you do it right, you *collect Points*!', kick: 'Cha-ching!', img: '/assets/onboarding/11.png', icon: 'coins', tone: 'gold' },
+  // 12.png is the before/after pair the storyline's CUT 11 copy was written for — one buddy
+  // shown small and plain, then grown and decked out, with a gold arrow between them. So the
+  // numbers are offset by one from here on: picture 11 carries cut-10 copy, picture 12
+  // carries cut-11 copy. The pairing follows what each frame actually shows.
+  { title: 'Spend them to *grow your buddy* into something way cooler.', kick: 'Level up!', img: '/assets/onboarding/12.png', icon: 'trending-up', tone: 'warm' },
+  { title: 'Dress them up and *decorate your room*, however you like!', kick: 'Ooooh!', img: '/assets/onboarding/13.png', icon: 'shirt', tone: 'warm' },
+  // Villains are back in frame, but this beat belongs to the child, not to them — the buddy
+  // is standing up to one, not being drained by it. So it keeps the `good` tone: the page
+  // stays green and the story does not fall back into the losing half.
+  { title: 'A strong buddy can *take on the big ones*!', kick: 'Face-off!', img: '/assets/onboarding/14.png', icon: 'swords', tone: 'duel' },
+  // The egg trio closes the flow and hands straight off to the real hatch UI, so nothing is
+  // allowed between the last cracking shell and the tap that opens it. The two product
+  // slides used to sit here and broke that: "who will your first friend be?" answered by
+  // "every safe walk levels you up" throws the cliffhanger away. They now run before the
+  // egg, where they summarise the story rather than interrupt its ending.
+  { title: 'But you know what… *every buddy starts out like this*.', kick: 'Huh?', img: '/assets/onboarding/15.png', icon: 'egg', tone: 'egg' },
+  { title: "Nobody knows *who's inside* — not even us.", kick: 'Thump thump', img: '/assets/onboarding/16.png', icon: 'help-circle', tone: 'egg' },
+  { title: 'So… *who will your first friend be?*', kick: 'Crrrack!', img: '/assets/onboarding/17.png', icon: 'party-popper', tone: 'egg' },
+];
+
+// The page around a cut is sampled FROM that cut, not invented. Averaging the artwork
+// splits it into two families, and they are nothing alike:
+//   · the street cuts (1-4, 7-9) run sky blue #79BFFA at the top down to warm pavement
+//     #AD988D at the bottom — daylight, warm, not purple at all
+//   · the boss cuts (5-6) run #3D1C61 to #270E41 — a purple NIGHT
+// So `day` mirrors that sky-to-sand fall, and `night` goes dark for the two boss frames.
+// A pale lilac page behind a near-black photograph was the mismatch: the page has to be on
+// the same side of light as the picture it frames, or the picture reads as a hole.
+//
+// Ink follows the story rather than the light. The artwork teaches one colour code —
+// everything the villains touch glows purple — so words about them are stressed in that
+// purple, and words about winning in the brand green. A child who cannot read the sentence
+// still reads the colour, and the flip at cut 7 is the story turning.
+const TONE = {
+  // cuts 1-4 · daylight street, villains winning
+  bad: {
+    ink: '#6f4bc4', chipBg: '#f0ebfb', fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: '#6f4bc4',
+    bg: 'linear-gradient(175deg, #eef4fb 0%, #f7f3ee 54%, #f2e9dd 100%)',
+    blob: ['rgba(121,163,222,.30)', 'rgba(206,168,128,.28)'],
+  },
+  // cuts 5-6 · the boss reveal, shot at night — the only two dark frames in the set
+  boss: {
+    ink: '#c9a4ff', chipBg: 'rgba(255,255,255,.13)', fg: '#ffffff', sub: 'rgba(255,255,255,.80)',
+    track: 'rgba(255,255,255,.20)', fill: '#c9a4ff',
+    bg: 'linear-gradient(175deg, #2b1449 0%, #1d0e33 56%, #140922 100%)',
+    blob: ['rgba(146,63,214,.42)', 'rgba(78,38,148,.40)'],
+  },
+  // cuts 7-10 · daylight again, and now the child is winning
+  good: {
+    ink: P_BRAND.primary, chipBg: P_BRAND.primaryLight, fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: P_BRAND.primary,
+    bg: 'linear-gradient(175deg, #eef6f7 0%, #f5f6ef 52%, #e8f0e2 100%)',
+    blob: ['rgba(75,129,79,.26)', 'rgba(209,153,0,.22)'],
+  },
+  // cut 11 · the Points frame is a screenful of gold coins, so the page is gold. Points are
+  // already gold everywhere else in the product (THEME.gold), which makes this the one
+  // tone that teaches a real UI colour rather than just a mood.
+  gold: {
+    ink: '#9e7300', chipBg: '#fff2d1', fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: '#c79300',
+    bg: 'linear-gradient(175deg, #fdf7ea 0%, #faf0d8 52%, #f3e3bf 100%)',
+    blob: ['rgba(209,153,0,.30)', 'rgba(120,150,200,.20)'],
+  },
+  // cuts 12-13 · the buddy's own frames — a cream studio and a sunlit room, both warm and
+  // domestic. Green ink: these are still buddy beats, not reward beats.
+  warm: {
+    ink: P_BRAND.primary, chipBg: P_BRAND.primaryLight, fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: P_BRAND.primary,
+    bg: 'linear-gradient(175deg, #fdfaf4 0%, #f8f1e6 54%, #f0e4d4 100%)',
+    blob: ['rgba(190,149,114,.26)', 'rgba(75,129,79,.20)'],
+  },
+  // cut 14 · the face-off. The frame is split green-versus-purple, so the page takes the
+  // villain's side of that split for its wash and keeps the buddy's green for the ink —
+  // tension in the background, the child still winning in the words.
+  duel: {
+    ink: P_BRAND.primary, chipBg: P_BRAND.primaryLight, fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: P_BRAND.primary,
+    bg: 'linear-gradient(175deg, #eeeef8 0%, #eaeaf6 50%, #e3e6f2 100%)',
+    blob: ['rgba(106,106,158,.28)', 'rgba(75,129,79,.22)'],
+  },
+  // cuts 15-17 · the egg. Its own art is cream and gold and nothing else is in frame, so
+  // the page becomes the egg's glow and the flow ends warm.
+  egg: {
+    ink: '#9e6b18', chipBg: '#fdf0d9', fg: THEME.fg1, sub: THEME.fg2,
+    track: 'rgba(43,41,38,.13)', fill: '#d69e4a',
+    bg: 'linear-gradient(175deg, #fefaf2 0%, #fbf1de 50%, #f6e4c4 100%)',
+    blob: ['rgba(214,158,74,.30)', 'rgba(241,200,122,.28)'],
+  },
+};
+
+// Split a marked title into plain and highlighted runs. Odd indexes are what sat between
+// the asterisks. A title with no marks renders as one plain run, so marking is optional.
+function renderCopy(text, ink) {
+  return text.split('*').map((part, i) => (
+    i % 2 ? <strong key={i} style={{ color: ink, fontWeight: 700 }}>{part}</strong> : <React.Fragment key={i}>{part}</React.Fragment>
+  ));
+}
+// The steps after the slides are derived, not hard-coded — adding or removing a story
+// slide must not silently strand the connect and hatch screens on stale numbers.
+// Letterbox behind a story cut, for the moment before its image decodes and for any frame
+// whose aspect leaves a sliver. The logo green (#4B814F) pulled down toward black, so it
+// reads as part of the product rather than as a generic black photo well.
+const STAGE_BG = '#1a301d';
+const CONNECT_STEP = SLIDES.length + 1;
+const HATCH_STEP = CONNECT_STEP + 1;
+
 // ── Onboarding / permissions ─────────────────────────────────────────
 // Smart mode is the only mode now. The flow is:
-//   2 intro slides → connect-to-parent (code / QR) → permissions.
+//   3 intro slides (1 story cut + 2 value props) → connect-to-parent (code / QR) → permissions.
 // The logo-splash beat that used to open this now lives in BootSplash (shell/App.jsx always
 // plays it right before Onboarding mounts), so this starts straight at the intro slides.
 // The child device carries no account of its own: identity comes from the parent it pairs
@@ -45,7 +197,7 @@ const STARTER_EGG_C = eggColorFor('common');
 function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
   const gradualCrack = eggHatch === 'crack';   // Tweaks: Egg hatch → gradual crack vs quick pop
   const perms = PERMISSIONS;
-  const [step, setStep] = React.useState(1);     // 1-2 slides · 3 connect · 4 permissions
+  const [step, setStep] = React.useState(1);     // 1..SLIDES.length slides · CONNECT_STEP · HATCH_STEP
   const [grants, setGrants] = React.useState({});
   const [code, setCode] = React.useState('');    // parent's 6-digit code, typed on the connect screen
   const [codeErr, setCodeErr] = React.useState(false); // validation error on the connect screen
@@ -116,7 +268,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
   const codeExpired = codeLeft <= 0;
   const regenCode = () => setCodeLeft(300);   // "get a new code/QR" — restarts the timer
   React.useEffect(() => {
-    if (step !== 3 || pairing || connected) return undefined;
+    if (step !== CONNECT_STEP || pairing || connected) return undefined;
     const t = setInterval(() => setCodeLeft(s => (s > 0 ? s - 1 : 0)), 1000);
     return () => clearInterval(t);
   }, [step, pairing, connected]);
@@ -131,44 +283,68 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
   }, [pairing]);
   const codeLeftLabel = `${Math.floor(codeLeft / 60)}:${String(codeLeft % 60).padStart(2, '0')}`;
 
-  // value-prop slides shown at steps 1–2 (step 3 = connect)
-  const SLIDES = [
-    { title: 'Walk safe, grow your buddy', sub: "JoanX notices when you're walking on your phone — and turns staying safe into a game." },
-    { title: 'Every safe walk levels you up', sub: 'Earn points, evolve your buddy, and beat the distractions.' },
-  ];
   const introIdx = step - 1;
   const slide = SLIDES[introIdx];
+  const tone = TONE[slide?.tone] || TONE.good;
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: screenBgFor(P_BRAND.primary), display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
-      {/* 1–2 · value-prop intro slides — full-bleed hero image with dark scrims,
-          white copy, and a bottom-aligned CTA (mirrors the parent onboarding). */}
+    <div style={{ position: 'absolute', inset: 0, background: slide ? tone.bg : screenBgFor(P_BRAND.primary), transition: 'background .5s ease', display: 'flex', flexDirection: 'column', paddingTop: 50 }}>
+      {/* Story slides. The artwork and the copy do NOT overlap: every earlier attempt put
+          text on top of the image (white subtitles, then a speech bubble) and both of them
+          covered the part of the frame the cut was actually about. The image gets the top
+          of the screen as its own stage, the copy sits under it on the app background, and
+          nothing occludes anything. */}
       {slide && (
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }}>
-          {/* background: flat brand-green park scene (path, buddy, phone + app
-              chips) baked to a static image — replaces the old glossy stock photo */}
-          <img src="/assets/onboarding/intro-flat.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 30%' }} />
-          {/* soft dark scrims top & bottom keep the copy and CTA legible */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330, background: 'linear-gradient(180deg, rgba(12,14,22,.74) 0%, rgba(12,14,22,0) 100%)' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 280, background: 'linear-gradient(0deg, rgba(10,12,20,.92) 8%, rgba(10,12,20,0) 100%)' }} />
+          {/* Two soft out-of-focus blobs behind everything — the depth that keeps a flat
+              wash from reading as printer paper. They are heavily blurred and low-alpha, so
+              they never compete with the artwork or push the ink below contrast; `jx-float`
+              drifts them a few pixels so the page is quietly alive while the child reads. */}
+          <div aria-hidden className="jx-float" style={{ position: 'absolute', top: -70, right: -60, width: 260, height: 260, borderRadius: '50%', background: `radial-gradient(circle at 35% 35%, ${tone.blob[0]}, transparent 68%)`, filter: 'blur(12px)', zIndex: 0, pointerEvents: 'none' }} />
+          <div aria-hidden className="jx-float" style={{ position: 'absolute', bottom: 90, left: -80, width: 300, height: 300, borderRadius: '50%', background: `radial-gradient(circle at 60% 40%, ${tone.blob[1]}, transparent 70%)`, filter: 'blur(14px)', animationDelay: '-1.6s', zIndex: 0, pointerEvents: 'none' }} />
 
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div style={{ display: 'flex', gap: 7, padding: '0 28px' }}>
-              {SLIDES.map((_, i) => (
-                <div key={i} style={{ height: 5, flex: 1, borderRadius: 999, background: i <= introIdx ? '#fff' : 'rgba(255,255,255,.4)', transition: 'background .3s' }} />
-              ))}
+          {/* Progress sits ABOVE the picture, on the app background — never on top of it.
+              One continuous line rather than one segment per slide: at eleven story cuts the
+              segmented version read as a row of dashes stamped across the artwork, and it
+              only gets worse as cuts are added. A single fill scales to any number. */}
+          <div style={{ position: 'relative', zIndex: 1, flex: '0 0 auto', padding: '0 26px 14px' }}>
+            <div style={{ height: 5, borderRadius: 999, background: tone.track, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${((introIdx + 1) / SLIDES.length) * 100}%`, borderRadius: 999, background: tone.fill, transition: 'width .32s, background .5s cubic-bezier(.2,.8,.3,1)' }} />
             </div>
+          </div>
 
-            <div style={{ padding: '32px 30px 0' }}>
-              <h1 className="game-font" style={{ fontSize: 28, fontWeight: 500, lineHeight: 1.18, margin: 0, color: '#fff', textShadow: '0 2px 16px rgba(0,0,0,.5)' }}>{L(slide.title)}</h1>
-              <p style={{ fontSize: 15, lineHeight: 1.45, margin: '12px 0 0', color: 'rgba(255,255,255,.92)', textShadow: '0 1px 12px rgba(0,0,0,.5)' }}>{L(slide.sub)}</p>
+          {/* Stage. Rounded off at the bottom so the illustration reads as a picture in the
+              app rather than a background the UI is floating on. Nothing is drawn over it. */}
+          <div style={{ position: 'relative', zIndex: 1, flex: '1 1 auto', minHeight: 0, margin: '0 14px', overflow: 'hidden', borderRadius: 26, background: STAGE_BG, boxShadow: '0 6px 22px rgba(43,41,38,.14)' }}>
+            <img key={slide.img} src={slide.img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: slide.objectPosition || '50% 42%', transform: slide.zoom ? `scale(${slide.zoom})` : undefined, transformOrigin: slide.origin || '50% 50%' }} />
+          </div>
+
+          {/* Copy + CTA, on the app's own background. `flex: 0 0 auto` — the text block keeps
+              exactly the height it needs and the stage above absorbs the rest, so a one-line
+              cut gets a taller picture instead of a taller gap.
+              Keyed by slide so the rise animation replays on every advance. */}
+          <div key={introIdx} style={{ position: 'relative', zIndex: 1, flex: '0 0 auto', padding: '20px 26px 0', animation: 'jxRise .34s cubic-bezier(.2,.8,.3,1) both' }}>
+            {/* The chip names the beat before the sentence does — a bell for the alerts, a
+                cracked heart for the buddies being drained, a crown for the boss. It also
+                carries the tone colour, so the switch from purple to green at cut 7 reads
+                as the story turning even to a child who skips the words entirely. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 11 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 11, background: tone.chipBg, flexShrink: 0 }}>
+                <Icon name={slide.icon} size={19} color={tone.ink} stroke={2.1} />
+              </div>
+              {/* Tilted, because a sound effect that sits perfectly level is not a sound
+                  effect. Small and in the tone colour, so it reads as noise coming off the
+                  picture rather than as a second headline competing with the sentence. */}
+              {slide.kick && (
+                <span className="game-font" style={{ fontSize: 13, fontWeight: 800, letterSpacing: .3, color: tone.ink, opacity: .92, transform: 'rotate(-3deg)', transformOrigin: 'left center', whiteSpace: 'nowrap' }}>{L(slide.kick)}</span>
+              )}
             </div>
+            <h1 className="game-font" style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.36, margin: 0, color: tone.fg, wordBreak: 'keep-all' }}>{renderCopy(L(slide.title), tone.ink)}</h1>
+            {slide.sub && <p style={{ fontSize: 14.5, lineHeight: 1.5, margin: '9px 0 0', color: tone.sub, wordBreak: 'keep-all' }}>{L(slide.sub)}</p>}
+          </div>
 
-            <div style={{ flex: 1 }} />
-
-            <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-              <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(step + 1)}>{L('Continue')}</Button>
-            </div>
+          <div style={{ position: 'relative', zIndex: 1, flex: '0 0 auto', padding: '18px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => setStep(step + 1)}>{L('Continue')}</Button>
           </div>
         </div>
       )}
@@ -176,7 +352,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       {/* 4 · permission guide — asked right after the buddy hatches, not before, so the ask
           lands with a buddy the child already has a stake in protecting. Full page with a
           toggle per permission. */}
-      {step === 4 && charReveal && eggPhase === 'reveal' && permsPhase && (
+      {step === HATCH_STEP && charReveal && eggPhase === 'reveal' && permsPhase && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '6px 22px 0' }}>
             {/* Skip rides the title's first line rather than sitting in a band of its own —
@@ -246,7 +422,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       )}
 
       {/* 3 · connect — child types the code shown in the parent app */}
-      {step === 3 && !showQR && !pairing && !connected && (
+      {step === CONNECT_STEP && !showQR && !pairing && !connected && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '18px 28px 0', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L("Enter your parent's\nconnect code")}</h1>
@@ -315,7 +491,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       )}
 
       {/* 3b · share the child's QR for a parent to scan */}
-      {step === 3 && showQR && !pairing && !connected && (
+      {step === CONNECT_STEP && showQR && !pairing && !connected && (
         <>
           <div className="no-sb" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: '18px 28px 0', textAlign: 'left' }}>
             <h1 className="game-font" style={{ fontSize: 25, fontWeight: 500, margin: '6px 0 10px', lineHeight: 1.22, whiteSpace: 'pre-line' }}>{L('Show this to\nyour parent')}</h1>
@@ -366,7 +542,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           the two apps are shaking hands. Radar pattern: the buddy floats at the
           center while calm signal rings ripple outward, reaching for the parent
           app. No QR or checkmark imagery — just the handshake in progress. */}
-      {step === 3 && pairing && !connected && (
+      {step === CONNECT_STEP && pairing && !connected && (
         <>
           <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
             {/* radar — staggered rings ripple out from the buddy */}
@@ -396,7 +572,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       )}
 
       {/* 3c · connected — success result screen */}
-      {step === 3 && connected && !charReveal && (
+      {step === CONNECT_STEP && connected && !charReveal && (
         <>
           <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 30px', overflow: 'hidden' }}>
             {/* soft success glow */}
@@ -437,7 +613,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
           </div>
 
           <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => { setStep(4); openEgg(); }}>{L('Continue')}</Button>
+            <Button variant="primary" size="lg" fullWidth style={pBrandBtn} onClick={() => { setStep(HATCH_STEP); openEgg(); }}>{L('Continue')}</Button>
           </div>
         </>
       )}
@@ -445,7 +621,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       {/* 3d · the buddy egg — tap or shake to hatch (A-2, same motif as the Shop) */}
       {/* absolute inset:0 like the splash — an abspos child fills the parent's
           padding box, so the wash reaches under the status bar with no pink gap */}
-      {step === 4 && charReveal && eggPhase !== 'reveal' && (
+      {step === HATCH_STEP && charReveal && eggPhase !== 'reveal' && (
         <>
           {/* the starter egg is always common, so the painted common backdrop applies
               unconditionally here — no tier/preview branching like the Shop needs. */}
@@ -492,7 +668,7 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
       )}
 
       {/* 3e · hatched — congrats reveal */}
-      {step === 4 && charReveal && eggPhase === 'reveal' && !permsPhase && (
+      {step === HATCH_STEP && charReveal && eggPhase === 'reveal' && !permsPhase && (
         <>
           {/* reveal carries the same painted backdrop as the waiting egg screen — the scene
               shouldn't swap out from under the buddy the moment it appears. Falls back to the

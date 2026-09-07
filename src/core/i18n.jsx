@@ -12,7 +12,49 @@ const KO = {
   'Child app': '자녀 앱', 'Parent app': '부모 앱',
 
   // ── onboarding ──
-  'Walk safe, grow your buddy': '안전하게 걷고, 친구를 키워요',
+  // The onboarding story cuts — the buddies' own voice, so the Korean is the storyline's
+  // line verbatim rather than a literal translation of the English.
+  // *Asterisks* mark the phrase the slide highlights (see SLIDES in child/Onboarding.jsx).
+  // Each language marks its OWN words: Korean stresses '걸으면서' where English stresses
+  // 'while you walk', and the two do not sit at the same point in the sentence. Keep the
+  // marks paired — an odd number of asterisks would colour the rest of the line.
+  'Psst… something *strange* is happening lately.': '쉿… 요즘 *이상한 일*이 벌어지고 있어.',
+  'These pests keep us from *looking away*!': '이 녀석들, 우리가 화면에서 *눈을 떼지 못하게* 해!',
+  'Keep staring *while you walk*… and *we start to hurt* too.': '*걸으면서* 계속 보고 있으면… *우리까지 아파져*.',
+  'The *weaker* we get, the *bigger* they grow!': '우리가 *약해질수록*, 저 녀석들은 *쑥쑥 커져*!',
+  '*Ping* is just the baby one. Much worse ones are waiting…': '*Ping*은 아직 애기야. 훨씬 무서운 녀석들이 기다리고 있어…',
+  'And their *leader*… is after our *hearts* too.': '그리고 녀석들의 *우두머리*는… 우리 *마음*까지 노려.',
+  "So that's who *we're fighting*! Easy? …Nope.": '그래서 *우리가 녀석들과 싸우는* 중! 쉽냐고? …전혀.',
+  'When we *signal* while you walk — *look up* for a second!': '걸을 때 우리가 *신호*를 보내면 — 잠깐 *고개를 들어* 줘!',
+  'See? They get weaker, and *we get our power back*!': '봤지? 녀석들은 약해지고, *우리는 힘을 되찾아*!',
+  "The phone isn't the bad guy — *staring while you walk* is.": '스마트폰이 나쁜 건 아니야. *걸으면서 계속 보는 게* 문제지.',
+  'Every time you do it right, you *collect Points*!': '네가 잘해낼 때마다 *Point*도 모을 수 있어!',
+  'Spend them to *grow your buddy* into something way cooler.': 'Point를 모으면 *친구를 키우고*, 더 멋진 모습으로 진화시킬 수 있어.',
+  'Dress them up and *decorate your room*, however you like!': '옷도 입히고, *방도 네 마음대로* 꾸밀 수 있어!',
+  'A strong buddy can *take on the big ones*!': '친구가 강해지면 *더 강한 녀석들에게도* 도전할 수 있어!',
+  'But you know what… *every buddy starts out like this*.': '그런데 말이야… *모든 친구는 처음엔 이렇게* 시작해.',
+  "Nobody knows *who's inside* — not even us.": '이 안에서 *누가 태어날지는* 아무도 몰라.',
+  'So… *who will your first friend be?*': '자… *네 첫 번째 친구는 누가 될까?*',
+
+  // Comic sound-effect kickers, one per story cut — the small line that sits above the
+  // sentence. They are NOT translations of each other: Korean onomatopoeia does not map
+  // onto English, so each language gets the noise its own readers actually make.
+  'Psst…': '쉿…',
+  'Bzzt! Bzzt!': '삐빅! 삐빅!',
+  'Ouch…': '으윽…',
+  'Bigger… bigger…': '쑥— 쑥—',
+  'Dun dun…': '두구두구…',
+  'Rumble…': '쿠구궁…',
+  'Here we go!': '으쌰!',
+  'Tap tap!': '톡톡!',
+  'Woo-hoo!': '와아—',
+  'Look!': '자, 봐봐!',
+  'Cha-ching!': '짤랑짤랑!',
+  'Ooooh!': '우와아—',
+  'Face-off!': '한판 붙자!',
+  'Huh?': '어라?',
+  'Thump thump': '두근두근',
+  'Crrrack!': '쩌억—',
   "JoanX gently notices when you're walking and looking at your phone — and turns staying safe into a game you win.":
     '조안X는 걸으면서 폰을 볼 때를 부드럽게 알아채고, 안전을 즐거운 게임으로 바꿔 줘요.',
   'Get started': '시작하기', 'Pick a mode': '모드 선택', 'mode': '모드',
@@ -64,8 +106,6 @@ const KO = {
   'Pending': '대기 중', 'Turn on one by one': '하나씩 켜기',
   "JoanX notices when you're walking on your phone — and turns staying safe into a game.":
     '조안X는 걸으면서 폰을 볼 때를 알아채고, 안전을 게임으로 바꿔 줘요.',
-  'Every safe walk levels you up': '안전하게 걸을수록 레벨업',
-  'Earn points, evolve your buddy, and beat the distractions.': '포인트를 모으고 친구를 진화시키며 딴짓을 이겨내요.',
   'Private by design — JoanX never reads your messages': '설계부터 안전하게 — 조안X는 메시지를 절대 읽지 않아요',
   'Private & secure — only used to keep you safe': '비공개로 안전하게 — 너를 지키는 데만 써요',
   'Connect with your parent': '부모님과 연결하기',
@@ -485,7 +525,7 @@ const KO = {
 
   // ── parent ──
   "This week's progress": '이번 주 진행 상황', 'Mina is improving': '미나가 나아지고 있어요',
-  'Loading…': '불러오는 중…',
+  'Loading…': '불러오는 중…', 'Hold': '잠깐 멈춤',
   'Getting better': '좋아지고 있어요', 'Switch child': '자녀 전환', 'Needs attention': '살펴봐 주세요',
   'On track': '순조로워요', 'Needs a look': '살펴봐 주세요', 'See all details': '자세히 보기', 'All details': '자세히',
   'Risky-walking moments': '위험한 보행 순간', 'fewer this week': '이번 주 감소',
