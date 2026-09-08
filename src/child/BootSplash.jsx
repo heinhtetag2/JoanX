@@ -20,6 +20,7 @@
 import React from 'react';
 import { Icon } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { bgMusic, ONBOARDING_SONG } from '../core/sound.jsx';
 
 const LOGO_MS = 1000;
 const LOAD_MS = 2200;
@@ -37,6 +38,15 @@ function BootSplash({ onDone }) {
   // bar where it is, and a start-stamp clock would jump forward by the whole paused duration
   // the moment it resumed.
   const elapsed = React.useRef(0);
+
+  // The onboarding song starts here — the cold open, before the story slides even show.
+  // Stopped on unmount so a RETURNING child (booted straight to Home, no Onboarding after
+  // this) never carries it past the splash; a first-time child hands off into Onboarding,
+  // which starts the same track fresh for its own story-slide phase.
+  React.useEffect(() => {
+    bgMusic.start(ONBOARDING_SONG);
+    return () => bgMusic.stop();
+  }, []);
 
   // Phase 1 — logo beat, timed, then hand off to the loading beat.
   React.useEffect(() => {

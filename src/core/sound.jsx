@@ -375,6 +375,11 @@ const music = {
 // single looping HTMLAudioElement, gated by the same on()/PLAYER.prefs.sound
 // mute as everything else — so the sound toggle silences this too. Files live
 // in public/assets/audio/.
+// The one real audio file in the app — everything else here is synthesised.
+// Shared by BootSplash (the cold-open beat) and Onboarding (the story slides
+// that follow it), so the two screens play the same track off one constant.
+const ONBOARDING_SONG = '/assets/audio/onboarding.mp3';
+
 let _bgAudio = null;
 const bgMusic = {
   start(src, { volume = 0.5 } = {}) {
@@ -395,4 +400,4 @@ const bgMusic = {
   },
 };
 
-export { sfx, installUiSounds, music, bgMusic };
+export { sfx, installUiSounds, music, bgMusic, ONBOARDING_SONG };
