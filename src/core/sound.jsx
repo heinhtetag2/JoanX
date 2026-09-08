@@ -237,6 +237,7 @@ function installUiSounds() {
   _installed = true;
   document.addEventListener('pointerdown', (e) => {
     audio();                                                     // unlock within the gesture, always
+    if (_bgAudio && _bgAudio.paused && on()) _bgAudio.play().catch(() => {});  // retry the bg song within this gesture
     if (window.JX_ROLE !== 'child' && window.JX_ROLE !== 'parent') return;
     const t = e.target;
     if (!t || !t.closest) return;
@@ -368,4 +369,30 @@ const music = {
   },
 };
 
-export { sfx, installUiSounds, music };
+// ── Real-file background track (the one deliberate exception to the zero-asset
+// rule above) ────────────────────────────────────────────────────────────────
+// Onboarding wants an actual composed song, which synthesis can't produce. A
+// single looping HTMLAudioElement, gated by the same on()/PLAYER.prefs.sound
+// mute as everything else — so the sound toggle silences this too. Files live
+// in public/assets/audio/.
+let _bgAudio = null;
+const bgMusic = {
+  start(src, { volume = 0.5 } = {}) {
+    if (typeof window === 'undefined') return;
+    if (!_bgAudio || _bgAudio.src.indexOf(src) === -1) {
+      this.stop();
+      _bgAudio = new Audio(src);
+      _bgAudio.loop = true;
+      _bgAudio.volume = volume;
+    }
+    if (!on()) return;                        // muted — stay ready, don't play
+    _bgAudio.play().catch(() => {});           // autoplay policy — retried on the next tap below
+  },
+  stop() {
+    if (!_bgAudio) return;
+    _bgAudio.pause();
+    _bgAudio = null;
+  },
+};
+
+export { sfx, installUiSounds, music, bgMusic };

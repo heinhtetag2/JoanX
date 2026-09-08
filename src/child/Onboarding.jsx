@@ -7,7 +7,11 @@ import { L } from '../core/i18n.jsx';
 import { Mascot, KingCubix, shade } from '../core/characters.jsx';
 import { screenBgFor } from './shared.jsx';
 import { EggShape, EggHalf, CrackingEgg, eggColorFor, EGG_HATCH_BG, requestMotionPermission, useShakeToHatch, HATCH_MS, HATCH_CRACK_MS } from './EggHatch.jsx';
-import { sfx } from '../core/sound.jsx';
+import { sfx, bgMusic } from '../core/sound.jsx';
+
+// The one real audio file in the app — everything else in core/sound.jsx is
+// synthesised. Drop the song at this path (public/assets/audio/) to enable it.
+const ONBOARDING_SONG = '/assets/audio/onboarding.mp3';
 
 // The first buddy every new child is given (for now): Rex, the green one. Onboarding and
 // the hatch wear his colour, so the flow that hands you a green buddy is itself green —
@@ -282,6 +286,13 @@ function Onboarding({ ctx, eggShake = false, eggHatch = 'pop' }) {
     return () => clearTimeout(t);
   }, [pairing]);
   const codeLeftLabel = `${Math.floor(codeLeft / 60)}:${String(codeLeft % 60).padStart(2, '0')}`;
+
+  // Onboarding song plays for the whole flow (story → connect → hatch) and stops
+  // the moment the child leaves it — never carries over into the main game.
+  React.useEffect(() => {
+    bgMusic.start(ONBOARDING_SONG);
+    return () => bgMusic.stop();
+  }, []);
 
   const introIdx = step - 1;
   const slide = SLIDES[introIdx];
