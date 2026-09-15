@@ -242,8 +242,20 @@ function MyHouse({ ctx, variant = 'hotspot', buddySwitch = 'sheet', roomDecor = 
                 itself, which anchors low enough (see JustDroppedBar) to overlap this
                 block if it were left showing. `pointerEvents: 'none'` while faded so a
                 stray tap here can't register on a reaction/guestbook that isn't really
-                meant to be interacted with right now. */}
-            <div style={{ opacity: homeEd.justDropped ? 0 : 1 - homeSheetDrag, pointerEvents: homeSheetDrag > 0 || homeEd.justDropped ? 'none' : 'auto', transition: 'opacity .15s ease' }}>
+                meant to be interacted with right now.
+                `position: 'relative'` — the fade above only covers the INSTANT a piece is
+                airborne or still unconfirmed; once a child taps Done it drops right back
+                to opacity 1 wherever it landed. A piece dropped low in the room (allowed —
+                see stagePos's own comment on why the drop isn't capped to the stage's own
+                box) is still position:absolute inside that box with `overflow: visible`
+                (Dream Room paints its floor past the 460px stage so a low drop still reads
+                as "in the room" — see RoomStage's `backdrop` prop), and a positioned
+                element always paints over plain in-flow content beneath it regardless of
+                DOM order. Without this, a piece confirmed low enough would sit ON TOP of
+                this block forever, not just while airborne. Making this block positioned
+                too (z-index:auto, same as the stage) puts it back in DOM order for
+                painting — it comes after the stage, so it wins. */}
+            <div style={{ position: 'relative', opacity: homeEd.justDropped ? 0 : 1 - homeSheetDrag, pointerEvents: homeSheetDrag > 0 || homeEd.justDropped ? 'none' : 'auto', transition: 'opacity .15s ease' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
                 <span className="game-font" style={{ fontSize: 24, fontWeight: 500, color: '#fff', textShadow: '0 1px 10px rgba(0,0,0,.55)' }}>{PLAYER.name}</span>
                 <LevelBadge level={PLAYER.level} />

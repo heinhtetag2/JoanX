@@ -28,6 +28,7 @@ const STATUS = {
 const HANDOFF = {
   // ── child app ──
   home:        { status: 'done', note: 'Final. Hero + XP ring, protection card, points/streak, and today’s missions all done.' },
+  myhouse:     { status: 'done', note: 'Confirmed. Profile hero room — Dream Room default, freeform drag-drop decor with re-drag and the confirm/delete bubble, buddy/wallpaper/flooring pucks, reactions row, guestbook.' },
   boot:        { status: 'done', note: 'Confirmed. Cold-launch loading screen — buddy + ripple, game-style progress bar, ahead of Home/onboarding.' },
   onboarding:  { status: 'done', note: 'Confirmed. Intro slides → connect-to-parent → permissions all done (the logo splash ahead of this is now BootSplash).' },
   // child profile & its detail screens

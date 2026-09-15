@@ -22,7 +22,7 @@
 
 import React from 'react';
 import { Button, DateField, Icon, Input, SelectField, THEME, mixHue } from './primitives.jsx';
-import { addGuardian, AUTH, FAMILY_INVITE, KNOWN_EMAILS, authMethods } from './data.jsx';
+import { addGuardian, AUTH, KNOWN_EMAILS, authMethods } from './data.jsx';
 import { L, getLang } from './i18n.jsx';
 
 const digitsOf = (s) => s.replace(/\D/g, '');
@@ -112,10 +112,9 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   const [email, setEmail] = React.useState('');
   const [code, setCode] = React.useState('');
   const [codeErr, setCodeErr] = React.useState(false);
-  // Joining an existing family — the code FAMILY_INVITE holds (a fixed, shared value in this
-  // prototype; a real backend would look up whichever invite the digits belong to). Separate
-  // from the verification `code` above: this one proves "which family", the other proves
-  // "whose email".
+  // Joining an existing family — a real backend would look up whichever invite the digits
+  // belong to; this demo build accepts any complete code. Separate from the verification
+  // `code` above: this one proves "which family", the other proves "whose email".
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteErr, setInviteErr] = React.useState(false);
   const [notice, setNotice] = React.useState(null);    // 'exists' | 'need-email'
@@ -188,10 +187,10 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
     else setPhase('email');
   };
   // The invite code proves "which family", never "whose email" — that's still the verification
-  // step right after. Any 6 digits that don't match FAMILY_INVITE.code fail the same way a
-  // mistyped code should: no hint about what the right one might be.
+  // step right after. Demo build: no backend to look an invite up against, so any 6 digits are
+  // accepted — only an incomplete code is rejected.
   const verifyInvite = () => {
-    if (inviteCode.length < AUTH.codeLength || inviteCode !== FAMILY_INVITE.code) { setInviteErr(true); return; }
+    if (inviteCode.length < AUTH.codeLength) { setInviteErr(true); return; }
     setAfterConsent('email'); setPhase('consent');
   };
   const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -274,12 +273,12 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
           {hero
             ? <img src={hero} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '58% 34%' }} />
             : <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${accent} 0%, #0c0e16 100%)` }} />}
-          {/* scrims: a light one so the wordmark reads up top, a tall dark foot for the copy + CTAs */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(180deg, rgba(12,14,22,.62) 0%, rgba(12,14,22,0) 100%)' }} />
+          {/* scrims: a dark one so the wordmark reads over bright sky/art up top, a tall dark foot for the copy + CTAs */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 220, background: 'linear-gradient(180deg, rgba(8,10,18,.8) 0%, rgba(8,10,18,.42) 55%, rgba(8,10,18,0) 100%)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 440, background: 'linear-gradient(0deg, rgba(9,11,18,.95) 30%, rgba(9,11,18,0) 100%)' }} />
 
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top) + 58px)' }}>
-            <img src="/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ height: 22, display: 'block', margin: '0 28px', opacity: .96 }} />
+            <img src="/assets/brand/logo-wordmark.svg" alt="JoanX" style={{ height: 22, display: 'block', margin: '0 28px', filter: 'drop-shadow(0 2px 5px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(0,0,0,.35))' }} />
 
             <div style={{ flex: 1 }} />
 

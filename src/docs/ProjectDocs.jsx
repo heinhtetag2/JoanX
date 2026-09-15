@@ -396,6 +396,28 @@ const TRUTH = [
   { ok: true,  t: 'But the server seam is already written', s: 'Every economy value is a settings object with a validating setter — setXpCurve, setStages, setStatGrowth, setExchange — each falling back to the launch default, field by field, on a malformed payload. When the backend arrives it calls those four functions.' },
 ];
 
+// Case study — the polished, portfolio-facing write-up. Lives in the app so it can
+// never 404: it was previously an external artifact link, which the artifact host
+// can delete or the tab can be closed on — this is the durable, self-hosted version.
+// Content is drawn from §1, §19 and §22 of PROJECT_DOCUMENTATION.md.
+const CASE_CHALLENGES = [
+  { c: 'Balancing a children’s gacha ethically', s: 'Guaranteed behaviour-based unlocks sit beside the odds table — a child who never spends a point can still reach the rarest characters.' },
+  { c: 'Tuning the economy without app releases', s: 'Every balance value is a settings object with a validating setter and per-field fallback to the launch default.' },
+  { c: 'A villain system that survives future seasons', s: 'Boss status is a role (minion / mid-boss / final boss), not a row position — an appended villain can never steal the ending.' },
+  { c: 'Client review speed', s: 'Dozens of live, switchable layout variants — direction chosen inside the real app, not a slide deck.' },
+  { c: 'A reward engine that can’t double-pay', s: 'One matcher, three ledgers, and isOwed() returning a count rather than a boolean.' },
+];
+const CASE_ACHIEVEMENTS = [
+  'A one-file domain model with zero UI coupling',
+  'A grant engine that cannot double-pay',
+  'Server-tunable EXP / stat / exchange curves with validated fallbacks',
+  'A 15-character roster with hidden Epics',
+  'A 10-villain IP line with a scalable season/role model',
+  'Full Korean localisation — 1,201 strings',
+  'Three in-app documentation surfaces, this one included',
+];
+const CASE_TECH = ['React 18', 'Vite 6', 'JavaScript (ESM/JSX)', 'lucide-react', 'CSS custom properties', 'inline-SVG character rendering', 'i18n (en/ko)', 'Vercel'];
+
 const FEATURES = [
   { id: 'F-07 · F-08 · F-09', t: 'Staged intervention', screens: ['WarningOverlay.jsx'],
     p: 'Get a child’s eyes up without seizing their phone.',
@@ -458,6 +480,7 @@ const QUALITY = [
 
 const NAV = [
   { id: 'summary',   label: 'Summary',         icon: 'book-open' },
+  { id: 'casestudy', label: 'Case study',      icon: 'trophy' },
   { id: 'truth',     label: 'Read this first', icon: 'alert-circle' },
   { id: 'users',     label: 'Users & privacy', icon: 'users' },
   { id: 'flow',      label: 'User flow',       icon: 'route' },
@@ -496,6 +519,9 @@ const DOC_CSS = `
   .doc-hero h1 { margin: 0 0 8px; font-size: 31px; font-weight: 800; letter-spacing: -0.5px; color: #2b2926; }
   .doc-hero p { margin: 0 0 10px; color: #585450; font-size: 14.5px; line-height: 1.65; }
   .doc-file { display: inline-flex; align-items: center; gap: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #2b5782; background: #ecf3fe; border-radius: 8px; padding: 5px 10px; }
+  a.doc-file { text-decoration: none; cursor: pointer; transition: background .15s; }
+  a.doc-file:hover { background: #dcebfd; }
+  .doc-refs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
   .doc-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
   .doc-stat { flex: 1; min-width: 108px; border: 1px solid #ebebea; border-radius: 16px; padding: 12px 14px; }
   .doc-stat b { display: block; font-size: 21px; font-weight: 800; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
@@ -576,10 +602,21 @@ function ProjectDocs() {
             is never seized, it buzzes; stopping quickly is what pays points; and points are what grow
             the character the child is attached to.
           </p>
-          <span className="doc-file">
-            <Icon name="file-text" size={13} color="#2b5782" stroke={2.2} />
-            PROJECT_DOCUMENTATION.md — the full 25-section written version, at the repo root
-          </span>
+          <div className="doc-refs">
+            <span className="doc-file">
+              <Icon name="file-text" size={13} color="#2b5782" stroke={2.2} />
+              PROJECT_DOCUMENTATION.md — the full 25-section written version, at the repo root
+            </span>
+            <button
+              type="button"
+              className="doc-file link"
+              style={{ border: 'none', cursor: 'pointer', font: 'inherit' }}
+              onClick={() => go('casestudy')}
+            >
+              <Icon name="trophy" size={13} color="#2b5782" stroke={2.2} />
+              Case study — the polished write-up
+            </button>
+          </div>
           <div className="doc-stats">
             {STATS.map(s => (
               <div key={s.l} className="doc-stat">
@@ -603,6 +640,93 @@ function ProjectDocs() {
               <span style={{ fontSize: 12, color: C.ink3 }}>— {c.s}</span>
             </div>
           ))}
+        </section>
+
+        {/* ── CASE STUDY ── */}
+        <section id="casestudy" ref={set('casestudy')} className="doc-section">
+          <h2 className="doc-h2">Case study</h2>
+          <p className="doc-lead">
+            The portfolio-facing write-up — built as a page in this app, not a link to somewhere
+            else, so it can't 404, expire, or vanish because someone closed a tab.
+          </p>
+
+          <div className="doc-why" style={{ marginBottom: 4 }}>
+            <b>JoanX — a game that gets children to look up while they walk.</b>
+          </div>
+
+          <div className="doc-h3">The problem</div>
+          <p className="doc-note" style={{ fontSize: 13.5, lineHeight: 1.7 }}>
+            Children walk head-down into traffic. Every existing answer is punitive — block the
+            phone, lock the screen, track the child's location — and children route around them,
+            resent them, or uninstall them. <b style={{ color: C.ink }}>A safety app a child deletes
+            is worth nothing.</b>
+          </p>
+
+          <div className="doc-h3">The solution</div>
+          <div className="doc-grid2">
+            <div className="doc-row" style={{ flexDirection: 'column', gap: 4 }}>
+              <div className="doc-title">For the child — a game</div>
+              <p className="doc-note">
+                Safe walking is the currency: points, EXP, eggs, a buddy that grows through three
+                stages, and ten villains who <i>are</i> the risks — temptation, carelessness,
+                impulse, darkness, fear.
+              </p>
+            </div>
+            <div className="doc-row" style={{ flexDirection: 'column', gap: 4 }}>
+              <div className="doc-title">For the parent — a dashboard</div>
+              <p className="doc-note">
+                Reports behaviour change: acceptance rate, response time, streaks — and
+                deliberately <b>not</b> location.
+              </p>
+            </div>
+          </div>
+
+          <div className="doc-h3">Role & responsibilities</div>
+          <p className="doc-note" style={{ fontSize: 13.5, lineHeight: 1.7 }}>
+            Product design + full front-end implementation: information architecture, the design
+            system, every screen in both apps, the entire game economy and rule engine,
+            localisation, and the living documentation. Translated a 44-requirement functional spec
+            into a working product, designed the reward economy, built an original villain IP line
+            to a client brief, and kept an auditable trace from every spec ID to the code
+            implementing it.
+          </p>
+
+          <div className="doc-h3">Challenges & how they were solved</div>
+          <div className="doc-table-wrap">
+            <table className="doc-table">
+              <thead><tr><th style={{ width: '38%' }}>Challenge</th><th>Solution</th></tr></thead>
+              <tbody>
+                {CASE_CHALLENGES.map(row => (
+                  <tr key={row.c}><td><b>{row.c}</b></td><td>{row.s}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="doc-h3">Impact</div>
+          <div className="doc-stats" style={{ marginTop: 0 }}>
+            {STATS.map(s => (
+              <div key={s.l} className="doc-stat">
+                <b style={{ color: s.c }}>{s.n}</b>
+                <span>{s.l}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="doc-h3">Key achievements</div>
+          {CASE_ACHIEVEMENTS.map(a => (
+            <div key={a} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '5px 0' }}>
+              <Icon name="circle-check" size={15} color={C.good} stroke={2.3} style={{ marginTop: 1, flexShrink: 0 }} />
+              <span style={{ fontSize: 12.5, color: C.ink2, fontWeight: 600, lineHeight: 1.5 }}>{a}</span>
+            </div>
+          ))}
+
+          <div className="doc-h3">Technologies</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+            {CASE_TECH.map(t => (
+              <span key={t} className="doc-file" style={{ fontFamily: 'inherit', fontWeight: 700 }}>{t}</span>
+            ))}
+          </div>
         </section>
 
         {/* ── READ THIS FIRST ── */}
