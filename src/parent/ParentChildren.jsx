@@ -6,7 +6,7 @@ import { Icon, PhotoAvatar, THEME, avatarPalFor, screenBgFor } from '../core/pri
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
-import { GroupAvatar, gname } from './ParentGroups.jsx';
+import { gname } from './ParentGroups.jsx';
 
 // ── Children / devices ───────────────────────────────────────────────
 // Reconnecting an offline child is done from that child's Rules & settings
@@ -68,11 +68,6 @@ function ParentChildren({ ctx }) {
             </div>
             {kidGroups.length > 0 && (
               <div onClick={e => { e.stopPropagation(); ctx.nav('p_group_detail', { groupId: kidGroups[0].id }); }} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, cursor: 'pointer' }}>
-                <div style={{ display: 'flex' }}>
-                  {kidGroups.slice(0, 3).map((g, i) => (
-                    <span key={g.id} style={{ marginLeft: i ? -8 : 0, borderRadius: 999, boxShadow: '0 0 0 2px #fff', display: 'inline-flex' }}><GroupAvatar group={g} size={24} /></span>
-                  ))}
-                </div>
                 <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kidGroups.map(gname).join(' · ')}</span>
               </div>
             )}
