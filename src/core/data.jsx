@@ -380,11 +380,9 @@ const MAX_GROUPS = 5;
 // Admin vs member is only about the GROUP — who may approve a join, rename it, rotate the
 // QR, or set which guardian is primary for a child. Neither role sees different safety data:
 // two guardians shown different numbers about the same child would be a support nightmare.
-// Inviting is deliberately open to members too — sharing the QR cannot let anyone in by
-// itself, the admin still has to accept.
 const GROUP_ROLES = {
-  admin:  { label: 'Admin',  can: { approve: true,  invite: true, rename: true,  rotate: true,  primary: true,  remove: true } },
-  member: { label: 'Member', can: { approve: false, invite: true, rename: false, rotate: false, primary: false, remove: false } },
+  admin:  { label: 'Admin',  can: { approve: true,  invite: true,  rename: true,  rotate: true,  primary: true,  remove: true } },
+  member: { label: 'Member', can: { approve: false, invite: false, rename: false, rotate: false, primary: false, remove: false } },
 };
 const groupCan = (role, action) => !!(GROUP_ROLES[role]?.can[action]);
 
