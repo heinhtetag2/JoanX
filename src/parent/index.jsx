@@ -8,7 +8,7 @@ export { ParentChildren } from './ParentChildren.jsx';
 export { ParentActivity } from './ParentActivity.jsx';
 export { ParentAlertDetail } from './ParentAlertDetail.jsx';
 export { ParentAccount } from './ParentAccount.jsx';
-export { ParentFamily, ParentInvite } from './ParentFamily.jsx';
+export { ParentGroups, ParentGroupCreate, ParentGroupDetail, ParentGroupInvite, ParentGroupJoin } from './ParentGroups.jsx';
 export { ParentAddChild } from './ParentAddChild.jsx';
 export { ParentDetail } from './ParentDetail.jsx';
 export { ParentAIReport } from './ParentAIReport.jsx';

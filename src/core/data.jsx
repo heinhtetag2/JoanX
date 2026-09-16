@@ -327,93 +327,311 @@ const LINK = {
   connected: true,
   childId: 'k1',                    // → CHILDREN
   code: '482193',                   // the 6-digit code the parent app shows
-  familyId: 'f1',                   // → FAMILY. The child pairs to the HOUSEHOLD, not to a person.
+  groupId: 'g1',                    // → GROUPS. The child pairs to the ACCOUNT, not to a person.
   since: '2026-03-14',
   // no `device` here on purpose — that lives on the CHILDREN row the parent app already
   // maintains (and re-writes on a device change). Read it via linkedChild().device.
   // no `parent` here either, and that is the point: a link that named one adult could not
-  // survive a second one. Read the guardians via guardians().
+  // survive a second one, let alone a group of five. Read the guardians via guardians().
 };
 
-// ── The family (household) ───────────────────────────────────────────
-// Two parents, one child, one set of numbers. The family owns the children — NOT the parent
-// who happened to do the setup — and the child's device pairs to the family. That is what
-// lets a second guardian be added, or removed, without ever touching the child's phone: no
-// re-scan, no re-pair, no chance of knocking the first parent offline (the pairing flow
-// unlinks the previously-paired device, so "just scan the child again" was never an option).
+// Dates written by a mutation (a join, a new group) use the day it happened, in the same
+// yyyy-mm-dd shape the seeded rows carry.
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+// ── Groups (replaces the single household) ───────────────────────────
+// A group is a named circle of guardians watching one or more of the same children. It
+// replaces the old singleton "family": one household, two guardians, one auto-join link.
+// That shape only described a couple. The people who actually share a school run — an aunt,
+// a grandparent, a neighbour on Tuesdays — could not be expressed at all, and the only way
+// in was a link that added whoever opened it.
 //
-// Both guardians see identical data by construction rather than by syncing: reports, points
-// and settings are family-scoped, so there is nothing to reconcile between two devices.
+// Three changes carry the whole model:
+//   many groups   — a guardian runs or belongs to several (MAX_GROUPS), each with its own
+//                   members, its own children, and its own primary guardian per child
+//   QR only       — there is no typed code any more. The invite is a durable token behind a
+//                   QR the admin shows or shares; rotating it is a deliberate act, not a timer
+//   approval      — scanning gets you a REQUEST, never a membership. An admin accepts or
+//                   rejects, and either way the requester is told
 //
-// Every member signs in as THEMSELVES (own email). Sharing one login is the tempting
-// shortcut and it breaks three things at once: push reaches one device, no change can be
-// attributed, and no alert can show who already responded.
-// Seeded with just the owner, one seat short of MAX_GUARDIANS — a fresh family, not yet
-// full, so "Invite a parent" (ParentInvite: code, link, QR) is the reachable default on
-// ParentFamily, rather than the "family is full" state. FAMILY_LOG below still carries a
-// couple of older entries from Min-jun, from back when he was the second guardian — kept
-// as flavor for the activity list, not a claim that he's a current member.
-const FAMILY = {
-  id: 'f1',
-  members: [
-    { id: 'm1', name: 'Ji-won',  relation: 'Mum', email: 'ji-won@email.com', role: 'owner',    since: '2026-03-14', me: true },
-  ],
-};
+// The child's device still pairs to the account, not to a person, so adding or removing a
+// guardian never touches the child's phone — the one property of the old family model worth
+// keeping.
 
-// One child, at most two guardians (the requirement, and the reason FAMILY_ROLES has exactly
-// an owner + a co-parent). The cap is enforced in addGuardian and surfaced in ParentFamily so
-// the owner is never offered an invite that could not be fulfilled — a mother and a father is
-// the shape the product is built for, not an open-ended household.
-const MAX_GUARDIANS = 2;
-const familyFull = () => FAMILY.members.length >= MAX_GUARDIANS;
-
-// Both roles see everything and change everything — the difference is only over the family
-// itself (who may add or remove a guardian, and who holds billing). Two guardians shown
-// different numbers would be a support nightmare, and it would break the promise PARENT_SEES
-// makes to the child. So: no per-parent data restrictions, ever.
-// (the badge says 'Co-parent', not 'Guardian' — 'Guardian' is already the character STAGE name,
-// 수호자, and two things called the same word in one app is one thing too many)
-const FAMILY_ROLES = {
-  owner:    { label: 'Owner',     can: { settings: true, invite: true,  remove: true,  billing: true } },
-  guardian: { label: 'Co-parent', can: { settings: true, invite: false, remove: false, billing: false } },
-};
-
-// A guardian invite: single-use and expiring. Sent as a link (the realistic case — the other
-// parent is at work, not standing next to you), with the QR and the 6-digit code on the same
-// screen for when they ARE together. Joining still requires the invitee to verify their own
-// phone number, so a leaked link alone gets nobody in.
-const FAMILY_INVITE = { code: '735204', link: 'joanx.app/j/7c1f9a', expiresHours: 48 };
-
-const guardians = () => FAMILY.members;
-const guardianOwner = () => FAMILY.members.find(m => m.role === 'owner') || FAMILY.members[0];
-const guardianMe = () => FAMILY.members.find(m => m.me) || guardianOwner();
-const guardianCan = (member, action) => !!(FAMILY_ROLES[member?.role]?.can[action]);
-// "엄마와 아빠" — the child is told who is watching, by name, not just what is shared (A-13).
-const guardianNames = () => FAMILY.members.map(m => m.relation);
-
-const addGuardian = (member) => {
-  if (familyFull()) return FAMILY.members;   // at most two guardians — never a silent third
-  FAMILY.members.push({ id: `m${FAMILY.members.length + 1}`, role: 'guardian', ...member });
-  return FAMILY.members;
-};
-const removeGuardian = (id) => {
-  const i = FAMILY.members.findIndex(m => m.id === id && m.role !== 'owner');   // the owner cannot be removed, only transferred
-  if (i >= 0) FAMILY.members.splice(i, 1);
-  return FAMILY.members;
-};
-
-// Two adults with equal control WILL overwrite each other's settings. The fix is not to take
-// the control away — it is to make sure nobody acts invisibly. Every change is stamped with
-// who made it, and the pair of them can see it. Solve the conflict with visibility, not with
-// permissions: a parent locked out of a safety setting is a worse failure than a parent who
-// has to ask "why did you loosen this?".
-const FAMILY_LOG = [
-  { id: 'l1', by: 'Ji-won',  icon: 'sliders',      what: 'Raised sensitivity',   detail: 'Mina · Balanced → Strict', time: '2h' },
-  { id: 'l2', by: 'Min-jun', icon: 'bell',         what: 'Acknowledged an alert', detail: 'Mina · distraction warning', time: '4h' },
-  { id: 'l3', by: 'Min-jun', icon: 'calendar',     what: 'Edited a schedule',    detail: 'Mina · School commute', time: 'Yesterday' },
-  { id: 'l4', by: 'Ji-won',  icon: 'user-plus',    what: 'Added a guardian',     detail: 'Min-jun joined the family', time: '2026-06-02' },
+// Everyone who holds a guardian account the prototype knows about. Membership lives in
+// MEMBERSHIPS, not here: the same person can be an admin of one group and a plain member of
+// another, so a role on the person would be a lie in at least one of them.
+const GUARDIANS = [
+  { id: 'm1', name: 'Ji-won',  relation: 'Mum',     email: 'ji-won@email.com',  me: true },
+  { id: 'm2', name: 'Min-jun', relation: 'Dad',     email: 'min-jun@email.com' },
+  { id: 'm3', name: 'Hye-jin', relation: 'Aunt',    email: 'hye-jin@email.com' },
+  { id: 'm4', name: 'Seo-yun', relation: 'Grandma', email: 'seo-yun@email.com' },
+  { id: 'm5', name: 'Da-eun',  relation: 'Uncle',   email: 'da-eun@email.com' },
 ];
-const logFamilyChange = (entry) => { FAMILY_LOG.unshift({ id: `l${FAMILY_LOG.length + 1}`, by: guardianMe().name, time: 'now', ...entry }); return FAMILY_LOG; };
+const guardianById = (id) => GUARDIANS.find(g => g.id === id) || null;
+const guardianMe = () => GUARDIANS.find(g => g.me) || GUARDIANS[0];
+const meId = () => guardianMe().id;
+
+// How many groups one guardian may create or belong to at once. The requirement is "at
+// least 5"; kept as one knob so a future plan can raise it in a single place, and enforced
+// at the mutation so no screen can push past it.
+const MAX_GROUPS = 5;
+
+// Admin vs member is only about the GROUP — who may approve a join, rename it, rotate the
+// QR, or set which guardian is primary for a child. Neither role sees different safety data:
+// two guardians shown different numbers about the same child would be a support nightmare.
+// Inviting is deliberately open to members too — sharing the QR cannot let anyone in by
+// itself, the admin still has to accept.
+const GROUP_ROLES = {
+  admin:  { label: 'Admin',  can: { approve: true,  invite: true, rename: true,  rotate: true,  primary: true,  remove: true } },
+  member: { label: 'Member', can: { approve: false, invite: true, rename: false, rotate: false, primary: false, remove: false } },
+};
+const groupCan = (role, action) => !!(GROUP_ROLES[role]?.can[action]);
+
+// `token` is what the QR encodes. Durable by design — the old 48h single-use link meant a
+// parent at work re-asked for a new one every time — and rotatable by an admin when a QR
+// has been somewhere it shouldn't. `icon` is the group's face, drawn on the same tinted
+// avatar disc the rest of the app uses (avatarPalFor keys off the id).
+const GROUPS = [
+  { id: 'g1', name: 'Our home',        icon: 'house',      createdBy: 'm1', createdAt: '2026-03-14', token: 'JX-G1-7C1F9A' },
+  { id: 'g2', name: 'Grandma Tuesdays', icon: 'heart',     createdBy: 'm1', createdAt: '2026-05-02', token: 'JX-G2-4B0D21' },
+  { id: 'g3', name: 'Football club',   icon: 'users',      createdBy: 'm3', createdAt: '2026-06-18', token: 'JX-G3-9E7A55' },
+  // The one group I am NOT in — the prototype's scan target, so p_group_join has something
+  // real to resolve to instead of an invented group.
+  { id: 'g4', name: 'School run crew', icon: 'footprints', createdBy: 'm2', createdAt: '2026-07-09', token: 'JX-G4-2F8C60' },
+];
+
+// (groupId, guardianId) → role + status. `status` is 'accepted' here; a pending would-be
+// member lives in JOIN_REQUESTS until an admin acts, so a group's member list never has to
+// be filtered for people who are not in it yet.
+const MEMBERSHIPS = [
+  { groupId: 'g1', guardianId: 'm1', role: 'admin',  status: 'accepted', joinedAt: '2026-03-14' },
+  { groupId: 'g2', guardianId: 'm1', role: 'admin',  status: 'accepted', joinedAt: '2026-05-02' },
+  { groupId: 'g2', guardianId: 'm4', role: 'member', status: 'accepted', joinedAt: '2026-05-03' },
+  { groupId: 'g3', guardianId: 'm3', role: 'admin',  status: 'accepted', joinedAt: '2026-06-18' },
+  { groupId: 'g3', guardianId: 'm1', role: 'member', status: 'accepted', joinedAt: '2026-06-20' },
+  { groupId: 'g4', guardianId: 'm2', role: 'admin',  status: 'accepted', joinedAt: '2026-07-09' },
+  { groupId: 'g4', guardianId: 'm3', role: 'member', status: 'accepted', joinedAt: '2026-07-11' },
+];
+
+// Which children a group covers, and — per group — which single guardian is the main
+// responsible party for that child. Primary is per (group, child), not per child: Mina's
+// primary at home is her mum, and on the football run it is her aunt, and both are true.
+const GROUP_KIDS = [
+  { groupId: 'g1', kidId: 'k1', primaryGuardianId: 'm1' },
+  { groupId: 'g1', kidId: 'k2', primaryGuardianId: 'm1' },
+  { groupId: 'g1', kidId: 'k3', primaryGuardianId: 'm1' },
+  { groupId: 'g2', kidId: 'k3', primaryGuardianId: 'm4' },
+  { groupId: 'g3', kidId: 'k1', primaryGuardianId: 'm3' },
+  { groupId: 'g4', kidId: 'k1', primaryGuardianId: 'm2' },
+];
+
+// A scan produces one of these, never a membership. Kept after the decision (status
+// 'accepted' / 'rejected') so the requester's own screen can tell them what happened.
+const JOIN_REQUESTS = [
+  { id: 'jr1', groupId: 'g1', guardianId: 'm3', requestedAt: '2h', status: 'pending' },
+];
+
+// Per-group activity. Same shape the family log had — who did it, what, and when — because
+// the point is unchanged: two adults with equal control WILL overwrite each other, and the
+// fix is visibility, not permissions.
+const GROUP_LOG = [
+  { id: 'gl1', groupId: 'g1', by: 'Ji-won',  icon: 'sliders',   what: 'Raised sensitivity',    detail: 'Mina · Balanced → Strict', time: '2h' },
+  { id: 'gl4', groupId: 'g2', by: 'Ji-won',  icon: 'user-plus', what: 'Created the group',     detail: 'Grandma Tuesdays', time: '2026-05-02' },
+  { id: 'gl5', groupId: 'g2', by: 'Seo-yun', icon: 'calendar',  what: 'Edited a schedule',     detail: 'Yuna · Tuesday pickup', time: 'Yesterday' },
+  { id: 'gl6', groupId: 'g3', by: 'Hye-jin', icon: 'user-plus', what: 'Created the group',     detail: 'Football club', time: '2026-06-18' },
+];
+const groupLog = (groupId) => GROUP_LOG.filter(e => e.groupId === groupId);
+const logGroupChange = (groupId, entry) => {
+  GROUP_LOG.unshift({ id: `gl${GROUP_LOG.length + 1}`, groupId, by: guardianMe().name, time: 'now', ...entry });
+  return GROUP_LOG;
+};
+
+// ── reads ──
+const groupById = (id) => GROUPS.find(g => g.id === id) || null;
+const membership = (groupId, guardianId = meId()) => MEMBERSHIPS.find(m => m.groupId === groupId && m.guardianId === guardianId && m.status === 'accepted') || null;
+const myRole = (groupId) => membership(groupId)?.role || null;
+const isGroupAdmin = (groupId, guardianId = meId()) => membership(groupId, guardianId)?.role === 'admin';
+// Members, admins first — the person to ask about a pending request should not be halfway
+// down the list.
+const groupMembers = (groupId) => MEMBERSHIPS
+  .filter(m => m.groupId === groupId && m.status === 'accepted')
+  .map(m => ({ ...guardianById(m.guardianId), role: m.role, joinedAt: m.joinedAt }))
+  .sort((a, b) => (a.role === b.role ? 0 : a.role === 'admin' ? -1 : 1));
+const groupAdmin = (groupId) => groupMembers(groupId).find(m => m.role === 'admin') || null;
+const myGroups = () => GROUPS.filter(g => !!membership(g.id));
+const myGroupCount = () => myGroups().length;
+const groupsFull = () => myGroupCount() >= MAX_GROUPS;
+// Children this group covers. Rows whose child is no longer on the account are dropped
+// rather than rendered as a blank row.
+const groupKids = (groupId) => GROUP_KIDS
+  .filter(gk => gk.groupId === groupId)
+  .map(gk => { const kid = CHILDREN.find(c => c.id === gk.kidId); return kid ? { ...kid, primaryGuardianId: gk.primaryGuardianId } : null; })
+  .filter(Boolean);
+// The other direction (A-13 · the kid card): every group this child is in, with who is
+// primary there. Only groups I can actually see — a group I am not in is not mine to show.
+const groupsForKid = (kidId) => GROUP_KIDS
+  .filter(gk => gk.kidId === kidId && !!membership(gk.groupId))
+  .map(gk => ({ ...groupById(gk.groupId), primaryGuardianId: gk.primaryGuardianId }))
+  .filter(g => !!g.id);
+const primaryGuardianFor = (groupId, kidId) => {
+  const row = GROUP_KIDS.find(gk => gk.groupId === groupId && gk.kidId === kidId);
+  return row ? guardianById(row.primaryGuardianId) : null;
+};
+const pendingRequests = (groupId) => JOIN_REQUESTS
+  .filter(r => r.groupId === groupId && r.status === 'pending')
+  .map(r => ({ ...r, guardian: guardianById(r.guardianId) }));
+const myRequestFor = (groupId) => JOIN_REQUESTS.find(r => r.groupId === groupId && r.guardianId === meId()) || null;
+// One row per pending join request across every group I administer — the same request the
+// group's own "Waiting for approval" section shows, surfaced in the Alerts feed too so it
+// isn't missed by a parent who never opens Groups.
+const pendingRequestAlerts = () => myGroups()
+  .filter(g => isGroupAdmin(g.id))
+  .flatMap(g => pendingRequests(g.id).map(r => ({
+    id: `alert-${r.id}`, kind: 'join_request', groupId: g.id, groupName: g.name,
+    guardianName: r.guardian?.name || '', time: r.requestedAt, unread: true,
+  })));
+// What a QR resolves to in the prototype: the first group I am not already in. Real scans
+// carry the token — kept as a lookup so both paths end at the same group row.
+const groupByToken = (token) => GROUPS.find(g => g.token === token) || null;
+const scannableGroup = () => GROUPS.find(g => !membership(g.id) && !myRequestFor(g.id)) || GROUPS.find(g => !membership(g.id)) || null;
+
+// ── writes ──
+// Creating a group makes the creator its admin, and primary guardian for every child they
+// put in it. Rule 4 says exactly one guardian is primary per child per group, and at
+// creation there is exactly one guardian to be it — editable once someone else joins.
+const createGroup = ({ name, kidIds = [], icon = 'users' }) => {
+  if (groupsFull()) return null;
+  // Count is not an id: leaving the last group deletes it, and `g${length+1}` would then
+  // hand the next group an id that is still referenced by GROUP_KIDS / MEMBERSHIPS rows.
+  let n = GROUPS.length + 1;
+  while (GROUPS.some(g => g.id === `g${n}`)) n++;
+  const id = `g${n}`;
+  const me = guardianMe();
+  const group = { id, name: name.trim(), icon, createdBy: me.id, createdAt: todayStr(), token: `JX-${id.toUpperCase()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}` };
+  GROUPS.push(group);
+  MEMBERSHIPS.push({ groupId: id, guardianId: me.id, role: 'admin', status: 'accepted', joinedAt: todayStr() });
+  kidIds.forEach(kidId => GROUP_KIDS.push({ groupId: id, kidId, primaryGuardianId: me.id }));
+  logGroupChange(id, { icon: 'users', what: 'Created the group', detail: group.name });
+  return group;
+};
+const renameGroup = (groupId, name) => { const g = groupById(groupId); if (g && name.trim()) { g.name = name.trim(); logGroupChange(groupId, { icon: 'pencil', what: 'Renamed the group', detail: g.name }); } return g; };
+const rotateGroupToken = (groupId) => {
+  const g = groupById(groupId);
+  if (!g || !isGroupAdmin(groupId)) return g;
+  g.token = `JX-${groupId.toUpperCase()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+  logGroupChange(groupId, { icon: 'qr-code', what: 'Made a new QR code', detail: 'The old one stopped working' });
+  return g;
+};
+const setPrimaryGuardian = (groupId, kidId, guardianId) => {
+  const row = GROUP_KIDS.find(gk => gk.groupId === groupId && gk.kidId === kidId);
+  if (!row || !membership(groupId, guardianId)) return row;      // primary must be a member of this group
+  row.primaryGuardianId = guardianId;
+  const kid = CHILDREN.find(c => c.id === kidId);
+  logGroupChange(groupId, { icon: 'user-check', what: 'Changed the main guardian', detail: `${kid ? kid.name : kidId} · ${guardianById(guardianId)?.name || ''}` });
+  return row;
+};
+const addKidToGroup = (groupId, kidId) => {
+  if (GROUP_KIDS.some(gk => gk.groupId === groupId && gk.kidId === kidId)) return null;
+  const row = { groupId, kidId, primaryGuardianId: meId() };
+  GROUP_KIDS.push(row);
+  const kid = CHILDREN.find(c => c.id === kidId);
+  logGroupChange(groupId, { icon: 'user-plus', what: 'Added a child', detail: kid ? kid.name : kidId });
+  return row;
+};
+const removeKidFromGroup = (groupId, kidId) => {
+  const i = GROUP_KIDS.findIndex(gk => gk.groupId === groupId && gk.kidId === kidId);
+  if (i < 0) return false;
+  GROUP_KIDS.splice(i, 1);
+  const kid = CHILDREN.find(c => c.id === kidId);
+  logGroupChange(groupId, { icon: 'user-minus', what: 'Removed a child', detail: kid ? kid.name : kidId });
+  return true;
+};
+// A scan never joins anybody. It files a request, and an admin decides.
+const requestToJoin = (groupId, guardianId = meId()) => {
+  const existing = JOIN_REQUESTS.find(r => r.groupId === groupId && r.guardianId === guardianId && r.status === 'pending');
+  if (existing || membership(groupId, guardianId)) return existing;
+  const req = { id: `jr${JOIN_REQUESTS.length + 1}`, groupId, guardianId, requestedAt: 'now', status: 'pending' };
+  JOIN_REQUESTS.push(req);
+  return req;
+};
+const acceptRequest = (reqId) => {
+  const r = JOIN_REQUESTS.find(x => x.id === reqId);
+  if (!r || r.status !== 'pending') return r;
+  r.status = 'accepted';
+  MEMBERSHIPS.push({ groupId: r.groupId, guardianId: r.guardianId, role: 'member', status: 'accepted', joinedAt: todayStr() });
+  // `name` + `suffix` instead of one baked sentence: the row is re-read in whichever language
+  // is active at the time, so a log written in English still reads in Korean afterwards.
+  logGroupChange(r.groupId, { icon: 'user-plus', what: 'Accepted a request', name: guardianById(r.guardianId)?.name || '', suffix: ' joined the group' });
+  return r;
+};
+const rejectRequest = (reqId) => {
+  const r = JOIN_REQUESTS.find(x => x.id === reqId);
+  if (!r || r.status !== 'pending') return r;
+  r.status = 'rejected';
+  logGroupChange(r.groupId, { icon: 'user-x', what: 'Declined a request', detail: guardianById(r.guardianId)?.name || '' });
+  return r;
+};
+// Leaving takes the person out, and hands any child they were primary for to the group's
+// admin — a child with no main guardian is the one state this model must never produce.
+const leaveGroup = (groupId, guardianId = meId()) => {
+  const i = MEMBERSHIPS.findIndex(m => m.groupId === groupId && m.guardianId === guardianId);
+  if (i < 0) return false;
+  const wasAdmin = MEMBERSHIPS[i].role === 'admin';
+  MEMBERSHIPS.splice(i, 1);
+  const rest = groupMembers(groupId);
+  if (wasAdmin && rest.length) {                                  // every group keeps an admin
+    const next = MEMBERSHIPS.find(m => m.groupId === groupId && m.guardianId === rest[0].id);
+    if (next) next.role = 'admin';
+  }
+  const heir = groupAdmin(groupId);
+  GROUP_KIDS.forEach(gk => { if (gk.groupId === groupId && gk.primaryGuardianId === guardianId && heir) gk.primaryGuardianId = heir.id; });
+  if (!rest.length) {                                             // last one out closes the group
+    for (let k = GROUP_KIDS.length - 1; k >= 0; k--) if (GROUP_KIDS[k].groupId === groupId) GROUP_KIDS.splice(k, 1);
+    const gi = GROUPS.findIndex(g => g.id === groupId);
+    if (gi >= 0) GROUPS.splice(gi, 1);
+  }
+  return true;
+};
+const removeMember = (groupId, guardianId) => (isGroupAdmin(groupId) && guardianId !== meId()) ? leaveGroup(groupId, guardianId) : false;
+
+// ── the child app's view of all this ─────────────────────────────────
+// The child is not shown groups — "who can see me" is a flat list of people, the way a
+// 10-year-old thinks about it. Everyone who shares any group with this child, me first.
+// `since` is the day they first got access to THIS child — the earliest group join that
+// covers them — because "watching Mina since March" is the fact the child is owed, not the
+// day the adult opened an account.
+const guardiansForKid = (kidId) => {
+  const seen = new Map();
+  GROUP_KIDS.filter(gk => gk.kidId === kidId).forEach(gk => {
+    MEMBERSHIPS.filter(m => m.groupId === gk.groupId && m.status === 'accepted').forEach(m => {
+      const prev = seen.get(m.guardianId);
+      if (!prev || String(m.joinedAt) < String(prev)) seen.set(m.guardianId, m.joinedAt);
+    });
+  });
+  return [...seen.entries()]
+    .map(([id, since]) => { const g = guardianById(id); return g ? { ...g, since } : null; })
+    .filter(Boolean)
+    .sort((a, b) => (a.me === b.me ? 0 : a.me ? -1 : 1));
+};
+const guardians = () => { const list = guardiansForKid(LINK.childId); return list.length ? list : [guardianMe()]; };
+// "Set by …" in the child app means the guardian actually answerable for this child — the
+// primary in their first group, not whoever happened to install the app.
+const guardianOwner = () => {
+  const row = GROUP_KIDS.find(gk => gk.kidId === LINK.childId && !!membership(gk.groupId));
+  return (row && guardianById(row.primaryGuardianId)) || guardianMe();
+};
+// "엄마와 아빠" — the child is told who is watching, by name, not just what is shared (A-13).
+const guardianNames = () => guardians().map(m => m.relation);
+
+// Sign-up via a scanned group QR (core/auth.jsx): the new account is created, then asks to
+// join — it is not dropped into the group, for the same reason a scan never is.
+const addGuardian = (member) => {
+  const id = `m${GUARDIANS.length + 1}`;
+  const g = { id, ...member };
+  GUARDIANS.push(g);
+  return g;
+};
 
 // A-13 — a child old enough to earn points is old enough to be told what is being watched.
 // This is the honest answer, phrased for a 10-year-old, and it is DATA so the child app and
@@ -2843,7 +3061,7 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', provider
 // On by default, for the same reason the child's is (see PLAYER.prefs).
 const PARENT_PREFS = { sound: true };
 
-export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, FAMILY, FAMILY_ROLES, FAMILY_INVITE, FAMILY_LOG, MAX_GUARDIANS, familyFull, guardians, guardianOwner, guardianMe, guardianCan, guardianNames, addGuardian, removeGuardian, logFamilyChange,
+export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, GUARDIANS, GROUPS, GROUP_ROLES, GROUP_KIDS, GROUP_LOG, MEMBERSHIPS, JOIN_REQUESTS, MAX_GROUPS, guardianById, guardians, guardiansForKid, guardianOwner, guardianMe, guardianNames, addGuardian, groupById, groupByToken, groupCan, groupMembers, groupAdmin, groupKids, groupLog, groupsForKid, groupsFull, myGroups, myGroupCount, myRole, isGroupAdmin, membership, primaryGuardianFor, pendingRequests, myRequestFor, pendingRequestAlerts, scannableGroup, createGroup, renameGroup, rotateGroupToken, setPrimaryGuardian, addKidToGroup, removeKidFromGroup, requestToJoin, acceptRequest, rejectRequest, leaveGroup, removeMember, logGroupChange,
   FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, roomUnlocked, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

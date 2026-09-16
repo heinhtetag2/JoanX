@@ -1,11 +1,12 @@
 // JoanX — parent app · ParentSettings
 
 import React from 'react';
-import { APP_CATEGORIES, CHILDREN, PERMISSIONS } from '../core/data.jsx';
+import { APP_CATEGORIES, CHILDREN, PERMISSIONS, groupsForKid, guardianById } from '../core/data.jsx';
 import { Badge, Icon, PhotoAvatar, THEME, Toggle, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead, RULE_TAG_COLORS } from './shared.jsx';
+import { gname } from './ParentGroups.jsx';
 
 function ParentSettings({ ctx }) {
   const child = ctx.params?.child || CHILDREN[0];
@@ -53,6 +54,7 @@ function ParentSettings({ ctx }) {
   const say = m => { setToast(m); setTimeout(() => setToast(null), 1800); };
   React.useEffect(() => { if (ctx.params?.savedToast) say(L('Changes saved')); }, []);
   const relLbl = { son: 'Son', daughter: 'Daughter', grandchild: 'Grandchild', other: 'Other child in my care' }[child.relation];
+  const groups = groupsForKid(child.id);
 
   // Device change is PARENT-INITIATED. Pairing only happens when the parent
   // scans the child's new-phone QR (via "Reconnect device" below) — the app
@@ -80,6 +82,32 @@ function ParentSettings({ ctx }) {
             <Icon name="pencil" size={14} color={THEME.fg2} stroke={2.4} />{L('Edit')}
           </button>
         </div>
+
+        {/* Which circles this child is in, and who answers for them in each. The same child
+            can sit in several groups with a different main guardian in every one, so this is
+            a list, not a field — and it is read from the group side, never edited here. */}
+        {groups.length > 0 && (
+          <>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Groups')}</div>
+            <div style={{ background: '#fff', borderRadius: 18, boxShadow: THEME.shadowCard, marginBottom: 18, overflow: 'hidden' }}>
+              {groups.map((g, i) => {
+                const p = guardianById(g.primaryGuardianId);
+                return (
+                  <div key={g.id} onClick={() => ctx.nav('p_group_detail', { groupId: g.id })} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{gname(g)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                        <Icon name="user-check" size={12} color={BRAND.primary} stroke={2.4} />
+                        <span style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600 }}>{p ? `${p.name} · ${L('main guardian')}` : L('No main guardian yet')}</span>
+                      </div>
+                    </div>
+                    <Icon name="chevron-right" size={17} color={THEME.fg3} stroke={2.3} />
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* device connection — start pairing (code / QR) from here */}
         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.fg2, margin: '4px 4px 8px', textTransform: 'uppercase', letterSpacing: .4 }}>{L('Device')}</div>

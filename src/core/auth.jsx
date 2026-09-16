@@ -95,10 +95,10 @@ function PwEye({ on, toggle }) {
 }
 
 function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }) {
-  // The guardian first says what they are here to do — log in, create an account, or join a
-  // family someone else already started. `initialPhase` is a Tweaks-preview hook only (jumps
-  // straight past 'choose'); every real user always starts there.
-  const [phase, setPhase] = React.useState(initialPhase || 'choose');  // 'choose' | 'invite' | 'consent' | 'email' | 'code' | 'password' | 'profile'
+  // The guardian first says what they are here to do — log in, create an account, or make one
+  // in order to join a group somebody else runs. `initialPhase` is a Tweaks-preview hook only
+  // (jumps straight past 'choose'); every real user always starts there.
+  const [phase, setPhase] = React.useState(initialPhase || 'choose');  // 'choose' | 'consent' | 'email' | 'code' | 'password' | 'profile'
   // Where the consent gate continues to once agreed — the first step of sign-up
   // (choose → consent → email). It stays a variable rather than a constant because the gate
   // is reached from one place today and is the kind of thing a second entry point lands on.
@@ -108,15 +108,10 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   // straight from the email/social screen ('email'); the mid-flow log-in→sign-up switch comes
   // via consent.
   const [profileBack, setProfileBack] = React.useState('code');
-  const [mode, setMode] = React.useState(initialPhase === 'invite' ? 'join' : 'login');     // 'login' | 'signup' | 'join'
+  const [mode, setMode] = React.useState('login');     // 'login' | 'signup' | 'join'
   const [email, setEmail] = React.useState('');
   const [code, setCode] = React.useState('');
   const [codeErr, setCodeErr] = React.useState(false);
-  // Joining an existing family — a real backend would look up whichever invite the digits
-  // belong to; this demo build accepts any complete code. Separate from the verification
-  // `code` above: this one proves "which family", the other proves "whose email".
-  const [inviteCode, setInviteCode] = React.useState('');
-  const [inviteErr, setInviteErr] = React.useState(false);
   const [notice, setNotice] = React.useState(null);    // 'exists' | 'need-email'
   // The password step is reached two ways and says different things on each: a new account is
   // choosing a key ('set'), a locked-out guardian is replacing one ('reset'). Only 'reset' gets
@@ -136,7 +131,6 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   const [gender, setGender] = React.useState('');
   const [photo, setPhoto] = React.useState(null);   // profile picture (data URL); optional — falls back to the name initial
   const codeRef = React.useRef(null);
-  const inviteRef = React.useRef(null);
   const photoRef = React.useRef(null);
   const socials = authMethods().filter(m => m.key === 'google' || m.key === 'apple' || m.key === 'kakao');
   // Joining shares sign-up's whole shape (consent → email → code → profile+password) — a
@@ -178,20 +172,14 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
 
   // Enter a mode from the landing screen. Sign-up must agree to the guardian consents BEFORE
   // anything else; log-in has already consented at its own registration, so it goes straight to
-  // the email step; joining owes the invite code first — which family it's even consenting to
-  // join is the one thing consent can't come before.
+  // the email step. 'join' is the same sign-up — a guardian coming to join somebody's group
+  // still needs their own account first, and the group itself is asked for afterwards, by
+  // scanning its QR. There is no invite code to type any more: a code that let its holder in
+  // was exactly what the group model removed.
   const start = (m) => {
     setMode(m); setNotice(null); setPw(''); setPw2(''); setPwErr('');
-    if (m === 'join') { setInviteCode(''); setInviteErr(false); setPhase('invite'); }
-    else if (m === 'signup') { setAfterConsent('email'); setPhase('consent'); }
-    else setPhase('email');
-  };
-  // The invite code proves "which family", never "whose email" — that's still the verification
-  // step right after. Demo build: no backend to look an invite up against, so any 6 digits are
-  // accepted — only an incomplete code is rejected.
-  const verifyInvite = () => {
-    if (inviteCode.length < AUTH.codeLength) { setInviteErr(true); return; }
-    setAfterConsent('email'); setPhase('consent');
+    if (m === 'login') setPhase('email');
+    else { setAfterConsent('email'); setPhase('consent'); }
   };
   const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   const sendCode = () => { setCode(''); setCodeErr(false); setNotice(null); setResendLeft(AUTH.codeResendSeconds); setPhase('code'); };
@@ -241,10 +229,10 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
   // The standalone password screen is now the reset path only — a guardian in good standing
   // replacing a key, with no profile left to fill in.
   const submitPassword = () => { if (pwSetOk) onDone(mode); };
-  // Profile is the last step for BOTH sign-up and join — the only difference is join also
-  // attaches the new guardian to the existing family (addGuardian) before handing off, instead
-  // of the caller starting one from scratch. Relation is inferred from the gender question
-  // already on this form rather than adding a second one just for a label.
+  // Profile is the last step for BOTH sign-up and join. Join registers the guardian
+  // (addGuardian) and hands off to the QR scanner instead of the add-child flow — it does NOT
+  // put them in a group: only an admin accepting a request can do that. Relation is inferred
+  // from the gender question already on this form rather than adding a second one for a label.
   const submitProfile = () => {
     if (mode === 'join') {
       addGuardian({ name: name.trim(), email, relation: gender === 'male' ? 'Dad' : gender === 'female' ? 'Mum' : 'Guardian', since: todayStr() });
@@ -292,54 +280,15 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
                 {L('I already have an account')}
               </button>
 
-              {/* the second door — a parent who was invited by the FIRST guardian (Family →
-                  Invite a parent) rather than starting a family of their own. Quieter than the
-                  two above: most people opening this screen are one of those two, not this. */}
+              {/* the second door — a guardian who was sent a group's QR rather than starting a
+                  circle of their own. Same account sign-up; it just ends at the scanner.
+                  Quieter than the two above: most people here are one of those two, not this. */}
               <button onClick={() => start('join')} className="jx-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: '100%', padding: '4px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.75)', textShadow: '0 1px 10px rgba(0,0,0,.5)' }}>
-                {L('Have an invite code?')}
+                {L('Joining someone else’s group?')}
               </button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* invite — the code the family's owner generated (Family → Invite a parent). Proves
-          WHICH family before consent even asks what they're agreeing to; the invitee's own
-          identity still gets verified right after, same as any other sign-up. */}
-      {phase === 'invite' && (
-        <>
-          <div className="no-sb" style={{ flex: 1, overflowY: 'auto', padding: '10px 28px 0' }}>
-            <button onClick={() => setPhase('choose')} aria-label={L('Back')} className="jx-press" style={{ marginLeft: -6, marginBottom: 14, padding: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              <Icon name="chevron-left" size={22} color={THEME.fg1} stroke={2.6} />
-            </button>
-
-            <h1 className="game-font" style={{ fontSize: 26, fontWeight: 500, margin: '0 0 8px', lineHeight: 1.2 }}>{L('Enter your invite code')}</h1>
-            <p style={{ fontSize: 14, color: THEME.fg2, lineHeight: 1.5, margin: '0 0 28px' }}>{L('The parent who invited you can find this under Family in their JoanX app.')}</p>
-
-            <div style={{ position: 'relative' }} onClick={() => inviteRef.current && inviteRef.current.focus()}>
-              <input ref={inviteRef} value={inviteCode} inputMode="numeric" autoComplete="one-time-code" autoFocus
-                onChange={e => { setInviteCode(digitsOf(e.target.value).slice(0, AUTH.codeLength)); setInviteErr(false); }}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', outline: 'none', cursor: 'text', fontFamily: 'inherit' }} />
-              <div className={inviteErr ? 'jx-shake' : ''} style={{ display: 'flex', gap: 9 }}>
-                {Array.from({ length: AUTH.codeLength }, (_, i) => {
-                  const ch = inviteCode[i];
-                  const active = !inviteErr && i === inviteCode.length && inviteCode.length < AUTH.codeLength;
-                  const border = inviteErr ? THEME.danger : (active ? accent : THEME.border);
-                  return (
-                    <div key={i} style={{ width: 44, height: 56, borderRadius: 16, background: inviteErr ? THEME.dangerLight : '#fff', border: `1.5px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color .15s, background .15s' }}>
-                      <span className="game-font" style={{ fontSize: 27, fontWeight: 500, color: inviteErr ? THEME.danger : THEME.fg1 }}>{ch || ''}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            {inviteErr && <StepError>{inviteCode.length < AUTH.codeLength ? L('Enter all 6 digits of the code.') : L('That code doesn’t match — check with the parent who sent it.')}</StepError>}
-          </div>
-
-          <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 22px)' }}>
-            <Button variant="primary" size="lg" fullWidth style={btnStyle} onClick={verifyInvite}>{L('Continue')}</Button>
-          </div>
-        </>
       )}
 
       {/* email — the primary method */}
@@ -592,7 +541,7 @@ function AuthFlow({ accent = THEME.brand, btnStyle, hero, initialPhase, onDone }
           when a log-in with no account switched over — that one already typed its email, so
           it resumes at the verification it still owes. */}
       {phase === 'consent' && (
-        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase(mode === 'join' ? 'invite' : (afterConsent === 'code' ? 'email' : 'choose'))} onDone={() => (afterConsent === 'code' ? sendCode() : setPhase(afterConsent))} />
+        <ConsentStep accent={accent} btnStyle={btnStyle} onBack={() => setPhase(afterConsent === 'code' ? 'email' : 'choose')} onDone={() => (afterConsent === 'code' ? sendCode() : setPhase(afterConsent))} />
       )}
     </React.Fragment>
   );

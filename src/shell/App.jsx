@@ -4,7 +4,7 @@ import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
-import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAlertDetail, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentFamily, ParentInvite, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
+import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAlertDetail, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentGroups, ParentGroupCreate, ParentGroupDetail, ParentGroupInvite, ParentGroupJoin, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
 import { L, setLang } from '../core/i18n.jsx';
@@ -25,7 +25,7 @@ const isDocRole = (r) => DOC_ROLES.includes(r);
 // detail view. Center tabs (battle) are an action, not a root, so they hide it too.
 const CHILD_TAB_ROOTS = CHILD_TABS.filter(t => !t.center).map(t => t.root);
 // Same rule for the parent: the tab bar belongs to the tab roots only. Detail /
-// sub screens (p_detail, p_family, p_schedule, p_aireport, setup flows…) carry a
+// sub screens (p_detail, p_groups, p_schedule, p_aireport, setup flows…) carry a
 // back button instead, so the bar hides while you're one level in.
 const PARENT_TAB_ROOTS = PARENT_TABS.filter(t => !t.center).map(t => t.root);
 
@@ -319,9 +319,9 @@ function App() {
     // hands off to the real moment instead of a second, smaller animation.
     celebrateAchievement: (a) => setUnlock(a),
     finishOnboarding: (m) => { setMode(m); setOnboarded(true); setScreen('home'); },
-    // first-run: show the add-child form — UNLESS this guardian just joined an existing family
-    // (invite code), where a child already exists and Reports is the honest landing screen.
-    finishParentOnboarding: (opts) => { setParentOnboarded(true); setParams({}); setPScreen(opts?.joined ? 'p_reports' : 'p_addchild'); },
+    // first-run: show the add-child form — UNLESS this guardian came to join somebody else's
+    // group, where the children already exist and the honest next step is scanning their QR.
+    finishParentOnboarding: (opts) => { setParentOnboarded(true); setParams({}); setPScreen(opts?.joined ? 'p_group_join' : 'p_addchild'); },
   };
 
   // render active child/parent screen
@@ -347,8 +347,13 @@ function App() {
       p_reports: tw.reportLayout === 'analytics' ? <ParentReports ctx={ctx} kpiStyle={tw.kpiStyle} homeExtras={tw.homeExtras} highlightStrip={tw.highlightStrip} /> : <ParentReportsVariant variant={tw.reportLayout} ctx={ctx} />, p_children: <ParentChildren ctx={ctx} />,
       p_activity: <ParentActivity ctx={ctx} />,
       p_settings: <ParentSettings ctx={ctx} />, p_editchild: <ParentEditChild ctx={ctx} />, p_account: <ParentAccount ctx={ctx} />,
-      // the household — a second parent joins the FAMILY, never the child's device
-      p_family: <ParentFamily ctx={ctx} />, p_invite: <ParentInvite ctx={ctx} />,
+      // groups — a guardian belongs to several circles; joining one is a QR scan an admin
+      // has to accept, and no part of it touches the child's device
+      p_groups: <ParentGroups ctx={ctx} />, p_group_create: <ParentGroupCreate ctx={ctx} />,
+      p_group_detail: <ParentGroupDetail ctx={ctx} />, p_group_invite: <ParentGroupInvite ctx={ctx} />,
+      // keyed on the previewed stage, the way Battle is: the screen reads params.stage once,
+      // as its initial state, so a Tweaks jump has to remount rather than reconcile
+      p_group_join: <ParentGroupJoin key={`join:${params.stage || ''}:${params.k || ''}`} ctx={ctx} />,
       p_addchild: <ParentAddChild ctx={ctx} />, p_detail: <ParentDetail ctx={ctx} inquiryStyle={tw.inquiryStyle} loginProvider={tw.loginProvider} />,
       // Profile tab — the parent account/profile page (identity + security), shown as a tab root
       p_profile: <ParentDetail ctx={{ ...ctx, params: { page: 'account', asTab: true } }} loginProvider={tw.loginProvider} />,
@@ -950,11 +955,22 @@ function App() {
               <div className="tw-row" style={{ marginTop: 8, flexWrap: 'wrap' }}>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_addchild'); setStack([]); }}>Pairing / Add child</button>
                 <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_children'); setStack([]); }}>Children</button>
-                {/* jumps straight to AuthFlow's 'invite' phase — the second guardian's join path
-                    (Have an invite code? on the auth landing), skipping the splash/slides a real
-                    first run always sees. Ends on Reports, not Add-child (finishParentOnboarding
-                    routes on { joined: true }), since the family/child already exist. */}
-                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(false); setParams({ authStep: 3, authPhase: 'invite' }); setStack([]); }}>Join family (invite code)</button>
+                <button className="tw-chip" style={{ flex: 1, justifyContent: 'center', display: 'flex' }} onClick={() => { setParentOnboarded(true); setPScreen('p_groups'); setStack([]); }}>Groups</button>
+              </div>
+
+              {/* Groups — the parent-side circle of guardians. The join flow is five states a
+                  single tap-through cannot show (the decision is on somebody else's phone), so
+                  each one gets a chip: scan → preview → waiting → accepted / declined. */}
+              <div className="tw-label">Groups</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_group_create'); setStack([]); }}>New group →</button>
+                <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_group_detail'); setParams({ groupId: 'g1' }); setStack([]); }}>Group detail →</button>
+                <button className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_group_invite'); setParams({ groupId: 'g1' }); setStack([]); }}>Invite QR →</button>
+              </div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {[['scan', 'Join · scan'], ['preview', 'Join · preview'], ['pending', 'Join · waiting'], ['accepted', 'Join · accepted'], ['rejected', 'Join · declined']].map(([st, lbl]) => (
+                  <button key={st} className="tw-chip" onClick={() => { setParentOnboarded(true); setPScreen('p_group_join'); setParams({ stage: st, k: Date.now() }); setStack([]); }}>{lbl}</button>
+                ))}
               </div>
 
               {/* Account → Sign-in method. 'Email' (default) is a real password account, so

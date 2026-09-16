@@ -1,9 +1,9 @@
 // JoanX — parent app · ParentActivity (Alerts feed)
 
 import React from 'react';
-import { CHILDREN, PARENT_ALERTS, guardianMe } from '../core/data.jsx';
+import { CHILDREN, PARENT_ALERTS, guardianMe, pendingRequestAlerts } from '../core/data.jsx';
 import { Icon, THEME, screenBgFor } from '../core/primitives.jsx';
-import { L } from '../core/i18n.jsx';
+import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
 
@@ -14,7 +14,9 @@ import { BRAND, ParentHead } from './shared.jsx';
 // together by time alone, checking for a problem means reading past the good news to find it.
 // Safety comes first: it's the reason a parent opens this tab at all, the mirror of the child
 // app putting Buddy first because that is what a child hopes to see.
-const FAMILY = { warning: 'safety', ignored: 'safety', limited: 'safety', device_off: 'safety', impact: 'safety', safe: 'progress', streak: 'progress', device_on: 'progress' };
+// A guardian asking to join a group is filed under Safety, not a third tab — it is exactly
+// the "who can see my child" question, which is a safety question before it is anything else.
+const FAMILY = { warning: 'safety', ignored: 'safety', limited: 'safety', device_off: 'safety', impact: 'safety', join_request: 'safety', safe: 'progress', streak: 'progress', device_on: 'progress' };
 const familyOf = (a) => FAMILY[a.kind] || 'safety';
 const FAMILIES = [{ id: 'safety', label: 'Safety' }, { id: 'progress', label: 'Progress' }];
 
@@ -30,6 +32,7 @@ const KIND = {
   device_off: { icon: 'wifi-off',       bg: THEME.surface2,      fg: THEME.fg2 },
   device_on:  { icon: 'wifi',           bg: THEME.surface2,      fg: THEME.fg2 },
   limited:    { icon: 'shield-alert',   bg: THEME.warningLight,  fg: THEME.warning },
+  join_request: { icon: 'user-plus',    bg: BRAND.primaryLight,  fg: BRAND.primaryDark },
 };
 
 // One row. `top` draws the hairline separating it from the row above — the first row in a card
@@ -40,7 +43,7 @@ function AlertRow({ a, ctx, read, top }) {
   const k = KIND[a.kind] || KIND.safe;
   const child = CHILDREN.find(c => c.id === a.child);
   return (
-    <div onClick={() => { read(a.id); if (a.kind === 'impact') { ctx.nav('p_alert', { alertId: a.id }); return; } if (child) ctx.nav('p_settings', { child }); }}
+    <div onClick={() => { read(a.id); if (a.kind === 'impact') { ctx.nav('p_alert', { alertId: a.id }); return; } if (a.kind === 'join_request') { ctx.nav('p_group_detail', { groupId: a.groupId }); return; } if (child) ctx.nav('p_settings', { child }); }}
       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderTop: top ? `1px solid ${THEME.border}` : 'none', cursor: 'pointer', background: a.unread ? BRAND.primaryLight + '88' : '#fff' }}>
       {/* kind tile with the child's mascot tucked in the corner */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -86,7 +89,18 @@ function AlertGroup({ label, list, ctx, read }) {
 }
 
 function ParentActivity({ ctx }) {
-  const [items, setItems] = React.useState(PARENT_ALERTS);
+  const ko = getLang() === 'ko';
+  // Join requests are computed live off the group data, not hand-seeded like the rows
+  // above — a request accepted or rejected elsewhere shouldn't keep haunting this feed.
+  const [items, setItems] = React.useState(() => [
+    ...PARENT_ALERTS,
+    ...pendingRequestAlerts().map(r => ({
+      ...r,
+      title: ko ? '보호자 요청' : 'Guardian request',
+      sub: ko ? `${r.guardianName}님이 ${r.groupName} 그룹에 참여를 요청했어요` : `${r.guardianName} wants to join ${r.groupName}`,
+      today: !/yesterday/i.test(r.time),
+    })),
+  ]);
   const [tab, setTab] = React.useState('safety');
   const unread = items.filter(i => i.unread).length;
   const read = (id) => setItems(s => s.map(i => i.id === id ? { ...i, unread: false } : i));

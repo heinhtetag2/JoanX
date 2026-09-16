@@ -1,11 +1,12 @@
 // JoanX — parent app · ParentChildren
 
 import React from 'react';
-import { CHILDREN, FEATURES, MAX_CHILDREN, PERMISSIONS } from '../core/data.jsx';
+import { CHILDREN, FEATURES, MAX_CHILDREN, PERMISSIONS, groupsForKid } from '../core/data.jsx';
 import { Icon, PhotoAvatar, THEME, avatarPalFor, screenBgFor } from '../core/primitives.jsx';
 import { L, getLang } from '../core/i18n.jsx';
 import { MascotChip } from '../core/characters.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
+import { GroupAvatar, gname } from './ParentGroups.jsx';
 
 // ── Children / devices ───────────────────────────────────────────────
 // Reconnecting an offline child is done from that child's Rules & settings
@@ -39,6 +40,9 @@ function ParentChildren({ ctx }) {
           // left off. Same source Rules & settings reads (cfg.grants), default all-on.
           const grants = k.cfg?.grants || Object.fromEntries(PERMISSIONS.map(p => [p.id, true]));
           const consentOff = PERMISSIONS.filter(p => !grants[p.id]).length;
+          // which circles are watching this child — the group screens own the detail, this is
+          // only the answer to "who else sees Mina?" asked from where the parent already is
+          const kidGroups = groupsForKid(k.id);
           const allConsented = consentOff === 0;
           return (
           <div key={k.id} onClick={() => ctx.nav('p_settings', { child: k })} style={{ background: '#fff', borderRadius: 20, padding: 16, boxShadow: THEME.shadowCard, marginBottom: 12, cursor: 'pointer' }}>
@@ -62,6 +66,16 @@ function ParentChildren({ ctx }) {
               </div>
               <Icon name="chevron-right" size={18} color={THEME.fg3} stroke={2.3} />
             </div>
+            {kidGroups.length > 0 && (
+              <div onClick={e => { e.stopPropagation(); ctx.nav('p_group_detail', { groupId: kidGroups[0].id }); }} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, cursor: 'pointer' }}>
+                <div style={{ display: 'flex' }}>
+                  {kidGroups.slice(0, 3).map((g, i) => (
+                    <span key={g.id} style={{ marginLeft: i ? -8 : 0, borderRadius: 999, boxShadow: '0 0 0 2px #fff', display: 'inline-flex' }}><GroupAvatar group={g} size={24} /></span>
+                  ))}
+                </div>
+                <span style={{ fontSize: 12, color: THEME.fg2, fontWeight: 600, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kidGroups.map(gname).join(' · ')}</span>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <div style={{ flex: 1, background: THEME.surface2, borderRadius: 12, padding: '9px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name={k.online ? 'link-2' : 'link-2-off'} size={14} color={k.online ? THEME.success : THEME.fg3} stroke={2.3} /><span style={{ fontSize: 12, fontWeight: 700, color: k.online ? THEME.success : THEME.fg2 }}>{k.online ? L('Protected now') : L('Not connected')}</span></div>

@@ -1,7 +1,7 @@
 // JoanX — parent app · ParentAccount
 
 import React from 'react';
-import { FEATURES, guardians, PARENT_PROFILE, PARENT_PREFS } from '../core/data.jsx';
+import { FEATURES, myGroupCount, PARENT_PROFILE, PARENT_PREFS } from '../core/data.jsx';
 import { Icon, PhotoAvatar, THEME, Toggle, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
 import { BRAND, ParentHead } from './shared.jsx';
@@ -51,21 +51,24 @@ function ParentAccount({ ctx }) {
           <div style={{ ...rowStyle(1), cursor: 'default' }}><Icon name="volume-2" size={18} color={THEME.fg2} stroke={2.2} /><div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Sound effects')}</div><Toggle on={sound} onChange={setSoundPref} /></div>
         </React.Fragment>)}
 
-        {/* The household. Sits above Notifications because "who else can see my child" is a
-            bigger question than "does my phone buzz", and a parent looking for it looks here. */}
-        {label(L('Family'))}
-        {card(
-          <div onClick={() => ctx.nav('p_family')} style={rowStyle(0)}>
+        {/* The groups. Sits above Notifications because "who else can see my child" is a
+            bigger question than "does my phone buzz", and a parent looking for it looks here.
+            The second row is the way IN to someone else's group — a guardian who was sent a
+            QR has nowhere else to point their camera. */}
+        {label(L('Groups'))}
+        {card(<React.Fragment>
+          <div onClick={() => ctx.nav('p_groups')} style={rowStyle(0)}>
             <Icon name="users" size={18} color={THEME.fg2} stroke={2.2} />
-            <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Parents')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: -6, marginRight: 6 }}>
-              {guardians().map((m, i) => (
-                <span key={m.id} style={{ width: 24, height: 24, borderRadius: 999, background: BRAND.primaryLight, color: BRAND.primaryDark, border: '2px solid #fff', marginLeft: i ? -8 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10.5, fontWeight: 800 }}>{m.name[0]}</span>
-              ))}
-            </div>
+            <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('My groups')}</div>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.fg2, marginRight: 8 }}>{myGroupCount()}</span>
             {chev}
           </div>
-        )}
+          <div onClick={() => ctx.nav('p_group_join')} style={rowStyle(1)}>
+            <Icon name="scan-line" size={18} color={THEME.fg2} stroke={2.2} />
+            <div style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{L('Join a group')}</div>
+            {chev}
+          </div>
+        </React.Fragment>)}
 
         {label(L('Notifications'))}
         {card(<React.Fragment>

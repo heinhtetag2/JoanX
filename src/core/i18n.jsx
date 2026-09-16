@@ -373,35 +373,20 @@ const KO = {
   // A-9 — the parent link, shown in the child's own settings. 'Parent', 'Connected',
   // 'Not connected' and 'Offline' already exist in the parent-app block — the child app
   // reuses those rather than re-declaring them, so the two sides cannot drift apart.
-  'Mum': '엄마', 'Dad': '아빠',
+  'Mum': '엄마', 'Dad': '아빠', 'Aunt': '이모', 'Uncle': '삼촌', 'Grandma': '할머니',
   'Connected since': '연결일',
 
-  // ── the family: two parents, one household ──────────────────────────
-  // NB: no 'Parent' / 'Remove' / 'Expires in' / 'Guardian' keys here — all four already exist
-  // below, and a duplicate silently wins. 'Guardian' in particular is the character STAGE name
-  // (수호자), so the role badge says 'Co-parent' rather than fighting it.
-  'Family': '가족', 'Parents': '보호자', 'My parents': '우리 부모님',
-  'Owner': '관리자', 'you': '나',   // 'Co-parent' already exists in the account-detail block
-  'Everyone here sees the same reports and can change the same settings. Adding or removing a parent never touches your child’s phone.':
-    '여기 있는 모든 보호자가 같은 리포트를 보고 같은 설정을 바꿀 수 있어요. 보호자를 추가하거나 삭제해도 아이 휴대폰은 건드리지 않아요.',
-  'Invite a parent': '보호자 초대하기',
-  'This family is full — one child can have two parents.': '이 가족은 정원이 찼어요 — 아이 한 명당 보호자는 두 명까지예요.',
-  'They lose access to every child in this family.': '이 가족의 모든 아이 정보를 볼 수 없게 돼요.',
-  'can add or remove parents.': '님만 보호자를 추가하거나 삭제할 수 있어요.',
+  // ── who is watching this child ──────────────────────────────────────
+  // What the CHILD is told, plus the shared activity-log vocabulary. The guardian-side
+  // wording now lives in the Guardian groups block further down — the old family screens
+  // (one household, a 48h invite link, a two-parent cap) are gone, and their strings with
+  // them. 'My parents' stays: a child says "우리 부모님", not "그룹".
+  'My parents': '우리 부모님', 'you': '나',
   'Recent changes': '최근 변경 내역',
   'Raised sensitivity': '민감도를 높였어요', 'Acknowledged an alert': '알림을 확인했어요',
-  'Edited a schedule': '일정을 수정했어요', 'Added a guardian': '보호자를 추가했어요',
+  'Edited a schedule': '일정을 수정했어요',
   'Mina · Balanced → Strict': '미나 · 보통 → 엄격', 'Mina · distraction warning': '미나 · 주의 알림',
-  'Mina · School commute': '미나 · 등하굣길', 'Min-jun joined the family': '민준님이 가족에 참여했어요',
-  'Send this to the other parent. They install JoanX, open the link, and verify their own phone number.':
-    '다른 보호자에게 보내세요. JoanX를 설치하고 링크를 열어 본인 번호로 인증하면 돼요.',
-  'If you are together, let them scan this from their own phone.': '함께 계시다면 상대방 휴대폰으로 스캔하게 하세요.',
-  'Joins automatically once scanned.': '스캔하면 자동으로 참여돼요.',
-  'Share the invite link': '초대 링크 공유하기', 'Invite sent': '초대를 보냈어요',
-  'Send a link instead': '링크로 보내기', 'Show a QR instead': 'QR로 보여주기',
-  'one use only': '1회만 사용 가능',
-  'They verify their own phone number — never share your login': '상대방이 본인 번호로 인증해요 — 계정을 공유하지 마세요',
-  'Your child is told when a new parent is added': '새 보호자가 추가되면 아이에게 알려줘요',
+  'Mina · School commute': '미나 · 등하굣길',
   'already checked this': '님이 이미 확인했어요',
   'What my parents can see': '부모님이 볼 수 있는 것',
 
@@ -1300,6 +1285,80 @@ const KO = {
   'A plain-language summary of Mina’s week': '미나의 한 주를 쉬운 말로 요약',
   'Fewer risky walking-while-using moments than her first week on JoanX.': 'JoanX 사용 첫 주보다 걸으며 폰을 보는 위험한 순간이 줄었어요.',
   'AI-generated from this week’s activity. It summarizes behavior trends — it never shares raw locations or messages.': '이번 주 활동을 바탕으로 AI가 생성했어요. 행동 추이를 요약할 뿐, 위치나 메시지 원문은 공유하지 않아요.',
+
+  // ── parent · Guardian groups (replaces the single "family") ──
+  // A group is the circle of guardians watching the same child. The Korean says 그룹 rather
+  // than 가족: the people in one are often not a family, which is the whole reason the
+  // household model was replaced.
+  'Groups': '그룹', 'My groups': '내 그룹', 'Your groups': '내 그룹', 'New group': '새 그룹',
+  'Group name': '그룹 이름', 'Create group': '그룹 만들기', 'Group created': '그룹을 만들었어요',
+  'No groups yet': '아직 그룹이 없어요',
+  'A group is the people who watch the same child with you. Everyone in a group sees the same reports — and nobody joins until an admin says yes.':
+    '그룹은 나와 같은 아이를 함께 지켜보는 사람들이에요. 그룹 안에서는 모두 같은 리포트를 보고, 관리자가 수락해야만 참여할 수 있어요.',
+  'Start one for your own household, or scan the QR of a group someone else already runs.':
+    '우리 집 그룹을 새로 만들거나, 다른 보호자가 운영 중인 그룹의 QR을 스캔해 보세요.',
+  'Everyone who joins sees this name, so make it one they will recognise.':
+    '참여하는 사람 모두에게 보이는 이름이니, 알아보기 쉬운 이름으로 정해 주세요.',
+  'Children in this group': '이 그룹의 자녀', 'Children you would see': '보게 될 자녀',
+  'Add a child first': '자녀를 먼저 추가하세요',
+  'A group watches over a child. Connect one, then come back and build the circle around them.':
+    '그룹은 자녀를 함께 지켜보는 모임이에요. 자녀를 먼저 연결한 뒤 그룹을 만들어 주세요.',
+  'You start as the group’s admin, and as the main guardian for each child you add. Both can change later.':
+    '그룹을 만들면 관리자가 되고, 추가한 자녀의 주 보호자가 돼요. 둘 다 나중에 바꿀 수 있어요.',
+  'Group limit reached': '그룹 개수 한도에 도달했어요',
+  // roles & people
+  'Admin': '관리자', 'Member': '멤버',
+  'Main guardian for': '주 보호자 ·', 'main guardian': '주 보호자',
+  'No main guardian yet': '아직 주 보호자가 없어요', 'Main guardian updated': '주 보호자를 바꿨어요',
+  'One guardian in this group is the main contact for this child. Everyone else still sees the same reports.':
+    '이 그룹에서 자녀를 대표해 연락받을 보호자 한 명이에요. 나머지 보호자도 같은 리포트를 볼 수 있어요.',
+  // requests
+  'Waiting for approval': '수락 대기 중', 'Accept': '수락', 'Reject': '거절',
+  'Request to join': '참여 요청 보내기', 'Join a group': '그룹 참여하기',
+  'Scan the QR code from their JoanX app': '상대방 조안X 앱의 QR을 스캔하세요',
+  'Nobody is added by scanning — an admin has to accept.': '스캔만으로는 참여되지 않아요. 관리자가 수락해야 해요.',
+  'Point at the QR code in the other guardian’s JoanX app. They will get a request to approve.':
+    '다른 보호자의 조안X 앱에 있는 QR을 비춰 주세요. 상대방에게 수락 요청이 전달돼요.',
+  'Point at the group’s QR code': '그룹 QR 코드를 비춰 주세요',
+  'Enter a code instead': '코드로 참여하기', 'Enter a code': '코드 입력',
+  'Enter the code the other guardian gave you. They will get a request to approve.':
+    '다른 보호자에게 받은 코드를 입력하세요. 상대방에게 수락 요청이 전달돼요.',
+  'Group code': '그룹 코드', 'Scan the QR instead': 'QR 스캔으로 참여하기',
+  'We couldn’t find a group with that code.': '해당 코드의 그룹을 찾을 수 없어요.',
+  'Scan a different code': '다른 코드 스캔하기', 'Ask again': '다시 요청하기',
+  'Most admins answer within a day.': '보통 하루 안에 답을 받아요.',
+  'Until then you cannot see anything about their children.': '그때까지는 자녀에 대한 어떤 정보도 볼 수 없어요.',
+  'You are in': '참여 완료', 'Not this time': '수락되지 않았어요', 'Open the group': '그룹 열기',
+  'No group to join right now.': '지금은 참여할 수 있는 그룹이 없어요.',
+  // invite / QR
+  'Invite to group': '그룹에 초대하기', 'Share the QR code': 'QR 코드 공유하기', 'QR code shared': 'QR 코드를 공유했어요',
+  'Make a new QR code': '새 QR 코드 만들기', 'New QR code ready': '새 QR 코드를 만들었어요',
+  'Have them open JoanX, tap Join a group, and point their camera at this.':
+    '상대방이 조안X에서 "그룹 참여하기"를 누르고 이 QR을 비추면 돼요.',
+  'Sharing sends the QR as an image — they can scan it from their own screen if you are not together.':
+    'QR을 이미지로 보내면, 함께 있지 않아도 상대방 화면에서 스캔할 수 있어요.',
+  'Scanning only asks to join — you decide who gets in': '스캔은 요청일 뿐, 참여 여부는 내가 정해요',
+  'No expiry. The same code works until you replace it': '만료 없음 — 새로 만들기 전까지 계속 쓸 수 있어요',
+  'Everyone in the group can see who joined, and when': '누가 언제 참여했는지 그룹 모두가 볼 수 있어요',
+  // add / remove a child from a group
+  'All your children are already in this group.': '모든 자녀가 이미 이 그룹에 있어요.',
+  // leaving
+  'Leave group': '그룹 나가기',
+  'You will stop seeing this group’s children, and another guardian here becomes its admin. You can be invited back.':
+    '이 그룹의 자녀 정보를 더 이상 볼 수 없고, 다른 보호자가 관리자가 돼요. 나중에 다시 초대받을 수 있어요.',
+  'You will stop seeing this group’s children. You can be invited back with a new QR code.':
+    '이 그룹의 자녀 정보를 더 이상 볼 수 없어요. 나중에 QR로 다시 초대받을 수 있어요.',
+  // group activity log
+  'Created the group': '그룹을 만들었어요', 'Renamed the group': '그룹 이름을 바꿨어요',
+  'Accepted a request': '참여 요청을 수락했어요', 'Declined a request': '참여 요청을 거절했어요',
+  'Made a new QR code': '새 QR 코드를 만들었어요', 'The old one stopped working': '이전 코드는 더 이상 쓸 수 없어요',
+  'Changed the main guardian': '주 보호자를 바꿨어요', 'Added a child': '자녀를 추가했어요',
+  ' joined the group': '님이 그룹에 참여했어요',
+  'Min-jun joined the group': '민준님이 그룹에 참여했어요',
+  'Grandma Tuesdays': '화요일 할머니', 'Football club': '축구 교실', 'School run crew': '등하교 모임', 'Our home': '우리집',
+  'Yuna · Tuesday pickup': '유나 · 화요일 하원',
+  // auth landing — the second door, now a group rather than a family invite code
+  'Joining someone else’s group?': '다른 그룹에 참여하시나요?',
 
   // ── C7 · impact / fall detection (child safety check + parent urgent alert) ──
   'sec': '초',
