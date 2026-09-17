@@ -1157,6 +1157,10 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
           <li><a href="#safety" data-i18n="ft.demo">The safety moment</a></li>
           <li><a href="#game" data-i18n="ft.shots">The game</a></li>
           <li><a href="#faq" data-i18n="n.faq">FAQ</a></li>
+          <!-- Only inside the prototype build, where this page sits one level under the
+               chooser that sent the visitor here. The published page has no such parent,
+               so the script below leaves it hidden rather than offering a dead link. -->
+          <li class="in-prototype" hidden><a href="../" data-i18n="ft.back">← Back to the chooser</a></li>
         </ul>
       </div>
       <div>
@@ -1343,11 +1347,20 @@ var KO = {
   'ft.h1': '제품', 'ft.h2': '둘러보기', 'ft.h3': '신뢰',
   'ft.demo': '안전 순간', 'ft.shots': '게임',
   'ft.t1': '수집하는 정보', 'ft.t2': '수집하지 않는 정보', 'ft.t3': '보호자 설정',
+  'ft.back': '← 처음 화면으로',
   'ft.c': '© 2026 Joan Company',
   'ft.l': '조안X는 아직 출시 전이며, 화면은 출시 전 빌드의 예시 데이터입니다.'
 };
 
 (function () {
+  /* ── the way back to the chooser ────────────────────────────────
+     Shown only when this page is being served from the prototype build, i.e. it really
+     does sit at /website/ with a front door one level up. The published page has no
+     parent to go back to, so there it stays hidden instead of offering a dead link. */
+  if (/\/website\/?($|index\.html)/.test(location.pathname)) {
+    document.querySelectorAll('.in-prototype').forEach(function (el) { el.hidden = false; });
+  }
+
   /* ── language ───────────────────────────────────────────────────── */
   var nodes = document.querySelectorAll('[data-i18n]');
   var buttons = document.querySelectorAll('.lang button');

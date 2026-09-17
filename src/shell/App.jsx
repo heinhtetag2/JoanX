@@ -111,6 +111,19 @@ function App() {
     try { return sessionStorage.getItem('joanx.entered') === '1'; } catch (e) { return false; }
   });
   const enterApp = () => { try { sessionStorage.setItem('joanx.entered', '1'); } catch (e) { /* private window */ } setEntered(true); };
+  // Back out to the chooser — without this the front door was a one-way trip and the only
+  // route to the other deliverable was editing the URL. Drops ?app too: that flag bypasses
+  // the gate on load, so leaving it in place would have put a reload straight back inside
+  // the app the visitor just stepped out of.
+  const exitToPortal = () => {
+    try { sessionStorage.removeItem('joanx.entered'); } catch (e) { /* private window */ }
+    if (__q.has('app')) {
+      __q.delete('app');
+      const qs = __q.toString();
+      window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);
+    }
+    setEntered(false);
+  };
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const [tweakQuery, setTweakQuery] = React.useState('');   // Tweaks panel search — filters the label sections below by text
   const tweaksPanelRef = React.useRef(null);
@@ -387,6 +400,11 @@ function App() {
     <div className={'stage' + (tweaksOpen ? ' with-panel' : '')}>
       {/* top control: app switch */}
       <div className="topbar">
+        {/* out to the front door — same white circle as the Tweaks gear opposite it, so the
+            two bookends of this bar read as one family rather than a new control type */}
+        <button className="gear" onClick={exitToPortal} title="Back to the chooser">
+          <Icon name="arrow-left" size={19} color={THEME.fg1} stroke={2.2} />
+        </button>
         <div className="seg">
           {[['child', 'Child app', 'smartphone'], ['parent', 'Parent app', 'users'], ['design', 'Design system', 'palette'], ['checklist', 'Spec checklist', 'list-checks'], ['docs', 'Documentation', 'book-open']].map(([r, l, ic]) => (
             <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>
