@@ -13,7 +13,7 @@ import { sfx, bgMusic, ONBOARDING_SONG } from '../core/sound.jsx';
 // the hatch wear his colour, so the flow that hands you a green buddy is itself green —
 // the child app tints to the buddy it is about, and here that buddy is the starter.
 // (This was the product magenta, which left a green buddy sitting inside a pink flow.)
-const STARTER_ID = 'c1';
+const STARTER_ID = 'c15';   // Lumi — the one buddy a new child owns
 const STARTER_GREEN = THEME.success;      // evergreen 50 — the same #4b814f Rex carries
 const P_BRAND = {
   primary: STARTER_GREEN,

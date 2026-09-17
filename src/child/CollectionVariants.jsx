@@ -6,6 +6,7 @@ import React from 'react';
 import { ACHIEVEMENTS, CHARACTERS, OUTFITS, ROOMS, STATS, statsFor, themeOf, visibleCharacters } from '../core/data.jsx';
 import { Badge, Bar, Icon, RARITY, SectionHead, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { LockedBuddyArt, lockedCard } from './LockedBuddy.jsx';
 import { Mascot, shade } from '../core/characters.jsx';
 import { screenBgActive, ScreenHeader, wornSlugFor } from './shared.jsx';
 import { BadgeGrid, badgesEarned, collectionIntent } from './Badges.jsx';
@@ -97,8 +98,8 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
         {all.map(c => (
           <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '12px 6px 10px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-            {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} /></div>
+            {!c.owned && lockedCard(c).cornerLock && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
+            {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} /> : <LockedBuddyArt c={c} size={62} />}
             <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
             <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>
@@ -360,7 +361,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       {all.map((c, i) => (
         <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderTop: i ? `1px solid ${THEME.border}` : 'none', background: 'none', border: 'none', cursor: c.owned ? 'pointer' : 'default', fontFamily: 'inherit', textAlign: 'left' }}>
           <span className="game-font" style={{ fontSize: 13, fontWeight: 500, color: THEME.fg3, width: 26 }}>#{String(i + 1).padStart(2, '0')}</span>
-          <div style={{ width: 42, height: 42, flexShrink: 0, filter: c.owned ? 'none' : 'grayscale(1) brightness(1.6) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={42} /></div>
+          <div style={{ width: 42, height: 42, flexShrink: 0 }}>{c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={42} /> : <LockedBuddyArt c={c} size={42} />}</div>
           <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: c.owned ? THEME.fg1 : THEME.fg3 }}>{c.owned ? c.name : '???'}</span>
           {c.owned ? <span style={{ fontSize: 11, fontWeight: 800, color: RARITY[c.rarity].fg }}>{L(RARITY[c.rarity].label)}</span> : <Icon name="lock" size={14} color={THEME.fg3} stroke={2.4} />}
         </button>
@@ -463,7 +464,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
       {all.map(c => (
         <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 14, padding: '9px 3px 7px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
           {!c.owned && <div style={{ position: 'absolute', top: 5, right: 5 }}><Icon name="lock" size={11} color={THEME.fg3} stroke={2.4} /></div>}
-          <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={44} /></div>
+          {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={44} /> : <LockedBuddyArt c={c} size={44} />}
           <div style={{ fontSize: 9.5, fontWeight: 700, marginTop: 2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.owned ? c.name : '???'}</div>
         </button>
       ))}
@@ -523,14 +524,14 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
     const buddiesSorted = [...all].sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0));
     const buddiesGrid = (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-        {buddiesSorted.map(c => (
-          <button key={c.id} disabled={!c.owned} onClick={() => openC(c)} style={{ background: '#fff', borderRadius: 18, padding: '20px 8px 11px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-            {!c.owned && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-            <div style={{ filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.5)' }}><Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={62} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /></div>
-            <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{c.owned ? c.name : '???'}</div>
+        {buddiesSorted.map(c => { const lk = lockedCard(c, ctx); return (
+          <button key={c.id} disabled={!c.owned && !lk.onClick} onClick={() => (c.owned ? openC(c) : lk.onClick && lk.onClick())} style={{ background: '#fff', borderRadius: 18, padding: '20px 8px 11px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned || lk.onClick ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden', ...lk.style }}>
+            {!c.owned && lockedCard(c).cornerLock && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
+            {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /> : <LockedBuddyArt c={c} size={62} />}
+            {!lk.hideName && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4, ...(lk.text && { color: lk.text }) }}>{c.owned ? c.name : '???'}</div>}
             <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>
-        ))}
+        ); })}
       </div>
     );
 

@@ -1847,14 +1847,15 @@ const rarityOf = (key) => RARITIES.find(r => r.key === key) || RARITIES[0];
 // the server) without touching any screen — the dex renders whatever the roster holds.
 //   owned  — in the child's collection
 //   locked — how an unowned character is obtained (dex hint; hidden tiers never show it)
+// A new child owns exactly one buddy, Lumi; every other character is earned from eggs/goals.
 const CHARACTERS = [
   // ── Common ×8 ──
   // level 5, not 4: stage is derived (A-3.3) and Stage 2 starts at Lv.5, so a Lv.4 buddy
   // hand-marked Stage 2 was simply illegal. Levelled up rather than demoted — Munch is
   // the starter buddy and is drawn at Stage 2 throughout.
-  { id: 'c2',  species: 'cat',  name: 'Munch',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 55, speed: 80, heart: 60 }, bio: "Lives for snacks and having fun — patience isn't really his thing, so trouble tends to find him." },
-  { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 2, xp: 60,  owned: true,  room: 'green', traits: { guard: 40, speed: 72, heart: 50 } },
-  { id: 'c10', species: 'cat',  name: 'Milo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'town', traits: { guard: 55, speed: 80, heart: 60 }, bio: 'Easygoing and hard to rattle. Milo takes things as they come, at his own pace.' },
+  { id: 'c2',  species: 'cat',  name: 'Munch',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 55, speed: 80, heart: 60 }, bio: "Lives for snacks and having fun — patience isn't really his thing, so trouble tends to find him." },
+  { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 40, speed: 72, heart: 50 } },
+  { id: 'c10', species: 'cat',  name: 'Milo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 55, speed: 80, heart: 60 }, bio: 'Easygoing and hard to rattle. Milo takes things as they come, at his own pace.' },
   { id: 'c11', species: 'cat',  name: 'Cocoa',   color: '#a9744f', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 45, speed: 70, heart: 62 } },
   { id: 'c12', species: 'bird', name: 'Dewey',   color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 }, bio: 'Quiet and sensitive, easily spooked — but turns brave the moment a friend needs him.' },
   { id: 'c13', species: 'croc', name: 'Bolt',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 }, bio: 'Loves taking things apart and fixing them back up. Blunt and to the point, but always someone you can count on.' },
@@ -1865,7 +1866,7 @@ const CHARACTERS = [
   // wardrobe hid the best-looking thing in the collection behind a screen nobody visits.
   { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 52, speed: 64, heart: 70 }, worn: { hat: 'lumi-riding-helmet', clothing: 'lumi-navy-duffle-coat' }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
   // ── Rare ×5 ──
-  { id: 'c1',  species: 'fox',  name: 'Rex',     color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 }, bio: "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts." },
+  { id: 'c1',  species: 'fox',  name: 'Rex',     color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 0, xp: 0,   owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 78, speed: 62, heart: 90 }, bio: "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts." },
   { id: 'c6',  species: 'owl',  name: 'Blaze',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 0, xp: 0,   owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 60, speed: 85, heart: 64 }, bio: 'Warm-hearted but quick to heat up — competitive, a bit hot-tempered, and hates losing.' },
   { id: 'c16', species: 'owl',  name: 'Glim',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 }, bio: 'Quiet and a little mysterious — the one the others find hardest to figure out.' },
   { id: 'c17', species: 'croc', name: 'Sailo',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 }, bio: 'Adventurous and always up for somewhere new. Tends to leap first and think later.' },

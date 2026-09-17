@@ -759,6 +759,23 @@ function VillainMascot({ id, species, stage = 2, color, mood, size = 160, style 
   );
 }
 
+// VillainShape — only the outline of a villain's art, filled with any CSS background
+// (a colour, a gradient, a dot pattern). Uses the art PNG's own alpha as a mask, sized and
+// anchored exactly like VillainMascot so a shape swaps in for the picture with no jump.
+function VillainShape({ id, size = 160, fill = '#2b2926', style }) {
+  const file = VILLAIN_ART[id];
+  if (!file) return <div style={{ width: size, height: size, ...style }} />;
+  const url = `url("/assets/villains/${encodeURIComponent(file)}")`;
+  return (
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
+      <div style={{ width: '100%', height: '100%', background: fill,
+                    WebkitMaskImage: url, maskImage: url, WebkitMaskSize: 'contain', maskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center bottom', maskPosition: 'center bottom',
+                    transform: `scale(${VILLAIN_ART_BASE})`, transformOrigin: 'center bottom' }} />
+    </div>
+  );
+}
+
 // ── Revamp line ("revamp") — the refreshed hero mascot: a rendered 3D forest
 // sprite (leaf ears + sprout, gold brow gem, yellow scout scarf, big violet
 // eyes) supplied as a transparent PNG. Fixed render, so recolour/stage/mood
@@ -1114,4 +1131,4 @@ function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothin
   );
 }
 
-export { Mascot, MascotChip, DemoMascot, VillainMascot, KingCubix, KingCubixChip, STYLE_BUDDIES, shade, styleBrand, tint };
+export { Mascot, MascotChip, DemoMascot, VillainMascot, VillainShape, KingCubix, KingCubixChip, STYLE_BUDDIES, shade, styleBrand, tint };

@@ -456,7 +456,7 @@ const KO = {
   'Only from events, special missions and achievement rewards.': '이벤트, 스페셜 미션, 업적 보상으로만 얻을 수 있어요.',
   // egg acquisition (A-2.1) — earned eggs + the routes that grant them
   'Your eggs': '내 알', 'Earned — ready to hatch': '받았어요 — 부화할 수 있어요',
-  'Hatch': '부화하기', 'Also earn from': '이렇게도 얻어요',
+  'Hatch': '부화하기', 'Get in shop': '가게에서 구하기', 'Also earn from': '이렇게도 얻어요',
   'Missions': '미션', 'Distance & time': '거리 · 시간', 'Point shop': '포인트 상점',
   'Level-up reward': '레벨업 보상', 'Events & seasons': '이벤트 · 시즌',
   // character unlock routes (A-4.1) — earned by safe behaviour, not only by the odds

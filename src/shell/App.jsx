@@ -1,6 +1,8 @@
 import React from 'react';
 import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash, CharDetailVariant, DETAIL_LAYOUTS, CharDetailVariantLegacy, CharacterDex, CharacterDexVariant, DEX_LAYOUTS, ChildHome, Collection, CollectionVariant, COLLECTION_LAYOUTS, DecorateRoom, DecorateBuddy, FriendHouse, Friends, Guestbook, HelpSupport, ImpactOverlay, Notices, LegalDetail, HomeVariant, HomeVariantSimple, LiteBlock, MyHouse, Notifications, Onboarding, Profile, ProfileVariant, Rewards, SafetyStatus, Shop, StreakDetail, VERSUS_LAYOUTS, CLASH_STYLES, LOADING_STYLES, VillainDex, WarningOverlay } from '../child/index.jsx';
 import { collectionIntent } from '../child/Badges.jsx';
+import { LOCKED_BUDDY_STYLES } from '../child/LockedBuddy.jsx';
+import { LOCKED_VILLAIN_STYLES } from '../child/VillainDex.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
@@ -149,7 +151,7 @@ function App() {
   // stage tweak sets the LEVEL (see the stamp effect below), and Stage 3 would have levelled
   // her from her authored Lv.5 to Lv.8 just to open the app. Her name/colour here are only a
   // fallback: under the Client style the character's own record is authoritative.
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', narrator: 'kingCubix', msgLayout: 'sheet', species: 'fox', color: '#d8a657', name: 'Lumi', stage: 2, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', narrator: 'kingCubix', msgLayout: 'sheet', species: 'fox', color: '#d8a657', name: 'Lumi', stage: 2, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', lockedBuddy: 'mark-squircle', lockedVillain: 'original', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -166,6 +168,8 @@ function App() {
   window.JX_EPIC_EGG_STYLE = tw.epicEggStyle;
   window.JX_COMMON_EGG_ART = tw.commonEggArt;
   window.JX_DEX_HEADER = tw.dexHeader;
+  window.JX_LOCKED_BUDDY = tw.lockedBuddy;
+  window.JX_LOCKED_VILLAIN = tw.lockedVillain;
   const changeLang = (l) => setLangState(l);
   // Tweaks search — sections aren't componentized (each is a `.tw-label` + whatever follows
   // it, mixed with one-off buttons), so filtering walks the rendered DOM rather than the
@@ -723,6 +727,16 @@ function App() {
                 </button>
               </div>
 
+              {/* Locked villain on the road map — every new look hides the picture and keeps
+                  only the villain's shape; 'Original' is the washed-out picture, kept to compare. */}
+              <div className="tw-label">Villain map · locked villain</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {LOCKED_VILLAIN_STYLES.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.lockedVillain === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, lockedVillain: id, villainLayout: 'road' })); setStack([{ screen: 'battle', params: {} }]); setScreen('villaindex'); }}>{label}</button>
+                ))}
+              </div>
+
               <div className="tw-label">Villain dex</div>
               <div className="tw-row">
                 {[['road', 'Road map'], ['trail', 'Sketch trail (old)'], ['list', 'List']].map(([v, l]) => (
@@ -833,6 +847,16 @@ function App() {
               <div className="tw-row" style={{ flexWrap: 'wrap' }}>
                 {[['ring', 'Ring'], ['bars', 'Bars']].map(([v, l]) => (
                   <button key={v} className={'tw-chip' + (tw.statStyle === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, statStyle: v }))}>{l}</button>
+                ))}
+              </div>
+
+              {/* Locked buddy — how an unowned buddy looks in the collection grids. None of
+                  the new looks show the buddy's body; 'silhouette' is the old greyed figure. */}
+              <div className="tw-label">Collection · locked buddy</div>
+              <div className="tw-row" style={{ flexWrap: 'wrap' }}>
+                {LOCKED_BUDDY_STYLES.map(({ id, label }) => (
+                  <button key={id} className={'tw-chip' + (tw.lockedBuddy === id ? ' on' : '')}
+                    onClick={() => { setTw(s => ({ ...s, lockedBuddy: id })); setStack([]); setScreen('collection'); }}>{label}</button>
                 ))}
               </div>
 

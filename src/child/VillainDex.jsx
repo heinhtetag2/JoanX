@@ -4,7 +4,7 @@ import React from 'react';
 import { activeVillains, battlesPerDay, BATTLE_REWARDS, endingUnlocked, isBoss, PLAYER, roleOf, storyProgress, storyUnlocked } from '../core/data.jsx';
 import { Badge, Button, Icon, SafePointIcon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { VillainMascot } from '../core/characters.jsx';
+import { shade, VillainMascot, VillainShape } from '../core/characters.jsx';
 import { ScreenHeader, DexProgress, screenBgActive } from './shared.jsx';
 import { music, sfx } from '../core/sound.jsx';
 
@@ -12,6 +12,126 @@ import { music, sfx } from '../core/sound.jsx';
 // fake a solid outline (diagonals cover corners AND edges, so half the shadows
 // of a full 8-way fan render the same sticker border at a fraction of the paint
 // cost — this screen stacks one on every villain, so cheapness matters).
+// Tweaks → "Villain map · locked villain": how a villain still ahead on the road is drawn.
+// Every look except 'original' hides the villain's picture and keeps only its outline, so
+// the next opponent is a shape to wonder about rather than a face already seen.
+//   original — the old washed-out greyscale picture (kept to compare against)
+//   shadow   — a solid ink silhouette inside the white sticker edge
+//   shadow-q — the same silhouette with a white "?" on it
+//   night    — the silhouette in the map's own deep violet, so it sits in the scenery
+//   blank    — a blank white sticker in the villain's shape, not peeled yet
+//   fog      — the picture blurred to a soft grey smudge; the shape reads, nothing else
+//   shadow-soft  — the ink silhouette at half strength, the map showing through it
+//   shadow-grey  — a mid charcoal grey silhouette instead of pure black
+//   shadow-light — a pale grey silhouette, the lightest of the shadows
+//   shadow-lilac — a soft lilac silhouette, a lighter cousin of Night violet
+//   shadow-grey-q— the charcoal silhouette with a white "?" on it
+// Shape looks — drawn through VillainShape (the art's alpha as a mask), with NO white
+// sticker edge, so the silhouette sits in the map instead of being pasted on it:
+//   own-colour — the villain's own colour, deepened: you can tell villains apart by hue
+//   backlit    — a deep night silhouette with a thin rim in the villain's colour, as if lit
+//                from behind
+//   halftone   — the shape printed as a comic-book dot screen
+//   dusk       — a gradient from pale lilac at the top into deep violet at the feet
+//   grounded   — a soft dusk silhouette standing on its own contact shadow
+// In-the-dark looks — the real art stays underneath and a night-coloured shape is laid over
+// it, so the villain's details still read faintly (gears, cables, tiles) but not its colours
+// or face. A flat fill loses all of that at map size and turns the art into a block.
+//   in-dark      — the art under a deep night veil, no sticker edge
+//   in-dark-edge — the same, keeping the white sticker edge every map stop wears
+//   fog-rise     — the veil thickest at the feet and thinner toward the top
+//   twilight     — the in-dark veil in a lighter lavender, for a softer map
+//   dim-violet   — the art itself pushed into violet shadow (no veil), most texture kept
+const LOCKED_VILLAIN_STYLES = [
+  { id: 'original', label: 'Original' },
+  { id: 'shadow', label: 'Shadow' },
+  { id: 'shadow-q', label: 'Shadow + ?' },
+  { id: 'night', label: 'Night violet' },
+  { id: 'blank', label: 'Blank sticker' },
+  { id: 'fog', label: 'Fog' },
+  { id: 'shadow-soft', label: 'Shadow · see-through' },
+  { id: 'shadow-grey', label: 'Shadow · charcoal' },
+  { id: 'shadow-light', label: 'Shadow · pale grey' },
+  { id: 'shadow-lilac', label: 'Shadow · lilac' },
+  { id: 'shadow-grey-q', label: 'Shadow · charcoal + ?' },
+  { id: 'own-colour', label: 'Shape · own colour' },
+  { id: 'backlit', label: 'Shape · backlit' },
+  { id: 'halftone', label: 'Shape · halftone' },
+  { id: 'dusk', label: 'Shape · dusk' },
+  { id: 'grounded', label: 'Shape · grounded' },
+  { id: 'in-dark', label: 'In the dark' },
+  { id: 'in-dark-edge', label: 'In the dark + edge' },
+  { id: 'fog-rise', label: 'Rising fog' },
+  { id: 'twilight', label: 'Twilight' },
+  { id: 'dim-violet', label: 'Violet dim' },
+];
+const lockedVillainStyle = () => window.JX_LOCKED_VILLAIN || 'original';
+const SHAPE_STYLES = ['own-colour', 'backlit', 'halftone', 'dusk', 'grounded', 'in-dark', 'in-dark-edge', 'fog-rise', 'twilight', 'dim-violet'];
+const NIGHT = '35,29,64';
+// a locked villain drawn as a filled shape (no picture, no sticker edge)
+function LockedVillainShape({ vi, size }) {
+  const style = lockedVillainStyle();
+  const col = vi.color || '#7f63c5';
+  if (style === 'own-colour') {
+    return <VillainShape id={vi.id} size={size} fill={shade(col, -70)} style={{ filter: 'drop-shadow(0 2px 2px rgba(20,16,40,.25))' }} />;
+  }
+  if (style === 'backlit') {
+    const rim = shade(col, 40);
+    return <VillainShape id={vi.id} size={size} fill="#231d40"
+      style={{ filter: `drop-shadow(1.5px 0 0 ${rim}) drop-shadow(-1.5px 0 0 ${rim}) drop-shadow(0 -1.5px 0 ${rim}) drop-shadow(0 1.5px 0 ${rim})` }} />;
+  }
+  if (style === 'halftone') {
+    return <VillainShape id={vi.id} size={size}
+      fill="radial-gradient(circle, #2e2656 42%, transparent 46%) 0 0 / 5px 5px, rgba(46,38,86,.22)" />;
+  }
+  if (style === 'dusk') {
+    return <VillainShape id={vi.id} size={size} fill="linear-gradient(to bottom, #b9a7e8 0%, #6b56b8 45%, #2e2463 100%)" />;
+  }
+  if (style === 'in-dark' || style === 'in-dark-edge' || style === 'fog-rise' || style === 'twilight') {
+    const veil = style === 'twilight' ? 'rgba(112,92,178,.8)'
+      : style === 'fog-rise'
+      ? `linear-gradient(to bottom, rgba(${NIGHT},.62) 0%, rgba(${NIGHT},.84) 55%, rgba(${NIGHT},.96) 100%)`
+      : `rgba(${NIGHT},.8)`;
+    const edge = style === 'in-dark-edge' ? `${strokeOutline('#fff', .5)} drop-shadow(0 2px 2px rgba(46,43,41,.28))` : 'drop-shadow(0 2px 2px rgba(20,16,40,.22))';
+    return (
+      <div style={{ position: 'relative', width: size, height: size, filter: edge }}>
+        <div style={{ filter: 'grayscale(1)' }}><VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size} /></div>
+        <VillainShape id={vi.id} size={size} fill={veil} style={{ position: 'absolute', inset: 0 }} />
+      </div>
+    );
+  }
+  if (style === 'dim-violet') {
+    return (
+      <div style={{ filter: 'grayscale(1) brightness(.5) sepia(.9) hue-rotate(215deg) saturate(2.2) contrast(1.15) drop-shadow(0 2px 2px rgba(20,16,40,.22))' }}>
+        <VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size} />
+      </div>
+    );
+  }
+  // grounded
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <span style={{ position: 'absolute', left: '50%', bottom: -size * 0.04, width: size * 0.7, height: size * 0.14, marginLeft: -size * 0.35, borderRadius: '50%', background: 'rgba(30,24,60,.28)' }} />
+      <VillainShape id={vi.id} size={size} fill="#4a3f86" style={{ position: 'relative', opacity: .9 }} />
+    </div>
+  );
+}
+// the colour-only part of the filter; the sticker outline is appended by the caller
+const lockedVillainFilter = (style = lockedVillainStyle()) => ({
+  original: 'grayscale(1) brightness(2.1) contrast(.6) ',
+  shadow: 'brightness(0) ',
+  'shadow-q': 'brightness(0) ',
+  night: 'brightness(0) invert(17%) sepia(55%) saturate(2200%) hue-rotate(236deg) brightness(.8) ',
+  blank: 'brightness(0) invert(1) ',
+  fog: 'grayscale(1) brightness(1.5) contrast(.5) blur(2.5px) ',
+  'shadow-soft': 'brightness(0) opacity(.45) ',
+  'shadow-grey': 'brightness(0) invert(32%) ',
+  'shadow-light': 'brightness(0) invert(64%) ',
+  'shadow-lilac': 'brightness(0) invert(60%) sepia(35%) saturate(700%) hue-rotate(215deg) ',
+  'shadow-grey-q': 'brightness(0) invert(32%) ',
+}[style] || 'grayscale(1) brightness(2.1) contrast(.6) ');
+// the blank sticker is white on white — give it a grey contour instead
+const lockedVillainEdge = (style = lockedVillainStyle()) => (style === 'blank' ? '#d9d5cf' : '#fff');
+
 const strokeOutline = (c, t = 1) =>
   `drop-shadow(${t}px ${t}px 0 ${c}) drop-shadow(-${t}px ${t}px 0 ${c}) drop-shadow(${t}px -${t}px 0 ${c}) drop-shadow(-${t}px -${t}px 0 ${c})`;
 
@@ -442,9 +562,16 @@ function VillainRoad({ ctx }) {
                   {/* the villain as a sticker: one clean white contour hugging its shape,
                       the SAME on every stop — state is carried by the pulse ring (current)
                       and a gentle scale (tapped), never by recolouring the outline. */}
-                  <div style={{ filter: `${discovered ? '' : 'grayscale(1) brightness(2.1) contrast(.6) '}${strokeOutline('#fff', .5)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
+                  {!discovered && SHAPE_STYLES.includes(lockedVillainStyle()) ? (
+                    <div style={{ lineHeight: 0 }}><LockedVillainShape vi={vi} size={size} /></div>
+                  ) : (
+                  <div style={{ filter: `${discovered ? '' : lockedVillainFilter()}${strokeOutline(discovered ? '#fff' : lockedVillainEdge(), .5)} drop-shadow(0 2px 2px rgba(46,43,41,.28))`, lineHeight: 0 }}>
                     <VillainMascot id={vi.id} species={vi.species} color={vi.color} mood="alert" size={size} />
                   </div>
+                  )}
+                  {!discovered && ['shadow-q', 'shadow-grey-q'].includes(lockedVillainStyle()) && (
+                    <span className="game-font" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.42, fontWeight: 800, fontFamily: 'Fredoka, var(--font-sans)', pointerEvents: 'none' }}>?</span>
+                  )}
                   {/* status pill — one chip at the top carries the whole state instead of a
                       check/lock floating off the circle's corner: green ✓ once defeated, a
                       grey lock while still out of reach, the boss role or plain Lv otherwise.
@@ -486,7 +613,7 @@ function VillainRoad({ ctx }) {
       <div key={sel} className="jx-rise" style={{ position: 'absolute', left: 16, right: 16, bottom: 24, background: '#fff', borderRadius: 20, padding: '15px 15px 14px', boxShadow: '0 4px 13px rgba(46,43,41,0.06)', zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 18, background: selDiscovered ? THEME.dangerLight : THEME.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ filter: selDiscovered ? 'none' : 'grayscale(1) brightness(.4) opacity(.55)' }}><VillainMascot id={v.id} species={v.species} color={v.color} mood="alert" size={46} /></div>
+            {!selDiscovered && SHAPE_STYLES.includes(lockedVillainStyle()) ? <LockedVillainShape vi={v} size={46} /> : <div style={{ filter: selDiscovered ? 'none' : lockedVillainStyle() === 'original' ? 'grayscale(1) brightness(.4) opacity(.55)' : lockedVillainFilter() }}><VillainMascot id={v.id} species={v.species} color={v.color} mood="alert" size={46} /></div>}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -560,4 +687,4 @@ function VillainRoad({ ctx }) {
   );
 }
 
-export { VillainDex };
+export { VillainDex, LOCKED_VILLAIN_STYLES };

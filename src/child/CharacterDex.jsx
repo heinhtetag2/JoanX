@@ -4,6 +4,7 @@ import React from 'react';
 import { SPECIES_INFO, unlockHints, visibleCharacters } from '../core/data.jsx';
 import { Icon, THEME } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
+import { LockedBuddyArt } from './LockedBuddy.jsx';
 import { Mascot } from '../core/characters.jsx';
 import { ScreenHeader, RarityPill, DexProgress, screenBgActive } from './shared.jsx';
 
@@ -23,8 +24,8 @@ function CharacterDex({ ctx }) {
           const info = SPECIES_INFO[c.species] || {};
           return (
             <div key={c.id} onClick={() => c.owned && ctx.nav('character', { id: c.id })} style={{ display: 'flex', gap: 14, background: '#fff', borderRadius: 18, padding: 14, boxShadow: THEME.shadowCard, marginBottom: 10, cursor: c.owned ? 'pointer' : 'default', alignItems: 'center' }}>
-              <div style={{ width: 66, flexShrink: 0, display: 'flex', justifyContent: 'center', filter: c.owned ? 'none' : 'grayscale(1) brightness(1.7) opacity(.45)' }}>
-                <Mascot id={c.id} species={c.species} stage={c.owned ? c.stage : 1} color={c.color} size={60} />
+              <div style={{ width: 66, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
+                {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={60} /> : <LockedBuddyArt c={c} size={60} />}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
