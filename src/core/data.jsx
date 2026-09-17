@@ -1245,7 +1245,10 @@ const OUTFITS = [
   // replacing the shared catalog above rather than adding to it (see charId note).
   { id: 'lumi-gold-hat',           img: '/assets/characters/outfits/lumi/gold-hat.png',           name: 'Gold Hat',           category: 'character', slot: 'hat',      price: 0,   minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-green-beret',        img: '/assets/characters/outfits/lumi/green-beret.png',        name: 'Green Beret',        category: 'character', slot: 'hat',      price: 180, minStage: 1, minLevel: 0, charId: 'c15' },
-  { id: 'lumi-riding-helmet',      img: '/assets/characters/outfits/lumi/riding-helmet.png',      name: 'Riding Helmet',      category: 'character', slot: 'hat',      price: 260, minStage: 2, minLevel: 0, charId: 'c15' },
+  // owned already: this is the hat Lumi is wearing out of the box (see her `worn` in
+  // CHARACTERS) — a buddy cannot default into an outfit she has not bought, or the
+  // wardrobe would show the thing she is visibly wearing as still for sale.
+  { id: 'lumi-riding-helmet',      img: '/assets/characters/outfits/lumi/riding-helmet.png',      name: 'Riding Helmet',      category: 'character', slot: 'hat',      price: 260, minStage: 2, minLevel: 0, charId: 'c15', owned: true },
   { id: 'lumi-navy-duffle-coat',   img: '/assets/characters/outfits/lumi/navy-duffle-coat.png',   name: 'Navy Duffle Coat',   category: 'character', slot: 'clothing', price: 0,   minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-red-button-jacket',  img: '/assets/characters/outfits/lumi/red-button-jacket.png',  name: 'Red Button Jacket',  category: 'character', slot: 'clothing', price: 220, minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-tan-trench-coat',    img: '/assets/characters/outfits/lumi/tan-trench-coat.png',    name: 'Tan Trench Coat',    category: 'character', slot: 'clothing', price: 200, minStage: 2, minLevel: 0, charId: 'c15' },
@@ -1852,7 +1855,11 @@ const CHARACTERS = [
   { id: 'c12', species: 'bird', name: 'Dewey',   color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 }, bio: 'Quiet and sensitive, easily spooked — but turns brave the moment a friend needs him.' },
   { id: 'c13', species: 'croc', name: 'Bolt',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 }, bio: 'Loves taking things apart and fixing them back up. Blunt and to the point, but always someone you can count on.' },
   { id: 'c14', species: 'owl',  name: 'Theo',    color: '#8b8073', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 }, bio: 'Sharp and always thinking things through — and he knows it, which makes him a little much sometimes.' },
-  { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 52, speed: 64, heart: 70 }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
+  // `worn` — the outfit a buddy is already dressed in, same { [slot]: outfitId } map
+  // DecorateBuddy writes on save. Lumi ships wearing hers: her reference art has a real
+  // photo per hat/coat combo, and showing her bare everywhere until someone opens the
+  // wardrobe hid the best-looking thing in the collection behind a screen nobody visits.
+  { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 52, speed: 64, heart: 70 }, worn: { hat: 'lumi-riding-helmet', clothing: 'lumi-navy-duffle-coat' }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
   // ── Rare ×5 ──
   { id: 'c1',  species: 'fox',  name: 'Rex',     color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 7, xp: 320, owned: true,  room: 'green', traits: { guard: 78, speed: 62, heart: 90 }, bio: "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts." },
   { id: 'c6',  species: 'owl',  name: 'Blaze',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 0, xp: 0,   owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 60, speed: 85, heart: 64 }, bio: 'Warm-hearted but quick to heat up — competitive, a bit hot-tempered, and hates losing.' },
