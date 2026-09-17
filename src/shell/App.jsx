@@ -4,6 +4,7 @@ import { collectionIntent } from '../child/Badges.jsx';
 import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
+import Portal from './Portal.jsx';
 import { HowItWorks, STORY_THEMES_LIST, ParentAIReport, ParentAlertDetail, ParentResponseDetail, ParentWeeklyDetail, ParentAccount, ParentActivity, ParentAddChild, ParentChildren, ParentDetail, ParentEditChild, ParentGroups, ParentGroupCreate, ParentGroupDetail, ParentGroupInvite, ParentGroupJoin, ParentOnboarding, ParentReports, ParentReportsVariant, REPORT_LAYOUTS, ParentSchedule, ParentSettings } from '../parent/index.jsx';
 import { BRAND } from '../parent/shared.jsx';
 import { STYLE_BUDDIES, styleBrand } from '../core/characters.jsx';
@@ -102,6 +103,14 @@ function App() {
   //   walking  · the child is walking → battles are closed (F-19), the one screen the
   //              product must not let them stare at mid-stride
   const [demo, setDemo] = React.useState({ limited: false, offline: false, empty: false, loading: false, walking: false });
+  // The front door (Portal.jsx): which of the two deliverables the visitor came for. Skipped
+  // by ?app (deep links, screenshot scripts) and remembered for the tab session, so a reload
+  // while reviewing a screen does not drop you back at the chooser.
+  const [entered, setEntered] = React.useState(() => {
+    if (__q.has('app')) return true;
+    try { return sessionStorage.getItem('joanx.entered') === '1'; } catch (e) { return false; }
+  });
+  const enterApp = () => { try { sessionStorage.setItem('joanx.entered', '1'); } catch (e) { /* private window */ } setEntered(true); };
   const [tweaksOpen, setTweaksOpen] = React.useState(true);
   const [tweakQuery, setTweakQuery] = React.useState('');   // Tweaks panel search — filters the label sections below by text
   const tweaksPanelRef = React.useRef(null);
@@ -371,6 +380,8 @@ function App() {
     : ['character', 'chardex', 'villaindex', 'decoratebuddy'].includes(screen) ? 'collection' : screen;
   const showChildTabs = role === 'child' && booted && onboarded && CHILD_TAB_ROOTS.includes(screen);
   const playClass = tw.play === 'calm' ? 'play-calm jx-nofun jx-still' : tw.play === 'max' ? 'play-max' : 'play-wrap';
+
+  if (!entered) return <Portal onEnterApp={enterApp} />;
 
   return (
     <div className={'stage' + (tweaksOpen ? ' with-panel' : '')}>

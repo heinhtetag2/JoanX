@@ -521,6 +521,10 @@ const DOC_CSS = `
   .doc-file { display: inline-flex; align-items: center; gap: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #2b5782; background: #ecf3fe; border-radius: 8px; padding: 5px 10px; }
   a.doc-file { text-decoration: none; cursor: pointer; transition: background .15s; }
   a.doc-file:hover { background: #dcebfd; }
+  /* a chip that leaves the prototype — brand green, so an external destination never
+     looks like one of the in-app references beside it */
+  .doc-file.live { color: #35603a; background: #e9f1e9; }
+  a.doc-file.live:hover { background: #dae7da; }
   .doc-refs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
   .doc-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
   .doc-stat { flex: 1; min-width: 108px; border: 1px solid #ebebea; border-radius: 16px; padding: 12px 14px; }
@@ -616,6 +620,17 @@ function ProjectDocs() {
               <Icon name="trophy" size={13} color="#2b5782" stroke={2.2} />
               Case study — the polished write-up
             </button>
+            {/* The public landing page. Source lives in website/ at the repo root; this is the
+                published build, so it can be opened from here without running anything. */}
+            <a
+              className="doc-file live"
+              href="https://claude.ai/artifact/T6YMx1xDMzeqbqMWkUJQYy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon name="external-link" size={13} color="#35603a" stroke={2.2} />
+              Landing page — the public marketing site
+            </a>
           </div>
           <div className="doc-stats">
             {STATS.map(s => (
