@@ -145,9 +145,11 @@ function App() {
   };
   const [devBadge, setDevBadge] = React.useState(!__q.has('nodev'));   // per-screen handoff status badge — on by default; hide with ?nodev or the Tweaks toggle
   const initialHome = __q.get('home') || 'simple-focus';
-  // default buddy: Hammy in the Comic line — its green is also the product brand, so the app
-  // opens with buddy and brand in agreement
-  const [tw, setTw] = React.useState({ overlay: 'spotlight', narrator: 'kingCubix', msgLayout: 'sheet', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
+  // Default buddy: Lumi (PLAYER.activeCharId seeds the same record). Stage 2, not 3 — the
+  // stage tweak sets the LEVEL (see the stamp effect below), and Stage 3 would have levelled
+  // her from her authored Lv.5 to Lv.8 just to open the app. Her name/colour here are only a
+  // fallback: under the Client style the character's own record is authoritative.
+  const [tw, setTw] = React.useState({ overlay: 'spotlight', narrator: 'kingCubix', msgLayout: 'sheet', species: 'fox', color: '#d8a657', name: 'Lumi', stage: 2, play: 'max', charStyle: 'client', homeLayout: initialHome, detailLayout: initialDetail || 'char-showcase', onbStyle: 'image', villainLayout: 'road', friendsLayout: 'groups', addFriendsLayout: 'list', collectionLayout: 'tabs', dexLayout: 'list', dexHeader: 'strip', battleLayout: 'classic', versusLayout: 'banner', clashStyle: 'impact', loadingStyle: 'pulse', storyTheme: 'forest', childAvatar: 'silhouette', profileLayout: 'original', reportLayout: 'analytics', kpiStyle: 'cards', homeExtras: 'off', highlightStrip: 'off', inquiryStyle: 'board', roomStyle: 'hotspot', buddySwitch: 'sheet', roomDecor: 'tray', heroDecorStyle: 'shelf', decorEditor: 'grid', roomSwitch: 'sheet', decorateTabStyle: 'pin', decorateBuyStyle: 'bar', roomLock: 'off', roomLockStyle: 'lock', eggShake: 'off', eggHatch: 'crack', eggShopLayout: 'carousel', eggCardRadius: 20, rareEggStyle: 'painted', epicEggStyle: 'painted', commonEggArt: 'image', previewEggRarity: 'rare', previewBgRarity: 'rare', homeStatB: 'xpToMax', eggEntry: 'market', eggShineStyle: 'radial', eggBadge: 'off', loginProvider: 'email', claimStyle: 'tint', xpAddStyle: 'cta', xpBarStyle: 'inline', statStyle: 'ring', ...(savedBuddy?.tw || {}), charStyle: 'client' });
   const [lang, setLangState] = React.useState('ko');
   const [scale, setScale] = React.useState(1);
   const [bump, setBump] = React.useState(0);
@@ -298,20 +300,21 @@ function App() {
     setBump(b => b + 1);
   };
 
-  // Clear the saved buddy and return to the seed default (green Rex). The escape hatch for
+  // Clear the saved buddy and return to the seed default (Lumi). The escape hatch for
   // getting "stuck" on a persisted buddy you no longer want — refresh no longer resets it, so
   // this button does. Wipes jx.buddy AND the in-memory identity, so a later refresh stays clean.
   const resetBuddy = () => {
     try { localStorage.removeItem('jx.buddy'); } catch { /* storage unavailable */ }
-    PLAYER.activeCharId = 'c1';
+    PLAYER.activeCharId = 'c15';
     // Corrects the real CHARACTERS record directly, not just tw: the stamp effect above
     // now skips applying tw.name/tw.color onto it under 'client' (that guard is what stops
     // a stale species-roster name from re-corrupting it — see that effect's own comment),
     // so this button needs to heal an already-mislabeled buddy itself rather than relying
-    // on that effect to do it.
-    const c = CHARACTERS.find(x => x.id === 'c1');
-    if (c) { c.species = 'fox'; c.color = '#4b814f'; c.name = 'Rex'; }
-    setTw(s => ({ ...s, charStyle: 'client', species: 'fox', color: '#4b814f', name: 'Rex', stage: 3 }));
+    // on that effect to do it. Her outfit is restored with the rest of her identity: the
+    // default buddy should come back dressed the way she ships.
+    const c = CHARACTERS.find(x => x.id === 'c15');
+    if (c) { c.species = 'fox'; c.color = '#d8a657'; c.name = 'Lumi'; c.worn = { hat: 'lumi-riding-helmet', clothing: 'lumi-navy-duffle-coat' }; }
+    setTw(s => ({ ...s, charStyle: 'client', species: 'fox', color: '#d8a657', name: 'Lumi', stage: 2 }));
     setBump(b => b + 1);
   };
 
@@ -523,7 +526,7 @@ function App() {
                   <button key={v} className={'tw-chip' + (tw.species === v ? ' on' : '')} onClick={() => setTw(s => ({ ...s, species: v, color: c }))}>{l}</button>
                 ))}
               </div>
-              <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Rex (default)</button>
+              <button className="tw-chip" onClick={resetBuddy} style={{ width: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', gap: 6, marginTop: 6 }}>↺ Reset to Lumi (default)</button>
 
               <div className="tw-label">Decorate tabs</div>
               <div className="tw-row">
