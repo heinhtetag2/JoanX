@@ -620,16 +620,17 @@ function ProjectDocs() {
               <Icon name="trophy" size={13} color="#2b5782" stroke={2.2} />
               Case study — the polished write-up
             </button>
-            {/* The public landing page. Source lives in website/ at the repo root; this is the
-                published build, so it can be opened from here without running anything. */}
-            <a
-              className="doc-file live"
-              href="https://claude.ai/artifact/T6YMx1xDMzeqbqMWkUJQYy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon name="external-link" size={13} color="#35603a" stroke={2.2} />
+            {/* The public landing page — served by this same build from website/, so the link
+                stays inside the project instead of pointing at an external copy. */}
+            <a className="doc-file live" href="/website/">
+              <Icon name="globe" size={13} color="#35603a" stroke={2.2} />
               Landing page — the public marketing site
+            </a>
+            {/* Store listing screenshots — a page of this project (website/store.html), not an
+                external link. PNGs are rendered into public/store by scripts/export-store-shots.mjs. */}
+            <a className="doc-file live" href="/website/store.html">
+              <Icon name="images" size={13} color="#35603a" stroke={2.2} />
+              Store screenshots — Google Play &amp; App Store, English + Korean
             </a>
           </div>
           <div className="doc-stats">

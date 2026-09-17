@@ -14,6 +14,7 @@ export default defineConfig({
         components: resolve(__dirname, 'design/components.html'),
         overview: resolve(__dirname, 'design/overview.html'),
         website: resolve(__dirname, 'website/index.html'),
+        store: resolve(__dirname, 'website/store.html'),
       },
     },
   },

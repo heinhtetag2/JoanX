@@ -1,0 +1,452 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JoanX Store Screenshots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+
+<style>
+/* ─────────────────────────────────────────────────────────────────────
+   JoanX — store listing screenshots (Google Play + App Store).
+
+   Every frame is authored at 1080px wide. Play frames are 1080×1920; App
+   Store frames are 1080×2347, rendered at 1.2222× to land on 1320×2868.
+   Phones grow by --k on the taller App Store frame and bleed off the bottom
+   edge. Copy lives in COPY (en / ko) at the foot of the file; screens load
+   from public/store/screens/<lang>/ so each listing shows its own language.
+
+   House rules carried over: flat surfaces, no glow, brand green grounds,
+   gold only for points, no sparkles, no fake ratings.
+   ───────────────────────────────────────────────────────────────────── */
+
+:root {
+  --page:    #F2F5F0;
+  --page-2:  #FFFFFF;
+  --ink:     #1A201C;
+  --ink-2:   #52594F;
+  --line:    #E3E8DF;
+  --accent:  #35603A;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #10130F; --page-2: #191E18; --ink: #EAEEE6; --ink-2: #A7AFA3; --line: #2A3027; --accent: #97C99C;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #10130F; --page-2: #191E18; --ink: #EAEEE6; --ink-2: #A7AFA3; --line: #2A3027; --accent: #97C99C;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ── page chrome ─────────────────────────────────────────────────────── */
+.top { max-width: 1200px; margin: 0 auto; padding: 40px 16px 8px; }
+.top .back { display: inline-block; margin-bottom: 18px; font-size: 14px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+.top h1 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 34px; margin: 0 0 6px; letter-spacing: -.01em; }
+.top p  { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 1.55; max-width: 720px; }
+.bar { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-top: 22px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; padding: 3px; background: var(--page-2); }
+.seg button {
+  font: inherit; font-size: 14px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
+  padding: 8px 14px; border-radius: 9px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.bar .dims { color: var(--ink-2); font-size: 14px; }
+
+.strip {
+  display: flex; gap: 20px; overflow-x: auto; padding: 24px 16px 40px;
+  max-width: 1200px; margin: 0 auto; scroll-snap-type: x mandatory;
+}
+.cell { flex: none; scroll-snap-align: start; }
+.thumb { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid var(--line); }
+.thumb .frame { transform-origin: 0 0; position: absolute; top: 0; left: 0; }
+.cell .meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.cell .meta a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.cell .meta a:hover { text-decoration: underline; }
+
+/* ── the frames themselves (fixed colours: they are exported images) ── */
+.frame {
+  --h: 1920px;
+  --k: 1;                       /* phone scale; App Store frames are taller */
+  position: relative; width: 1080px; height: var(--h); overflow: hidden;
+  font-family: Fredoka, "Noto Sans KR", sans-serif; color: #1A201C;
+  word-break: keep-all;
+}
+.ios .frame { --h: 2347px; --k: 1.2; }
+
+.head { position: absolute; top: 132px; left: 92px; right: 92px; z-index: 3; }
+.ios .head { top: 190px; }
+.eyebrow { font-size: 36px; font-weight: 600; margin-bottom: 26px; opacity: .72; }
+.frame h2 { margin: 0; font-size: 118px; line-height: 1.0; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
+.sub { font-family: "Noto Sans KR", sans-serif; font-weight: 500; font-size: 40px; line-height: 1.4; margin-top: 34px; max-width: 860px; opacity: .78; }
+
+/* phone: a flat bezel drawn around a real 390×875 capture */
+.phone {
+  --pw: 600px;
+  position: absolute; z-index: 2;
+  width: calc(var(--pw) * var(--k));
+  padding: calc(var(--pw) * var(--k) * .03);
+  border-radius: calc(var(--pw) * var(--k) * .135);
+  background: #151A16;
+}
+.phone img { display: block; width: 100%; border-radius: calc(var(--pw) * var(--k) * .108); }
+
+/* grounds */
+.g-night { background: #1E3A23; color: #FFFFFF; }
+.g-green { background: #4B814F; color: #FFFFFF; }
+.g-mist  { background: #F2F5F0; }
+.g-tint  { background: #E7F0E7; }
+.g-white { background: #FFFFFF; }
+.hl-light { color: #A9D6AD; }
+.hl-green { color: #4B814F; }
+.hl-ink   { color: #1E3A23; }
+
+/* 1 · hero */
+.f-hero .wordmark { height: 58px; display: block; margin-bottom: 64px; }
+.f-hero .phone { --pw: 700px; left: 300px; top: 800px; transform: rotate(-7deg); }
+.ios .f-hero .phone { left: 250px; top: 960px; }
+.f-hero .mascot { position: absolute; z-index: 3; width: 460px; left: -40px; bottom: 70px; transform: rotate(4deg); }
+.ios .f-hero .mascot { width: 540px; bottom: 110px; }
+
+/* 2 · the three stages */
+.steps { position: relative; display: flex; flex-direction: column; gap: 30px; margin-top: 48px; font-family: "Noto Sans KR", sans-serif; }
+/* the rail joining the three numbers — the steps happen in order, one after another */
+.steps::before { content: ""; position: absolute; left: 27px; top: 40px; bottom: 40px; width: 4px; border-radius: 2px; background: #CFE0CF; }
+.steps .step { position: relative; display: flex; align-items: flex-start; gap: 24px; }
+.steps b {
+  flex: none; display: inline-grid; place-items: center; width: 58px; height: 58px; border-radius: 50%;
+  background: #4B814F; color: #fff; font-family: Fredoka, sans-serif; font-size: 32px; font-weight: 600;
+  box-shadow: 0 0 0 8px #F2F5F0;   /* cuts the rail around each number */
+}
+.steps strong { display: block; font-size: 42px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+.steps small { display: block; margin-top: 6px; font-size: 32px; font-weight: 500; line-height: 1.35; opacity: .66; }
+.ko .steps strong, .ko .steps small { letter-spacing: -.03em; }
+.f-stages .phone { --pw: 560px; }
+.f-stages .p1 { left: -140px;  top: 930px; transform: rotate(-9deg); }
+.f-stages .p2 { --pw: 650px; left: 215px; top: 840px; z-index: 3; }
+.f-stages .p3 { right: -140px; top: 930px; transform: rotate(9deg); }
+.ios .f-stages .p1 { left: -210px;  top: 1080px; }
+.ios .f-stages .p2 { --pw: 600px; left: 180px; top: 970px; }
+.ios .f-stages .p3 { right: -210px; top: 1080px; }
+
+/* 3 · stopping pays */
+.f-pays .phone { --pw: 700px; left: 250px; top: 660px; transform: rotate(5deg); }
+.ios .f-pays .phone { left: 180px; top: 800px; }
+.points {
+  position: absolute; z-index: 4; left: 64px; top: 760px; transform: rotate(-7deg);
+  display: flex; align-items: center; gap: 18px;
+  background: #FFFFFF; color: #B58400; border-radius: 30px; padding: 22px 36px 22px 24px;
+  font-size: 64px; font-weight: 700; letter-spacing: -.01em;
+}
+.ios .points { top: 900px; font-size: 72px; }
+.points .coin { width: 66px; height: 66px; border-radius: 50%; background: #B58400; box-shadow: inset 0 0 0 12px #E0B23F; }
+
+/* 4 · villains — the battle leads: versus in front on the left, the road behind it on the right */
+.f-villains .phone { --pw: 560px; }
+.f-villains .p1 { right: -70px; left: auto; top: 590px; transform: rotate(9deg); z-index: 2; }
+.f-villains .p2 { --pw: 620px; left: 20px; right: auto; top: 830px; transform: rotate(-6deg); z-index: 3; }
+.ios .f-villains .p1 { right: -140px; top: 720px; }
+.ios .f-villains .p2 { left: -50px; top: 1010px; }
+
+/* 5 · buddy + room — outfit editor behind, the room in front */
+.f-room .phone { --pw: 580px; }
+.f-room .p1 { left: -30px;  top: 760px; transform: rotate(-7deg); }
+.f-room .p2 { right: -40px; top: 840px; transform: rotate(6deg); z-index: 3; }
+.ios .f-room .p1 { left: -100px; top: 850px; }
+.ios .f-room .p2 { right: -110px; top: 990px; }
+
+/* 6 · reports */
+.f-week .phone { --pw: 740px; left: 170px; top: 690px; }
+.ios .f-week .phone { left: 96px; top: 840px; }
+
+/* 7 · alerts */
+.f-alerts .phone { --pw: 740px; left: 250px; top: 700px; transform: rotate(-5deg); }
+.ios .f-alerts .phone { left: 190px; top: 860px; }
+
+/* 8 · what you never see */
+.never { position: absolute; z-index: 3; left: 92px; right: 92px; top: 560px; }
+.ios .never { top: 700px; }
+.never ul { list-style: none; margin: 0; padding: 0; }
+.never li {
+  font-size: 84px; font-weight: 600; letter-spacing: -.02em; line-height: 1;
+  padding: 40px 0; border-top: 3px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.5); text-decoration: line-through; text-decoration-thickness: 7px;
+  text-decoration-color: #A9D6AD;
+}
+.ios .never li { padding: 54px 0; }
+.never li:last-child { border-bottom: 3px solid rgba(255,255,255,.16); }
+.promise { margin-top: 70px; font-family: "Noto Sans KR", sans-serif; }
+.promise p { margin: 0 0 30px; font-size: 44px; font-weight: 600; line-height: 1.35; }
+.promise p span { color: #A9D6AD; }
+.f-never .wordmark { position: absolute; left: 92px; bottom: 120px; height: 52px; }
+.ios .f-never .wordmark { bottom: 170px; }
+
+/* Korean: Fredoka has no Hangul, so headings fall to Noto Sans KR — heavier, tighter, a notch smaller */
+.ko .frame h2 { font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 104px; line-height: 1.12; letter-spacing: -.045em; }
+.ko .never li { font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 78px; letter-spacing: -.04em; }
+.ko .points, .ko .eyebrow { font-family: "Noto Sans KR", sans-serif; font-weight: 700; letter-spacing: -.02em; }
+.ko .sub, .ko .promise p { letter-spacing: -.02em; }
+
+/* export mode: frames at true size, one after another */
+html.export body { background: #000; }
+html.export .top, html.export .cell .meta { display: none; }
+html.export .strip { display: block; padding: 0; max-width: none; overflow: visible; }
+html.export .cell { margin: 0; }
+html.export .thumb { width: auto !important; height: auto !important; border: 0; border-radius: 0; overflow: visible; }
+html.export .thumb .frame { position: relative; transform: none !important; }
+
+@media (prefers-reduced-motion: no-preference) { .strip { scroll-behavior: smooth; } }
+</style>
+
+<header class="top">
+  <a class="back" href="/?app&amp;view=docs" hidden id="back">← Documentation</a>
+  <h1>JoanX store screenshots</h1>
+  <p>Eight listing frames in English and Korean, pitched to the parent who installs the app. Every screen inside a phone is a real capture of the prototype in that language. There are no ratings or install counts because the app is not released yet.</p>
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Store">
+      <button type="button" data-size="play" aria-pressed="true">Google Play</button>
+      <button type="button" data-size="ios" aria-pressed="false">App Store</button>
+    </div>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">English</button>
+      <button type="button" data-lang="ko" aria-pressed="false">한국어</button>
+    </div>
+    <span class="dims" id="dims">1080 × 1920 PNG</span>
+  </div>
+</header>
+
+<main class="strip" id="strip">
+
+  <!-- 1 · hero -->
+  <section class="cell" data-slug="01-hero">
+    <div class="thumb"><div class="frame f-hero g-night">
+      <div class="head">
+        <img class="wordmark" src="media/brand/logo-wordmark.svg" alt="JoanX">
+        <h2 data-t="hero.h"></h2>
+      </div>
+      <img class="mascot" src="media/art/mascot-halt.png" alt="">
+      <div class="phone"><img data-shot="child-home" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 2 · three stages -->
+  <section class="cell" data-slug="02-warnings">
+    <div class="thumb"><div class="frame f-stages g-mist">
+      <div class="head">
+        <h2 data-t="stages.h"></h2>
+        <div class="steps">
+          <div class="step"><b>1</b><div><strong data-t="stages.1"></strong><small data-t="stages.1d"></small></div></div>
+          <div class="step"><b>2</b><div><strong data-t="stages.2"></strong><small data-t="stages.2d"></small></div></div>
+          <div class="step"><b>3</b><div><strong data-t="stages.3"></strong><small data-t="stages.3d"></small></div></div>
+        </div>
+      </div>
+      <div class="phone p1"><img data-shot="stage-buzz" alt=""></div>
+      <div class="phone p3"><img data-shot="stage-message" alt=""></div>
+      <div class="phone p2"><img data-shot="stage-card" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 3 · stopping pays -->
+  <section class="cell" data-slug="03-stopping-pays">
+    <div class="thumb"><div class="frame f-pays g-green">
+      <div class="head">
+        <h2 data-t="pays.h"></h2>
+        <p class="sub" data-t="pays.s"></p>
+      </div>
+      <div class="points"><i class="coin" aria-hidden="true"></i><span data-t="pays.chip"></span></div>
+      <div class="phone"><img data-shot="child-battle-result" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 4 · villains -->
+  <section class="cell" data-slug="04-villains">
+    <div class="thumb"><div class="frame f-villains g-tint">
+      <div class="head">
+        <h2 data-t="villains.h"></h2>
+      </div>
+      <div class="phone p1"><img data-shot="child-villain-road" alt=""></div>
+      <div class="phone p2"><img data-shot="child-battle-versus" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 5 · decorate -->
+  <section class="cell" data-slug="05-buddy">
+    <div class="thumb"><div class="frame f-room g-white">
+      <div class="head">
+        <h2 data-t="buddy.h"></h2>
+        <p class="sub" data-t="buddy.s"></p>
+      </div>
+      <div class="phone p1"><img data-shot="child-decorate" alt=""></div>
+      <div class="phone p2"><img data-shot="child-room" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 6 · weekly report -->
+  <section class="cell" data-slug="06-weekly-report">
+    <div class="thumb"><div class="frame f-week g-mist">
+      <div class="head">
+        <div class="eyebrow" data-t="parents"></div>
+        <h2 data-t="week.h"></h2>
+        <p class="sub" data-t="week.s"></p>
+      </div>
+      <div class="phone"><img data-shot="parent-reports" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 7 · alerts -->
+  <section class="cell" data-slug="07-alerts">
+    <div class="thumb"><div class="frame f-alerts g-white">
+      <div class="head">
+        <div class="eyebrow" data-t="parents"></div>
+        <h2 data-t="alerts.h"></h2>
+        <p class="sub" data-t="alerts.s"></p>
+      </div>
+      <div class="phone"><img data-shot="parent-alerts" alt=""></div>
+    </div></div>
+  </section>
+
+  <!-- 8 · what you never see -->
+  <section class="cell" data-slug="08-privacy">
+    <div class="thumb"><div class="frame f-never g-night">
+      <div class="head">
+        <h2 data-t="never.h"></h2>
+      </div>
+      <div class="never">
+        <ul>
+          <li data-t="never.1"></li>
+          <li data-t="never.2"></li>
+          <li data-t="never.3"></li>
+        </ul>
+        <div class="promise">
+          <p data-t="never.p1"></p>
+          <p data-t="never.p2"></p>
+        </div>
+      </div>
+      <img class="wordmark" src="media/brand/logo-wordmark.svg" alt="JoanX">
+    </div></div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  /* Copy for both listings. Korean terms follow the landing page (website/index.html):
+     조안X, 버디, 빌런, 포인트, 보호자, 진동 한 번. */
+  var COPY = {
+    en: {
+      'hero.h': 'Make looking up the thing that <span class="hl-light">wins the game.</span>',
+      'stages.h': 'It never takes the <span class="hl-green">phone away.</span>',
+      'stages.1': 'A buzz', 'stages.2': 'A card', 'stages.3': 'Their buddy speaks',
+      'stages.1d': 'After 10 seconds of walking head-down', 'stages.2d': 'Still looking? One line, one button', 'stages.3d': 'Still walking? Their buddy asks them to look up',
+      'pays.h': 'Stopping is what <span class="hl-ink">pays.</span>',
+      'pays.s': 'Look up quickly and the points land. Points grow the buddy they care about.',
+      'pays.chip': '+120 points',
+      'villains.h': 'Ten villains. Beaten by <span class="hl-green">looking up.</span>',
+      'buddy.h': 'Their buddy. <span class="hl-green">Their room.</span>',
+      'buddy.s': 'Outfits and room decorations are paid for in points from safe walks. Nothing is bought with a card.',
+      'parents': 'For parents',
+      'week.h': 'A calm week, <span class="hl-green">not a live feed.</span>',
+      'week.s': 'See how often they stopped when warned, measured against their own first week.',
+      'alerts.h': 'Told when it <span class="hl-green">matters.</span>',
+      'alerts.s': 'A possible fall, an ignored warning, protection switched off. Not every step they take.',
+      'never.h': 'What you will <span class="hl-light">never</span> see.',
+      'never.1': 'Where they are', 'never.2': 'Their messages', 'never.3': 'Their photos',
+      'never.p1': 'The screen is <span>never blocked.</span>',
+      'never.p2': 'Phone &amp; Texts <span>always stay open</span>, so they can always call for help.'
+    },
+    ko: {
+      'hero.h': '고개를 드는 것이 <span class="hl-light">이기는 방법.</span>',
+      'stages.h': '폰을 절대<br><span class="hl-green">빼앗지 않아요.</span>',
+      'stages.1': '진동 한 번', 'stages.2': '카드 한 장', 'stages.3': '버디의 한마디',
+      'stages.1d': '걸으면서 10초 넘게 화면을 보면', 'stages.2d': '그래도 계속 보면, 한 줄과 버튼 하나', 'stages.3d': '그다음엔 버디가 고개를 들어 달라고 해요',
+      'pays.h': '멈추면<br><span class="hl-ink">포인트가 쌓여요.</span>',
+      'pays.s': '빨리 고개를 들수록 더 많이 받아요. 포인트로 아끼는 버디를 키워요.',
+      'pays.chip': '+120 포인트',
+      'villains.h': '빌런 10명,<br><span class="hl-green">고개를 들어</span><br>물리쳐요.',
+      'buddy.h': '내 버디와 방을<br><span class="hl-green">내 마음대로.</span>',
+      'buddy.s': '옷도 방 꾸미기도 안전하게 걸어서 모은 포인트로만 살 수 있어요. 카드로 살 수 있는 건 없어요.',
+      'parents': '보호자에게는',
+      'week.h': '실시간 감시가 아닌,<br><span class="hl-green">차분한 한 주.</span>',
+      'week.s': '경고를 듣고 얼마나 자주 멈췄는지, 아이의 첫 주와 비교해 보여드려요.',
+      'alerts.h': '정말 필요할 때만<br><span class="hl-green">알려드려요.</span>',
+      'alerts.s': '넘어짐 감지, 무시한 경고, 꺼진 보호 기능. 아이의 모든 걸음을 알리지는 않아요.',
+      'never.h': '보호자도<br><span class="hl-light">볼 수 없는</span> 것.',
+      'never.1': '아이의 위치', 'never.2': '아이의 메시지', 'never.3': '아이의 사진',
+      'never.p1': '화면은 <span>절대 잠기지 않아요.</span>',
+      'never.p2': '전화와 문자는 <span>항상 열려 있어요</span>. 언제든 도움을 요청할 수 있게요.'
+    }
+  };
+  var SIZES = {
+    play: { h: 1920, label: '1080 × 1920 PNG' },
+    ios:  { h: 2347, label: '1320 × 2868 PNG (iPhone 6.9")' }
+  };
+
+  var params = new URLSearchParams(location.search);
+  var exporting = params.has('export');
+  var size = params.get('size') === 'ios' ? 'ios' : 'play';
+  var lang = params.get('lang') === 'ko' ? 'ko' : 'en';
+  if (!exporting) {
+    if (!params.has('size')) try { size = localStorage.getItem('joanx-store-size') || size; } catch (e) {}
+    if (!params.has('lang')) try { lang = localStorage.getItem('joanx-store-lang') || lang; } catch (e) {}
+  }
+  if (exporting) document.documentElement.classList.add('export');
+
+  // exported PNGs live in public/store (served at /store/) inside the prototype build;
+  // the published copy of this page carries them under media/store/
+  var inProject = /\/website\//.test(location.pathname);
+  var PNG = inProject ? '/store/' : 'media/store/';
+  if (inProject && !exporting) document.getElementById('back').hidden = false;
+  var strip = document.getElementById('strip');
+  var dims = document.getElementById('dims');
+
+  function thumbWidth() { return Math.min(300, Math.max(220, window.innerWidth * 0.62)); }
+
+  function apply() {
+    var s = SIZES[size], t = COPY[lang];
+    strip.classList.toggle('ios', size === 'ios');
+    strip.classList.toggle('ko', lang === 'ko');
+    document.documentElement.lang = lang;
+    dims.textContent = s.label;
+    document.querySelectorAll('.seg button').forEach(function (b) {
+      var on = b.dataset.size ? b.dataset.size === size : b.dataset.lang === lang;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-t]').forEach(function (el) { el.innerHTML = t[el.dataset.t]; });
+    document.querySelectorAll('[data-shot]').forEach(function (img) {
+      // fall back to the English capture if this language's screen has not been captured yet
+      img.onerror = lang === 'en' ? null : function () { img.onerror = null; img.src = PNG + 'screens/en/' + img.dataset.shot + '.png'; };
+      img.src = PNG + 'screens/' + lang + '/' + img.dataset.shot + '.png';
+    });
+
+    var w = thumbWidth(), scale = w / 1080;
+    document.querySelectorAll('.cell').forEach(function (cell) {
+      var thumb = cell.querySelector('.thumb');
+      var frame = cell.querySelector('.frame');
+      if (!exporting) {
+        thumb.style.width = w + 'px';
+        thumb.style.height = Math.round(s.h * scale) + 'px';
+        frame.style.transform = 'scale(' + scale + ')';
+      }
+      var meta = cell.querySelector('.meta');
+      if (!meta) { meta = document.createElement('div'); meta.className = 'meta'; cell.appendChild(meta); }
+      var slug = cell.dataset.slug;
+      meta.innerHTML = '<span>' + slug.replace(/^\d+-/, '').replace(/-/g, ' ') + '</span>' +
+        '<a href="' + PNG + size + '/' + lang + '/' + slug + '.png" target="_blank" rel="noopener">Open PNG</a>';
+    });
+  }
+
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.size) { size = b.dataset.size; try { localStorage.setItem('joanx-store-size', size); } catch (e) {} }
+      else { lang = b.dataset.lang; try { localStorage.setItem('joanx-store-lang', lang); } catch (e) {} }
+      apply();
+    });
+  });
+  window.addEventListener('resize', apply);
+  apply();
+})();
+</script>

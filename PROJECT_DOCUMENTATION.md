@@ -12,6 +12,7 @@
 | **Status** | Complete for the current prototype; §9–§11 describe a *proposed* backend that does not yet exist |
 | **Method** | Every value, formula, field name and path below was read out of the source, the client's functional spec, and the git history. Nothing is inferred without being labelled as such. |
 | **When the source cannot answer** | The document says **"Not identifiable from the available source."** |
+| **Store screenshots** | Google Play & App Store listing frames, English + Korean — a page of this project at `/website/store.html` (linked from the in-app Documentation). Source `website/store.html`; PNGs in [`public/store/{play,ios}/{en,ko}`](public/store/). With `npm run dev` running: `node scripts/capture-store-screens.mjs` re-captures the in-phone app screens, then `node scripts/export-store-shots.mjs` renders the frames |
 
 </div>
 
