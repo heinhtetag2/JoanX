@@ -51,6 +51,10 @@ const SHOTS = {
       await p.mouse.click(box.x + 40, box.y + 400); await sleep(1200);
     },
   },
+  // the Collection House grid (Buddies tab) — locked cards use the Tweaks default
+  'child-collection': { query: '&screen=collection', run: async () => sleep(2000) },
+  // the villain card — the road opens with the current villain's card already up
+  'child-villain-card': { run: async (p) => { await tweak(p, 'Road map'); await sleep(2500); } },
   'child-decorate': {
     query: '&detail=char-showcase',
     run: async (p) => {

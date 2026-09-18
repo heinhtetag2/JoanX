@@ -65,7 +65,7 @@ const LOCKED_VILLAIN_STYLES = [
   { id: 'twilight', label: 'Twilight' },
   { id: 'dim-violet', label: 'Violet dim' },
 ];
-const lockedVillainStyle = () => window.JX_LOCKED_VILLAIN || 'original';
+const lockedVillainStyle = () => window.JX_LOCKED_VILLAIN || 'shadow-q';   // default: Shadow + ?
 const SHAPE_STYLES = ['own-colour', 'backlit', 'halftone', 'dusk', 'grounded', 'in-dark', 'in-dark-edge', 'fog-rise', 'twilight', 'dim-violet'];
 const NIGHT = '35,29,64';
 // a locked villain drawn as a filled shape (no picture, no sticker edge)

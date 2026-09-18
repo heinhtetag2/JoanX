@@ -394,7 +394,7 @@ const KO = {
   'How long you walked safely': '안전하게 걸은 시간',
   'Warnings you got while walking': '걷는 중 받은 경고',
   'Your points and streak': '내 포인트와 연속 기록',
-  'Which app types are blocked': '차단된 앱 종류',
+  'Whether protection is on': '보호 기능이 켜져 있는지', 'Which apps you use': '어떤 앱을 쓰는지',
   'Where you are': '내 위치',
   'Your messages and guestbook': '내 메시지와 친구 한마디',
   'Your photos': '내 사진',

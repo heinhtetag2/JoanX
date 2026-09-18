@@ -796,7 +796,7 @@ function ProjectDocs() {
           </p>
           <div className="doc-grid2">
             <div>
-              {['Walking time and safe minutes', 'Warnings, and how the child responded', 'Points and streak', 'Which app types are blocked'].map(t => (
+              {['Walking time and safe minutes', 'Warnings, and how the child responded', 'Points and streak', 'Whether protection is on'].map(t => (
                 <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0' }}>
                   <Icon name="eye" size={15} color={C.good} stroke={2.3} />
                   <span style={{ fontSize: 12.5, color: C.ink2, fontWeight: 600 }}>{t}</span>

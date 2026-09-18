@@ -644,10 +644,11 @@ const PARENT_SEES = [
   { icon: 'footprints',   label: 'How long you walked safely', shared: true },
   { icon: 'alert-triangle', label: 'Warnings you got while walking', shared: true },
   { icon: 'star',         label: 'Your points and streak', shared: true },
-  { icon: 'smartphone',   label: 'Which app types are blocked', shared: true },
+  { icon: 'shield-check', label: 'Whether protection is on', shared: true },
   { icon: 'map-pin',      label: 'Where you are', shared: false },
   { icon: 'message-circle', label: 'Your messages and guestbook', shared: false },
   { icon: 'camera',       label: 'Your photos', shared: false },
+  { icon: 'smartphone',   label: 'Which apps you use', shared: false },
 ];
 
 const linkedChild = () => CHILDREN.find(c => c.id === LINK.childId) || null;
@@ -2363,7 +2364,7 @@ const SPECIES_INFO = {
 //             silently rebalances every fight in the game.
 const VILLAINS = [
   { id: 'v-ping', lv: 1, name: 'Ping', role: 'minion', set: 'mvp', enabled: true,
-    species: 'cat', color: '#c06fa0', power: 145, defeated: true,
+    species: 'cat', color: '#c06fa0', power: 145, defeated: false,
     risk: 'Notifications — the phone that never stops asking to be checked',
     desc: 'Buzzes and blinks until you look. It never has to ask twice.',
     personality: 'Small, chirpy, relentless. Never mad — just never quiet.',
@@ -2374,7 +2375,7 @@ const VILLAINS = [
       mods: { hero: { speed: -0.10 } } } },
 
   { id: 'v-temo', lv: 2, name: 'Temo', role: 'minion', set: 'mvp', enabled: true,
-    species: 'fox', color: '#8a94a6', power: 160, defeated: true,
+    species: 'fox', color: '#8a94a6', power: 160, defeated: false,
     risk: 'Temptation — the promise that the next thing is even better',
     desc: 'Offers one more video, one more reward, one more reason to stay.',
     personality: 'Sweet, patient, never pushy. It does not grab — it invites.',
@@ -2385,7 +2386,7 @@ const VILLAINS = [
       mods: { hero: { courage: -0.12 } } } },
 
   { id: 'v-vortex', lv: 3, name: 'Vortex', role: 'minion', set: 'mvp', enabled: true,
-    species: 'bird', color: '#d1603a', power: 175, defeated: true,
+    species: 'bird', color: '#d1603a', power: 175, defeated: false,
     risk: 'Scrolling — a feed with no bottom and no door out',
     desc: 'Serves the next screen before you finish the one you are on.',
     personality: 'Fast, breathless, never lets a moment finish before the next one starts.',
