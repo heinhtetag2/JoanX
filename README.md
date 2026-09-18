@@ -22,6 +22,24 @@ staged safety moment, and the data-sharing rules.
 Screenshots in `website/media/shots/` are captured from this prototype; re-capture them after a
 UI change rather than editing them by hand.
 
+## Store listing assets
+
+Everything a store listing needs, in English and Korean, built from real prototype captures:
+eight listing frames per device size, both app icons, and the feature graphic.
+
+- **Open:** "Store assets" in the prototype's top bar, or [`/website/store.html`](website/store.html).
+  Pick a size and a language, then **Download all** for a zip of that tab.
+- **Sizes:** phone 1080×1920 · App Store 6.9" 1320×2868 · tablet 1200×1920 (serves Play's 7"
+  and 10" categories) · app icon 512×512 (32-bit, alpha) · feature graphic 1024×500.
+  Screenshots and the feature graphic are 24-bit PNG with no alpha, as both stores require.
+- **Source:** [`website/store.html`](website/store.html); exported PNGs in `public/store/`.
+- **Rebuild** (with `npm run dev` running):
+
+```bash
+node scripts/capture-store-screens.mjs   # the app screens shown inside the phones
+node scripts/export-store-shots.mjs      # the frames, icons and feature graphic
+```
+
 ## Run locally
 
 ```bash

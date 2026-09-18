@@ -630,7 +630,7 @@ function ProjectDocs() {
                 external link. PNGs are rendered into public/store by scripts/export-store-shots.mjs. */}
             <a className="doc-file live" href="/website/store.html">
               <Icon name="images" size={13} color="#35603a" stroke={2.2} />
-              Store screenshots — Google Play &amp; App Store, English + Korean
+              Store assets — screenshots, icons, feature graphic
             </a>
           </div>
           <div className="doc-stats">

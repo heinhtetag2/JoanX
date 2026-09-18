@@ -55,8 +55,10 @@
   /* control bar */
   .topbar { display: flex; align-items: center; gap: 10px; }
   .seg { display: inline-flex; background: #fff; border-radius: 999px; padding: 4px; box-shadow: 0 4px 16px rgba(46,43,41,.12); }
-  .seg button { border: none; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #585450; padding: 8px 18px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .seg a { text-decoration: none; }
+  .seg button, .seg a { border: none; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #585450; padding: 8px 18px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .seg button.on { background: #447aaf; color: #fff; }
+  .seg a:hover { background: #f1f0ef; }
   .gear { width: 42px; height: 42px; border-radius: 999px; background: #fff; border: none; box-shadow: 0 4px 16px rgba(46,43,41,.14); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 
   /* tweaks panel */

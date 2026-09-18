@@ -418,6 +418,12 @@ function App() {
               <Icon name={ic} size={15} color={role === r ? '#fff' : THEME.fg3} stroke={2.2} />{l}
             </button>
           ))}
+          {/* Store assets live on their own page of this site (website/store.html) rather than
+              in a role, so the switcher links straight out to them — the one place a reviewer
+              looks for "where are the listing images?". */}
+          <a href="/website/store.html" title="Store listing screenshots, icons and feature graphic">
+            <Icon name="images" size={15} color={THEME.fg3} stroke={2.2} />Store assets
+          </a>
         </div>
         {!isDocRole(role) && (
           <button className="gear" onClick={() => setTweaksOpen(o => !o)} title="Tweaks">
