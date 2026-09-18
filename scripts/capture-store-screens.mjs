@@ -60,9 +60,9 @@ const SHOTS = {
     run: async (p) => {
       await p.locator('.screen button').filter({ has: p.locator('svg.lucide-shirt') }).first().click();
       await sleep(900);
-      await p.locator('.screen button').filter({ has: p.locator('svg.lucide-shirt') }).last().click();   // Coat tab
+      await p.locator('.screen button').filter({ has: p.locator('svg.lucide-crown') }).last().click();   // Hat tab
       await sleep(700);
-      await p.locator('.screen button', { hasText: /Tan Trench|트렌치/ }).first().click();
+      await p.locator('.screen button', { hasText: /Green Beret|베레모/ }).first().click();               // trying one on
       await sleep(1500);
     },
   },
