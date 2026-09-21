@@ -26,13 +26,26 @@ const PARENT_TABS = [
   { id: 'p_account', root: 'p_account', icon: 'circle-user', label: 'Profile' },
 ];
 
-function TabBar({ tabs, active, onTab, accent }) {
+// `badges` is an optional { [tabId]: count } — a tab worth crossing to says so from here,
+// rather than making you open it to find out. Used by the parent app's Alerts tab, where the
+// whole point of the tab is that something may be waiting behind it.
+function TabBar({ tabs, active, onTab, accent, badges }) {
   const ac = accent || THEME.primary;          // active tint follows the buddy color when given
   const renderTab = t => {
     const on = active === t.id || (t.alt && t.alt.includes(active));
+    const n = (badges && badges[t.id]) || 0;
     return (
       <button key={t.id} data-tour={'tab-' + t.id} disabled={t.disabled} onClick={t.disabled ? undefined : () => onTab && onTab(t.root)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: t.disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: t.disabled ? .4 : 1, pointerEvents: t.disabled ? 'none' : undefined }}>
-        <Icon name={t.icon} size={23} color={on ? ac : THEME.fg3} stroke={on ? 2.5 : 1.9} />
+        <span style={{ position: 'relative', display: 'flex' }}>
+          <Icon name={t.icon} size={23} color={on ? ac : THEME.fg3} stroke={on ? 2.5 : 1.9} />
+          {/* count, not a bare dot: "5 things are waiting" and "1 thing is waiting" are
+              different enough decisions to be worth the two extra pixels. Red rather than the
+              brand tint — on a safety app this is the one place a parent should be able to
+              read at a glance, across the room, without having decoded the palette first. */}
+          {n > 0 && (
+            <span style={{ position: 'absolute', top: -5, left: 12, minWidth: 11, height: 15, padding: '0 4px', borderRadius: 999, background: THEME.danger, color: '#fff', fontSize: 10, fontWeight: 800, lineHeight: '15px', textAlign: 'center', border: '2px solid #fff', boxSizing: 'content-box' }}>{n > 9 ? '9+' : n}</span>
+          )}
+        </span>
         <span style={{ fontSize: 10.5, fontWeight: 700, color: on ? ac : THEME.fg3 }}>{L(t.label)}</span>
       </button>
     );

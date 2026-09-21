@@ -2277,6 +2277,23 @@ const pushImpactAlert = (reason) => {
   return alert;
 };
 
+// ── parent alerts · read state ───────────────────────────────────────
+// Which rows this guardian has already looked at. It has to live here rather than on the row,
+// because the feed is two sources stitched together: the seeded rows above carry their own
+// `unread`, but guardian-request rows are computed fresh from JOIN_REQUESTS on every call, so a
+// flag written onto one would be rebuilt as unread the moment the screen remounts. One set of
+// ids, consulted by both, keeps a read row read after a tab switch — and lets the tab bar count
+// exactly the unread the screen is showing, instead of a second, drifting tally.
+const ALERTS_READ = new Set();
+const alertUnread = (a) => a.unread !== false && !ALERTS_READ.has(a.id);
+const markAlertRead = (id) => { ALERTS_READ.add(id); };
+// The whole feed, in one place, so the screen and the tab badge can never disagree about what
+// is in it. Newest-first ordering is the screen's business (it also groups by day); this just
+// guarantees both sides see the same rows.
+const parentAlertFeed = () => [...PARENT_ALERTS, ...pendingRequestAlerts()];
+const markAllAlertsRead = () => { parentAlertFeed().forEach(a => ALERTS_READ.add(a.id)); };
+const parentUnreadCount = () => parentAlertFeed().filter(alertUnread).length;
+
 // MAX_CHILDREN (A-13) — how many children one guardian account may register and manage.
 // "Managed" is about authority, not blood: any child the guardian pairs counts, related or
 // not. Kept as one knob (not a literal buried in the add-child flow) so a future business
@@ -3073,6 +3090,6 @@ const PARENT_PROFILE = { name: 'Sora Kim', email: 'sora.kim@email.com', provider
 const PARENT_PREFS = { sound: true };
 
 export { PARENT_PREFS, PARENT_PROFILE, NOTICES, LEGAL_DOCS, ACHIEVEMENTS, claimAchievement, resetAchievementClaims, AUTH, REACTIONS, react, reactionOf, reactionTotal, battleStats, villainStats, canChallenge, resolveBattle, resetVillainRecord, rewardTier, KNOWN_EMAILS, authMethods, devicePlatform, battlesPerDay, BATTLE_RULES, BATTLE_RULES_DEFAULTS, setBattleRules, BATTLE_REWARDS, APP_CATEGORIES, CHARACTERS, CHARACTER_UNLOCKS, CHILDREN, MAX_CHILDREN, ITEMS, ITEM_CATEGORIES, ITEM_GRANTS, CHILD_REPORTS, DECOR, EGGS, EGG_GRANTS, EXCHANGE, EXCHANGE_DEFAULTS, setExchange, GUARDIANS, GROUPS, GROUP_ROLES, GROUP_KIDS, GROUP_LOG, MEMBERSHIPS, JOIN_REQUESTS, MAX_GROUPS, guardianById, guardians, guardiansForKid, guardianOwner, guardianMe, guardianNames, addGuardian, groupById, groupByToken, groupCan, groupMembers, groupAdmin, groupKids, groupLog, groupsForKid, groupsFull, myGroups, myGroupCount, myRole, isGroupAdmin, membership, primaryGuardianFor, pendingRequests, myRequestFor, pendingRequestAlerts, scannableGroup, createGroup, renameGroup, rotateGroupToken, setPrimaryGuardian, addKidToGroup, removeKidFromGroup, requestToJoin, acceptRequest, rejectRequest, leaveGroup, removeMember, logGroupChange,
-  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, roomUnlocked, themeById, themeOf, wallOf, floorOf, decorForRoom,
+  FEATURES, FRIENDS, FRIEND_REQUESTS, FRIEND_SUGGESTIONS, FRIEND_METHODS, FRIEND_POLICY, FRIEND_LIMITS, DISCOVERABLE_USERS, searchUsers, GUEST_STAMPS, HOUSE_BGS, SCENES, INTERVENTION, LINK, PARENT_SEES, linkedChild, parentSharesSeen, parentSharesHidden, MISSIONS, MY_GUESTBOOK, PARENT_ALERTS, pushImpactAlert, alertUnread, markAlertRead, markAllAlertsRead, parentAlertFeed, parentUnreadCount, PARENT_METRICS, OUTFITS, PERMISSIONS, PERM_GRANTS, setPermGrant, grantAllPermissions, missingPermissions, PLAYER, POINTS, RARITIES, REACTIONS_7D, RISK_EVENT_LOG, RISK_TREND, ROOMS, ROOM_CAPACITY, ROOM_THEMES, roomUnlocked, themeById, themeOf, wallOf, floorOf, decorForRoom,
   SAFE_PT_PER_MIN, SOURCES, SPECIES_INFO, STAGES, STATS, STAT_GROWTH, TODAY_TASKS, VILLAINS, VILLAIN_ROLES, activeVillains, villainByLv, villainUnlocked, nextVillain, villainsDefeated, finalVillain, endingUnlocked, storyUnlocked, storyChapters, storyProgress, roleOf, isBoss, BATTLE_ODDS, BATTLE_ODDS_DEFAULTS, setBattleOdds, setVillains, recommendedLevel, underLevelled, winChance, winPercent, rollBattle, WEEKLY_TASKS, XP_CURVE, XP_CURVE_DEFAULTS, setXpCurve, applyXpCurve, activeEggs, activeItemGrants, activeUnlocks, awardCharacters, awardEggs, awardItems, buyItem, canBuyItem, charactersEarned, charactersOfRarity, claimRewards, eggById, eggCount, eggSources, eggsEarned, grantsForEgg, grantsForItem, hatchEgg, buyEgg, canBuyEgg, hatchFromInventory, itemById, itemSources, itemsEarned, itemsOfCategory, itemsOfSlot, limitedItems, interventionMessages, interventionTier, isMaxLevel, isRevealed, logRiskEvent, SAFE_STOP, safeStopVerified, evaluateSafeStop, missionsCleared, battlePower, nextStageAt, statMax, stageBand, moodForStage, progress, rarityOf, setStages, setStatGrowth, sourceOf, stageForLevel, stageOf, finalStage, statsFor, rollRarity, totalEggs, unlockHints, unlockRoutes, visibleCharacters, xpForLevel,
   canConvertPoints, convertPointsToXp, gainXp, maxConvertibleXp, pointsForXp, xpFromPoints, xpToCap };

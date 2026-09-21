@@ -3,7 +3,7 @@ import { AboutJoanX, AchievementUnlock, AddFriends, AppIntro, Battle, BootSplash
 import { collectionIntent } from '../child/Badges.jsx';
 import { LOCKED_BUDDY_STYLES } from '../child/LockedBuddy.jsx';
 import { LOCKED_VILLAIN_STYLES } from '../child/VillainDex.jsx';
-import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert } from '../core/data.jsx';
+import { ACHIEVEMENTS, applyXpCurve, CHARACTERS, PARENT_PREFS, PLAYER, STAGES, setPermGrant, grantAllPermissions, resetAchievementClaims, pushImpactAlert, parentUnreadCount } from '../core/data.jsx';
 import { CHILD_TABS, PARENT_TABS, TabBar } from '../core/nav.jsx';
 import { Icon, StatusBar, THEME } from '../core/primitives.jsx';
 import Portal from './Portal.jsx';
@@ -145,6 +145,7 @@ function App() {
     setSoundTick(n => n + 1);
     if (v) sfx.toggle(true);   // confirm the un-mute; muting is confirmed by the silence
   };
+  const [alertRev, bumpAlerts] = React.useReducer(n => n + 1, 0);   // re-render the parent tab bar when an alert is marked read
   const [devBadge, setDevBadge] = React.useState(!__q.has('nodev'));   // per-screen handoff status badge — on by default; hide with ?nodev or the Tweaks toggle
   const initialHome = __q.get('home') || 'simple-focus';
   // Default buddy: Lumi (PLAYER.activeCharId seeds the same record). Stage 2, not 3 — the
@@ -337,6 +338,9 @@ function App() {
 
   const ctx = {
     nav, back, tabTo, params, mode, setMode,
+    // Alert read state lives in core/data.jsx so it survives leaving the screen; this is how
+    // the Alerts row that was just read tells the tab bar to drop its count by one.
+    bumpAlerts: () => bumpAlerts(),
     demo, setDemo,
     tweaks: { overlay: tw.overlay, narrator: tw.narrator, msgLayout: tw.msgLayout, onbStyle: tw.onbStyle, hold, childAvatar: tw.childAvatar, homeStatB: tw.homeStatB, eggEntry: tw.eggEntry, eggShineStyle: tw.eggShineStyle, eggBadge: tw.eggBadge, claimStyle: tw.claimStyle, xpAddStyle: tw.xpAddStyle, xpBarStyle: tw.xpBarStyle, statStyle: tw.statStyle },
     openOverlay: () => setOverlay(true),
@@ -352,6 +356,8 @@ function App() {
     // group, where the children already exist and the honest next step is scanning their QR.
     finishParentOnboarding: (opts) => { setParentOnboarded(true); setParams({}); setPScreen(opts?.joined ? 'p_group_join' : 'p_addchild'); },
   };
+
+  const parentAlerts = React.useMemo(() => parentUnreadCount(), [alertRev, pScreen]);
 
   // render active child/parent screen
   let body;
@@ -453,7 +459,9 @@ function App() {
           <div className={playClass} style={{ position: 'absolute', inset: 0 }}>
             {body}
             {showChildTabs && <TabBar tabs={CHILD_TABS} active={activeChildTab} onTab={tabTo} accent={THEME.brand} />}
-            {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} />}
+            {/* recomputed on alertRev, which ParentActivity bumps through ctx whenever a row
+                is marked read — the count and the list are the same numbers either way */}
+            {role === 'parent' && parentOnboarded && PARENT_TAB_ROOTS.includes(pScreen) && <TabBar tabs={PARENT_TABS} active={pScreen} onTab={tabTo} accent={BRAND.primary} badges={{ p_activity: parentAlerts }} />}
           </div>
           <StatusBar dark={role === 'child' && overlay && mode === 'lite'} />
           {role === 'child' && overlay && (mode === 'lite' ? <LiteBlock ctx={ctx} /> : <WarningOverlay key={run} ctx={ctx} />)}
