@@ -375,6 +375,14 @@ td.us { color: var(--ink); font-weight: 600; }
   .sc-cta { opacity: 1; transform: none; }
 }
 
+/* promises — a big title over a grid of cards: icon, title, one line */
+.pr-title { font-size: var(--fs-display); font-weight: 600; letter-spacing: -.03em; margin-bottom: clamp(40px, 6vw, 88px); }
+.pr-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 1.6vw, 24px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.pr-card { display: grid; align-content: start; gap: 14px; padding: clamp(28px, 3.4vw, 48px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
+.pr-card img { width: 64px; height: 64px; margin-bottom: clamp(20px, 3vw, 44px); }
+.pr-card h3 { font-size: var(--fs-h3); }
+.pr-card p { color: var(--ink-2); }
+
 /* get + footer */
 .get-in { display: grid; gap: 20px; }
 @media (min-width: 900px) { .get-in { grid-template-columns: 1fr auto; align-items: center; } }
@@ -566,6 +574,21 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
+<!-- ═══ PROMISES ══════════════════════════════════════════════════════════ -->
+<section class="section promises" id="promises">
+  <div class="wrap">
+    <h2 class="pr-title" data-i18n="pr.h">Our promises</h2>
+    <ul class="pr-grid">
+      <li class="pr-card"><img src="../media/icons/icon-stopped.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.1h">Never locks the phone</h3><p data-i18n="pr.1p">One buzz first, a message only if they keep going. The screen is never blocked.</p></li>
+      <li class="pr-card"><img src="../media/icons/icon-call.svg" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.2h">Calls and texts always work</h3><p data-i18n="pr.2p">Whatever is on the screen, your child can always reach you.</p></li>
+      <li class="pr-card"><img src="../media/icons/icon-walking.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.3h">Only while walking</h3><p data-i18n="pr.3p">It watches one thing: walking and phone use at the same time. The rest of the day, it does nothing.</p></li>
+      <li class="pr-card"><img src="../media/icons/icon-no-map.svg" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.4h">No map, no location trail</h3><p data-i18n="pr.4p">You see how safely they walked — never where they are.</p></li>
+      <li class="pr-card"><img src="../media/icons/icon-streak.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.5h">Looking up earns points</h3><p data-i18n="pr.5p">10 points a minute with the phone down, and a streak that grows with every safe day.</p></li>
+      <li class="pr-card"><img src="../media/icons/icon-ignored.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.6h">Calm, not constant</h3><p data-i18n="pr.6p">One weekly report, and an alert only when something needs you now.</p></li>
+    </ul>
+  </div>
+</section>
+
 <!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
 <section class="section" id="how">
   <div class="wrap">
@@ -703,6 +726,19 @@ var KO = {
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
   'q.start': '어떻게 시작하나요?',
   'n.start': '시작하기',
+  'pr.h': '조안X의 약속',
+  'pr.1h': '폰을 잠그지 않아요',
+  'pr.1p': '먼저 진동 한 번, 계속 볼 때만 메시지가 떠요. 화면은 절대 막지 않아요.',
+  'pr.2h': '전화와 문자는 항상 돼요',
+  'pr.2p': '어떤 상황에서도 아이는 보호자에게 연락할 수 있어요.',
+  'pr.3h': '걸을 때만 작동해요',
+  'pr.3p': '걷기와 폰 사용이 동시에 일어날 때만 봐요. 그 외에는 아무것도 하지 않아요.',
+  'pr.4h': '지도도, 이동 경로도 없어요',
+  'pr.4p': '얼마나 안전하게 걸었는지는 보여도, 어디에 있는지는 보이지 않아요.',
+  'pr.5h': '고개를 들면 포인트가 쌓여요',
+  'pr.5p': '폰을 내리고 걸으면 1분에 10포인트, 안전한 날마다 연속 기록이 자라요.',
+  'pr.6h': '조용하게, 필요할 때만',
+  'pr.6p': '주 1회 리포트, 그리고 지금 확인이 필요할 때만 알림을 보내요.',
   'sc.1': '조안X',
   'sc.2': '들여다보기',
   'v.tk': '아이의 폰을 잠그는 대신, 고개를 들 이유를 만들어요.',
@@ -992,6 +1028,19 @@ var MN = {
  "pv.n4": "Ямар апп ашигладаг",
  "pv.n4n": "хэзээ ч харуулахгүй",
  "v.tk": "Хүүхдийн утсыг түгжих биш — дээш харах шалтгаан өгнө.",
+ "pr.h": "JoanX-ийн амлалт",
+ "pr.1h": "Утсыг хэзээ ч түгжихгүй",
+ "pr.1p": "Эхлээд ганц чичиргээ, үргэлжлүүлбэл л мессеж гарна. Дэлгэцийг хэзээ ч хаахгүй.",
+ "pr.2h": "Дуудлага, мессеж үргэлж ажиллана",
+ "pr.2p": "Дэлгэц дээр юу ч байсан хүүхэд тантай үргэлж холбогдож чадна.",
+ "pr.3h": "Зөвхөн алхаж байхад",
+ "pr.3p": "Алхах ба утас ашиглах нь давхцах үед л ажиглана. Өдрийн бусад үед юу ч хийхгүй.",
+ "pr.4h": "Газрын зураг, байршлын мөр байхгүй",
+ "pr.4p": "Хэр аюулгүй алхсаныг харна — хаана байгааг хэзээ ч биш.",
+ "pr.5h": "Дээш харвал оноо цуглуулна",
+ "pr.5p": "Утсаа доош тавьж алхсан минут бүр 10 оноо, аюулгүй өдөр бүр дараалал өснө.",
+ "pr.6h": "Тайван, тасралтгүй биш",
+ "pr.6p": "Долоо хоногт нэг тайлан, яг одоо таны оролцоо хэрэгтэй үед л мэдэгдэл.",
  "q.start": "Яаж эхлэх вэ?",
  "hw.h": "Ойролцоогоор <em class=\"hl\">гурван минутад</em> тохируулна",
  "hw.n1": "1-Р АЛХАМ",
