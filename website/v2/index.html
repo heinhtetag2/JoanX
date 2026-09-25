@@ -335,6 +335,18 @@ footer .logo .mark { height: 23px; }
 .stat b { display: block; font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: clamp(23px, 2.8vw, 30px); font-weight: 600; line-height: 1.15; color: var(--green-ink); }
 .stat span { font-size: 13.5px; color: var(--ink-2); }
 
+/* ── section dividers ──────────────────────────────────────────────
+   Human + AI version: every section opens with a numbered label and a hairline, so the page
+   reads as a list of chapters you can find again, not one long scroll. */
+.sec-bar { display: flex; align-items: center; gap: 12px; margin-bottom: clamp(26px, 3.4vw, 40px);
+  font-size: 12.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+.sec-bar::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+.sec-n { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 14px; letter-spacing: .02em; color: var(--green-ink); }
+.sub-n { font-family: Fredoka, "Noto Sans KR", sans-serif; letter-spacing: .02em; color: var(--ink-soft); margin-right: 6px; }
+/* sub-parts inside one section are separated by a hairline, so each reads as its own block */
+.row + .row { border-top: 1px solid var(--line); padding-top: clamp(40px, 5vw, 70px); }
+.nav-links a[aria-current="true"] { color: var(--green-ink); box-shadow: inset 0 -2px 0 var(--green); padding-bottom: 4px; }
+
 /* ── cards ──────────────────────────────────────────────────────────── */
 .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 25px; box-shadow: var(--card-shadow); }
@@ -576,13 +588,12 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 </section>
 
 <!-- ── why ─────────────────────────────────────────────────────────── -->
-<section class="band">
+<section class="band" id="why">
   <div class="wrap">
-    <div class="stack center" style="margin-bottom:40px">
-      <p class="kicker" data-i18n="w.k">Why it works</p>
+    <div class="sec-bar"><span class="sec-n">01</span><span data-i18n="sec.why">Why JoanX</span></div>
+    <div class="stack" style="margin-bottom:40px">
       <h2 data-i18n="w.h">A safety app your child <em class="hl">won't want to switch off</em></h2>
-      <p class="lede" data-i18n="w.l">Blockers get turned off. Schedules get learned. Trackers get
-        resented. JoanX takes the other side — it gives your child something to lose by ignoring it.</p>
+      <p class="lede" data-i18n="w.l">Blockers get turned off and trackers get resented. JoanX gives your child a reason to keep it on.</p>
     </div>
 
     <div class="cards">
@@ -611,8 +622,8 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 <!-- ── how it works ────────────────────────────────────────────────── -->
 <section class="band band-alt" id="how">
   <div class="wrap">
-    <div class="stack center" style="margin-bottom:42px">
-      <p class="kicker" data-i18n="hw.k">Getting started</p>
+    <div class="sec-bar"><span class="sec-n">02</span><span data-i18n="sec.how">How it works</span></div>
+    <div class="stack" style="margin-bottom:42px">
       <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
     </div>
     <div class="steps">
@@ -641,13 +652,11 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 <!-- ── the safety moment ───────────────────────────────────────────── -->
 <section class="band" id="safety">
   <div class="wrap">
+    <div class="sec-bar"><span class="sec-n">03</span><span data-i18n="sec.safety">The safety moment</span></div>
     <div class="row">
       <div>
-        <p class="kicker" data-i18n="sm.k">The safety moment</p>
         <h2 data-i18n="sm.h">Ten seconds of grace, then <em class="hl">one buzz</em></h2>
-        <p class="lede" data-i18n="sm.l">A child already putting their phone away is never warned.
-          If they keep going, JoanX escalates in tone — gentle, then firm, then urgent — and never
-          in force.</p>
+        <p class="lede" data-i18n="sm.l">Nobody is warned for putting the phone away. Keep going, and only the tone gets firmer — never the force.</p>
         <div class="timeline">
           <span class="tchip"><b>10s</b> <span data-i18n="sm.ch1">grace — a heads-up, no buzz</span></span>
           <span class="tchip warn"><b>1</b> <span data-i18n="sm.ch2">vibration per round, never a constant buzz</span></span>
@@ -691,13 +700,12 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 <!-- ── the game ────────────────────────────────────────────────────── -->
 <section class="band band-alt" id="game">
   <div class="wrap">
+    <div class="sec-bar"><span class="sec-n">04</span><span data-i18n="sec.game">The game</span></div>
     <div class="row reverse">
       <div>
-        <p class="kicker" data-i18n="g.k">For your child</p>
+        <p class="kicker"><span class="sub-n">4.1</span><span data-i18n="g.k">The buddy</span></p>
         <h2 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h2>
-        <p class="lede" data-i18n="g.l">Ten points a minute, phone down. Fifty for catching
-          themselves before the warning. One currency, and safe walking is where it comes from —
-          battles, missions and badges add to it, and nothing can be bought with your card.</p>
+        <p class="lede" data-i18n="g.l">10 points a minute with the phone down, 50 for stopping before a warning. Nothing is bought with your card.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -736,12 +744,9 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 
     <div class="row" style="margin-top:clamp(46px,6vw,80px)">
       <div>
-        <p class="kicker" data-i18n="g2.k">The villains</p>
+        <p class="kicker"><span class="sub-n">4.2</span><span data-i18n="g2.k">The villains</span></p>
         <h2 data-i18n="g2.h"><em class="hl">Ten habits with names</em>, fought one at a time</h2>
-        <p class="lede" data-i18n="g2.l">Every villain on the road is something that really pulls a
-          child's eyes down. Ping is the notification that never stops asking. Chrono is the hour
-          that disappears inside the screen. Tapping one opens its card — what it does, and what
-          beating it pays.</p>
+        <p class="lede" data-i18n="g2.l">Each villain is a real habit that pulls eyes down — like Ping, the notification that never stops asking.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -780,11 +785,9 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 
     <div class="row reverse">
       <div>
-        <p class="kicker" data-i18n="g3.k">The battle</p>
+        <p class="kicker"><span class="sub-n">4.3</span><span data-i18n="g3.k">The battle</span></p>
         <h2 data-i18n="g3.h">Fought with a buddy <em class="hl">their walking built</em></h2>
-        <p class="lede" data-i18n="g3.l">The buddy stepping into the ring is the one they grew.
-          Its level grows on points and XP, and those are earned by walking with the phone down —
-          so looking up is how it gets stronger.</p>
+        <p class="lede" data-i18n="g3.l">The buddy in the ring is the one they grew by walking with the phone down.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -825,12 +828,12 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 <!-- ── for parents ─────────────────────────────────────────────────── -->
 <section class="band" id="parents">
   <div class="wrap">
+    <div class="sec-bar"><span class="sec-n">05</span><span data-i18n="sec.parents">For parents</span></div>
     <div class="row">
       <div>
-        <p class="kicker" data-i18n="p.k">For you</p>
+        <p class="kicker"><span class="sub-n">5.1</span><span data-i18n="p.k">The weekly report</span></p>
         <h2 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h2>
-        <p class="lede" data-i18n="p.l">Not just how many times it happened — whether it is
-          happening less as the week goes on. That is the number that tells you it is working.</p>
+        <p class="lede" data-i18n="p.l">Not just how often it happened — whether it is happening less as the week goes on.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -876,11 +879,9 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 
     <div class="row reverse">
       <div>
-        <p class="kicker" data-i18n="p2.k">Everyone who helps</p>
+        <p class="kicker"><span class="sub-n">5.2</span><span data-i18n="p2.k">Groups</span></p>
         <h2 data-i18n="p2.h">Both parents, <em class="hl">the aunt on Tuesdays</em>, the school run</h2>
-        <p class="lede" data-i18n="p2.l">Looking after one child is rarely one adult's job. A group
-          is the circle watching the same child — everyone in it sees the same week, and nobody
-          gets in without being let in.</p>
+        <p class="lede" data-i18n="p2.l">Everyone looking after the same child sees the same week, and nobody joins without approval.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -919,11 +920,9 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 
     <div class="row">
       <div>
-        <p class="kicker" data-i18n="p3.k">Settings and alerts</p>
+        <p class="kicker"><span class="sub-n">5.3</span><span data-i18n="p3.k">Settings and alerts</span></p>
         <h2 data-i18n="p3.h">Told when something happened, <em class="hl">not every step they take</em></h2>
-        <p class="lede" data-i18n="p3.l">Each child has their own page — the phone paired to them,
-          what they agreed to at setup, and whether the game is on. And when something real
-          happens, it lands in one place.</p>
+        <p class="lede" data-i18n="p3.l">Each child has a page for their phone and permissions. When something real happens, it lands in one place.</p>
         <div class="bullets">
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
@@ -963,10 +962,10 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 </section>
 
 <!-- ── comparison ──────────────────────────────────────────────────── -->
-<section class="band band-alt">
+<section class="band band-alt" id="difference">
   <div class="wrap">
-    <div class="stack center" style="margin-bottom:32px">
-      <p class="kicker" data-i18n="c.k">The difference</p>
+    <div class="sec-bar"><span class="sec-n">06</span><span data-i18n="sec.diff">The difference</span></div>
+    <div class="stack" style="margin-bottom:32px">
       <h2 data-i18n="c.h">Most apps fight your child. This one <em class="hl">recruits them</em>.</h2>
     </div>
     <div class="compare-scroll">
@@ -1014,11 +1013,10 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 <!-- ── privacy ─────────────────────────────────────────────────────── -->
 <section class="band" id="privacy">
   <div class="wrap">
-    <div class="stack center" style="margin-bottom:32px">
-      <p class="kicker" data-i18n="pv.k">Privacy</p>
+    <div class="sec-bar"><span class="sec-n">07</span><span data-i18n="sec.privacy">Privacy</span></div>
+    <div class="stack" style="margin-bottom:32px">
       <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
-      <p class="lede" data-i18n="pv.l">The whole list, in one place. Anything outside it stays with
-        your child — which is the only version of this that survives them finding out.</p>
+      <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
     </div>
 
     <div class="privacy">
@@ -1051,10 +1049,10 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 </section>
 
 <!-- ── faq ─────────────────────────────────────────────────────────── -->
-<section class="band" id="faq">
+<section class="band band-alt" id="faq">
   <div class="wrap">
-    <div class="stack center" style="margin-bottom:32px">
-      <p class="kicker" data-i18n="f.k">FAQ</p>
+    <div class="sec-bar"><span class="sec-n">08</span><span data-i18n="sec.faq">FAQ</span></div>
+    <div class="stack" style="margin-bottom:32px">
       <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
     </div>
     <div class="faq">
@@ -1200,6 +1198,9 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
    parent app; product nouns (버디, 빌런, 포인트) match the app's own
    Korean strings so the site and the product read as one thing.          */
 var KO = {
+  'sec.why': '왜 조안X인가요', 'sec.how': '작동 방식', 'sec.safety': '안전 순간', 'sec.game': '게임',
+  'sec.parents': '보호자용', 'sec.diff': '무엇이 다른가요', 'sec.privacy': '개인정보', 'sec.faq': '자주 묻는 질문',
+
   'n.how': '작동 방식', 'n.safety': '안전 순간', 'n.game': '게임', 'n.parents': '보호자용',
   'n.privacy': '개인정보', 'n.faq': '자주 묻는 질문', 'n.cta': '다운로드',
 
@@ -1216,7 +1217,7 @@ var KO = {
 
   'w.k': '왜 효과가 있을까요',
   'w.h': '아이가 <em class="hl">끄고 싶어 하지 않는</em> 안전 앱',
-  'w.l': '차단 앱은 꺼지고, 시간 제한은 외워지고, 위치 추적은 반감을 삽니다. 조안X는 반대로 갑니다 — 무시하면 아이가 잃을 것이 생기게 만들어요.',
+  'w.l': '차단 앱은 꺼지고, 위치 추적은 반감을 사요. 조안X는 아이가 스스로 켜 두고 싶게 만들어요.',
   'w.c1h': '진동 한 번, 차단은 없어요',
   'w.c1p': '진동 한 번, 그다음 카드, 그다음 버디가 고개를 들어 달라고 말해요. 폰을 빼앗지 않고, 전화와 문자는 어떤 경우에도 막히지 않아요.',
   'w.c2h': '고개를 드는 것이 이기는 방법',
@@ -1233,7 +1234,7 @@ var KO = {
   'hw.p3': '경고를 듣고 얼마나 자주 멈췄는지, 얼마나 자주 넘겼는지, 그리고 한 주 동안 얼마나 줄었는지 알려드려요.',
 
   'sm.k': '안전 순간', 'sm.h': '10초의 여유, 그다음 <em class="hl">진동 한 번</em>',
-  'sm.l': '이미 폰을 내리고 있는 아이에게는 경고하지 않아요. 계속된다면 톤만 단계적으로 단단해져요 — 부드럽게, 단호하게, 긴급하게. 힘으로 막지는 않아요.',
+  'sm.l': '폰을 내리는 아이에게는 경고하지 않아요. 계속되면 말투만 단호해지고, 힘으로 막지는 않아요.',
   'sm.ch1': '여유 시간 — 진동 없이 미리 알려요', 'sm.ch2': '번의 진동, 단계마다 한 번만',
   'sm.ch3': '안에 멈추면 화면이 뜨지 않아요', 'sm.ch4b': '카드', 'sm.ch4': '한 줄, 버튼 하나',
   'sm.ch5': '조용히 기다렸다가, 더 단호하게',
@@ -1244,8 +1245,8 @@ var KO = {
   'sm.b3h': '단호해지지만, 모질지 않아요',
   'sm.b3p': '조안X가 할 수 있는 가장 강한 일은 분명하게 말하고, 리포트에 남기는 것이에요.',
 
-  'g.k': '아이에게는', 'g.h': '<em class="hl">안전하게 걸어야만</em> 살 수 있는 게임',
-  'g.l': '폰을 내리고 걸으면 1분에 10포인트, 경고 전에 스스로 고개를 들면 50포인트. 재화는 포인트 하나뿐이고, 대부분 안전하게 걸어서 모아요 — 배틀, 미션, 배지로도 쌓이고, 카드로 살 수 있는 건 없어요.',
+  'g.k': '버디', 'g.h': '<em class="hl">안전하게 걸어야만</em> 살 수 있는 게임',
+  'g.l': '폰을 내리고 걸으면 1분에 10포인트, 경고 전에 멈추면 50포인트. 카드로 살 수 있는 건 없어요.',
   'g.b1h': '눈에 보이게 자라는 버디',
   'g.b1p': '10레벨, 3단계. 레벨이 오르는 바로 그 순간 모습이 바뀌어요 — 배틀에서 이긴 직후라도요.',
   'g.b2h': '가장 귀한 버디는 사는 게 아니라 얻는 것',
@@ -1253,7 +1254,7 @@ var KO = {
   'g.b3h': '방과 친구는 있지만, 채팅은 없어요',
   'g.b3p': '친구 방에 놀러 가서 좋아요를 누르거나, 검수를 거친 한 줄 방명록을 남길 수 있어요. 아이들끼리의 메시지는 처음부터 만들지 않았어요.',
   'g2.k': '빌런', 'g2.h': '<em class="hl">이름을 가진 습관 10개</em>, 하나씩 물리쳐요',
-  'g2.l': '빌런 로드의 모든 빌런은 실제로 아이의 시선을 끌어내리는 것들이에요. 핑은 멈추지 않고 확인하라고 부르는 알림이고, 크로노는 화면 안에서 사라지는 한 시간이에요. 빌런을 누르면 카드가 열려요 — 무엇을 하는 녀석인지, 이기면 무엇을 받는지.',
+  'g2.l': '빌런마다 시선을 끌어내리는 실제 습관이에요 — 멈추지 않고 확인하라고 부르는 알림, 핑처럼요.',
   'g2.b1h': '순서대로만 열려요',
   'g2.b1p': '이겨야 다음 빌런이 열려요. 로드의 어디까지 왔는지가 곧 얼마나 오래 안전하게 걸었는지의 기록이에요.',
   'g2.b2h': '능력치가 아니라 캐릭터예요',
@@ -1262,7 +1263,7 @@ var KO = {
   'g2.b3p': '배틀 횟수는 정해져 있어요. 안전하게 걸은 하루에 대한 보상이지, 붙잡고 반복할 거리가 아니에요.',
 
   'g3.k': '배틀', 'g3.h': '<em class="hl">걸어서 키운 버디</em>로 맞서요',
-  'g3.l': '링에 오르는 버디는 아이가 직접 키운 그 버디예요. 레벨은 포인트와 경험치로 오르고, 그건 폰을 내리고 걸어서 모아요 — 고개를 드는 것이 강해지는 방법이에요.',
+  'g3.l': '링에 오르는 버디는 폰을 내리고 걸어서 직접 키운 버디예요.',
   'g3.b1h': '승률을 먼저 보여줘요',
   'g3.b1p': '도전하기 전에 승률과 양쪽 파워를 보여줘요. 져도 갑작스럽지 않도록요.',
   'g3.b2h': '이기면 두 가지를 받아요',
@@ -1277,8 +1278,8 @@ var KO = {
   'g.s3': '대결', 'g.s3s': '내가 키운 버디로 맞서요',
   'g.s4': '결과', 'g.s4s': '이기면 포인트와 경험치',
 
-  'p.k': '보호자에게는', 'p.h': '<em class="hl">일주일에 한 장</em>, 진짜 궁금한 것에 답해요',
-  'p.l': '몇 번 있었는지만이 아니라, 한 주 동안 얼마나 줄었는지를 보여줘요. 효과가 있는지 알려주는 숫자는 그쪽이에요.',
+  'p.k': '주간 리포트', 'p.h': '<em class="hl">일주일에 한 장</em>, 진짜 궁금한 것에 답해요',
+  'p.l': '몇 번 있었는지만이 아니라, 한 주 동안 얼마나 줄었는지를 보여줘요.',
   'p.b1h': '네 가지 숫자로 보는 한 주',
   'p.b1p': '경고를 듣고 멈춘 횟수, 무시한 경고, 안전하게 걸은 시간, 그리고 연속 일수 — 지난주와 비교해서요.',
   'p.b2h': '쉬운 말로 정리한 요약',
@@ -1296,15 +1297,15 @@ var KO = {
   'pa.6': '알림', 'pa.6s': '실제로 일어난 일만',
   'p3.k': '설정과 알림',
   'p3.h': '무슨 일이 있을 때 알려요, <em class="hl">모든 걸음이 아니라</em>',
-  'p3.l': '아이마다 각자의 페이지가 있어요 — 연결된 기기, 설치할 때 동의한 항목, 게임 사용 여부까지. 그리고 정말 무슨 일이 있으면 한곳에 모아 알려드려요.',
+  'p3.l': '아이마다 기기와 권한을 보는 페이지가 있어요. 정말 무슨 일이 있으면 한곳에 모아 알려드려요.',
   'p3.b1h': '아이가 무엇에 동의했는지 보여요',
   'p3.b1p': '동작 인식, 화면 사용, 알림 — 설치할 때 아이가 수락한 항목과 거절한 항목을 그대로 볼 수 있어요.',
   'p3.b2h': '보호자 두 명, 알림은 하나',
   'p3.b2p': '한 사람이 확인하면 다른 사람에게도 확인된 것으로 보여요. 같은 일을 두 번 쫓지 않아도 돼요.',
   'p3.b3h': '보호가 약해지면 알려줘요',
   'p3.b3p': '권한이 꺼지거나 기기가 오프라인이 되면, 조용히 넘어가지 않고 여기에 표시돼요.',
-  'p2.k': '함께 돌보는 사람들', 'p2.h': '엄마 아빠, <em class="hl">화요일의 이모</em>, 등하교 모임까지',
-  'p2.l': '한 아이를 돌보는 일이 어른 한 명의 몫인 경우는 드물어요. 그룹은 같은 아이를 함께 지켜보는 사람들이에요 — 모두 같은 한 주를 보고, 허락 없이는 아무도 들어올 수 없어요.',
+  'p2.k': '그룹', 'p2.h': '엄마 아빠, <em class="hl">화요일의 이모</em>, 등하교 모임까지',
+  'p2.l': '같은 아이를 돌보는 사람은 모두 같은 한 주를 보고, 승인 없이는 아무도 들어올 수 없어요.',
   'p2.b1h': '최대 5개의 그룹',
   'p2.b1p': '우리 집, 할머니, 등하교 모임 — 그룹마다 멤버도 자녀도 따로 정해요.',
   'p2.b2h': 'QR이나 코드로 참여해요',
@@ -1322,7 +1323,7 @@ var KO = {
   'c.r6': '추가 기기', 'c.r6a': '워치나 태그가 필요할 때가 많아요', 'c.r6b': '쓰던 휴대폰 하나면 돼요',
 
   'pv.k': '개인정보', 'pv.h': '보호자가 보는 것, <em class="hl">그리고 절대 보지 않는 것</em>',
-  'pv.l': '전체 목록을 한곳에 모았어요. 이 목록 밖의 것은 아이의 것으로 남아요 — 아이가 나중에 알게 되더라도 무너지지 않는 방식은 이것뿐이에요.',
+  'pv.l': '보호자가 볼 수 있는 것은 이 목록이 전부예요. 나머지는 모두 아이의 것으로 남아요.',
   'pv.y': '보호자가 볼 수 있는 것',
   'pv.y1': '안전하게 걸은 시간', 'pv.y1n': '분 단위',
   'pv.y2': '경고와 그 결과', 'pv.y2n': '멈췄는지 여부',
@@ -1397,6 +1398,18 @@ var KO = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko') setLang('ko');
+
+  /* ── the nav marks the section you are in ─────────────────────── */
+  var navLinks = document.querySelectorAll('.nav-links a');
+  if ('IntersectionObserver' in window) {
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        navLinks.forEach(function (a) { a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + e.target.id)); });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('section[id], header[id]').forEach(function (el) { spy.observe(el); });
+  }
 
   /* ── the nav takes a surface only once the page has moved ──────── */
   var nav = document.querySelector('.nav');
