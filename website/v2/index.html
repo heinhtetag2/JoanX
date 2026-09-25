@@ -376,7 +376,7 @@ td.us { color: var(--ink); font-weight: 600; }
 }
 
 /* promises — a big title over a grid of cards: icon, title, one line */
-.pr-title { font-size: var(--fs-display); font-weight: 600; letter-spacing: -.03em; margin-bottom: clamp(40px, 6vw, 88px); }
+.pr-title { margin-bottom: var(--space-block); }   /* a plain h2, like every other section heading */
 .pr-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 1.6vw, 24px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 .pr-card { display: grid; align-content: start; gap: 14px; padding: clamp(28px, 3.4vw, 48px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
 .pr-card img { width: 64px; height: 64px; margin-bottom: clamp(20px, 3vw, 44px); }
