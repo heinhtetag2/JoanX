@@ -323,6 +323,27 @@ td.us { color: var(--ink); font-weight: 600; }
   .takeover-fill, .takeover-line { display: none; }
 }
 
+/* stacked cards (section 03) — each card pins a little lower than the one before, so the
+   earlier cards stay visible as tabs; the script shrinks a card slightly as the next one covers it */
+.stack { display: grid; gap: 14vh; padding-bottom: 6vh; }
+.scard {
+  position: sticky; top: calc(var(--nav-h) + 20px + var(--i) * 24px);
+  min-height: min(620px, calc(100vh - var(--nav-h) - 110px));
+  display: grid; align-items: center; gap: clamp(20px, 4vw, 56px);
+  padding: clamp(28px, 5vw, 72px); border-radius: 28px; color: #fff;
+  transform-origin: 50% 0; will-change: transform;
+}
+.scard:nth-child(1) { background: #4B814F; }   /* brand green */
+.scard:nth-child(2) { background: #447AAF; }   /* the app's ocean */
+.scard:nth-child(3) { background: #2B4F30; }   /* deep green */
+@media (min-width: 900px) { .scard { grid-template-columns: minmax(0, 1fr) auto; } }
+.scard-text { display: grid; gap: 14px; max-width: 34em; }
+.scard-eyebrow { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.72); }
+.scard h3 { font-size: clamp(24px, 3vw, 38px); line-height: 1.2; color: #fff; }
+.scard-text > p:last-child { color: rgba(255,255,255,.86); font-size: 17px; }
+.scard img { width: clamp(150px, 20vw, 250px); border-radius: 18px; justify-self: center; }
+@media (max-width: 899px) { .scard img { width: min(46vw, 200px); } }
+
 /* get + footer */
 .get-in { display: grid; gap: 20px; }
 @media (min-width: 900px) { .get-in { grid-template-columns: 1fr auto; align-items: center; } }
@@ -447,25 +468,34 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         <h2 data-i18n="v.yh">A weekly report that shows whether it is working</h2>
         <p class="lede" data-i18n="v.yl">And an alert only when something needs you now.</p>
       </header>
-    <div class="visuals">
-        <figure class="shot">
-          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
-          <figcaption><span data-i18n="pa.1">This week</span><small data-i18n="pa.1s">Stops, ignored, minutes, streak</small></figcaption>
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed: an impact with a call button, a distraction warning, an ignored warning already checked by the other parent, a device gone offline." loading="lazy">
-          <figcaption><span data-i18n="pa.6">Alerts</span><small data-i18n="pa.6s">Only what actually happened</small></figcaption>
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: guardian groups, the children in each, and a request waiting for approval." loading="lazy">
-          <figcaption><span data-i18n="pa.3">Your groups</span><small data-i18n="pa.3s">Who is watching, and who is waiting</small></figcaption>
-        </figure>
+    <!-- stacked cards: each pins below the nav and the next slides up over it -->
+    <div class="stack">
+      <article class="scard" style="--i:0">
+        <div class="scard-text">
+          <p class="scard-eyebrow" data-i18n="pa.1">This week</p>
+          <h3 data-i18n="p.b1h">The week in four numbers</h3>
+          <p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p>
+        </div>
+        <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
+      </article>
+      <article class="scard" style="--i:1">
+        <div class="scard-text">
+          <p class="scard-eyebrow" data-i18n="pa.6">Alerts</p>
+          <h3 data-i18n="p.b3h">A hard knock reaches you</h3>
+          <p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p>
+        </div>
+        <img src="../media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed: an impact with a call button, a distraction warning, an ignored warning already checked by the other parent, a device gone offline." loading="lazy">
+      </article>
+      <article class="scard" style="--i:2">
+        <div class="scard-text">
+          <p class="scard-eyebrow" data-i18n="pa.3">Your groups</p>
+          <h3 data-i18n="v.grph">Everyone who helps sees the same week</h3>
+          <p data-i18n="v.grpp">Invite a co-parent or grandparent into a group with a QR or a code. An admin approves every request.</p>
+        </div>
+        <img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: guardian groups, the children in each, and a request waiting for approval." loading="lazy">
+      </article>
+
     </div>
-    <ul class="points cols">
-          <li><h4 data-i18n="p.b1h">The week in four numbers</h4><p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p></li>
-          <li><h4 data-i18n="p.b3h">A hard knock reaches you</h4><p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p></li>
-          <li><h4 data-i18n="v.grph">Everyone who helps sees the same week</h4><p data-i18n="v.grpp">Invite a co-parent or grandparent into a group with a QR or a code. An admin approves every request.</p></li>
-    </ul>
   </div>
 </section>
 
@@ -1021,6 +1051,18 @@ var MN = {
   }
   window.__tk = takeover;
 
+  /* stacked cards: a card shrinks a little as each later card slides over it */
+  var scards = [].slice.call(document.querySelectorAll('.scard'));
+  function stack() {
+    if (still.matches) return;
+    var rects = scards.map(function (c) { return c.getBoundingClientRect(); });
+    scards.forEach(function (c, i) {
+      var k = 0;
+      for (var j = i + 1; j < scards.length; j++) k += clamp01(1 - (rects[j].top - rects[i].top) / rects[i].height);
+      c.style.transform = k ? 'scale(' + (1 - k * 0.035).toFixed(4) + ')' : '';
+    });
+  }
+
   /* the dome under the hero follows the scroll */
   var edge = document.querySelector('.hero-edge');
   var still = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -1034,10 +1076,10 @@ var MN = {
   window.addEventListener('scroll', function () {
     if (curving) return;
     curving = true;
-    requestAnimationFrame(function () { curve(); takeover(); curving = false; });
+    requestAnimationFrame(function () { curve(); takeover(); stack(); curving = false; });
   }, { passive: true });
-  window.addEventListener('resize', function () { curve(); takeover(); });
-  curve(); takeover();
+  window.addEventListener('resize', function () { curve(); takeover(); stack(); });
+  curve(); takeover(); stack();
 
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
