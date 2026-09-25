@@ -376,7 +376,6 @@ td.us { color: var(--ink); font-weight: 600; }
 }
 
 /* promises — a big title over a grid of cards: icon, title, one line */
-.pr-title { margin-bottom: var(--space-block); }   /* a plain h2, like every other section heading */
 .pr-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 1.6vw, 24px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 .pr-card { display: grid; align-content: start; gap: 14px; padding: clamp(28px, 3.4vw, 48px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
 .pr-card img { width: 64px; height: 64px; margin-bottom: clamp(20px, 3vw, 44px); }
@@ -574,10 +573,14 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ PROMISES ══════════════════════════════════════════════════════════ -->
+<!-- ═══ 05 · PROMISES ═════════════════════════════════════════════════════ -->
 <section class="section promises" id="promises">
   <div class="wrap">
-    <h2 class="pr-title" data-i18n="pr.h">Our promises</h2>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="q.promise">What can I count on?</span></p>
+        <h2 data-i18n="pr.h">Six things JoanX always keeps</h2>
+        <p class="lede" data-i18n="pr.l">The rules JoanX works by, in one place.</p>
+      </header>
     <ul class="pr-grid">
       <li class="pr-card"><img src="../media/icons/icon-stopped.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.1h">Never locks the phone</h3><p data-i18n="pr.1p">One buzz first, a message only if they keep going. The screen is never blocked.</p></li>
       <li class="pr-card"><img src="../media/icons/icon-call.svg" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.2h">Calls and texts always work</h3><p data-i18n="pr.2p">Whatever is on the screen, your child can always reach you.</p></li>
@@ -589,11 +592,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
+<!-- ═══ 06 · GETTING STARTED ══════════════════════════════════════════════ -->
 <section class="section" id="how">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="q.start">How do I start?</span></p>
+        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="q.start">How do I start?</span></p>
         <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
       </header>
     <ol class="steps cols">
@@ -613,11 +616,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 06 · FAQ ══════════════════════════════════════════════════════════ -->
+<!-- ═══ 07 · FAQ ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="q.faq">Anything else?</span></p>
+        <p class="sec-label"><span class="sec-num">07</span><span data-i18n="q.faq">Anything else?</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
     <div class="faq">
@@ -726,7 +729,9 @@ var KO = {
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
   'q.start': '어떻게 시작하나요?',
   'n.start': '시작하기',
-  'pr.h': '조안X의 약속',
+  'q.promise': '무엇을 믿을 수 있나요?',
+  'pr.h': '조안X가 늘 지키는 여섯 가지',
+  'pr.l': '조안X가 지키는 원칙을 한곳에 모았어요.',
   'pr.1h': '폰을 잠그지 않아요',
   'pr.1p': '먼저 진동 한 번, 계속 볼 때만 메시지가 떠요. 화면은 절대 막지 않아요.',
   'pr.2h': '전화와 문자는 항상 돼요',
@@ -1028,7 +1033,9 @@ var MN = {
  "pv.n4": "Ямар апп ашигладаг",
  "pv.n4n": "хэзээ ч харуулахгүй",
  "v.tk": "Хүүхдийн утсыг түгжих биш — дээш харах шалтгаан өгнө.",
- "pr.h": "JoanX-ийн амлалт",
+ "q.promise": "Юунд найдаж болох вэ?",
+ "pr.h": "JoanX-ийн үргэлж сахидаг зургаан зүйл",
+ "pr.l": "JoanX-ийн баримталдаг зарчмууд нэг дор.",
  "pr.1h": "Утсыг хэзээ ч түгжихгүй",
  "pr.1p": "Эхлээд ганц чичиргээ, үргэлжлүүлбэл л мессеж гарна. Дэлгэцийг хэзээ ч хаахгүй.",
  "pr.2h": "Дуудлага, мессеж үргэлж ажиллана",
