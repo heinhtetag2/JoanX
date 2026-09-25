@@ -290,28 +290,29 @@ td.us { color: var(--ink); font-weight: 600; }
 .faq summary { cursor: pointer; padding: 18px 0; font-weight: 700; }
 .faq p { padding-bottom: 20px; color: var(--ink-2); max-width: 64ch; }
 
-/* takeover — after privacy, the page holds still while a green circle sweeps in from the
-   right and covers the screen, then one line reveals word by word as you keep scrolling.
-   --c (circle, 0 → 1) and each word's --w (0 → 1) are set by the script from scroll progress. */
-.takeover { position: relative; height: 320vh; }
-.takeover-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+/* takeover — the privacy section pins while you keep scrolling; a green circle sweeps in over
+   it from the right until it fills the whole screen (above the nav), then one line reveals
+   word by word. .takeover-run below the stage is the scroll distance the pin lasts. Circle size,
+   its centre and the line's position are set by the script from scroll progress. */
+.takeover { position: relative; }
+.takeover-run { height: 220vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
+.takeover-stage { position: sticky; top: 0; overflow: hidden; }
 .takeover-fill {
-  position: absolute; inset: 0; background: #4B814F;
-  clip-path: circle(calc(var(--c, 0) * 125vmax) at 100% 50%);
+  position: absolute; inset: 0; z-index: 50; background: #4B814F;
+  clip-path: circle(0 at 100% 50%); pointer-events: none;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .takeover-fill { background: #2B4F30; } }
-.takeover-in { position: relative; width: 100%; }
 .takeover-line {
-  margin: 0 auto; max-width: 17em; text-align: center; color: #fff;
+  position: absolute; z-index: 51; left: 20px; right: 20px; top: 50%; transform: translateY(-50%);
+  margin: 0 auto; max-width: 17em; text-align: center; color: #fff; visibility: hidden;
   font-size: clamp(30px, 4.6vw, 60px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; text-wrap: balance;
 }
 .takeover-line .w { display: inline-block; opacity: calc(.12 + var(--w, 0) * .88); transform: translateY(calc((1 - var(--w, 0)) * .35em)); }
 .takeover + .section { border-top: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .takeover { height: auto; }
+  .takeover-run { display: none; }
   .takeover-stage { position: relative; }
-  .takeover-fill { clip-path: none; }
-  .takeover-line .w { opacity: 1; transform: none; }
+  .takeover-fill, .takeover-line { display: none; }
 }
 
 /* get + footer */
@@ -460,9 +461,10 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 04 · PRIVACY ══════════════════════════════════════════════════════ -->
-<section class="section alt" id="privacy">
-  <div class="wrap">
+<!-- ═══ 04 · PRIVACY — then the takeover ══════════════════════════════════ -->
+<section class="takeover" id="privacy">
+  <div class="takeover-stage section alt">
+    <div class="wrap">
       <header class="sec-head">
         <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
         <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
@@ -488,17 +490,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         </ul>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ═══ TAKEOVER — THE ONE-LINE IDEA ══════════════════════════════════════ -->
-<section class="takeover" aria-label="JoanX in one line">
-  <div class="takeover-stage">
-    <div class="takeover-fill" aria-hidden="true"></div>
-    <div class="wrap takeover-in">
-      <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
     </div>
+    <div class="takeover-fill" aria-hidden="true"></div>
+    <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
   </div>
+  <div class="takeover-run" aria-hidden="true"></div>
 </section>
 
 <!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
@@ -980,21 +976,30 @@ var MN = {
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
 
-  /* takeover: circle, then words, both scrubbed by scroll */
+  /* takeover: pin the privacy stage, sweep the circle in over it, then reveal the words */
   splitWords();
   var tk = document.querySelector('.takeover');
+  var tkStage = tk.querySelector('.takeover-stage');
   var tkFill = tk.querySelector('.takeover-fill');
   function clamp01(x) { return Math.min(1, Math.max(0, x)); }
   function ease(x) { return 1 - Math.pow(1 - x, 3); }
   function takeover() {
-    if (still.matches) { tkFill.style.setProperty('--c', 1); tkLine.querySelectorAll('.w').forEach(function (w) { w.style.setProperty('--w', 1); }); return; }
-    var r = tk.getBoundingClientRect();
-    var p = clamp01(-r.top / (r.height - window.innerHeight));
-    // the circle sweeps in from when the section enters the screen until 30% of the way through it
-    var c = clamp01((window.innerHeight - r.top) / (window.innerHeight + (r.height - window.innerHeight) * 0.3));
-    tkFill.style.setProperty('--c', (c * c * (3 - 2 * c)).toFixed(3));   // smoothstep: the curved edge travels evenly
-    // then the words, one after another, from 35% to 85%
-    var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.35) / 0.5) * ws.length;
+    if (still.matches) return;
+    var vh = window.innerHeight;
+    // a stage taller than the screen pins once its bottom reaches the bottom of the screen
+    var stickTop = Math.min(0, vh - tkStage.offsetHeight);
+    tkStage.style.top = stickTop + 'px';
+    var range = tk.offsetHeight - tkStage.offsetHeight;
+    var p = clamp01((stickTop - tk.getBoundingClientRect().top) / range);
+    var sr = tkStage.getBoundingClientRect();
+    var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
+    var c = clamp01(p / 0.35); c = c * c * (3 - 2 * c);   // circle: 0 → 35% of the pin
+    tkFill.style.clipPath = 'circle(' + (c * 125).toFixed(2) + 'vmax at 100% ' + vy.toFixed(1) + 'px)';
+    // a sticky stage paints in its own layer: lift it above the nav only once the circle is in
+    tkStage.style.zIndex = c > 0 ? 45 : '';
+    tkLine.style.top = vy.toFixed(1) + 'px';
+    tkLine.style.visibility = c > 0.6 ? 'visible' : 'hidden';
+    var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.4) / 0.45) * ws.length;   // words: 40% → 85%
     ws.forEach(function (w, i) { w.style.setProperty('--w', ease(clamp01(q - i)).toFixed(3)); });
   }
   window.__tk = takeover;
