@@ -1001,12 +1001,19 @@ var MN = {
     var p = clamp01((stickTop - tk.getBoundingClientRect().top) / range);
     var sr = tkStage.getBoundingClientRect();
     var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
-    var c = clamp01(p / 0.35); c = c * c * (3 - 2 * c);   // circle: 0 → 35% of the pin
-    tkFill.style.clipPath = 'circle(' + (c * 125).toFixed(2) + 'vmax at 100% ' + vy.toFixed(1) + 'px)';
-    // a sticky stage paints in its own layer: lift it above the nav only once the circle has
-    // actually grown up to the nav bar, so the nav stays while you read the lists
-    var rpx = c * 1.25 * Math.max(window.innerWidth, vh), navH = document.querySelector('.nav').offsetHeight;
-    tkStage.style.zIndex = rpx > (vh / 2 - navH) ? 45 : '';
+    var c = clamp01(p / 0.4); c = c * c * (3 - 2 * c);   // sweep: 0 → 40% of the pin
+    // one very large circle, centred far off to the right: its edge is a gentle arc across the
+    // whole height from the first moment, and it slides left step by step until the screen is covered
+    var vw = window.innerWidth, R = Math.max(vw, vh) * 1.15;
+    var cxStart = vw + R + 2;                                    // edge just outside the right side
+    var cxEnd = Math.sqrt(R * R - (vh / 2 + 40) * (vh / 2 + 40)) - 40;   // every corner covered
+    var cx = cxStart + (cxEnd - cxStart) * c;
+    tkFill.style.clipPath = 'circle(' + R.toFixed(1) + 'px at ' + cx.toFixed(1) + 'px ' + vy.toFixed(1) + 'px)';
+    // a sticky stage paints in its own layer: lift it above the nav only once the arc reaches the
+    // nav bar, so the nav stays while you read the lists
+    var navH = document.querySelector('.nav').offsetHeight, navY0 = -sr.top, navY1 = navY0 + navH;
+    var nx = Math.min(Math.max(cx, 0), vw), ny = Math.min(Math.max(vy, navY0), navY1);
+    tkStage.style.zIndex = c > 0 && Math.hypot(cx - nx, vy - ny) < R ? 45 : '';
     tkLine.style.top = vy.toFixed(1) + 'px';
     tkLine.style.visibility = c > 0.6 ? 'visible' : 'hidden';
     var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.4) / 0.45) * ws.length;   // words: 40% → 85%
