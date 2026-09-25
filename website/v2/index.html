@@ -290,6 +290,30 @@ td.us { color: var(--ink); font-weight: 600; }
 .faq summary { cursor: pointer; padding: 18px 0; font-weight: 700; }
 .faq p { padding-bottom: 20px; color: var(--ink-2); max-width: 64ch; }
 
+/* takeover — after privacy, the page holds still while a green circle sweeps in from the
+   right and covers the screen, then one line reveals word by word as you keep scrolling.
+   --c (circle, 0 → 1) and each word's --w (0 → 1) are set by the script from scroll progress. */
+.takeover { position: relative; height: 320vh; }
+.takeover-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+.takeover-fill {
+  position: absolute; inset: 0; background: #4B814F;
+  clip-path: circle(calc(var(--c, 0) * 125vmax) at 100% 50%);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .takeover-fill { background: #2B4F30; } }
+.takeover-in { position: relative; width: 100%; }
+.takeover-line {
+  margin: 0 auto; max-width: 17em; text-align: center; color: #fff;
+  font-size: clamp(30px, 4.6vw, 60px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; text-wrap: balance;
+}
+.takeover-line .w { display: inline-block; opacity: calc(.12 + var(--w, 0) * .88); transform: translateY(calc((1 - var(--w, 0)) * .35em)); }
+.takeover + .section { border-top: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .takeover { height: auto; }
+  .takeover-stage { position: relative; }
+  .takeover-fill { clip-path: none; }
+  .takeover-line .w { opacity: 1; transform: none; }
+}
+
 /* get + footer */
 .get-in { display: grid; gap: 20px; }
 @media (min-width: 900px) { .get-in { grid-template-columns: 1fr auto; align-items: center; } }
@@ -467,6 +491,16 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
+<!-- ═══ TAKEOVER — THE ONE-LINE IDEA ══════════════════════════════════════ -->
+<section class="takeover" aria-label="JoanX in one line">
+  <div class="takeover-stage">
+    <div class="takeover-fill" aria-hidden="true"></div>
+    <div class="wrap takeover-in">
+      <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
 <section class="section" id="how">
   <div class="wrap">
@@ -581,6 +615,7 @@ var KO = {
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
   'q.start': '어떻게 시작하나요?',
   'n.start': '시작하기',
+  'v.tk': '아이의 폰을 잠그는 대신, 고개를 들 이유를 만들어요.',
   'q.faq': '더 궁금한 점이 있나요?',
   'v.hl': '조안X는 아이 휴대폰에 설치하는 앱이에요. 아이가 걸으면서 화면을 보면 진동 한 번으로 먼저 알려요 — 폰을 잠그지는 않아요. 고개를 들면 아이가 아끼는 게임의 포인트가 쌓여요.',
   'v.sh': '먼저 진동 한 번. 계속 볼 때만 메시지가 떠요.',
@@ -858,6 +893,7 @@ var MN = {
  "pv.n3n": "хэзээ ч уншихгүй",
  "pv.n4": "Ямар апп ашигладаг",
  "pv.n4n": "хэзээ ч харуулахгүй",
+ "v.tk": "Хүүхдийн утсыг түгжих биш — дээш харах шалтгаан өгнө.",
  "q.start": "Яаж эхлэх вэ?",
  "hw.h": "Ойролцоогоор <em class=\"hl\">гурван минутад</em> тохируулна",
  "hw.n1": "1-Р АЛХАМ",
@@ -917,6 +953,13 @@ var MN = {
   langBtn.addEventListener('click', function () { openMenu(langMenu.hidden); });
   document.addEventListener('click', function (e) { if (!e.target.closest('.lang')) openMenu(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !langMenu.hidden) { openMenu(false); langBtn.focus(); } });
+  /* takeover line: one span per word, so each can reveal on its own */
+  var tkLine = document.querySelector('.takeover-line');
+  function splitWords() {
+    var words = tkLine.textContent.trim().split(/\s+/);
+    tkLine.innerHTML = words.map(function (w) { return '<span class="w">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
+  }
+
   function setLang(lang) {
     var dict = DICT[lang] || null;
     document.documentElement.lang = dict ? lang : 'en';
@@ -928,6 +971,7 @@ var MN = {
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
     document.querySelector('.lang-cur').textContent = NAMES[lang][0];
     document.querySelector('.lang-cur-abbr').textContent = NAMES[lang][1];
+    splitWords(); if (window.__tk) window.__tk();
     try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window */ }
   }
   buttons.forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); openMenu(false); }); });
@@ -935,6 +979,25 @@ var MN = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
+
+  /* takeover: circle, then words, both scrubbed by scroll */
+  splitWords();
+  var tk = document.querySelector('.takeover');
+  var tkFill = tk.querySelector('.takeover-fill');
+  function clamp01(x) { return Math.min(1, Math.max(0, x)); }
+  function ease(x) { return 1 - Math.pow(1 - x, 3); }
+  function takeover() {
+    if (still.matches) { tkFill.style.setProperty('--c', 1); tkLine.querySelectorAll('.w').forEach(function (w) { w.style.setProperty('--w', 1); }); return; }
+    var r = tk.getBoundingClientRect();
+    var p = clamp01(-r.top / (r.height - window.innerHeight));
+    // the circle sweeps in from when the section enters the screen until 30% of the way through it
+    var c = clamp01((window.innerHeight - r.top) / (window.innerHeight + (r.height - window.innerHeight) * 0.3));
+    tkFill.style.setProperty('--c', (c * c * (3 - 2 * c)).toFixed(3));   // smoothstep: the curved edge travels evenly
+    // then the words, one after another, from 35% to 85%
+    var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.35) / 0.5) * ws.length;
+    ws.forEach(function (w, i) { w.style.setProperty('--w', ease(clamp01(q - i)).toFixed(3)); });
+  }
+  window.__tk = takeover;
 
   /* the dome under the hero follows the scroll */
   var edge = document.querySelector('.hero-edge');
@@ -949,10 +1012,10 @@ var MN = {
   window.addEventListener('scroll', function () {
     if (curving) return;
     curving = true;
-    requestAnimationFrame(function () { curve(); curving = false; });
+    requestAnimationFrame(function () { curve(); takeover(); curving = false; });
   }, { passive: true });
-  window.addEventListener('resize', curve);
-  curve();
+  window.addEventListener('resize', function () { curve(); takeover(); });
+  curve(); takeover();
 
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
