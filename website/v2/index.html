@@ -231,10 +231,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .menu-info dd { margin: 0; font-size: var(--fs-body); font-weight: 500; }
 .menu-info a { color: #fff; text-decoration: none; }
 .menu-info a:hover { text-decoration: underline; text-underline-offset: 5px; }
-.menu-langs { display: flex; flex-wrap: wrap; gap: 6px 20px; }
-.menu-langs button { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: rgba(255,255,255,.6); }
-.menu-langs button[aria-pressed="true"], .menu-langs button:hover { color: #fff; }
-.menu-langs button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 6px; }
+.menu-note { margin: 8px 0 0; max-width: 34ch; font-size: var(--fs-small); color: rgba(255,255,255,.6); }
 /* the contents arrive just after the circle */
 .menu-links li, .menu-info { opacity: 0; transform: translateY(18px); transition: opacity .3s ease, transform .3s ease; }
 .menu.is-open .menu-links li, .menu.is-open .menu-info { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; transition-delay: calc(.35s + var(--k, 6) * .05s); }
@@ -475,8 +472,10 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <li style="--k:5"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
     </ul>
     <dl class="menu-info">
-      <div><dt data-i18n="m.lang">Language</dt><dd class="menu-langs"><button type="button" data-lang="en" aria-pressed="true">English</button><button type="button" data-lang="ko" aria-pressed="false">한국어</button><button type="button" data-lang="mn" aria-pressed="false">Монгол</button></dd></div>
       <div><dt data-i18n="m.app">Get the app</dt><dd><a href="#get" data-i18n="cta.s">Coming soon to Google Play.</a></dd></div>
+      <div><dt data-i18n="m.price">Price</dt><dd data-i18n="m.pricev">Free for 7 days when it launches</dd></div>
+      <div><dt data-i18n="m.prom">Our promise</dt><dd><span data-i18n="h.t1">Never locks the screen</span> · <span data-i18n="h.t2">No location tracking</span></dd></div>
+      <p class="menu-note" data-i18n="ft.l">JoanX has not launched yet. Screens shown are from a pre-release build, with sample data.</p>
     </dl>
   </div>
 </div>
@@ -789,7 +788,9 @@ var KO = {
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
   'q.start': '어떻게 시작하나요?',
   'n.start': '시작하기',
-  'm.lang': '언어',
+  'm.price': '요금',
+  'm.pricev': '출시되면 7일 동안 무료',
+  'm.prom': '약속',
   'm.app': '앱 받기',
   'q.promise': '무엇을 믿을 수 있나요?',
   'pr.h': '조안X가 늘 지키는 여섯 가지',
@@ -1110,8 +1111,10 @@ var MN = {
  "pr.5p": "Утсаа доош тавьж алхсан минут бүр 10 оноо, аюулгүй өдөр бүр дараалал өснө.",
  "pr.6h": "Тайван, тасралтгүй биш",
  "pr.6p": "Долоо хоногт нэг тайлан, яг одоо таны оролцоо хэрэгтэй үед л мэдэгдэл.",
- "m.lang": "Хэл",
  "m.app": "Апп авах",
+ "m.price": "Үнэ",
+ "m.pricev": "Гарахад 7 хоног үнэгүй",
+ "m.prom": "Амлалт",
  "q.start": "Яаж эхлэх вэ?",
  "hw.h": "Ойролцоогоор <em class=\"hl\">гурван минутад</em> тохируулна",
  "hw.n1": "1-Р АЛХАМ",
@@ -1159,7 +1162,7 @@ var MN = {
 
   /* language */
   var nodes = document.querySelectorAll('[data-i18n]');
-  var buttons = document.querySelectorAll('[data-lang]');   // the nav dropdown and the menu's own list
+  var buttons = document.querySelectorAll('.lang-menu [data-lang]');
   var langBtn = document.querySelector('.lang-btn');
   var langMenu = document.getElementById('langMenu');
   var NAMES = { en: ['English', 'EN'], ko: ['한국어', 'KO'], mn: ['Монгол', 'MN'] };
