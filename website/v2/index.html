@@ -313,7 +313,7 @@ td.us { color: var(--ink); font-weight: 600; }
 .takeover-line {
   position: absolute; z-index: 51; left: 20px; right: 20px; top: 50%; transform: translateY(-50%);
   margin: 0 auto; max-width: 17em; text-align: center; color: #fff; visibility: hidden;
-  font-size: clamp(30px, 4.6vw, 60px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; text-wrap: balance;
+  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance;   /* h1 step */
 }
 .takeover-line .w { display: inline-block; opacity: calc(.12 + var(--w, 0) * .88); transform: translateY(calc((1 - var(--w, 0)) * .35em)); }
 .takeover + .section { border-top: 0; }
@@ -348,15 +348,18 @@ td.us { color: var(--ink); font-weight: 600; }
    screens scroll up over it; then the stage shrinks to a circle around the title and a link,
    revealing brand green. Positions are set by the script from scroll progress. */
 .showcase { position: relative; height: 420vh; background: #4B814F; }
-.sc-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #16261A; color: #fff; display: grid; place-items: center; }
-.sc-title { position: relative; z-index: 1; margin: 0; display: grid; justify-items: center; line-height: .95; text-align: center; letter-spacing: -.03em; transform-origin: 50% 50%; }
-.sc-l1 { font-size: clamp(48px, 10vw, 150px); font-weight: 300; }
-.sc-l2 { font-size: clamp(56px, 12vw, 180px); font-weight: 800; }
+.sc-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #4B814F; color: #fff; display: grid; place-items: center; }
+/* the dark layer is what shrinks to a circle; the stage itself stays solid and full-screen */
+.sc-dark { position: absolute; inset: 0; background: #16261A; }
+.sc-title { position: relative; z-index: 1; margin: 0; display: grid; justify-items: center; line-height: 1.1; text-align: center; letter-spacing: -.03em; transform-origin: 50% 50%; }
+/* on the type scale: both lines at the h1 step, light over bold */
+.sc-l1 { font-size: var(--fs-h1); font-weight: 300; }
+.sc-l2 { font-size: var(--fs-h1); font-weight: 800; }
 :lang(en) .sc-title { text-transform: uppercase; }
-.sc-cta { position: absolute; z-index: 1; left: 50%; top: calc(50% + clamp(80px, 13vw, 190px)); transform: translate(-50%, 12px); opacity: 0; color: #fff; font-weight: 700; font-size: clamp(16px, 1.6vw, 20px); text-decoration: none; white-space: nowrap; }
+.sc-cta { position: absolute; z-index: 1; left: 50%; top: calc(50% + clamp(56px, 6vw, 84px)); transform: translate(-50%, 12px); opacity: 0; color: #fff; font-weight: 700; font-size: var(--fs-body); text-decoration: none; white-space: nowrap; }
 .sc-cta:hover { text-decoration: underline; text-underline-offset: 6px; }
-.sc-cols { position: absolute; z-index: 2; inset: 0 0 auto 0; display: flex; justify-content: space-between; padding-inline: clamp(12px, 6vw, 120px); will-change: transform; }
-.sc-col { display: grid; gap: 24vh; width: clamp(150px, 24vw, 330px); }
+.sc-cols { position: absolute; z-index: 2; inset: 0 0 auto 0; display: flex; justify-content: center; gap: clamp(16px, 16vw, 300px); padding-inline: 12px; will-change: transform; }   /* columns frame the title, not the screen edges */
+.sc-col { display: grid; gap: 24vh; width: clamp(150px, 22vw, 300px); }
 .sc-col:nth-child(2) { padding-top: 34vh; }
 .sc-card { margin: 0; background: #0E1A11; border-radius: 22px; overflow: hidden; }
 .sc-card img { display: block; width: 100%; }
@@ -365,7 +368,7 @@ td.us { color: var(--ink); font-weight: 600; }
 .sc-card b { font-size: clamp(16px, 1.6vw, 21px); }
 @media (prefers-reduced-motion: reduce) {
   .showcase { height: auto; }
-  .sc-stage { position: relative; height: auto; padding-block: 12vh; gap: 8vh; }
+  .sc-stage { position: relative; height: auto; padding-block: 12vh; gap: 8vh; background: #16261A; }
   .sc-cols { position: static; }
   .sc-cta { position: static; opacity: 1; transform: none; }
 }
@@ -620,6 +623,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <!-- ═══ SHOWCASE — INSIDE JOANX ═══════════════════════════════════════════ -->
 <section class="showcase" aria-label="Inside JoanX">
   <div class="sc-stage">
+    <div class="sc-dark" aria-hidden="true"></div>
     <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">Inside</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
     <a class="sc-cta" href="#get"><span data-i18n="cta.h">Get JoanX</span> →</a>
     <div class="sc-cols">
@@ -1121,7 +1125,7 @@ var MN = {
 
   /* showcase: cards scroll up over the pinned title, then the stage shrinks to a circle */
   var sc = document.querySelector('.showcase'), scStage = sc.querySelector('.sc-stage');
-  var scCols = sc.querySelector('.sc-cols'), scTitle = sc.querySelector('.sc-title'), scCta = sc.querySelector('.sc-cta');
+  var scDark = sc.querySelector('.sc-dark'), scCols = sc.querySelector('.sc-cols'), scTitle = sc.querySelector('.sc-title'), scCta = sc.querySelector('.sc-cta');
   function showcase() {
     if (still.matches) return;
     var vw = window.innerWidth, vh = window.innerHeight, r = sc.getBoundingClientRect();
@@ -1129,9 +1133,9 @@ var MN = {
     var a = clamp01(p / 0.72);                                          // cards: 0 → 72%
     scCols.style.transform = 'translateY(' + (vh - a * (vh + scCols.offsetHeight)).toFixed(1) + 'px)';
     var b = clamp01((p - 0.74) / 0.22); b = b * b * (3 - 2 * b);         // circle: 74% → 96%
-    var maxR = Math.hypot(vw, vh) / 2 + 4, minR = Math.min(vw * 0.44, vh * 0.46);
-    scStage.style.clipPath = b ? 'circle(' + (maxR + (minR - maxR) * b).toFixed(1) + 'px at 50% 50%)' : '';
-    scTitle.style.transform = 'scale(' + (1 - 0.28 * b).toFixed(3) + ')';
+    var maxR = Math.hypot(vw, vh) / 2 + 4, minR = Math.min(vw * 0.46, vh * 0.36);
+    scDark.style.clipPath = b ? 'circle(' + (maxR + (minR - maxR) * b).toFixed(1) + 'px at 50% 50%)' : '';
+    scTitle.style.transform = 'scale(' + (1 - 0.1 * b).toFixed(3) + ')';
     scCta.style.opacity = b.toFixed(3);
     scCta.style.transform = 'translate(-50%, ' + (12 - 12 * b - 40 * b).toFixed(1) + 'px)';
     // while the stage is pinned it is the whole screen, nav included
