@@ -110,22 +110,62 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .shot.sm { --shot-w: 200px; max-width: 30vw; }
 
 /* ── 4. Pieces ───────────────────────────────────────────────────────── */
-/* nav */
-.nav { position: sticky; top: 0; z-index: 40; background: var(--paper); border-bottom: 1px solid var(--line); }
-.nav-in { display: flex; align-items: center; gap: 16px; height: 60px; }
-.logo img { height: 22px; width: auto; }
+/* nav — the same bar as the AI-generated page: see-through at the top, a surface once
+   the page scrolls under it; a pill language switch and the green Download pill */
+.nav {
+  --nav-green: #4B814F; --nav-green-deep: #2B4F30;
+  --nav-track: rgba(26,32,28,.11); --nav-edge: rgba(26,32,28,.09);
+  position: sticky; top: 0; z-index: 40;
+  background: transparent; border-bottom: 1px solid transparent;
+  transition: background .22s ease, border-color .22s ease;
+}
+.nav.is-stuck {
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom-color: var(--line);
+}
+.nav-in { display: flex; align-items: center; gap: 14px; padding-block: 11px; }
+.logo { display: inline-flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+.logo .mark { height: 25px; width: auto; }
 .logo .mark-dark { display: none; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo .mark-light { display: none; } :root:not([data-theme="light"]) .logo .mark-dark { display: block; } }
-.nav-links { display: none; margin-left: auto; gap: 22px; }
-.nav-links a { text-decoration: none; font-size: 15px; color: var(--ink-2); }
-.nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
+.logo .mark-sm { display: none; width: 30px; height: 30px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo .mark-light { display: none; }
+  :root:not([data-theme="light"]) .logo .mark-dark { display: inline; }
+  :root:not([data-theme="light"]) .nav { --nav-green: #5E9A63; --nav-track: rgba(255,255,255,.12); --nav-edge: rgba(255,255,255,.20); }
+}
+.nav-links { display: none; margin-left: auto; gap: 24px; }
+.nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+.nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--accent); }
 @media (min-width: 1000px) { .nav-links { display: flex; } }
 @media (max-width: 999px) { .lang { margin-left: auto; } }
-.lang { display: flex; gap: 4px; }
-.lang button { font: inherit; font-size: 14px; background: none; border: 0; padding: 6px 8px; cursor: pointer; color: var(--ink-3); }
-.lang button[aria-pressed="true"] { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
+.lang { display: inline-flex; gap: 2px; background: var(--nav-track); border: 1px solid var(--nav-edge); border-radius: 999px; padding: 3px; flex-shrink: 0; }
+.lang button {
+  min-width: 44px; text-align: center;
+  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1;
+  padding: 8px 13px; border-radius: 999px; border: 0; cursor: pointer;
+  background: transparent; color: var(--ink-2);
+  transition: background .14s ease, color .14s ease;
+}
+.lang button:hover { color: var(--ink); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .lng-abbr { display: none; }
-@media (max-width: 520px) { .lng-full { display: none; } .lng-abbr { display: inline; } .nav-in { gap: 10px; } }
+.nav-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: 14.5px; font-weight: 700; line-height: 1; white-space: nowrap;
+  padding: 11px 18px; border-radius: 999px; background: var(--nav-green); color: #fff; text-decoration: none;
+  transition: background .14s ease, transform .14s ease;
+}
+.nav-cta:hover { background: var(--nav-green-deep); transform: translateY(-1px); }
+@media (max-width: 700px) { .lang button { padding: 10px 14px; } }
+@media (max-width: 520px) {
+  .lng-full { display: none; } .lng-abbr { display: inline; }
+  .nav-in { gap: 10px; }
+  .nav-cta { padding: 10px 14px; font-size: 13.5px; }
+  .lang button { padding: 9px 11px; font-size: 12.5px; }
+  .logo .mark { display: none; } .logo .mark-sm { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { .nav, .nav-cta, .lang button { transition: none; } .nav-cta:hover { transform: none; } }
 
 /* buttons */
 .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
@@ -203,8 +243,9 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <nav class="nav">
   <div class="wrap nav-in">
     <a class="logo" href="#top" aria-label="JoanX">
-      <img class="mark-light" src="../media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
-      <img class="mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
+      <img class="mark mark-light" src="../media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
+      <img class="mark mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
+      <svg class="mark-sm" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="48" fill="#4B814F"></circle><path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg>
     </a>
     <div class="nav-links">
       <a href="#safety" data-i18n="n.safety">Safety moment</a>
@@ -218,7 +259,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <button type="button" id="langEn" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" id="langKo" data-lang="ko" aria-pressed="false"><span class="lng-full">한국어</span><span class="lng-abbr">KO</span></button>
     </div>
-    <a class="btn" href="#get" data-i18n="n.cta">Download</a>
+    <a class="nav-cta" href="#get" data-i18n="n.cta">Download</a>
   </div>
 </nav>
 
@@ -696,6 +737,17 @@ var KO = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko') setLang('ko');
+
+  /* the nav takes a surface only once the page has moved under it */
+  var nav = document.querySelector('.nav');
+  var ticking = false;
+  function chrome() { nav.classList.toggle('is-stuck', window.scrollY > 24); }
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { chrome(); ticking = false; });
+  }, { passive: true });
+  chrome();
 
   /* the nav marks the section in view */
   var navLinks = document.querySelectorAll('.nav-links a');
