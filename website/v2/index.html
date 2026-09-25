@@ -47,6 +47,7 @@
 
   --font:    "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --fs-h1:   clamp(36px, 5.4vw, 56px);   /* same as the AI-generated page */
+  --fs-display: clamp(42px, 6.4vw, 80px);   /* one showcase title, a step above h1 */
   --fs-h2:   clamp(26px, 3.4vw, 36px);
   --fs-h3:   clamp(20px, 2.2vw, 24px);
   --fs-body: 17px;
@@ -351,12 +352,13 @@ td.us { color: var(--ink); font-weight: 600; }
 .sc-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #4B814F; color: #fff; display: grid; place-items: center; }
 /* the dark layer is what shrinks to a circle; the stage itself stays solid and full-screen */
 .sc-dark { position: absolute; inset: 0; background: #16261A; }
-.sc-title { position: relative; z-index: 1; margin: 0; display: grid; justify-items: center; line-height: 1.1; text-align: center; letter-spacing: -.03em; transform-origin: 50% 50%; }
-/* on the type scale: both lines at the h1 step, light over bold */
-.sc-l1 { font-size: var(--fs-h1); font-weight: 300; }
-.sc-l2 { font-size: var(--fs-h1); font-weight: 800; }
+.sc-center { position: relative; z-index: 1; display: grid; justify-items: center; gap: clamp(18px, 2.4vw, 32px); transform-origin: 50% 50%; }
+.sc-title { margin: 0; display: grid; justify-items: center; line-height: 1.1; text-align: center; letter-spacing: -.03em; }
+/* a display step above h1 (h1 is 36–56px); still fits between the card columns */
+.sc-l1 { font-size: var(--fs-display); font-weight: 300; }
+.sc-l2 { font-size: var(--fs-display); font-weight: 800; }
 :lang(en) .sc-title { text-transform: uppercase; }
-.sc-cta { position: absolute; z-index: 1; left: 50%; top: calc(50% + clamp(56px, 6vw, 84px)); transform: translate(-50%, 12px); opacity: 0; color: #fff; font-weight: 700; font-size: var(--fs-body); text-decoration: none; white-space: nowrap; }
+.sc-cta { transform: translateY(10px); opacity: 0; color: #fff; font-weight: 700; font-size: var(--fs-body); text-decoration: none; white-space: nowrap; }
 .sc-cta:hover { text-decoration: underline; text-underline-offset: 6px; }
 .sc-cols { position: absolute; z-index: 2; inset: 0 0 auto 0; display: flex; justify-content: center; gap: clamp(20px, 30vw, 520px); padding-inline: 12px; will-change: transform; }   /* columns frame the title, not the screen edges */
 .sc-col { display: grid; gap: 24vh; width: clamp(150px, 22vw, 300px); }
@@ -370,7 +372,7 @@ td.us { color: var(--ink); font-weight: 600; }
   .showcase { height: auto; }
   .sc-stage { position: relative; height: auto; padding-block: 12vh; gap: 8vh; background: #16261A; }
   .sc-cols { position: static; }
-  .sc-cta { position: static; opacity: 1; transform: none; }
+  .sc-cta { opacity: 1; transform: none; }
 }
 
 /* get + footer */
@@ -624,8 +626,10 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <section class="showcase" aria-label="Inside JoanX">
   <div class="sc-stage">
     <div class="sc-dark" aria-hidden="true"></div>
-    <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">Inside</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
-    <a class="sc-cta" href="#get"><span data-i18n="cta.h">Get JoanX</span> →</a>
+    <div class="sc-center">
+      <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">Inside</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
+      <a class="sc-cta" href="#get"><span data-i18n="cta.h">Get JoanX</span> →</a>
+    </div>
     <div class="sc-cols">
       <div class="sc-col">
           <figure class="sc-card"><img src="../media/shots/child-collection.png" width="535" height="1200" alt="" loading="lazy"><figcaption><small data-i18n="g.s5s">Earned buddies, and the ones still out there</small><b data-i18n="g.s5">The collection</b></figcaption></figure>
@@ -1125,7 +1129,7 @@ var MN = {
 
   /* showcase: cards scroll up over the pinned title, then the stage shrinks to a circle */
   var sc = document.querySelector('.showcase'), scStage = sc.querySelector('.sc-stage');
-  var scDark = sc.querySelector('.sc-dark'), scCols = sc.querySelector('.sc-cols'), scTitle = sc.querySelector('.sc-title'), scCta = sc.querySelector('.sc-cta');
+  var scDark = sc.querySelector('.sc-dark'), scCols = sc.querySelector('.sc-cols'), scTitle = sc.querySelector('.sc-center'), scCta = sc.querySelector('.sc-cta');
   function showcase() {
     if (still.matches) return;
     var vw = window.innerWidth, vh = window.innerHeight, r = sc.getBoundingClientRect();
@@ -1137,7 +1141,7 @@ var MN = {
     scDark.style.clipPath = b ? 'circle(' + (maxR + (minR - maxR) * b).toFixed(1) + 'px at 50% 50%)' : '';
     scTitle.style.transform = 'scale(' + (1 - 0.1 * b).toFixed(3) + ')';
     scCta.style.opacity = b.toFixed(3);
-    scCta.style.transform = 'translate(-50%, ' + (12 - 12 * b - 40 * b).toFixed(1) + 'px)';
+    scCta.style.transform = 'translateY(' + (10 - 10 * b).toFixed(1) + 'px)';
     // while the stage is pinned it is the whole screen, nav included
     scStage.style.zIndex = r.top <= 0 && r.bottom >= vh ? 45 : '';
   }
