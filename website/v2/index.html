@@ -216,17 +216,19 @@ section[id], header[id] { scroll-margin-top: 72px; }
   background: var(--hero-bg); color: #fff;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { --hero-bg: #2B4F30; } }
-/* scrolling out of the hero, the page's own ground rises into it as a dome — the hero rounds
-   off into the next section. --p (0 → 1) is the scroll progress, set by the script below. */
-.hero { position: relative; overflow: hidden; }
-.hero-in { position: relative; z-index: 1; }
+/* below the hero, a strip of the same green where the next section begins: the page's own
+   ground rises into it as a dome while you scroll. The hero itself is never covered.
+   --p (0 → 1) is how far the strip has come into view, set by the script below. */
+.hero, .hero-edge { --hero-bg: #4B814F; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero-edge { --hero-bg: #2B4F30; } }
+.hero-edge { position: relative; overflow: hidden; height: clamp(120px, 17vw, 260px); background: var(--hero-bg); }
 .hero-curve {
-  position: absolute; z-index: 2; left: -25%; right: -25%; bottom: -1px; height: clamp(100px, 17vw, 260px);
+  position: absolute; left: -25%; right: -25%; bottom: -1px; height: 100%;
   background: var(--paper); border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   transform: scaleY(var(--p, 0)); transform-origin: 50% 100%;
   pointer-events: none; will-change: transform;
 }
-.hero + .section { border-top: 0; }
+.hero-edge + .section { border-top: 0; }
 .hero h1 { color: #fff; }
 .hero h1 em { color: #CFE6CF; }
 .hero .lede { color: rgba(255,255,255,.86); }
@@ -341,8 +343,8 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       </ul>
     </div>
   </div>
-  <div class="hero-curve" aria-hidden="true"></div>
 </header>
+<div class="hero-edge" aria-hidden="true"><div class="hero-curve"></div></div>
 
 <!-- ═══ 01 · WHAT HAPPENS — THE SAFETY MOMENT ═════════════════════════════ -->
 <section class="section" id="safety">
@@ -935,11 +937,13 @@ var MN = {
   if (saved === 'ko' || saved === 'mn') setLang(saved);
 
   /* the dome under the hero follows the scroll */
-  var hero = document.querySelector('.hero');
+  var edge = document.querySelector('.hero-edge');
   var still = window.matchMedia('(prefers-reduced-motion: reduce)');
   function curve() {
-    var p = still.matches ? 0.35 : Math.min(1, Math.max(0, window.scrollY / hero.offsetHeight));
-    hero.style.setProperty('--p', p.toFixed(3));
+    var r = edge.getBoundingClientRect();
+    // 0 while the strip is still below the fold; 1 once it has risen to the upper part of the screen
+    var p = still.matches ? 1 : Math.min(1, Math.max(0, (window.innerHeight - r.top) / (r.height + window.innerHeight * 0.4)));
+    edge.style.setProperty('--p', p.toFixed(3));
   }
   var curving = false;
   window.addEventListener('scroll', function () {
