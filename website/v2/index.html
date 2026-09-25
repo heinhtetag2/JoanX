@@ -1,526 +1,211 @@
 <meta charset="utf-8">
-<title>JoanX · v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JoanX · Human + AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 
 <style>
-/* ─────────────────────────────────────────────────────────────────────
-   JoanX — app landing page.
-   Brand green is the product, ocean is the in-game action colour, gold is
-   points and XP only. Flat surfaces, hairline cards, no glow — the app's
-   own house rules, carried onto the web.
+/* ═══════════════════════════════════════════════════════════════════════
+   JoanX — landing page, Human + AI version · FOUNDATION
 
-   Phone mockups are real captures of the prototype's 390×844 frame, and
-   they are only ever drawn at one of three widths (--phone-lg / -md / -sm)
-   so the same device never changes size for no reason between sections.
-   ───────────────────────────────────────────────────────────────────── */
+   This is the skeleton to design on top of: every section, every line of
+   copy (English + Korean) and every screenshot is in place, and the styling
+   is deliberately plain — type, spacing and one accent colour. No gradients,
+   shadows, glows, icon tiles, pills, tilted phones or mascots.
 
+   How it is organised
+     1. Tokens      colour, type, space — change these first
+     2. Base        elements
+     3. Layout      .wrap, .section, .sec-head, .part (text + screenshots)
+     4. Pieces      nav, buttons, lists, table, faq, footer
+
+   Page map (each section is marked in the HTML with a ═══ banner)
+     Nav · Hero · At a glance ·
+     01 Why JoanX · 02 How it works · 03 The safety moment ·
+     04 The game (4.1 buddy · 4.2 villains · 4.3 battle) ·
+     05 For parents (5.1 report · 5.2 groups · 5.3 settings & alerts) ·
+     06 The difference · 07 Privacy · 08 FAQ · Get JoanX · Footer
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Tokens ───────────────────────────────────────────────────────── */
 :root {
-  --ground:      #FFFFFF;
-  --ground-2:    #F2F5F0;
-  --surface:     #FFFFFF;
-  --surface-2:   #EDF1EA;
-  --ink:         #1A201C;
-  --ink-2:       #52594F;
-  --ink-soft:    #868D82;
-  --line:        #E3E8DF;
-  --line-2:      #CFD8CA;
+  --paper:   #FFFFFF;
+  --paper-2: #F6F6F3;   /* alternate section ground */
+  --ink:     #1B1D1B;
+  --ink-2:   #55594F;
+  --ink-3:   #8A8D85;
+  --line:    #E4E5DF;
+  --accent:  #4B814F;   /* JoanX brand green */
 
-  --green:       #4B814F;
-  --green-ink:   #35603A;
-  --green-deep:  #2B4F30;
-  --green-night: #1E3A23;
-  --green-tint:  #E7F0E7;
+  --font:    "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fs-h1:   clamp(34px, 5vw, 52px);
+  --fs-h2:   clamp(26px, 3.4vw, 36px);
+  --fs-h3:   clamp(20px, 2.2vw, 24px);
+  --fs-body: 17px;
+  --fs-small:14px;
 
-  --ocean:       #447AAF;
-  --ocean-tint:  #E8F0F9;
-  --gold:        #B58400;
-  --rust:        #C33F2D;
-
-  /* the hero wash: brand green with a cool edge of the in-game ocean blue. Both are the
-     product's own colours — a pastel rainbow here belonged to no part of it. */
-  --bloom-a:     rgba(75,129,79,.20);
-  --bloom-b:     rgba(68,122,175,.13);
-  --bloom-c:     rgba(75,129,79,.11);
-
-  --switch-track: rgba(26,32,28,.11);
-  --switch-edge:  rgba(26,32,28,.09);
-
-  --tile-art:    #F6F8F3;
-  --card-shadow: 0 1px 2px rgba(26,32,28,.05);
-  --r-sm: 12px; --r-md: 18px; --r-lg: 26px; --r-phone: 30px;
-
-  /* the only three sizes a phone mockup is ever drawn at */
-  --phone-lg: 296px;   /* hero, front */
-  --phone-md: 268px;   /* feature rows */
-  --phone-sm: 184px;   /* gallery thumbnails */
+  --space-section: clamp(64px, 9vw, 120px);
+  --space-block:   clamp(32px, 4vw, 48px);
+  --max:     1120px;
+  --radius:  14px;
+  --shot-w:  240px;     /* screenshot width in the section rows */
 }
-
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ground:      #10130F;
-    --ground-2:    #171B15;
-    --surface:     #191E18;
-    --surface-2:   #222820;
-    --ink:         #EAEEE6;
-    --ink-2:       #A7AFA3;
-    --ink-soft:    #7B8277;
-    --line:        #2A3027;
-    --line-2:      #3A4237;
-
-    --green:       #5E9A63;
-    --green-ink:   #97C99C;
-    --green-deep:  #2B4F30;
-    --green-night: #16261A;
-    --green-tint:  #1D2A1E;
-
-    --ocean:       #7FADDC;
-    --ocean-tint:  #19242E;
-    --gold:        #E0B23F;
-    --rust:        #E38571;
-
-    --bloom-a:     rgba(126,183,131,.13);
-    --bloom-b:     rgba(127,173,220,.09);
-    --bloom-c:     rgba(126,183,131,.07);
-
-    --switch-track: rgba(255,255,255,.12);
-    --switch-edge:  rgba(255,255,255,.20);
-
-    --tile-art:    #ECEFE7;
-    --card-shadow: 0 1px 2px rgba(0,0,0,.34);
+    --paper: #121412; --paper-2: #181B18; --ink: #ECEDE8; --ink-2: #A9ADA3; --ink-3: #7C8077;
+    --line: #2B2F2A; --accent: #7EB783;
   }
 }
 :root[data-theme="dark"] {
-  --ground:      #10130F;
-  --ground-2:    #171B15;
-  --surface:     #191E18;
-  --surface-2:   #222820;
-  --ink:         #EAEEE6;
-  --ink-2:       #A7AFA3;
-  --ink-soft:    #7B8277;
-  --line:        #2A3027;
-  --line-2:      #3A4237;
-
-  --green:       #5E9A63;
-  --green-ink:   #97C99C;
-  --green-deep:  #2B4F30;
-  --green-night: #16261A;
-  --green-tint:  #1D2A1E;
-
-  --ocean:       #7FADDC;
-  --ocean-tint:  #19242E;
-  --gold:        #E0B23F;
-  --rust:        #E38571;
-
-  --bloom-a:     rgba(126,183,131,.13);
-  --bloom-b:     rgba(127,173,220,.09);
-  --bloom-c:     rgba(126,183,131,.07);
-
-  --switch-track: rgba(255,255,255,.12);
-  --switch-edge:  rgba(255,255,255,.20);
-
-  --tile-art:    #ECEFE7;
-  --card-shadow: 0 1px 2px rgba(0,0,0,.34);
+  --paper: #121412; --paper-2: #181B18; --ink: #ECEDE8; --ink-2: #A9ADA3; --ink-3: #7C8077;
+  --line: #2B2F2A; --accent: #7EB783;
 }
 
+/* ── 2. Base ─────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
-  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16.5px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-/* Fredoka carries no Hangul, so Korean headings fall through to Noto Sans KR by design. */
-h1 .hl, h2 .hl { color: var(--green); font-style: normal; }
-h1, h2, h3, h4 { font-family: Fredoka, "Noto Sans KR", sans-serif; font-weight: 600; letter-spacing: -.015em; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(36px, 5.4vw, 56px); line-height: 1.05; }
-h2 { font-size: clamp(27px, 3.8vw, 39px); line-height: 1.12; }
-h3 { font-size: clamp(19px, 2vw, 22px); line-height: 1.28; }
-h4 { font-size: 17px; line-height: 1.32; }
-p  { margin: 0; }
-a  { color: inherit; }
-/* height:auto matters: the mockups carry width/height attributes, and without this every
-   phone renders at its full pixel height and stretches. */
-img { display: block; max-width: 100%; height: auto; }
-:focus-visible { outline: 3px solid var(--ocean); outline-offset: 3px; border-radius: 6px; }
-:lang(ko) h1, :lang(ko) h2 { letter-spacing: -.02em; }
-/* Korean breaks on word boundaries, not mid-word — without keep-all a heading splits
-   "내내" across two lines. break-word keeps a long URL from overflowing anyway. */
-:root:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .mark-light { display: none; }
-  :root:not([data-theme="light"]) .mark-dark { display: inline; }
-}
-:root[data-theme="dark"] .mark-light { display: none; }
-:root[data-theme="dark"] .mark-dark { display: inline; }
-
-/* Nav links glide instead of jumping, and every anchored section stops clear of the
-   sticky nav rather than sliding under it. */
 html { scroll-behavior: smooth; }
-section[id], header[id] { scroll-margin-top: 84px; }
-@media (max-width: 520px) { section[id], header[id] { scroll-margin-top: 72px; } }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+:root:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
+h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
+h1, h2, h3, h4 { font-weight: 700; letter-spacing: -.02em; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: var(--fs-h1); line-height: 1.1; }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: 17px; }
+h1 em, h2 em, h3 em { font-style: normal; color: var(--accent); }
+a { color: inherit; }
+img { display: block; max-width: 100%; height: auto; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+section[id], header[id] { scroll-margin-top: 72px; }
+.lede { color: var(--ink-2); max-width: 56ch; }
 
-.wrap { max-width: 1160px; margin: 0 auto; padding-inline: 22px; }
-.band { padding-block: clamp(56px, 7.5vw, 96px); }
-.band-alt { background: var(--ground-2); }
-.stack { display: grid; gap: 18px; }
-.lede { font-size: clamp(16px, 1.5vw, 18px); color: var(--ink-2); max-width: 56ch; }
-.kicker { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green-ink); }
-.center { text-align: center; }
-.center .lede { margin-inline: auto; }
+/* ── 3. Layout ───────────────────────────────────────────────────────── */
+.wrap { max-width: var(--max); margin: 0 auto; padding-inline: 20px; }
+.section { padding-block: var(--space-section); border-top: 1px solid var(--line); }
+.section.alt { background: var(--paper-2); }
 
-/* ── buttons ────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  font-family: inherit; font-size: 15.5px; font-weight: 700; line-height: 1;
-  padding: 16px 25px; border-radius: 999px; border: 1.5px solid transparent;
-  text-decoration: none; cursor: pointer; white-space: nowrap;
-  transition: background .14s ease, border-color .14s ease, transform .14s ease;
-}
-.btn svg { width: 17px; height: 17px; flex-shrink: 0; }
-.btn-primary { background: var(--green); color: #fff; }
-.btn-primary:hover { background: var(--green-deep); transform: translateY(-1px); }
-.btn-outline { background: transparent; color: var(--ink); border-color: var(--line-2); }
-.btn-outline:hover { border-color: var(--ink-soft); }
-.on-dark .btn-primary { background: #fff; color: var(--green-deep); }
-.on-dark .btn-primary:hover { background: #EAF2EA; }
-.on-dark .btn-outline { color: #fff; border-color: rgba(255,255,255,.42); }
-.on-dark .btn-outline:hover { border-color: #fff; }
+/* every section opens the same way: number + name, heading, one-line intro */
+.sec-head { display: grid; gap: 14px; margin-bottom: var(--space-block); max-width: 720px; }
+.sec-label, .part-label { display: flex; gap: 10px; font-size: var(--fs-small); font-weight: 700; color: var(--ink-2); }
+.sec-num { color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* store badges */
-.stores { display: flex; flex-wrap: wrap; gap: 10px; }
-.store {
-  display: inline-flex; align-items: center; gap: 11px;
-  padding: 10px 17px 10px 15px; border-radius: 14px;
-  background: #14181A; color: #fff; border: 1px solid #14181A;
-  text-decoration: none; cursor: default;
+/* a part = one topic inside a section: text on one side, screenshots on the other */
+.part { display: grid; gap: var(--space-block); align-items: center; }
+.part + .part { margin-top: var(--space-section); }
+.part-text { display: grid; gap: 14px; align-content: start; }
+.part-media { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+@media (min-width: 900px) {
+  .part { grid-template-columns: 1fr 1fr; }
+  .part.flip .part-media { order: -1; }
 }
-a.store { cursor: pointer; transition: background .14s ease, border-color .14s ease; }
-a.store:hover { background: #262C2F; border-color: #262C2F; }
-/* The second badge is outlined, not filled: two identical black slabs side by side are easy
-   to hit by accident, and the filled one should read as the primary target. */
-.store.alt { background: transparent; border-color: var(--line-2); color: var(--ink); }
-.store.alt small { opacity: .72; }
-a.store.alt:hover { background: rgba(0,0,0,.05); border-color: var(--ink-soft); }
-/* On the green bands the filled badge is WHITE, not black — it matches the page's own
-   buttons and sits lighter on the colour than a black slab. The second stays outlined. */
-.on-dark .store { background: #fff; border-color: #fff; color: var(--green-deep); }
-.on-dark a.store:hover { background: #E8F0E8; border-color: #E8F0E8; }
-.on-dark .store.alt { background: transparent; border-color: rgba(255,255,255,.5); color: #fff; }
-.on-dark a.store.alt:hover { background: rgba(255,255,255,.12); border-color: #fff; }
-.store svg { width: 21px; height: 21px; flex-shrink: 0; }
-.store b { display: block; font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 15.5px; font-weight: 600; line-height: 1.15; }
-.store small { display: block; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; opacity: .68; }
-.soon { font-size: 13px; color: var(--ink-soft); max-width: 46ch; }
-.soon a { color: var(--green-ink); text-decoration: underline; text-underline-offset: 3px; }
-.on-dark .soon a { color: #fff; }
-.on-dark .soon { color: rgba(255,255,255,.62); }
 
-/* ── nav ────────────────────────────────────────────────────────────── */
-/* At the top the bar sits on the hero with no ground of its own; it only takes a surface
-   once the page has moved under it. */
-.nav {
-  position: sticky; top: 0; z-index: 40;
-  background: transparent; border-bottom: 1px solid transparent;
-  transition: background .22s ease, border-color .22s ease, backdrop-filter .22s ease;
-}
-.nav.is-stuck {
-  background: color-mix(in srgb, var(--ground) 92%, transparent);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-bottom-color: var(--line);
-}
-.nav-in { display: flex; align-items: center; gap: 14px; padding-block: 11px; }
-.logo { display: inline-flex; align-items: center; text-decoration: none; flex-shrink: 0; }
-.logo .mark { height: 25px; width: auto; }
-.logo .mark-sm { display: none; width: 30px; height: 30px; }
-.mark-dark { display: none; }
-footer .logo .mark { height: 23px; }
-.nav-links { display: none; margin-left: auto; gap: 24px; }
-.nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
-.nav-links a:hover { color: var(--green-ink); }
-.nav .btn { padding: 11px 18px; font-size: 14.5px; }
+/* screenshots: the capture itself, rounded, on a hairline — no device chrome */
+.shot { width: var(--shot-w); max-width: 44vw; }
+.shot img { border-radius: var(--radius); border: 1px solid var(--line); }
+.shot figcaption { margin-top: 10px; font-size: var(--fs-small); display: grid; }
+.shot figcaption span { font-weight: 700; }
+.shot figcaption small { color: var(--ink-3); font-size: 13px; }
+/* three stages side by side: they share the column instead of wrapping */
+.part-media.three { flex-wrap: nowrap; }
+.part-media.three .shot { flex: 1 1 0; width: auto; max-width: 200px; }
+
+/* ── 4. Pieces ───────────────────────────────────────────────────────── */
+/* nav */
+.nav { position: sticky; top: 0; z-index: 40; background: var(--paper); border-bottom: 1px solid var(--line); }
+.nav-in { display: flex; align-items: center; gap: 16px; height: 60px; }
+.logo img { height: 22px; width: auto; }
+.logo .mark-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo .mark-light { display: none; } :root:not([data-theme="light"]) .logo .mark-dark { display: block; } }
+.nav-links { display: none; margin-left: auto; gap: 22px; }
+.nav-links a { text-decoration: none; font-size: 15px; color: var(--ink-2); }
+.nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
 @media (min-width: 1000px) { .nav-links { display: flex; } }
 @media (max-width: 999px) { .lang { margin-left: auto; } }
-
-/* language switch — the same shape the parent app uses for its own EN / 한국어 toggle */
-/* A pale track is invisible on a white bar, so the control gets a hairline and the selected
-   side is filled in ink — unmistakable, and it avoids a second green pill beside Download. */
-.lang { display: inline-flex; gap: 2px; background: var(--switch-track); border: 1px solid var(--switch-edge); border-radius: 999px; padding: 3px; flex-shrink: 0; }
-.lang button { min-width: 44px; text-align: center; }
-.lang button {
-  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1;
-  padding: 8px 13px; border-radius: 999px; border: 0; cursor: pointer;
-  background: transparent; color: var(--ink-2);
-  transition: background .14s ease, color .14s ease;
-}
-.lang button:hover { color: var(--ink); }
+.lang { display: flex; gap: 4px; }
+.lang button { font: inherit; font-size: 14px; background: none; border: 0; padding: 6px 8px; cursor: pointer; color: var(--ink-3); }
+.lang button[aria-pressed="true"] { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
 .lng-abbr { display: none; }
-.lang button[aria-pressed="true"] { background: var(--ink); color: var(--ground); box-shadow: none; }
+@media (max-width: 520px) { .lng-full { display: none; } .lng-abbr { display: inline; } .nav-in { gap: 10px; } }
 
-/* ── hero ───────────────────────────────────────────────────────────── */
-/* A light hero: three soft blooms pooled at the top over the sand ground — the same wash the
-   app paints behind its own screens. The green phone screens and the green CTAs read as the
-   brightest things on it, which a dark green field could not do. */
-.hero {
-  /* pulled up under the sticky nav so the wash starts at y=0 and the bar sits ON the hero;
-     the padding gives the content back the space the nav occupies */
-  margin-top: -62px; padding-top: 62px;
-  position: relative; overflow: hidden; color: var(--ink);
-  background:
-    radial-gradient(62% 52% at 26% -8%, var(--bloom-a) 0%, transparent 72%),
-    radial-gradient(54% 48% at 84% 2%, var(--bloom-b) 0%, transparent 74%),
-    radial-gradient(46% 42% at 56% 18%, var(--bloom-c) 0%, transparent 70%),
-    var(--ground-2);
-  border-bottom: 1px solid var(--line);
-}
-.hero-in { position: relative; display: grid; gap: clamp(34px, 4vw, 54px); align-items: center; padding-block: clamp(30px, 4vw, 56px) clamp(48px, 6vw, 80px); }
-@media (min-width: 960px) { .hero-in { grid-template-columns: 1.06fr .94fr; } }
-.hero h1 { color: var(--ink); }
-.hero .lede { color: var(--ink-2); font-size: clamp(16.5px, 1.6vw, 19px); }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 9px; justify-self: start;
-  padding: 6px 15px 6px 6px; border-radius: 999px;
-  background: var(--surface); border: 1px solid var(--line);
-  font-size: 13px; font-weight: 600; color: var(--ink);
-  box-shadow: var(--card-shadow);
-}
-.hero-badge .pill { background: var(--green); color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.hero-points { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 2px; }
-.hero-points span { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
-.hero-points svg { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; }
+/* buttons */
+.btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
+.btn.store { display: inline-grid; line-height: 1.2; padding: 10px 18px; }
+.btn.store small { font-weight: 400; font-size: 11px; opacity: .75; }
+.note { font-size: var(--fs-small); color: var(--ink-3); }
 
-/* The phone frame is CSS, not part of the image. The ratios come straight from the
-   prototype's own bezel (390 wide: 12 padding, 56 outer radius, 46 inner, 122×34 island),
-   so the frame is the same object at every size and its corners stay smooth — a baked-in
-   bezel had to be resampled at each display width and went ragged. */
-.device {
-  position: relative; width: var(--w); flex-shrink: 0;
-  background: #0b0b10; padding: calc(var(--w) * .0308);
-  border-radius: calc(var(--w) * .1436);
-  box-shadow: 0 0 0 1.5px #1c1c24;
-}
-.device > img { width: 100%; border-radius: calc(var(--w) * .1179); }
-.device .island {
-  position: absolute; top: calc(var(--w) * .0564); left: 50%; transform: translateX(-50%);
-  width: calc(var(--w) * .3128); height: calc(var(--w) * .0872);
-  border-radius: 999px; background: #000; z-index: 2;
-}
+/* hero */
+.hero { padding-block: clamp(48px, 7vw, 96px); }
+.hero-in { display: grid; gap: var(--space-block); align-items: center; }
+@media (min-width: 900px) { .hero-in { grid-template-columns: 1.1fr .9fr; } }
+.hero-text { display: grid; gap: 22px; justify-items: start; }
+.hero .shot { --shot-w: 280px; margin-inline: auto; }
+.checks { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: var(--fs-small); color: var(--ink-2); }
+.checks li::before { content: "✓ "; color: var(--accent); }
 
-/* hero device composition — a fixed stack, sized so it never outgrows the fold */
-.phones { position: relative; width: min(430px, 100%); justify-self: center; align-self: center; display: flex; justify-content: center; }
-.phones .device { box-shadow: 0 0 0 1.5px #1c1c24, 0 26px 50px rgba(26,32,28,.22); }
-.device.front { --w: clamp(212px, 62vw, var(--phone-lg)); z-index: 2; }
-.device.back {
-  --w: clamp(172px, 50vw, 248px);   /* the hero's second phone, behind and tilted */
-  position: absolute; top: 7%; right: 0; z-index: 1;
-  transform: rotate(6deg); transform-origin: bottom left;
-}
-.hero-mascot { position: absolute; left: -2%; bottom: 1%; width: 38%; z-index: 3; transform: rotate(-5deg); filter: drop-shadow(0 16px 26px rgba(26,32,28,.26)); }
-@media (max-width: 700px) {
-  .phones { width: min(330px, 100%); }
-  .device.back { display: none; }
-  .hero-mascot { width: 34%; }
-}
+/* at a glance */
+.glance { display: grid; grid-template-columns: repeat(2, 1fr); border-block: 1px solid var(--line); }
+@media (min-width: 780px) { .glance { grid-template-columns: repeat(4, 1fr); } }
+.glance div { padding: 22px 20px; border-left: 1px solid var(--line); }
+.glance div:first-child { border-left: 0; }
+.glance b { display: block; font-size: 22px; }
+.glance span { font-size: var(--fs-small); color: var(--ink-2); }
 
-/* ── stat strip ─────────────────────────────────────────────────────── */
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
-@media (min-width: 780px) { .stats { grid-template-columns: repeat(4, 1fr); } }
-.stat { background: var(--ground); padding: 26px 22px; text-align: center; }
-.stat b { display: block; font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: clamp(23px, 2.8vw, 30px); font-weight: 600; line-height: 1.15; color: var(--green-ink); }
-.stat span { font-size: 13.5px; color: var(--ink-2); }
+/* lists */
+.cols { display: grid; gap: var(--space-block); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.cols > * { display: grid; gap: 8px; align-content: start; }
+.cols p { color: var(--ink-2); }
+.steps { list-style: none; padding: 0; }
+.steps li { border-top: 2px solid var(--ink); padding-top: 14px; }
+.steps .n { font-size: var(--fs-small); font-weight: 700; color: var(--accent); }
+.points { list-style: none; padding: 0; display: grid; gap: 16px; margin-top: 8px; }
+.points p { color: var(--ink-2); font-size: 15.5px; }
+.timeline { list-style: none; padding: 0; display: grid; gap: 4px; font-size: 15px; border-left: 2px solid var(--line); padding-left: 16px; }
+.timeline b { display: inline-block; min-width: 46px; }
 
-/* ── section dividers ──────────────────────────────────────────────
-   Human + AI version: every section opens with a numbered label and a hairline, so the page
-   reads as a list of chapters you can find again, not one long scroll. */
-.sec-bar { display: flex; align-items: center; gap: 12px; margin-bottom: clamp(26px, 3.4vw, 40px);
-  font-size: 12.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
-.sec-bar::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
-.sec-n { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 14px; letter-spacing: .02em; color: var(--green-ink); }
-.sub-n { font-family: Fredoka, "Noto Sans KR", sans-serif; letter-spacing: .02em; color: var(--ink-soft); margin-right: 6px; }
-/* sub-parts inside one section are separated by a hairline, so each reads as its own block */
-.row + .row { border-top: 1px solid var(--line); padding-top: clamp(40px, 5vw, 70px); }
-.nav-links a[aria-current="true"] { color: var(--green-ink); box-shadow: inset 0 -2px 0 var(--green); padding-bottom: 4px; }
+/* comparison */
+.table-scroll { overflow-x: auto; }
+table { width: 100%; min-width: 560px; border-collapse: collapse; }
+th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line); font-size: 15.5px; vertical-align: top; }
+thead th { font-size: var(--fs-small); color: var(--ink-2); }
+td { color: var(--ink-2); }
+td.us { color: var(--ink); font-weight: 600; }
 
-/* ── cards ──────────────────────────────────────────────────────────── */
-.cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 25px; box-shadow: var(--card-shadow); }
-.card .ic { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; background: var(--green-tint); color: var(--green-ink); margin-bottom: 15px; }
-.card .ic svg { width: 21px; height: 21px; }
-.card h3 { margin-bottom: 8px; }
-.card p { color: var(--ink-2); font-size: 15px; }
-
-/* ── steps ──────────────────────────────────────────────────────────── */
-.steps { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); }
-.step { padding-top: 15px; border-top: 3px solid var(--green); }
-.step .n { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 13px; font-weight: 700; color: var(--green-ink); letter-spacing: .08em; }
-.step h3 { margin: 6px 0 8px; }
-.step p { color: var(--ink-2); font-size: 15px; }
-
-/* ── alternating feature rows ───────────────────────────────────────── */
-.row { display: grid; gap: clamp(30px, 4.5vw, 58px); align-items: center; }
-@media (min-width: 900px) {
-  .row { grid-template-columns: 1fr 1fr; }
-  .row.reverse .row-media { order: -1; }
-}
-.row + .row { margin-top: clamp(48px, 6vw, 84px); }
-/* inline-size containment lets the paired phones size off THIS column rather than the
-   viewport, so they can run large on a wide screen without colliding at 900–1100px. */
-.row-media { display: flex; justify-content: center; container-type: inline-size; }
-/* two screens sharing one media column. Sized off the column (cqw), not the viewport, so
-   they stay large on a wide screen without colliding in the 900–1100px band. */
-/* Three stages of one moment, fanned like a hand of cards: buzz, card, buddy. The middle
-   one steps forward because it is the stage most people will actually see. */
-.fan { display: flex; align-items: center; justify-content: center; }
-.row-media.fan .device { --w: clamp(108px, 36cqw, 220px); box-shadow: 0 0 0 1.5px #1c1c24, 0 18px 36px rgba(26,32,28,.20); }
-.fan .device:first-child { transform: rotate(-8deg) translateY(16px); z-index: 1; margin-right: -13%; }
-.fan .device:nth-child(2) { transform: translateY(-8px) scale(1.05); z-index: 3; }
-.fan .device:last-child { transform: rotate(8deg) translateY(16px); z-index: 2; margin-left: -13%; }
-@media (prefers-reduced-motion: no-preference) {
-  .fan .device { transition: transform .3s ease; }
-  .fan:hover .device:first-child { transform: rotate(-11deg) translateY(16px) translateX(-6px); }
-  .fan:hover .device:last-child { transform: rotate(11deg) translateY(16px) translateX(6px); }
-}
-
-.pair { --pw: clamp(138px, 45cqw, 240px); display: flex; gap: 20px; justify-content: center; flex-wrap: nowrap; }
-.pair .gshot { width: var(--pw); }
-.pair .gshot .device { --w: var(--pw); }   /* outranks the thumbnail default further down */
-.row-media .device { --w: clamp(212px, 58vw, var(--phone-md)); }
-.row h2 { margin-bottom: 13px; }
-.bullets { display: grid; gap: 14px; margin-top: 22px; }
-.bullets > div { display: flex; gap: 13px; align-items: flex-start; }
-.bullets .tick { width: 24px; height: 24px; border-radius: 999px; background: var(--green-tint); color: var(--green-ink); display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
-.bullets .tick svg { width: 13px; height: 13px; }
-.bullets h4 { margin-bottom: 2px; }
-.bullets p { font-size: 14.5px; color: var(--ink-2); }
-
-.timeline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
-.tchip { display: inline-flex; align-items: baseline; gap: 7px; padding: 9px 14px; border-radius: 999px; background: var(--surface-2); font-size: 13.5px; font-weight: 600; }
-.tchip b { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 14px; font-weight: 600; color: var(--green-ink); }
-.tchip.warn b { color: var(--gold); }
-.tchip.hot b { color: var(--rust); }
-
-/* ── comparison ─────────────────────────────────────────────────────── */
-.compare-scroll { overflow-x: auto; }
-table.compare { width: 100%; min-width: 580px; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
-table.compare th, table.compare td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--line); font-size: 15px; vertical-align: middle; }
-table.compare thead th { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 15.5px; font-weight: 600; background: var(--surface-2); }
-table.compare thead th:last-child { color: var(--green-ink); }
-table.compare tbody tr:last-child th, table.compare tbody tr:last-child td { border-bottom: 0; }
-table.compare tbody th { font-weight: 600; color: var(--ink); }
-table.compare td { color: var(--ink-2); }
-table.compare td.yes { color: var(--green-ink); font-weight: 600; }
-
-/* ── privacy ────────────────────────────────────────────────────────── */
-.privacy { display: grid; gap: 16px; }
+/* privacy */
+.privacy { display: grid; gap: var(--space-block); }
 @media (min-width: 840px) { .privacy { grid-template-columns: 1fr 1fr; } }
-.pcol { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 24px 26px; box-shadow: var(--card-shadow); }
-.pcol header { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
-.pcol header h3 { font-size: 19px; }
-.pcol .ic { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0; }
-.pcol .ic svg { width: 17px; height: 17px; }
-.pcol.yes .ic { background: var(--green-tint); color: var(--green-ink); }
-.pcol.no .ic { background: var(--ocean-tint); color: var(--ocean); }
-.pcol ul { list-style: none; margin: 0; padding: 0; }
-.pcol li { display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; }
-.pcol li:first-child { border-top: 0; }
-.pcol li span { margin-left: auto; font-size: 12.5px; color: var(--ink-soft); text-align: right; }
+.privacy ul { list-style: none; padding: 0; margin-top: 12px; }
+.privacy li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.privacy li span + span { color: var(--ink-3); font-size: var(--fs-small); text-align: right; }
 
-/* ── screen cards (used by the paired screens in the feature rows) ─────── */
-.gshot { flex: 0 0 auto; width: var(--phone-sm); margin: 0; }
-.gshot .device { --w: var(--phone-sm); }
-.gshot .cap { display: block; margin-top: 10px; font-size: 13px; font-weight: 600; }
-.gshot .cap small { display: block; font-weight: 400; color: var(--ink-soft); font-size: 12px; }
+/* faq */
+.faq { max-width: 760px; }
+.faq details { border-top: 1px solid var(--line); }
+.faq details:last-child { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; padding: 18px 0; font-weight: 700; }
+.faq p { padding-bottom: 20px; color: var(--ink-2); max-width: 64ch; }
 
-/* ── faq ────────────────────────────────────────────────────────────── */
-.faq { max-width: 780px; margin-inline: auto; border-top: 1px solid var(--line); }
-.faq details { border-bottom: 1px solid var(--line); }
-.faq summary { list-style: none; cursor: pointer; padding: 19px 44px 19px 0; position: relative; font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 17px; font-weight: 600; }
-.faq summary::-webkit-details-marker { display: none; }
-.faq summary::after {
-  content: ""; position: absolute; right: 8px; top: 26px; width: 10px; height: 10px;
-  border-right: 2.4px solid var(--ink-soft); border-bottom: 2.4px solid var(--ink-soft);
-  transform: rotate(45deg); transition: transform .18s ease;
-}
-.faq details[open] summary::after { transform: rotate(-135deg); top: 30px; }
-.faq p { padding: 0 8px 22px 0; color: var(--ink-2); font-size: 15.5px; max-width: 64ch; }
-
-/* ── closing CTA ────────────────────────────────────────────────────── */
-.cta { background: var(--green); color: #fff; }
-.cta-in { display: grid; gap: 24px; align-items: center; padding-block: clamp(44px, 5.5vw, 72px); }
-@media (min-width: 900px) { .cta-in { grid-template-columns: 1.1fr auto; } }
-.cta h2 { color: #fff; margin-bottom: 10px; }
-.cta p { color: rgba(255,255,255,.86); max-width: 52ch; }
-
-/* ── footer ─────────────────────────────────────────────────────────── */
-footer { background: var(--ground-2); border-top: 1px solid var(--line); padding-block: 44px 32px; }
-.foot { display: grid; gap: 30px; }
+/* get + footer */
+.get-in { display: grid; gap: 20px; }
+@media (min-width: 900px) { .get-in { grid-template-columns: 1fr auto; align-items: center; } }
+footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--ink-2); }
+.foot { display: grid; gap: 28px; }
 @media (min-width: 820px) { .foot { grid-template-columns: 1.4fr repeat(3, .8fr); } }
-.foot h5 { font-family: Fredoka, "Noto Sans KR", sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 12px; }
-.foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-.foot a { color: var(--ink-2); text-decoration: none; font-size: 14.5px; }
-.foot a:hover { color: var(--green-ink); }
-.foot-brand p { font-size: 14px; color: var(--ink-2); max-width: 34ch; margin-top: 12px; }
-.legal { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.foot h5 { margin: 0 0 10px; font-size: 13px; color: var(--ink-3); }
+.foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.foot a { text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+.legal { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 24px; color: var(--ink-3); font-size: 12.5px; }
 
-/* ── responsive polish ─────────────────────────────────────────────────
-   Between 960 and 1140 the hero is still two columns but the phone column is
-   narrow, so the tilted back phone was reaching past the page edge. */
-@media (min-width: 960px) and (max-width: 1140px) {
-  .device.front { --w: clamp(196px, 25vw, 258px); }
-  .device.back { --w: clamp(138px, 18vw, 184px); right: 4%; }
-  .hero-mascot { width: 32%; }
-}
-/* Roomy screens can afford a larger hero device. */
-@media (min-width: 1500px) {
-  :root { --phone-lg: 324px; }
-  .wrap { max-width: 1240px; }
-}
-/* Comfortable tap targets where there is no mouse. */
-@media (max-width: 700px) {
-  .lang button { padding: 10px 14px; }
-  .faq summary { padding-block: 22px; }
-  .btn { padding: 15px 22px; }
-  .store { padding: 11px 16px 11px 14px; }
-}
-/* A phone held sideways: short and wide — stop the hero from needing a scroll
-   to reach the buttons, and keep the fan from eating the row. */
-@media (max-height: 520px) and (min-width: 700px) {
-  .hero-in { padding-block: 22px 30px; }
-  .phones { width: min(300px, 100%); }
-}
-
-/* Download is the page's whole purpose — it stays on a phone. The language label goes
-   short instead, which is what buys the room. */
-@media (max-width: 520px) {
-  .lng-full { display: none; }
-  .lng-abbr { display: inline; }
-  .nav-in { gap: 10px; }
-  .nav .btn { padding: 10px 14px; font-size: 13.5px; }
-  .lang button { padding: 9px 11px; font-size: 12.5px; }
-  .nav .logo .mark { display: none; }
-  .nav .logo .mark-sm { display: block; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-  html { scroll-behavior: auto; }
-  .btn:hover { transform: none; }
-}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 
-<!-- ── nav ─────────────────────────────────────────────────────────── -->
+<!-- ═══ NAV ═══════════════════════════════════════════════════════════════ -->
 <nav class="nav">
   <div class="wrap nav-in">
     <a class="logo" href="#top" aria-label="JoanX">
-      <img class="mark mark-light" src="../media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
-      <img class="mark mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
-      <svg class="mark-sm" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="48" fill="#4B814F"></circle><path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg>
+      <img class="mark-light" src="../media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
+      <img class="mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
     </a>
     <div class="nav-links">
       <a href="#how" data-i18n="n.how">How it works</a>
@@ -534,623 +219,388 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
       <button type="button" id="langEn" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" id="langKo" data-lang="ko" aria-pressed="false"><span class="lng-full">한국어</span><span class="lng-abbr">KO</span></button>
     </div>
-    <a class="btn btn-primary" href="#get" data-i18n="n.cta">Download</a>
+    <a class="btn" href="#get" data-i18n="n.cta">Download</a>
   </div>
 </nav>
 
-<!-- ── hero ────────────────────────────────────────────────────────── -->
+<!-- ═══ HERO ══════════════════════════════════════════════════════════════ -->
 <header class="hero" id="top">
   <div class="wrap hero-in">
-    <div class="stack">
-      <span class="hero-badge"><span class="pill">NEW</span> <span data-i18n="h.badge">Guardian groups — invite by QR or code</span></span>
+    <div class="hero-text">
       <h1 data-i18n="h.h1"><em class="hl">Heads up</em>, the whole way to school.</h1>
-      <p class="lede" data-i18n="h.lede">JoanX notices when your child is walking and staring at
-        their phone, and answers with one buzz instead of a locked screen. Looking up earns points,
-        grows their buddy, and beats the villains — so stopping is the thing that wins.</p>
-
-      <div class="stores">
-        <!-- App Store button hidden until JoanX is actually on the App Store: an inert
-             button for a store you cannot download from is a promise the page can't keep.
-             Uncomment this block and restore "alt" on the Google Play button below to
-             bring the pair back. -->
-        <!--
-        <a class="store" href="#get">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.9-3.6 2.2-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7c1.1 0 1.9-1 2.6-2.1.8-1.2 1.2-2.4 1.2-2.4-.1 0-2.2-.9-2.2-3.4zM14.3 5.7c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"></path></svg>
-          <span><small data-i18n="h.store1s">Download on the</small><b>App Store</b></span>
-        </a>
-        -->
-        <a class="store" href="#get">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l.1.1 9.3-9.3v-.2L3.6 2.3zM16.4 15.3l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.6 0 2.2l-3.8 2zM15.6 16.1l-3.2-3.2-9.3 9.3c.3.4.9.4 1.5.1l11-6.2M4.6 1.7c-.6-.3-1.2-.3-1.5.1l9.3 9.3 3.2-3.2-11-6.2z"></path></svg>
-          <span><small data-i18n="h.store2s">Get it on</small><b>Google Play</b></span>
-        </a>
-      </div>
-      <div class="hero-points">
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg> <span data-i18n="h.t1">Never locks the screen</span></span>
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg> <span data-i18n="h.t2">No location tracking</span></span>
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg> <span data-i18n="h.t3">Works on the phone they have</span></span>
-      </div>
+      <p class="lede" data-i18n="h.lede">JoanX notices when your child is walking and staring at their phone, and answers with one buzz instead of a locked screen. Looking up earns points, grows their buddy, and beats the villains — so stopping is the thing that wins.</p>
+      <a class="btn store" href="#get"><small data-i18n="h.store2s">Get it on</small>Google Play</a>
+      <ul class="checks">
+        <li data-i18n="h.t1">Never locks the screen</li>
+        <li data-i18n="h.t2">No location tracking</li>
+        <li data-i18n="h.t3">Works on the phone they have</li>
+      </ul>
     </div>
-
-    <div class="phones">
-      <div class="device back"><img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: 44 of 47 warnings ended in a stop, 312 minutes of safe walking, a five-day streak."><span class="island" aria-hidden="true"></span></div>
-      <div class="device front"><img src="../media/shots/child-home.png" width="535" height="1200" alt="The JoanX child app: a star-shaped buddy called Lumi inside an XP ring, a points chip, and today's tasks."><span class="island" aria-hidden="true"></span></div>
-      <img class="hero-mascot" src="../media/art/mascot-halt.png" width="590" height="700" alt="King Cubix, the JoanX mascot — a blue cube-headed king holding up a hand to say stop.">
-    </div>
+        <figure class="shot">
+          <img src="../media/shots/child-home.png" width="535" height="1200" alt="The JoanX child app: a star-shaped buddy called Lumi inside an XP ring, a points chip, and today's tasks." loading="lazy">
+        </figure>
   </div>
 </header>
 
-<!-- ── stats ───────────────────────────────────────────────────────── -->
-<section class="stats" aria-label="At a glance">
-  <div class="stat"><b data-i18n="s.1b">Up to 5</b><span data-i18n="s.1">Children on one account</span></div>
-  <div class="stat"><b data-i18n="s.2b">No map</b><span data-i18n="s.2">Where they are is never shown to you</span></div>
-  <div class="stat"><b data-i18n="s.3b">2 apps</b><span data-i18n="s.3">One for them, one for you</span></div>
-  <div class="stat"><b data-i18n="s.4b">No payments</b><span data-i18n="s.4">Nothing a child can buy with real money</span></div>
+<!-- ═══ AT A GLANCE ═══════════════════════════════════════════════════════ -->
+<section class="wrap" aria-label="At a glance">
+  <div class="glance">
+    <div><b data-i18n="s.1b">Up to 5</b><span data-i18n="s.1">Children on one account</span></div>
+    <div><b data-i18n="s.2b">No map</b><span data-i18n="s.2">Where they are is never shown to you</span></div>
+    <div><b data-i18n="s.3b">2 apps</b><span data-i18n="s.3">One for them, one for you</span></div>
+    <div><b data-i18n="s.4b">No payments</b><span data-i18n="s.4">Nothing a child can buy with real money</span></div>
+  </div>
 </section>
 
-<!-- ── why ─────────────────────────────────────────────────────────── -->
-<section class="band" id="why">
+<!-- ═══ 01 · WHY JOANX ════════════════════════════════════════════════════ -->
+<section class="section" id="why">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">01</span><span data-i18n="sec.why">Why JoanX</span></div>
-    <div class="stack" style="margin-bottom:40px">
-      <h2 data-i18n="w.h">A safety app your child <em class="hl">won't want to switch off</em></h2>
-      <p class="lede" data-i18n="w.l">Blockers get turned off and trackers get resented. JoanX gives your child a reason to keep it on.</p>
-    </div>
-
-    <div class="cards">
-      <article class="card">
-        <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="3"></rect><path d="M11 18h2"></path></svg></span>
-        <h3 data-i18n="w.c1h">One buzz, never a block</h3>
-        <p data-i18n="w.c1p">A single vibration, then a card, then their buddy asking them to look
-          up. The phone is never taken away — and calls and texts can never be blocked.</p>
-      </article>
-      <article class="card">
-        <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6L12 16.8 6.6 19.6l1.2-6L3.3 9.4l6.1-.8L12 3z"></path></svg></span>
-        <h3 data-i18n="w.c2h">Looking up is how you win</h3>
-        <p data-i18n="w.c2p">Every phone-free minute pays points. Points hatch eggs and grow a buddy
-          through ten levels — strong enough to take on the ten villains. Stop fastest and you earn the most.</p>
-      </article>
-      <article class="card">
-        <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 21s-7-5.1-7-10a7 7 0 0 1 14 0c0 4.9-7 10-7 10Z"></path><path d="M3 3l18 18"></path></svg></span>
-        <h3 data-i18n="w.c3h">Progress, not surveillance</h3>
-        <p data-i18n="w.c3p">You get a weekly read on whether the behaviour is changing. No map, no
-          location trail, no reading their messages.</p>
-      </article>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="sec.why">Why JoanX</span></p>
+        <h2 data-i18n="w.h">A safety app your child <em class="hl">won't want to switch off</em></h2>
+        <p class="lede" data-i18n="w.l">Blockers get turned off and trackers get resented. JoanX gives your child a reason to keep it on.</p>
+      </header>
+    <div class="cols">
+      <div><h3 data-i18n="w.c1h">One buzz, never a block</h3><p data-i18n="w.c1p">A single vibration, then a card, then their buddy asking them to look up. The phone is never taken away — and calls and texts can never be blocked.</p></div>
+      <div><h3 data-i18n="w.c2h">Looking up is how you win</h3><p data-i18n="w.c2p">Every phone-free minute pays points. Points hatch eggs and grow a buddy through ten levels — strong enough to take on the ten villains. Stop fastest and you earn the most.</p></div>
+      <div><h3 data-i18n="w.c3h">Progress, not surveillance</h3><p data-i18n="w.c3p">You get a weekly read on whether the behaviour is changing. No map, no location trail, no reading their messages.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ── how it works ────────────────────────────────────────────────── -->
-<section class="band band-alt" id="how">
+<!-- ═══ 02 · HOW IT WORKS ═════════════════════════════════════════════════ -->
+<section class="section alt" id="how">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">02</span><span data-i18n="sec.how">How it works</span></div>
-    <div class="stack" style="margin-bottom:42px">
-      <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="n" data-i18n="hw.n1">STEP 1</div>
-        <h3 data-i18n="hw.h1">Pair their phone</h3>
-        <p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on
-          their screen. No wearable, no new hardware, nothing to buy.</p>
-      </div>
-      <div class="step">
-        <div class="n" data-i18n="hw.n2">STEP 2</div>
-        <h3 data-i18n="hw.h2">They walk, it watches one thing</h3>
-        <p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same
-          time. The rest of the day, JoanX does nothing at all.</p>
-      </div>
-      <div class="step">
-        <div class="n" data-i18n="hw.n3">STEP 3</div>
-        <h3 data-i18n="hw.h3">You read the week</h3>
-        <p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether
-          it is happening less as the week goes on.</p>
-      </div>
-    </div>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="sec.how">How it works</span></p>
+        <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
+      </header>
+    <ol class="cols steps">
+      <li><span class="n" data-i18n="hw.n1">STEP 1</span><h3 data-i18n="hw.h1">Pair their phone</h3><p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p></li>
+      <li><span class="n" data-i18n="hw.n2">STEP 2</span><h3 data-i18n="hw.h2">They walk, it watches one thing</h3><p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p></li>
+      <li><span class="n" data-i18n="hw.n3">STEP 3</span><h3 data-i18n="hw.h3">You read the week</h3><p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p></li>
+    </ol>
   </div>
 </section>
 
-<!-- ── the safety moment ───────────────────────────────────────────── -->
-<section class="band" id="safety">
+<!-- ═══ 03 · THE SAFETY MOMENT ════════════════════════════════════════════ -->
+<section class="section" id="safety">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">03</span><span data-i18n="sec.safety">The safety moment</span></div>
-    <div class="row">
-      <div>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="sec.safety">The safety moment</span></p>
         <h2 data-i18n="sm.h">Ten seconds of grace, then <em class="hl">one buzz</em></h2>
         <p class="lede" data-i18n="sm.l">Nobody is warned for putting the phone away. Keep going, and only the tone gets firmer — never the force.</p>
-        <div class="timeline">
-          <span class="tchip"><b>10s</b> <span data-i18n="sm.ch1">grace — a heads-up, no buzz</span></span>
-          <span class="tchip warn"><b>1</b> <span data-i18n="sm.ch2">vibration per round, never a constant buzz</span></span>
-          <span class="tchip warn"><b>2s</b> <span data-i18n="sm.ch3">to stop before any screen shows</span></span>
-          <span class="tchip hot"><b data-i18n="sm.ch4b">Card</b> <span data-i18n="sm.ch4">one line, one button</span></span>
-          <span class="tchip"><b>5s</b> <span data-i18n="sm.ch5">quiet, then firmer</span></span>
-        </div>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="sm.b1h">The best outcome has no screen at all</h4>
-              <p data-i18n="sm.b1p">Look up within two seconds of the buzz and no warning is ever drawn — and that path pays the most points.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="sm.b2h">Every reminder is on the record</h4>
-              <p data-i18n="sm.b2p">Keep walking head-down and it comes back five seconds later, firmer — and a warning they ignore shows up in your report.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="sm.b3h">It gets firmer. It never gets mean</h4>
-              <p data-i18n="sm.b3p">The strongest thing JoanX can do is say so plainly — and note it in your report.</p>
-            </div>
-          </div>
-        </div>
+      </header>
+    <div class="part">
+      <div class="part-text">
+        <ol class="timeline">
+          <li><b>10s</b> <span data-i18n="sm.ch1">grace — a heads-up, no buzz</span></li>
+          <li><b>1</b> <span data-i18n="sm.ch2">vibration per round, never a constant buzz</span></li>
+          <li><b>2s</b> <span data-i18n="sm.ch3">to stop before any screen shows</span></li>
+          <li><b data-i18n="sm.ch4b">Card</b> <span data-i18n="sm.ch4">one line, one button</span></li>
+          <li><b>5s</b> <span data-i18n="sm.ch5">quiet, then firmer</span></li>
+        </ol>
+        <ul class="points">
+          <li><h4 data-i18n="sm.b1h">The best outcome has no screen at all</h4><p data-i18n="sm.b1p">Look up within two seconds of the buzz and no warning is ever drawn — and that path pays the most points.</p></li>
+          <li><h4 data-i18n="sm.b2h">Every reminder is on the record</h4><p data-i18n="sm.b2p">Keep walking head-down and it comes back five seconds later, firmer — and a warning they ignore shows up in your report.</p></li>
+          <li><h4 data-i18n="sm.b3h">It gets firmer. It never gets mean</h4><p data-i18n="sm.b3p">The strongest thing JoanX can do is say so plainly — and note it in your report.</p></li>
+        </ul>
       </div>
-      <div class="row-media fan">
-        <div class="device"><img src="../media/shots/stage-buzz.png" alt="Stage one: a single vibration, shown as a small buzz marker over the child's home screen — no card yet." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-        <div class="device"><img src="../media/shots/stage-card.png" alt="Stage two: the warning card — the mascot with a hand raised, “Hey, you should look ahead.” and one button." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-        <div class="device"><img src="../media/shots/stage-message.png" alt="Stage three: the buddy speaks — “You're looking again. Now really look ahead.” with a single Okay, got it button." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
+      <div class="part-media three">
+        <figure class="shot">
+          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="Stage one: a single vibration, shown as a small buzz marker over the child's home screen — no card yet." loading="lazy">
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/stage-card.png" width="535" height="1200" alt="Stage two: the warning card — the mascot with a hand raised, “Hey, you should look ahead.” and one button." loading="lazy">
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/stage-message.png" width="535" height="1200" alt="Stage three: a firmer message — “You're looking again. Now really look ahead.” with a single Okay, got it button." loading="lazy">
+        </figure>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── the game ────────────────────────────────────────────────────── -->
-<section class="band band-alt" id="game">
+<!-- ═══ 04 · THE GAME ═════════════════════════════════════════════════════ -->
+<section class="section alt" id="game">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">04</span><span data-i18n="sec.game">The game</span></div>
-    <div class="row reverse">
-      <div>
-        <p class="kicker"><span class="sub-n">4.1</span><span data-i18n="g.k">The buddy</span></p>
-        <h2 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h2>
+    <header class="sec-head">
+      <p class="sec-label"><span class="sec-num">04</span><span data-i18n="sec.game">The game</span></p>
+    </header>
+
+    <!-- 4.1 the buddy -->
+    <div class="part">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">4.1</span><span data-i18n="g.k">The buddy</span></p>
+        <h3 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h3>
         <p class="lede" data-i18n="g.l">10 points a minute with the phone down, 50 for stopping before a warning. Nothing is bought with your card.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g.b1h">A buddy that visibly grows</h4>
-              <p data-i18n="g.b1p">Ten levels, three stages. It transforms the moment the level lands — even straight off a battle win.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g.b2h">The rarest buddies are earned, not bought</h4>
-              <p data-i18n="g.b2p">Epic eggs can't be bought at all — they come from a thirty-day streak, reaching level ten, or beating the final villain. A child who never spends a point can still collect the best of them.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g.b3h">Rooms, friends, no chat</h4>
-              <p data-i18n="g.b3p">Visit a friend's room, leave a like or one screened line. There is no messaging between children, by design.</p>
-            </div>
-          </div>
-        </div>
+        <ul class="points">
+          <li><h4 data-i18n="g.b1h">A buddy that visibly grows</h4><p data-i18n="g.b1p">Ten levels, three stages. It transforms the moment the level lands — even straight off a battle win.</p></li>
+          <li><h4 data-i18n="g.b2h">The rarest buddies are earned, not bought</h4><p data-i18n="g.b2p">Epic eggs can't be bought at all — they come from a thirty-day streak, reaching level ten, or beating the final villain. A child who never spends a point can still collect the best of them.</p></li>
+          <li><h4 data-i18n="g.b3h">Rooms, friends, no chat</h4><p data-i18n="g.b3p">Visit a friend's room, leave a like or one screened line. There is no messaging between children, by design.</p></li>
+        </ul>
       </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="child-collection.png">
-          <div class="device"><img src="../media/shots/child-collection.png" alt="The collection screen showing buddies the child has earned and slots still locked." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="g.s5">The collection</span><small data-i18n="g.s5s">Earned buddies, and the ones still out there</small></span>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/child-collection.png" width="535" height="1200" alt="The collection screen showing buddies the child has earned and slots still locked." loading="lazy">
+          <figcaption><span data-i18n="g.s5">The collection</span><small data-i18n="g.s5s">Earned buddies, and the ones still out there</small></figcaption>
         </figure>
-        <figure class="gshot" data-shot="child-decorate.png">
-          <div class="device"><img src="../media/shots/child-decorate.png" alt="Dressing up the buddy Lumi: a hat and coat wardrobe, three coats priced in points, and a buy bar showing 200 points." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="g.s6">The wardrobe</span><small data-i18n="g.s6s">Hats and coats, priced in points</small></span>
+        <figure class="shot">
+          <img src="../media/shots/child-decorate.png" width="535" height="1200" alt="Dressing up the buddy Lumi: a hat and coat wardrobe priced in points, and a buy bar." loading="lazy">
+          <figcaption><span data-i18n="g.s6">The wardrobe</span><small data-i18n="g.s6s">Hats and coats, priced in points</small></figcaption>
         </figure>
       </div>
     </div>
 
-    <div class="row" style="margin-top:clamp(46px,6vw,80px)">
-      <div>
-        <p class="kicker"><span class="sub-n">4.2</span><span data-i18n="g2.k">The villains</span></p>
-        <h2 data-i18n="g2.h"><em class="hl">Ten habits with names</em>, fought one at a time</h2>
+    <!-- 4.2 the villains -->
+    <div class="part flip">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">4.2</span><span data-i18n="g2.k">The villains</span></p>
+        <h3 data-i18n="g2.h"><em class="hl">Ten habits with names</em>, fought one at a time</h3>
         <p class="lede" data-i18n="g2.l">Each villain is a real habit that pulls eyes down — like Ping, the notification that never stops asking.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g2.b1h">No skipping ahead</h4>
-              <p data-i18n="g2.b1p">Each win unlocks the next villain, so how far along the road they are is a record of how long they have been walking safely.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g2.b2h">A character, not a stat block</h4>
-              <p data-i18n="g2.b2p">Each one has a story and a move of its own, written to put a name to a habit rather than to look frightening.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g2.b3h">Five tries a day</h4>
-              <p data-i18n="g2.b3p">Battles are capped. This is a reward for a day of safe walking, not something to sit and grind.</p>
-            </div>
-          </div>
-        </div>
+        <ul class="points">
+          <li><h4 data-i18n="g2.b1h">No skipping ahead</h4><p data-i18n="g2.b1p">Each win unlocks the next villain, so how far along the road they are is a record of how long they have been walking safely.</p></li>
+          <li><h4 data-i18n="g2.b2h">A character, not a stat block</h4><p data-i18n="g2.b2p">Each one has a story and a move of its own, written to put a name to a habit rather than to look frightening.</p></li>
+          <li><h4 data-i18n="g2.b3h">Five tries a day</h4><p data-i18n="g2.b3p">Battles are capped. This is a reward for a day of safe walking, not something to sit and grind.</p></li>
+        </ul>
       </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="child-villain-road.png">
-            <div class="device"><img src="../media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road: a painted map with ten villains — the first, Ping, ready to fight and the rest still hidden." loading="lazy"><span class="island" aria-hidden="true"></span></div>
-            <span class="cap"><span data-i18n="g.s1">The road</span><small data-i18n="g.s1s">Ten opponents, unlocked in order</small></span>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road: a painted map with ten villains — the first, Ping, ready to fight and the rest still hidden." loading="lazy">
+          <figcaption><span data-i18n="g.s1">The road</span><small data-i18n="g.s1s">Ten opponents, unlocked in order</small></figcaption>
         </figure>
-        <figure class="gshot" data-shot="child-villain-card.png">
-            <div class="device"><img src="../media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping, level 1: power, reward, the habit it stands for, its story and its special move, above a Start battle button." loading="lazy"><span class="island" aria-hidden="true"></span></div>
-            <span class="cap"><span data-i18n="g.s2">The villain</span><small data-i18n="g.s2s">What it is, and what beating it pays</small></span>
+        <figure class="shot">
+          <img src="../media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping, level 1: power, reward, the habit it stands for, its story and its special move, above a Start battle button." loading="lazy">
+          <figcaption><span data-i18n="g.s2">The villain</span><small data-i18n="g.s2s">What it is, and what beating it pays</small></figcaption>
         </figure>
       </div>
     </div>
 
-    <div class="row reverse">
-      <div>
-        <p class="kicker"><span class="sub-n">4.3</span><span data-i18n="g3.k">The battle</span></p>
-        <h2 data-i18n="g3.h">Fought with a buddy <em class="hl">their walking built</em></h2>
+    <!-- 4.3 the battle -->
+    <div class="part">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">4.3</span><span data-i18n="g3.k">The battle</span></p>
+        <h3 data-i18n="g3.h">Fought with a buddy <em class="hl">their walking built</em></h3>
         <p class="lede" data-i18n="g3.l">The buddy in the ring is the one they grew by walking with the phone down.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g3.b1h">The odds are shown first</h4>
-              <p data-i18n="g3.b1p">Win chance and both power totals, before they commit — so a loss is never a nasty surprise.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g3.b2h">A win pays twice</h4>
-              <p data-i18n="g3.b2p">Points towards the next egg and XP towards the next level — and a win that tips a level can evolve the buddy on the spot.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="g3.b3h">It stops when they start walking</h4>
-              <p data-i18n="g3.b3p">Begin moving and the battle closes itself. The game is never allowed to compete with the road.</p>
-            </div>
-          </div>
-        </div>
+        <ul class="points">
+          <li><h4 data-i18n="g3.b1h">The odds are shown first</h4><p data-i18n="g3.b1p">Win chance and both power totals, before they commit — so a loss is never a nasty surprise.</p></li>
+          <li><h4 data-i18n="g3.b2h">A win pays twice</h4><p data-i18n="g3.b2p">Points towards the next egg and XP towards the next level — and a win that tips a level can evolve the buddy on the spot.</p></li>
+          <li><h4 data-i18n="g3.b3h">It stops when they start walking</h4><p data-i18n="g3.b3p">Begin moving and the battle closes itself. The game is never allowed to compete with the road.</p></li>
+        </ul>
       </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="child-battle-versus.png">
-            <div class="device"><img src="../media/shots/child-battle-versus.png" width="535" height="1200" alt="The versus screen: Ping on one side, the child's buddy Lumi on the other, a VS crest between them." loading="lazy"><span class="island" aria-hidden="true"></span></div>
-            <span class="cap"><span data-i18n="g.s3">The face-off</span><small data-i18n="g.s3s">Their buddy against it</small></span>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/child-battle-versus.png" width="535" height="1200" alt="The versus screen: Ping on one side, the child's buddy Lumi on the other, a VS crest between them." loading="lazy">
+          <figcaption><span data-i18n="g.s3">The face-off</span><small data-i18n="g.s3s">Their buddy against it</small></figcaption>
         </figure>
-        <figure class="gshot" data-shot="child-battle-result.png">
-            <div class="device"><img src="../media/shots/child-battle-result.png" width="535" height="1200" alt="The result screen: Victory, plus 120 points and 60 XP, with the battle maths showing HP, courage, protection, speed and win chance." loading="lazy"><span class="island" aria-hidden="true"></span></div>
-            <span class="cap"><span data-i18n="g.s4">The result</span><small data-i18n="g.s4s">Points and XP for the win</small></span>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-<!-- ── for parents ─────────────────────────────────────────────────── -->
-<section class="band" id="parents">
-  <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">05</span><span data-i18n="sec.parents">For parents</span></div>
-    <div class="row">
-      <div>
-        <p class="kicker"><span class="sub-n">5.1</span><span data-i18n="p.k">The weekly report</span></p>
-        <h2 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h2>
-        <p class="lede" data-i18n="p.l">Not just how often it happened — whether it is happening less as the week goes on.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p.b1h">The week in four numbers</h4>
-              <p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p.b2h">A summary in plain language</h4>
-              <p data-i18n="p.b2p">The verdict first, then the week's story, then one thing to try — not a wall of charts at 11pm.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p.b3h">A hard knock reaches you</h4>
-              <p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p.b4h">One dashboard, every child</h4>
-              <p data-i18n="p.b4p">Up to five children on one account, each with their own rules, device and week. You switch between them at the top of the page.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="parent-reports.png">
-          <div class="device"><img src="../media/shots/parent-reports.png" alt="The parent app's weekly report: 44 of 47 warnings ended in a stop, 312 minutes of safe walking, a five-day streak." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.1">This week</span><small data-i18n="pa.1s">Stops, ignored, minutes, streak</small></span>
-        </figure>
-        <figure class="gshot" data-shot="parent-children.png">
-          <div class="device"><img src="../media/shots/parent-children.png" alt="The children list: each child's device, battery, and whether their setup permissions are on." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.2">Your children</span><small data-i18n="pa.2s">Device, battery and what they agreed to</small></span>
-        </figure>
-      </div>
-    </div>
-
-    <div class="row reverse">
-      <div>
-        <p class="kicker"><span class="sub-n">5.2</span><span data-i18n="p2.k">Groups</span></p>
-        <h2 data-i18n="p2.h">Both parents, <em class="hl">the aunt on Tuesdays</em>, the school run</h2>
-        <p class="lede" data-i18n="p2.l">Everyone looking after the same child sees the same week, and nobody joins without approval.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p2.b1h">Up to five circles</h4>
-              <p data-i18n="p2.b1p">A household, a grandparent, a school-run group — each with its own members and its own children.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p2.b2h">Joined by QR or code</h4>
-              <p data-i18n="p2.b2p">Scan the group's QR or type its code — either way it is only a request. An admin accepts or declines, and the requester sees the answer.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p2.b3h">One main guardian per child</h4>
-              <p data-i18n="p2.b3p">In each group, one adult is the named contact for each child — and it can be a different adult in a different group.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="parent-groups.png">
-          <div class="device"><img src="../media/shots/parent-groups.png" alt="The groups screen: three guardian circles with member counts, the children in each, and a request waiting for approval." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.3">Your groups</span><small data-i18n="pa.3s">Who is watching, and who is waiting</small></span>
-        </figure>
-        <figure class="gshot" data-shot="parent-group-detail.png">
-          <div class="device"><img src="../media/shots/parent-group-detail.png" alt="One group: a join request with Accept and Reject, the guardians in it, and the children with their main guardian." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.4">Inside a group</span><small data-i18n="pa.4s">Approve, or decline, in one tap</small></span>
-        </figure>
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <p class="kicker"><span class="sub-n">5.3</span><span data-i18n="p3.k">Settings and alerts</span></p>
-        <h2 data-i18n="p3.h">Told when something happened, <em class="hl">not every step they take</em></h2>
-        <p class="lede" data-i18n="p3.l">Each child has a page for their phone and permissions. When something real happens, it lands in one place.</p>
-        <div class="bullets">
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p3.b1h">You can see what they agreed to</h4>
-              <p data-i18n="p3.b1p">Motion, screen use, notifications: exactly which protections your child accepted at setup, and which they turned down.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p3.b2h">Two guardians, one alert</h4>
-              <p data-i18n="p3.b2p">Once one of you has checked a moment, the other sees that it is handled — so nobody chases the same thing twice.</p>
-            </div>
-          </div>
-          <div>
-            <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-            <div>
-              <h4 data-i18n="p3.b3h">It says when protection drops</h4>
-              <p data-i18n="p3.b3p">A permission switched off, or a phone gone offline, shows up here instead of quietly weakening in the background.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row-media pair">
-        <figure class="gshot" data-shot="media/shots/parent-rules.png">
-          <div class="device"><img src="../media/shots/parent-rules.png" alt="A child's rules page: the paired device, and the setup agreement showing motion, usage, display-over-apps and notifications all accepted." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.5">Rules & settings</span><small data-i18n="pa.5s">The device, and what they agreed to</small></span>
-        </figure>
-        <figure class="gshot" data-shot="media/shots/parent-alerts.png">
-          <div class="device"><img src="../media/shots/parent-alerts.png" alt="The alerts feed: an impact detected, flagged in red with a call button; a distraction warning; an ignored warning already checked by the other parent; a device gone offline." loading="lazy" width="535" height="1200"><span class="island" aria-hidden="true"></span></div>
-          <span class="cap"><span data-i18n="pa.6">Alerts</span><small data-i18n="pa.6s">Only what actually happened</small></span>
+        <figure class="shot">
+          <img src="../media/shots/child-battle-result.png" width="535" height="1200" alt="The result screen: Victory, plus 120 points and 60 XP, with the battle maths." loading="lazy">
+          <figcaption><span data-i18n="g.s4">The result</span><small data-i18n="g.s4s">Points and XP for the win</small></figcaption>
         </figure>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── comparison ──────────────────────────────────────────────────── -->
-<section class="band band-alt" id="difference">
+<!-- ═══ 05 · FOR PARENTS ══════════════════════════════════════════════════ -->
+<section class="section" id="parents">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">06</span><span data-i18n="sec.diff">The difference</span></div>
-    <div class="stack" style="margin-bottom:32px">
-      <h2 data-i18n="c.h">Most apps fight your child. This one <em class="hl">recruits them</em>.</h2>
+    <header class="sec-head">
+      <p class="sec-label"><span class="sec-num">05</span><span data-i18n="sec.parents">For parents</span></p>
+    </header>
+
+    <!-- 5.1 the weekly report -->
+    <div class="part">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">5.1</span><span data-i18n="p.k">The weekly report</span></p>
+        <h3 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h3>
+        <p class="lede" data-i18n="p.l">Not just how often it happened — whether it is happening less as the week goes on.</p>
+        <ul class="points">
+          <li><h4 data-i18n="p.b1h">The week in four numbers</h4><p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p></li>
+          <li><h4 data-i18n="p.b2h">A summary in plain language</h4><p data-i18n="p.b2p">The verdict first, then the week's story, then one thing to try — not a wall of charts at 11pm.</p></li>
+          <li><h4 data-i18n="p.b3h">A hard knock reaches you</h4><p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p></li>
+          <li><h4 data-i18n="p.b4h">One dashboard, every child</h4><p data-i18n="p.b4p">Up to five children on one account, each with their own rules, device and week. You switch between them at the top of the page.</p></li>
+        </ul>
+      </div>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
+          <figcaption><span data-i18n="pa.1">This week</span><small data-i18n="pa.1s">Stops, ignored, minutes, streak</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/parent-children.png" width="535" height="1200" alt="The children list: each child's device, battery, and whether their setup permissions are on." loading="lazy">
+          <figcaption><span data-i18n="pa.2">Your children</span><small data-i18n="pa.2s">Device, battery and what they agreed to</small></figcaption>
+        </figure>
+      </div>
     </div>
-    <div class="compare-scroll">
-      <table class="compare">
-        <thead>
-          <tr><th scope="col">&nbsp;</th><th scope="col" data-i18n="c.th1">Apps that lock the screen</th><th scope="col">JoanX</th></tr>
-        </thead>
+
+    <!-- 5.2 groups -->
+    <div class="part flip">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">5.2</span><span data-i18n="p2.k">Groups</span></p>
+        <h3 data-i18n="p2.h">Both parents, <em class="hl">the aunt on Tuesdays</em>, the school run</h3>
+        <p class="lede" data-i18n="p2.l">Everyone looking after the same child sees the same week, and nobody joins without approval.</p>
+        <ul class="points">
+          <li><h4 data-i18n="p2.b1h">Up to five circles</h4><p data-i18n="p2.b1p">A household, a grandparent, a school-run group — each with its own members and its own children.</p></li>
+          <li><h4 data-i18n="p2.b2h">Joined by QR or code</h4><p data-i18n="p2.b2p">Scan the group's QR or type its code — either way it is only a request. An admin accepts or declines, and the requester sees the answer.</p></li>
+          <li><h4 data-i18n="p2.b3h">One main guardian per child</h4><p data-i18n="p2.b3p">In each group, one adult is the named contact for each child — and it can be a different adult in a different group.</p></li>
+        </ul>
+      </div>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: guardian groups with member counts, the children in each, and a request waiting for approval." loading="lazy">
+          <figcaption><span data-i18n="pa.3">Your groups</span><small data-i18n="pa.3s">Who is watching, and who is waiting</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/parent-group-detail.png" width="535" height="1200" alt="One group: a join request with Accept and Reject, the guardians in it, and the children with their main guardian." loading="lazy">
+          <figcaption><span data-i18n="pa.4">Inside a group</span><small data-i18n="pa.4s">Approve, or decline, in one tap</small></figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <!-- 5.3 settings and alerts -->
+    <div class="part">
+      <div class="part-text">
+        <p class="part-label"><span class="sec-num">5.3</span><span data-i18n="p3.k">Settings and alerts</span></p>
+        <h3 data-i18n="p3.h">Told when something happened, <em class="hl">not every step they take</em></h3>
+        <p class="lede" data-i18n="p3.l">Each child has a page for their phone and permissions. When something real happens, it lands in one place.</p>
+        <ul class="points">
+          <li><h4 data-i18n="p3.b1h">You can see what they agreed to</h4><p data-i18n="p3.b1p">Motion, screen use, notifications: exactly which protections your child accepted at setup, and which they turned down.</p></li>
+          <li><h4 data-i18n="p3.b2h">Two guardians, one alert</h4><p data-i18n="p3.b2p">Once one of you has checked a moment, the other sees that it is handled — so nobody chases the same thing twice.</p></li>
+          <li><h4 data-i18n="p3.b3h">It says when protection drops</h4><p data-i18n="p3.b3p">A permission switched off, or a phone gone offline, shows up here instead of quietly weakening in the background.</p></li>
+        </ul>
+      </div>
+      <div class="part-media">
+        <figure class="shot">
+          <img src="../media/shots/parent-rules.png" width="535" height="1200" alt="A child's rules page: the paired device, and the setup agreement showing which permissions were accepted." loading="lazy">
+          <figcaption><span data-i18n="pa.5">Rules & settings</span><small data-i18n="pa.5s">The device, and what they agreed to</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed: an impact with a call button, a distraction warning, an ignored warning already checked by the other parent, a device gone offline." loading="lazy">
+          <figcaption><span data-i18n="pa.6">Alerts</span><small data-i18n="pa.6s">Only what actually happened</small></figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 06 · THE DIFFERENCE ═══════════════════════════════════════════════ -->
+<section class="section alt" id="difference">
+  <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="sec.diff">The difference</span></p>
+        <h2 data-i18n="c.h">Most apps fight your child. This one <em class="hl">recruits them</em>.</h2>
+      </header>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col" data-i18n="c.th1">Apps that lock the screen</th><th scope="col">JoanX</th></tr></thead>
         <tbody>
-          <tr>
-            <th scope="row" data-i18n="c.r1">When your child slips</th>
-            <td data-i18n="c.r1a">The phone is blocked</td>
-            <td class="yes" data-i18n="c.r1b">One buzz, then a sentence</td>
-          </tr>
-          <tr>
-            <th scope="row" data-i18n="c.r2">What your child does about it</th>
-            <td data-i18n="c.r2a">Turns it off, or borrows a friend's phone</td>
-            <td class="yes" data-i18n="c.r2b">Keeps it — the game is theirs</td>
-          </tr>
-          <tr>
-            <th scope="row" data-i18n="c.r3">Where they are</th>
-            <td data-i18n="c.r3a">Tracked and mapped</td>
-            <td class="yes" data-i18n="c.r3b">Never shown or mapped</td>
-          </tr>
-          <tr>
-            <th scope="row" data-i18n="c.r4">What you get</th>
-            <td data-i18n="c.r4a">An alert every time</td>
-            <td class="yes" data-i18n="c.r4b">A weekly read on the change, and alerts that matter</td>
-          </tr>
-          <tr>
-            <th scope="row" data-i18n="c.r5">Calling for help</th>
-            <td data-i18n="c.r5a">May be blocked with everything else</td>
-            <td class="yes" data-i18n="c.r5b">Phone and texts can never be blocked</td>
-          </tr>
-          <tr>
-            <th scope="row" data-i18n="c.r6">Extra hardware</th>
-            <td data-i18n="c.r6a">Often a watch or tag</td>
-            <td class="yes" data-i18n="c.r6b">The phone they already have</td>
-          </tr>
+          <tr><th scope="row" data-i18n="c.r1">When your child slips</th><td data-i18n="c.r1a">The phone is blocked</td><td class="us" data-i18n="c.r1b">One buzz, then a sentence</td></tr>
+          <tr><th scope="row" data-i18n="c.r2">What your child does about it</th><td data-i18n="c.r2a">Turns it off, or borrows a friend's phone</td><td class="us" data-i18n="c.r2b">Keeps it — the game is theirs</td></tr>
+          <tr><th scope="row" data-i18n="c.r3">Where they are</th><td data-i18n="c.r3a">Tracked and mapped</td><td class="us" data-i18n="c.r3b">Never shown or mapped</td></tr>
+          <tr><th scope="row" data-i18n="c.r4">What you get</th><td data-i18n="c.r4a">An alert every time</td><td class="us" data-i18n="c.r4b">A weekly read on the change, and alerts that matter</td></tr>
+          <tr><th scope="row" data-i18n="c.r5">Calling for help</th><td data-i18n="c.r5a">May be blocked with everything else</td><td class="us" data-i18n="c.r5b">Phone and texts can never be blocked</td></tr>
+          <tr><th scope="row" data-i18n="c.r6">Extra hardware</th><td data-i18n="c.r6a">Often a watch or tag</td><td class="us" data-i18n="c.r6b">The phone they already have</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<!-- ── privacy ─────────────────────────────────────────────────────── -->
-<section class="band" id="privacy">
+<!-- ═══ 07 · PRIVACY ══════════════════════════════════════════════════════ -->
+<section class="section" id="privacy">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">07</span><span data-i18n="sec.privacy">Privacy</span></div>
-    <div class="stack" style="margin-bottom:32px">
-      <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
-      <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
-    </div>
-
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">07</span><span data-i18n="sec.privacy">Privacy</span></p>
+        <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
+        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
+      </header>
     <div class="privacy">
-      <div class="pcol yes">
-        <header>
-          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
-          <h3 data-i18n="pv.y">What you can see</h3>
-        </header>
+      <div>
+        <h3 data-i18n="pv.y">What you can see</h3>
         <ul>
-          <li><span data-i18n="pv.y1">How long they walked safely</span> <span data-i18n="pv.y1n">minutes</span></li>
-          <li><span data-i18n="pv.y2">Warnings, and how each one ended</span> <span data-i18n="pv.y2n">stopped or not</span></li>
-          <li><span data-i18n="pv.y3">Their points and streak</span> <span data-i18n="pv.y3n">the game layer</span></li>
-          <li><span data-i18n="pv.y4">Whether protection is on</span> <span data-i18n="pv.y4n">device &amp; permissions</span></li>
+          <li><span data-i18n="pv.y1">How long they walked safely</span><span data-i18n="pv.y1n">minutes</span></li>
+          <li><span data-i18n="pv.y2">Warnings, and how each one ended</span><span data-i18n="pv.y2n">stopped or not</span></li>
+          <li><span data-i18n="pv.y3">Their points and streak</span><span data-i18n="pv.y3n">the game layer</span></li>
+          <li><span data-i18n="pv.y4">Whether protection is on</span><span data-i18n="pv.y4n">device &amp; permissions</span></li>
         </ul>
       </div>
-      <div class="pcol no">
-        <header>
-          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c7 0 10 7 10 7a15.6 15.6 0 0 1-3.2 4.3M6.6 6.6A15.4 15.4 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 4.3-1"></path></svg></span>
-          <h3 data-i18n="pv.n">What nobody sees</h3>
-        </header>
+      <div>
+        <h3 data-i18n="pv.n">What nobody sees</h3>
         <ul>
-          <li><span data-i18n="pv.n1">Where they are</span> <span data-i18n="pv.n1n">no map</span></li>
-          <li><span data-i18n="pv.n2">Their messages and guestbook</span> <span data-i18n="pv.n2n">never read</span></li>
-          <li><span data-i18n="pv.n3">Their photos</span> <span data-i18n="pv.n3n">never read</span></li>
-          <li><span data-i18n="pv.n4">Which apps they use</span> <span data-i18n="pv.n4n">never shown</span></li>
+          <li><span data-i18n="pv.n1">Where they are</span><span data-i18n="pv.n1n">no map</span></li>
+          <li><span data-i18n="pv.n2">Their messages and guestbook</span><span data-i18n="pv.n2n">never read</span></li>
+          <li><span data-i18n="pv.n3">Their photos</span><span data-i18n="pv.n3n">never read</span></li>
+          <li><span data-i18n="pv.n4">Which apps they use</span><span data-i18n="pv.n4n">never shown</span></li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── faq ─────────────────────────────────────────────────────────── -->
-<section class="band band-alt" id="faq">
+<!-- ═══ 08 · FAQ ══════════════════════════════════════════════════════════ -->
+<section class="section alt" id="faq">
   <div class="wrap">
-    <div class="sec-bar"><span class="sec-n">08</span><span data-i18n="sec.faq">FAQ</span></div>
-    <div class="stack" style="margin-bottom:32px">
-      <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
-    </div>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">08</span><span data-i18n="sec.faq">FAQ</span></p>
+        <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
+      </header>
     <div class="faq">
       <details open>
         <summary data-i18n="f.q1">Does it lock or block my child's phone?</summary>
-        <p data-i18n="f.a1">No. JoanX never blocks the screen. The strongest thing it does is show
-          a firmer message from your child's buddy and note the moment in your weekly report. Calls
-          and texts can never be blocked at all, so your child can always reach you.</p>
+        <p data-i18n="f.a1">No. JoanX never blocks the screen. The strongest thing it does is show a firmer message from your child's buddy and note the moment in your weekly report. Calls and texts can never be blocked at all, so your child can always reach you.</p>
       </details>
       <details>
         <summary data-i18n="f.q2">Can I see where my child is?</summary>
-        <p data-i18n="f.a2">No, and that is deliberate. JoanX has no map and no location trail —
-          walking is noticed from the phone's motion sensor. A child who feels tracked
-          uninstalls the app, and then it protects nobody.</p>
+        <p data-i18n="f.a2">No, and that is deliberate. JoanX has no map and no location trail — walking is noticed from the phone's motion sensor. A child who feels tracked uninstalls the app, and then it protects nobody.</p>
       </details>
       <details>
         <summary data-i18n="f.q3">How does it know they are walking and using the phone?</summary>
-        <p data-i18n="f.a3">The phone's own accelerometer. Walking is confirmed from a steady step
-          cadence held for about eight seconds; if the screen is in use at the same time for ten
-          seconds or more, the safety moment begins. Detection runs on the phone itself; your report is built from
-          the moments it records.</p>
+        <p data-i18n="f.a3">The phone's own accelerometer. Walking is confirmed from a steady step cadence held for about eight seconds; if the screen is in use at the same time for ten seconds or more, the safety moment begins. Detection runs on the phone itself; your report is built from the moments it records.</p>
       </details>
       <details>
         <summary data-i18n="f.q4">Does my child need a smartwatch or any other device?</summary>
-        <p data-i18n="f.a4">No. JoanX runs on the phone they already carry — nothing to buy,
-          nothing to charge.</p>
+        <p data-i18n="f.a4">No. JoanX runs on the phone they already carry — nothing to buy, nothing to charge.</p>
       </details>
       <details>
         <summary data-i18n="f.q5">Can my child just turn it off?</summary>
-        <p data-i18n="f.a5">Their phone pairs to your account rather than to a person, so a child
-          cannot quietly unlink themselves — only a guardian can. They can dismiss a warning, but if
-          they keep walking head-down it comes back firmer, and an ignored warning shows in your report.</p>
+        <p data-i18n="f.a5">Their phone pairs to your account rather than to a person, so a child cannot quietly unlink themselves — only a guardian can. They can dismiss a warning, but if they keep walking head-down it comes back firmer, and an ignored warning shows in your report.</p>
       </details>
       <details>
         <summary data-i18n="f.q6">Can children message each other?</summary>
-        <p data-i18n="f.a6">There is no chat in JoanX. Children can visit each other's rooms, leave
-          a like, and write a one-line guestbook note that is screened before it posts. That is the
-          whole social layer.</p>
+        <p data-i18n="f.a6">There is no chat in JoanX. Children can visit each other's rooms, leave a like, and write a one-line guestbook note that is screened before it posts. That is the whole social layer.</p>
       </details>
       <details>
         <summary data-i18n="f.q7">What does it cost?</summary>
-        <p data-i18n="f.a7">A seven-day free trial is planned. Pricing has not been announced yet —
-          this page will be updated when it is.</p>
+        <p data-i18n="f.a7">A seven-day free trial is planned. Pricing has not been announced yet — this page will be updated when it is.</p>
       </details>
       <details>
         <summary data-i18n="f.q8">How many children can I add?</summary>
-        <p data-i18n="f.a8">Up to five, each with their own rules, their own buddy and their own
-          weekly report. You switch between them at the top of the dashboard, and other adults who
-          help — a co-parent, a grandparent, the school-run circle — can be added to a group for
-          any of them.</p>
+        <p data-i18n="f.a8">Up to five, each with their own rules, their own buddy and their own weekly report. You switch between them at the top of the dashboard, and other adults who help — a co-parent, a grandparent, the school-run circle — can be added to a group for any of them.</p>
       </details>
     </div>
   </div>
 </section>
 
-<!-- ── closing CTA ─────────────────────────────────────────────────── -->
-<section class="cta on-dark" id="get">
-  <div class="wrap cta-in">
+<!-- ═══ GET JOANX ═════════════════════════════════════════════════════════ -->
+<section class="section" id="get">
+  <div class="wrap get-in">
     <div>
       <h2 data-i18n="cta.h">Get JoanX</h2>
-      <p data-i18n="cta.p">Free to try for seven days when it lands. One install on your child's
-        phone, one on yours, and about three minutes to pair them.</p>
+      <p class="lede" data-i18n="cta.p">Free to try for seven days when it lands. One install on your child's phone, one on yours, and about three minutes to pair them.</p>
     </div>
-    <div class="stack" style="gap:14px; justify-items:start">
-      <div class="stores">
-        <!-- App Store button hidden until JoanX is actually on the App Store: an inert
-             button for a store you cannot download from is a promise the page can't keep.
-             Uncomment this block and restore "alt" on the Google Play button below to
-             bring the pair back. -->
-        <!--
-        <span class="store">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.9-3.6 2.2-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7c1.1 0 1.9-1 2.6-2.1.8-1.2 1.2-2.4 1.2-2.4-.1 0-2.2-.9-2.2-3.4zM14.3 5.7c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"></path></svg>
-          <span><small data-i18n="h.store1s">Download on the</small><b>App Store</b></span>
-        </span>
-        -->
-        <span class="store">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l.1.1 9.3-9.3v-.2L3.6 2.3zM16.4 15.3l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.6 0 2.2l-3.8 2zM15.6 16.1l-3.2-3.2-9.3 9.3c.3.4.9.4 1.5.1l11-6.2M4.6 1.7c-.6-.3-1.2-.3-1.5.1l9.3 9.3 3.2-3.2-11-6.2z"></path></svg>
-          <span><small data-i18n="h.store2s">Get it on</small><b>Google Play</b></span>
-        </span>
-      </div>
-      <p class="soon" data-i18n="cta.s">Coming soon to Google Play.</p>
+    <div>
+      <span class="btn store"><small data-i18n="h.store2s">Get it on</small>Google Play</span>
+      <p class="note" data-i18n="cta.s">Coming soon to Google Play.</p>
     </div>
   </div>
 </section>
 
-<!-- ── footer ──────────────────────────────────────────────────────── -->
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="wrap">
     <div class="foot">
-      <div class="foot-brand">
-        <a class="logo" href="#top" aria-label="JoanX">
-      <img class="mark mark-light" src="../media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
-      <img class="mark mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
-      <svg class="mark-sm" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="48" fill="#4B814F"></circle><path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg>
-    </a>
-        <p data-i18n="ft.p">A walking-safety game for children, and a calm weekly dashboard for the
-          adults who look after them.</p>
-      </div>
+      <div><p data-i18n="ft.p">A walking-safety game for children, and a calm weekly dashboard for the adults who look after them.</p></div>
       <div>
         <h5 data-i18n="ft.h1">Product</h5>
         <ul>
@@ -1163,12 +613,7 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
       <div>
         <h5 data-i18n="ft.h2">Explore</h5>
         <ul>
-          <li><a href="#safety" data-i18n="ft.demo">The safety moment</a></li>
-          <li><a href="#game" data-i18n="ft.shots">The game</a></li>
           <li><a href="#faq" data-i18n="n.faq">FAQ</a></li>
-          <!-- Only inside the prototype build, where this page sits one level under the
-               chooser that sent the visitor here. The published page has no such parent,
-               so the script below leaves it hidden rather than offering a dead link. -->
           <li class="in-prototype" hidden><a href="../store.html" data-i18n="ft.store">Store assets</a></li>
           <li class="in-prototype" hidden><a href="../../" data-i18n="ft.back">← Back to the chooser</a></li>
         </ul>
@@ -1182,21 +627,12 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
         </ul>
       </div>
     </div>
-    <div class="legal">
-      <span data-i18n="ft.c">© 2026 Joan Company</span>
-      <span data-i18n="ft.l">JoanX has not launched yet. Screens shown are from a pre-release build, with sample data.</span>
-    </div>
+    <div class="legal"><span data-i18n="ft.c">© 2026 Joan Company</span><span data-i18n="ft.l">JoanX has not launched yet. Screens shown are from a pre-release build, with sample data.</span></div>
   </div>
 </footer>
 
-
-
 <script>
-/* ── Korean copy ────────────────────────────────────────────────────────
-   English lives in the markup and is snapshotted on first switch, so only
-   Korean is carried here. Register is 존댓말 throughout, matching the
-   parent app; product nouns (버디, 빌런, 포인트) match the app's own
-   Korean strings so the site and the product read as one thing.          */
+/* ── Korean copy — same keys as the AI-generated page, so both stay in step ── */
 var KO = {
   'sec.why': '왜 조안X인가요', 'sec.how': '작동 방식', 'sec.safety': '안전 순간', 'sec.game': '게임',
   'sec.parents': '보호자용', 'sec.diff': '무엇이 다른가요', 'sec.privacy': '개인정보', 'sec.faq': '자주 묻는 질문',
@@ -1366,40 +802,32 @@ var KO = {
 };
 
 (function () {
-  /* ── the way back to the chooser ────────────────────────────────
-     Shown only when this page is being served from the prototype build, i.e. it really
-     does sit at /website/ with a front door one level up. The published page has no
-     parent to go back to, so there it stays hidden instead of offering a dead link. */
+  /* the way back to the chooser — only inside the prototype build */
   if (/\/website\/v2\/?($|index\.html)/.test(location.pathname)) {
     document.querySelectorAll('.in-prototype').forEach(function (el) { el.hidden = false; });
   }
 
-  /* ── language ───────────────────────────────────────────────────── */
+  /* language */
   var nodes = document.querySelectorAll('[data-i18n]');
   var buttons = document.querySelectorAll('.lang button');
-
   function setLang(lang) {
     var ko = lang === 'ko';
     document.documentElement.lang = ko ? 'ko' : 'en';
     nodes.forEach(function (el) {
-      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;   // snapshot the English once
+      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
       var txt = ko ? KO[el.dataset.i18n] : null;
       el.innerHTML = txt === undefined || txt === null ? el.dataset.en : txt;
     });
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
-    try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window — fine */ }
+    try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window */ }
   }
-
-  buttons.forEach(function (b) {
-    b.addEventListener('click', function () { setLang(b.dataset.lang); });
-  });
-
+  buttons.forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
   var saved = null;
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko') setLang('ko');
 
-  /* ── the nav marks the section you are in ─────────────────────── */
+  /* the nav marks the section in view */
   var navLinks = document.querySelectorAll('.nav-links a');
   if ('IntersectionObserver' in window) {
     var spy = new IntersectionObserver(function (entries) {
@@ -1410,18 +838,6 @@ var KO = {
     }, { rootMargin: '-45% 0px -50% 0px' });
     document.querySelectorAll('section[id], header[id]').forEach(function (el) { spy.observe(el); });
   }
-
-  /* ── the nav takes a surface only once the page has moved ──────── */
-  var nav = document.querySelector('.nav');
-  function chrome() { nav.classList.toggle('is-stuck', window.scrollY > 24); }
-  var ticking = false;
-  window.addEventListener('scroll', function () {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function () { chrome(); ticking = false; });
-  }, { passive: true });
-  chrome();   // a reload part-way down the page should land solid, not transparent
-
 })();
 </script>
 <script type="module" src="../shots.js"></script>
