@@ -208,13 +208,13 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .burger span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--ink); }   /* same size and weight as the globe icon */
 .nav:not(.is-stuck) .burger span { background: #fff; }
 
-/* full-screen menu — a green circle grows from the menu button (--mx/--my) to fill the screen */
+/* full-screen menu — a green circle grows from the screen's top-right corner to fill it, and shrinks back into the same corner */
 .menu {
   position: fixed; inset: 0; z-index: 100; overflow-y: auto; background: #4B814F; color: #fff;
-  clip-path: circle(0px at var(--mx, 100%) var(--my, 0px)); visibility: hidden;
+  clip-path: circle(0px at 100% 0%); visibility: hidden;
   transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s linear .75s;
 }
-.menu.is-open { clip-path: circle(150vmax at var(--mx, 100%) var(--my, 0px)); visibility: visible; transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s; }
+.menu.is-open { clip-path: circle(150vmax at 100% 0%); visibility: visible; transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s; }
 .menu-top { display: flex; align-items: center; justify-content: space-between; height: calc(var(--nav-h) - 1px); }
 .menu-logo img { height: 20px; width: auto; filter: brightness(0) invert(1); }
 .menu-close { width: var(--ctl-h); height: var(--ctl-h); margin-right: -11px; display: grid; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
@@ -1291,9 +1291,6 @@ var MN = {
   var burger = document.querySelector('.burger'), siteMenu = document.getElementById('siteMenu');
   var menuClose = siteMenu.querySelector('.menu-close');
   function setSiteMenu(open) {
-    var r = burger.getBoundingClientRect();
-    siteMenu.style.setProperty('--mx', (r.left + r.width / 2) + 'px');
-    siteMenu.style.setProperty('--my', (r.top + r.height / 2) + 'px');
     siteMenu.classList.toggle('is-open', open);
     siteMenu.setAttribute('aria-hidden', String(!open));
     burger.setAttribute('aria-expanded', String(open));
