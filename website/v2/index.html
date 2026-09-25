@@ -203,6 +203,46 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav:not(.is-stuck) .nav-cta:hover { background: #E8F0E8; }
 @media (max-width: 520px) { .nav .logo .mark.mark-dark, .nav .logo .mark.mark-light { display: none; } }   /* phones show only the round mark */
 
+/* menu button: three lines, the last thing on the right */
+.burger { width: var(--ctl-h); height: var(--ctl-h); flex-shrink: 0; display: grid; place-content: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; margin-right: -8px; }
+.burger span { display: block; width: 26px; height: 2.5px; border-radius: 2px; background: var(--ink); }
+.nav:not(.is-stuck) .burger span { background: #fff; }
+
+/* full-screen menu — a green circle grows from the menu button (--mx/--my) to fill the screen */
+.menu {
+  position: fixed; inset: 0; z-index: 100; overflow-y: auto; background: #4B814F; color: #fff;
+  clip-path: circle(0px at var(--mx, 100%) var(--my, 0px)); visibility: hidden;
+  transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s linear .75s;
+}
+.menu.is-open { clip-path: circle(150vmax at var(--mx, 100%) var(--my, 0px)); visibility: visible; transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s; }
+.menu-top { display: flex; align-items: center; justify-content: space-between; height: calc(var(--nav-h) - 1px); }
+.menu-logo img { height: 20px; width: auto; filter: brightness(0) invert(1); }
+.menu-close { width: var(--ctl-h); height: var(--ctl-h); margin-right: -8px; display: grid; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
+.menu-close svg { width: 30px; height: 30px; }
+.menu-body { min-height: calc(100vh - var(--nav-h)); display: grid; align-content: center; gap: clamp(40px, 6vw, 80px); padding-block: 32px 56px; }
+@media (min-width: 900px) { .menu-body { grid-template-columns: 1.4fr 1fr; align-items: center; } }
+.menu-links { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(4px, 1vw, 12px); }
+.menu-links a { position: relative; display: inline-block; color: #fff; text-decoration: none; font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; transition: transform .25s ease; }
+.menu-links a::before { content: ""; position: absolute; left: -.55em; top: 50%; width: .22em; height: .22em; border-radius: 50%; background: #fff; transform: translateY(-50%) scale(0); transition: transform .25s ease; }
+.menu-links a:hover, .menu-links a:focus-visible { transform: translateX(.55em); }
+.menu-links a:hover::before, .menu-links a:focus-visible::before { transform: translateY(-50%) scale(1); }
+.menu-info { margin: 0; display: grid; gap: 28px; }
+.menu-info dt { font-size: var(--fs-small); color: rgba(255,255,255,.72); margin-bottom: 8px; }
+.menu-info dd { margin: 0; font-size: 20px; font-weight: 700; }
+.menu-info a { color: #fff; text-decoration: none; }
+.menu-info a:hover { text-decoration: underline; text-underline-offset: 5px; }
+.menu-langs { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+.menu-langs button { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: rgba(255,255,255,.6); }
+.menu-langs button[aria-pressed="true"], .menu-langs button:hover { color: #fff; }
+.menu-langs button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 6px; }
+/* the contents arrive just after the circle */
+.menu-links li, .menu-info { opacity: 0; transform: translateY(18px); transition: opacity .3s ease, transform .3s ease; }
+.menu.is-open .menu-links li, .menu.is-open .menu-info { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; transition-delay: calc(.35s + var(--k, 6) * .05s); }
+@media (prefers-reduced-motion: reduce) {
+  .menu, .menu.is-open { transition: none; }
+  .menu-links li, .menu-info, .menu.is-open .menu-links li, .menu.is-open .menu-info { transition: none; }
+}
+
 /* buttons */
 .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
 .btn.store { display: inline-grid; line-height: 1.2; padding: 10px 18px; }
@@ -415,8 +455,31 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         <li><button type="button" id="langMn" data-lang="mn" aria-pressed="false">Монгол</button></li>
       </ul>
     </div>
+    <button type="button" class="burger" aria-label="Menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button>
   </div>
 </nav>
+
+<!-- full-screen menu: a green circle grows out of the menu button to fill the screen -->
+<div class="menu" id="siteMenu" aria-hidden="true">
+  <div class="wrap menu-top">
+    <span class="menu-logo"><img src="../media/brand/logo-wordmark.svg" alt="JoanX" width="540" height="96"></span>
+    <button type="button" class="menu-close" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg></button>
+  </div>
+  <div class="wrap menu-body">
+    <ul class="menu-links">
+      <li style="--k:0"><a href="#safety" data-i18n="n.safety">Safety moment</a></li>
+      <li style="--k:1"><a href="#game" data-i18n="n.game">The game</a></li>
+      <li style="--k:2"><a href="#privacy" data-i18n="n.privacy">Privacy</a></li>
+      <li style="--k:3"><a href="#parents" data-i18n="n.parents">For parents</a></li>
+      <li style="--k:4"><a href="#how" data-i18n="n.start">Getting started</a></li>
+      <li style="--k:5"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
+    </ul>
+    <dl class="menu-info">
+      <div><dt data-i18n="m.lang">Language</dt><dd class="menu-langs"><button type="button" data-lang="en" aria-pressed="true">English</button><button type="button" data-lang="ko" aria-pressed="false">한국어</button><button type="button" data-lang="mn" aria-pressed="false">Монгол</button></dd></div>
+      <div><dt data-i18n="m.app">Get the app</dt><dd><a href="#get" data-i18n="cta.s">Coming soon to Google Play.</a></dd></div>
+    </dl>
+  </div>
+</div>
 
 <!-- ═══ HERO ══════════════════════════════════════════════════════════════ -->
 <header class="hero" id="top">
@@ -726,6 +789,8 @@ var KO = {
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
   'q.start': '어떻게 시작하나요?',
   'n.start': '시작하기',
+  'm.lang': '언어',
+  'm.app': '앱 받기',
   'q.promise': '무엇을 믿을 수 있나요?',
   'pr.h': '조안X가 늘 지키는 여섯 가지',
   'pr.l': '조안X가 지키는 원칙을 한곳에 모았어요.',
@@ -1045,6 +1110,8 @@ var MN = {
  "pr.5p": "Утсаа доош тавьж алхсан минут бүр 10 оноо, аюулгүй өдөр бүр дараалал өснө.",
  "pr.6h": "Тайван, тасралтгүй биш",
  "pr.6p": "Долоо хоногт нэг тайлан, яг одоо таны оролцоо хэрэгтэй үед л мэдэгдэл.",
+ "m.lang": "Хэл",
+ "m.app": "Апп авах",
  "q.start": "Яаж эхлэх вэ?",
  "hw.h": "Ойролцоогоор <em class=\"hl\">гурван минутад</em> тохируулна",
  "hw.n1": "1-Р АЛХАМ",
@@ -1092,7 +1159,7 @@ var MN = {
 
   /* language */
   var nodes = document.querySelectorAll('[data-i18n]');
-  var buttons = document.querySelectorAll('.lang-menu [data-lang]');
+  var buttons = document.querySelectorAll('[data-lang]');   // the nav dropdown and the menu's own list
   var langBtn = document.querySelector('.lang-btn');
   var langMenu = document.getElementById('langMenu');
   var NAMES = { en: ['English', 'EN'], ko: ['한국어', 'KO'], mn: ['Монгол', 'MN'] };
@@ -1216,6 +1283,24 @@ var MN = {
   }, { passive: true });
   window.addEventListener('resize', function () { curve(); takeover(); stack(); showcase(); });
   curve(); takeover(); stack(); showcase();
+
+  /* full-screen menu */
+  var burger = document.querySelector('.burger'), siteMenu = document.getElementById('siteMenu');
+  var menuClose = siteMenu.querySelector('.menu-close');
+  function setSiteMenu(open) {
+    var r = burger.getBoundingClientRect();
+    siteMenu.style.setProperty('--mx', (r.left + r.width / 2) + 'px');
+    siteMenu.style.setProperty('--my', (r.top + r.height / 2) + 'px');
+    siteMenu.classList.toggle('is-open', open);
+    siteMenu.setAttribute('aria-hidden', String(!open));
+    burger.setAttribute('aria-expanded', String(open));
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) menuClose.focus({ preventScroll: true }); else burger.focus({ preventScroll: true });
+  }
+  burger.addEventListener('click', function () { setSiteMenu(true); });
+  menuClose.addEventListener('click', function () { setSiteMenu(false); });
+  siteMenu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { setSiteMenu(false); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && siteMenu.classList.contains('is-open')) setSiteMenu(false); });
 
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
