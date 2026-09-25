@@ -21,12 +21,18 @@
      4. Pieces      nav, buttons, lists, table, faq, footer
 
    Page map (each section is marked in the HTML with a ═══ banner)
-     Nav · Hero ·
-     01 How it works · 02 The safety moment · 03 For your child (the game) ·
-     04 For you (the parent app) · 05 Privacy · 06 FAQ · Get JoanX · Footer
+     Nav · Hero (what JoanX is) ·
+     01 What happens when they look down while walking?   — the safety moment
+     02 What does my child get out of it?                   — the game
+     03 What do I get as a parent?                          — report, alerts, groups
+     04 What can I see — and what can't I?                  — privacy
+     05 How do I start?                                     — three steps
+     06 Anything else?                                      — FAQ (only what 01–05 don't answer)
+     Get JoanX · Footer
 
-   Each of 01–04 answers one question with the same anatomy:
-     the message (heading + one line) → what it looks like (screens) → the key points (three)
+   The order follows the questions a parent asks, in the order they ask them. Each
+   section's label IS that question; the heading is the plain answer; then what it
+   looks like (screens); then three key points. One idea per section.
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── 1. Tokens ───────────────────────────────────────────────────────── */
@@ -201,11 +207,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <img class="mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
     </a>
     <div class="nav-links">
-      <a href="#how" data-i18n="n.how">How it works</a>
       <a href="#safety" data-i18n="n.safety">Safety moment</a>
       <a href="#game" data-i18n="n.game">The game</a>
       <a href="#parents" data-i18n="n.parents">For parents</a>
       <a href="#privacy" data-i18n="n.privacy">Privacy</a>
+      <a href="#how" data-i18n="n.start">Getting started</a>
       <a href="#faq" data-i18n="n.faq">FAQ</a>
     </div>
     <div class="lang" role="group" aria-label="Language / 언어">
@@ -221,7 +227,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   <div class="wrap hero-in">
     <div class="hero-text">
       <h1 data-i18n="h.h1"><em class="hl">Heads up</em>, the whole way to school.</h1>
-      <p class="lede" data-i18n="h.lede">JoanX notices when your child is walking and staring at their phone, and answers with one buzz instead of a locked screen. Looking up earns points, grows their buddy, and beats the villains — so stopping is the thing that wins.</p>
+      <p class="lede" data-i18n="v.hl">JoanX is an app for your child’s phone. When they walk while looking at the screen, it starts with a single buzz — it never locks the phone. Looking up earns points in a game they care about.</p>
       <a class="btn store" href="#get"><small data-i18n="h.store2s">Get it on</small>Google Play</a>
       <ul class="checks">
         <li data-i18n="h.t1">Never locks the screen</li>
@@ -235,37 +241,13 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </header>
 
-<!-- ═══ 01 · HOW IT WORKS ═════════════════════════════════════════════════ -->
-<section class="section" id="how">
+<!-- ═══ 01 · WHAT HAPPENS — THE SAFETY MOMENT ═════════════════════════════ -->
+<section class="section" id="safety">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="sec.how">How it works</span></p>
-        <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
-      </header>
-    <ol class="steps cols">
-      <li><figure class="shot">
-          <img src="../media/shots/parent-pairing.png" width="535" height="1200" alt="The parent app showing a six-digit code to type into the child's phone, valid for five minutes." loading="lazy">
-        </figure>
-        <span class="n" data-i18n="hw.n1">STEP 1</span><h3 data-i18n="hw.h1">Pair their phone</h3><p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p></li>
-      <li><figure class="shot">
-          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="A single vibration, shown as a small buzz marker over the child's home screen." loading="lazy">
-        </figure>
-        <span class="n" data-i18n="hw.n2">STEP 2</span><h3 data-i18n="hw.h2">They walk, it watches one thing</h3><p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p></li>
-      <li><figure class="shot">
-          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
-        </figure>
-        <span class="n" data-i18n="hw.n3">STEP 3</span><h3 data-i18n="hw.h3">You read the week</h3><p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p></li>
-    </ol>
-  </div>
-</section>
-
-<!-- ═══ 02 · THE SAFETY MOMENT ════════════════════════════════════════════ -->
-<section class="section alt" id="safety">
-  <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="sec.safety">The safety moment</span></p>
-        <h2 data-i18n="sm.h">Ten seconds of grace, then <em class="hl">one buzz</em></h2>
-        <p class="lede" data-i18n="sm.l">Nobody is warned for putting the phone away. Keep going, and only the tone gets firmer — never the force.</p>
+        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="q.safety">What happens when they look down while walking?</span></p>
+        <h2 data-i18n="v.sh">A buzz first. A message only if they keep going.</h2>
+        <p class="lede" data-i18n="v.sl">JoanX never blocks the screen. Each step only happens if the one before didn’t work.</p>
       </header>
     <div class="visuals">
         <figure class="shot">
@@ -282,20 +264,20 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         </figure>
     </div>
     <ul class="points cols">
-          <li><h4 data-i18n="w.c1h">One buzz, never a block</h4><p data-i18n="w.c1p">A single vibration, then a card, then their buddy asking them to look up. The phone is never taken away — and calls and texts can never be blocked.</p></li>
-          <li><h4 data-i18n="sm.b1h">The best outcome has no screen at all</h4><p data-i18n="sm.b1p">Look up within two seconds of the buzz and no warning is ever drawn — and that path pays the most points.</p></li>
-          <li><h4 data-i18n="sm.b2h">Every reminder is on the record</h4><p data-i18n="sm.b2p">Keep walking head-down and it comes back five seconds later, firmer — and a warning they ignore shows up in your report.</p></li>
+          <li><h4 data-i18n="v.s1h">Stopping early pays the most</h4><p data-i18n="v.s1p">Look up within two seconds of the buzz and no warning appears — and that pays the most points.</p></li>
+          <li><h4 data-i18n="v.s2h">Calls and texts always work</h4><p data-i18n="v.s2p">The phone is never taken away, so your child can always reach you.</p></li>
+          <li><h4 data-i18n="v.s3h">Ignoring it is noted</h4><p data-i18n="v.s3p">If they keep walking head-down, the message comes back firmer and shows up in your report.</p></li>
     </ul>
   </div>
 </section>
 
-<!-- ═══ 03 · FOR YOUR CHILD — THE GAME ════════════════════════════════════ -->
-<section class="section" id="game">
+<!-- ═══ 02 · FOR YOUR CHILD — THE GAME ════════════════════════════════════ -->
+<section class="section alt" id="game">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="sec.child">For your child</span></p>
-        <h2 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h2>
-        <p class="lede" data-i18n="g.l">10 points a minute with the phone down, 50 for stopping before a warning. Nothing is bought with your card.</p>
+        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="q.child">What does my child get out of it?</span></p>
+        <h2 data-i18n="v.ch">Looking up earns points in a game they care about</h2>
+        <p class="lede" data-i18n="v.cl">Safe walking earns points. Points grow their buddy, and a stronger buddy beats villains.</p>
       </header>
     <div class="visuals">
         <figure class="shot">
@@ -312,20 +294,20 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         </figure>
     </div>
     <ul class="points cols">
-          <li><h4 data-i18n="w.c2h">Looking up is how you win</h4><p data-i18n="w.c2p">Every phone-free minute pays points. Points hatch eggs and grow a buddy through ten levels — strong enough to take on the ten villains. Stop fastest and you earn the most.</p></li>
-          <li><h4 data-i18n="g2.b1h">No skipping ahead</h4><p data-i18n="g2.b1p">Each win unlocks the next villain, so how far along the road they are is a record of how long they have been walking safely.</p></li>
-          <li><h4 data-i18n="g.b3h">Rooms, friends, no chat</h4><p data-i18n="g.b3p">Visit a friend's room, leave a like or one screened line. There is no messaging between children, by design.</p></li>
+          <li><h4 data-i18n="v.c1h">10 points a minute</h4><p data-i18n="v.c1p">Every minute walking with the phone down pays 10 points. Stopping before a warning pays 50.</p></li>
+          <li><h4 data-i18n="v.c2h">A buddy that grows</h4><p data-i18n="v.c2p">Ten levels and three stages — and ten villains, unlocked one win at a time.</p></li>
+          <li><h4 data-i18n="v.c3h">No chat, nothing to buy</h4><p data-i18n="v.c3p">Friends can visit each other’s rooms and leave a screened one-line note. Nothing is bought with real money.</p></li>
     </ul>
   </div>
 </section>
 
-<!-- ═══ 04 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
-<section class="section alt" id="parents">
+<!-- ═══ 03 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
+<section class="section" id="parents">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="sec.you">For you</span></p>
-        <h2 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h2>
-        <p class="lede" data-i18n="p.l">Not just how often it happened — whether it is happening less as the week goes on.</p>
+        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="q.you">What do I get as a parent?</span></p>
+        <h2 data-i18n="v.yh">A weekly report that shows whether it is working</h2>
+        <p class="lede" data-i18n="v.yl">And an alert only when something needs you now.</p>
       </header>
     <div class="visuals">
         <figure class="shot">
@@ -349,11 +331,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 05 · PRIVACY ══════════════════════════════════════════════════════ -->
-<section class="section" id="privacy">
+<!-- ═══ 04 · PRIVACY ══════════════════════════════════════════════════════ -->
+<section class="section alt" id="privacy">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="sec.privacy">Privacy</span></p>
+        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
         <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
         <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
       </header>
@@ -380,33 +362,49 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
+<!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
+<section class="section" id="how">
+  <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="q.start">How do I start?</span></p>
+        <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
+      </header>
+    <ol class="steps cols">
+      <li><figure class="shot">
+          <img src="../media/shots/parent-pairing.png" width="535" height="1200" alt="The parent app showing a six-digit code to type into the child's phone, valid for five minutes." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n1">STEP 1</span><h3 data-i18n="hw.h1">Pair their phone</h3><p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p></li>
+      <li><figure class="shot">
+          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="A single vibration, shown as a small buzz marker over the child's home screen." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n2">STEP 2</span><h3 data-i18n="hw.h2">They walk, it watches one thing</h3><p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p></li>
+      <li><figure class="shot">
+          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n3">STEP 3</span><h3 data-i18n="hw.h3">You read the week</h3><p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p></li>
+    </ol>
+  </div>
+</section>
+
 <!-- ═══ 06 · FAQ ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="sec.faq">FAQ</span></p>
+        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="q.faq">Anything else?</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
     <div class="faq">
-      <details open>
-        <summary data-i18n="f.q1">Does it lock or block my child's phone?</summary>
-        <p data-i18n="f.a1">No. JoanX never blocks the screen. The strongest thing it does is show a firmer message from your child's buddy and note the moment in your weekly report. Calls and texts can never be blocked at all, so your child can always reach you.</p>
+      <details>
+        <summary data-i18n="f.q3">How does it know they are walking and using the phone?</summary>
+        <p data-i18n="f.a3">The phone's own accelerometer. Walking is confirmed from a steady step cadence held for about eight seconds; if the screen is in use at the same time for ten seconds or more, the safety moment begins. Detection runs on the phone itself; your report is built from the moments it records.</p>
       </details>
       <details>
         <summary data-i18n="f.q2">Can I see where my child is?</summary>
         <p data-i18n="f.a2">No, and that is deliberate. JoanX has no map and no location trail — walking is noticed from the phone's motion sensor. A child who feels tracked uninstalls the app, and then it protects nobody.</p>
       </details>
       <details>
-        <summary data-i18n="f.q3">How does it know they are walking and using the phone?</summary>
-        <p data-i18n="f.a3">The phone's own accelerometer. Walking is confirmed from a steady step cadence held for about eight seconds; if the screen is in use at the same time for ten seconds or more, the safety moment begins. Detection runs on the phone itself; your report is built from the moments it records.</p>
-      </details>
-      <details>
         <summary data-i18n="f.q5">Can my child just turn it off?</summary>
         <p data-i18n="f.a5">Their phone pairs to your account rather than to a person, so a child cannot quietly unlink themselves — only a guardian can. They can dismiss a warning, but if they keep walking head-down it comes back firmer, and an ignored warning shows in your report.</p>
-      </details>
-      <details>
-        <summary data-i18n="f.q6">Can children message each other?</summary>
-        <p data-i18n="f.a6">There is no chat in JoanX. Children can visit each other's rooms, leave a like, and write a one-line guestbook note that is screened before it posts. That is the whole social layer.</p>
       </details>
       <details>
         <summary data-i18n="f.q7">What does it cost?</summary>
@@ -442,7 +440,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <div>
         <h5 data-i18n="ft.h1">Product</h5>
         <ul>
-          <li><a href="#how" data-i18n="n.how">How it works</a></li>
+          <li><a href="#how" data-i18n="n.start">Getting started</a></li>
           <li><a href="#safety" data-i18n="n.safety">Safety moment</a></li>
           <li><a href="#game" data-i18n="n.game">The game</a></li>
           <li><a href="#parents" data-i18n="n.parents">For parents</a></li>
@@ -472,14 +470,38 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <script>
 /* ── Korean copy — same keys as the AI-generated page, so both stay in step ── */
 var KO = {
-  'sec.child': '아이에게는',
-  'sec.you': '보호자에게는',
+  'q.safety': '걸으면서 폰을 보면 어떻게 되나요?',
+  'q.child': '아이에게는 무엇이 좋은가요?',
+  'q.you': '보호자는 무엇을 받나요?',
+  'q.privacy': '보호자는 무엇을 볼 수 있나요?',
+  'q.start': '어떻게 시작하나요?',
+  'n.start': '시작하기',
+  'q.faq': '더 궁금한 점이 있나요?',
+  'v.hl': '조안X는 아이 휴대폰에 설치하는 앱이에요. 아이가 걸으면서 화면을 보면 진동 한 번으로 먼저 알려요 — 폰을 잠그지는 않아요. 고개를 들면 아이가 아끼는 게임의 포인트가 쌓여요.',
+  'v.sh': '먼저 진동 한 번. 계속 볼 때만 메시지가 떠요.',
+  'v.sl': '조안X는 화면을 막지 않아요. 앞 단계로 멈추지 않았을 때만 다음 단계로 넘어가요.',
   'v.st1': '1 · 진동',
   'v.st1s': '진동 한 번, 아직 화면은 없어요',
   'v.st2': '2 · 카드',
   'v.st2s': '한 줄, 버튼 하나',
   'v.st3': '3 · 더 단호한 메시지',
   'v.st3s': '계속 고개를 숙이고 걸으면',
+  'v.s1h': '빨리 멈출수록 더 많이 받아요',
+  'v.s1p': '진동 후 2초 안에 고개를 들면 경고 화면이 뜨지 않고, 포인트도 가장 많이 받아요.',
+  'v.s2h': '전화와 문자는 항상 돼요',
+  'v.s2p': '폰을 빼앗지 않아서, 아이는 언제든 보호자에게 연락할 수 있어요.',
+  'v.s3h': '무시하면 기록돼요',
+  'v.s3p': '계속 고개를 숙이고 걸으면 메시지가 더 단호하게 다시 뜨고, 보호자 리포트에 남아요.',
+  'v.ch': '고개를 들면, 아끼는 게임의 포인트가 쌓여요',
+  'v.cl': '안전하게 걸으면 포인트가 쌓여요. 포인트로 버디를 키우고, 강해진 버디로 빌런을 물리쳐요.',
+  'v.c1h': '1분에 10포인트',
+  'v.c1p': '폰을 내리고 걷는 1분마다 10포인트, 경고 전에 스스로 멈추면 50포인트예요.',
+  'v.c2h': '자라는 버디',
+  'v.c2p': '10레벨, 3단계로 자라요. 빌런 10명은 이길 때마다 하나씩 열려요.',
+  'v.c3h': '채팅도, 결제도 없어요',
+  'v.c3p': '친구 방에 놀러 가서 검수를 거친 한 줄 방명록을 남길 수 있어요. 돈으로 살 수 있는 건 없어요.',
+  'v.yh': '효과가 있는지 보여주는 주간 리포트',
+  'v.yl': '그리고 지금 확인이 필요할 때만 알림을 보내요.',
   'v.grph': '함께 돌보는 어른도 같은 한 주를 봐요',
   'v.grpp': '공동 양육자나 조부모님을 QR이나 코드로 그룹에 초대해요. 모든 요청은 관리자가 승인해요.',
   'sec.why': '왜 조안X인가요', 'sec.how': '작동 방식', 'sec.safety': '안전 순간', 'sec.game': '게임',
