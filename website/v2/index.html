@@ -139,7 +139,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--accent); }
 @media (min-width: 1000px) { .nav-links { display: flex; } }
 @media (max-width: 999px) { .lang { margin-left: auto; } }
-/* language — an outlined pill that opens a short list. Normal: outline. Open: filled.
+/* language — an outlined pill that opens a short list of plain words beneath it. Normal: outline. Open: filled.
    The list shows only the languages you are not on, like a store's region picker. */
 .lang { position: relative; flex-shrink: 0; }
 .lang-btn {
@@ -156,16 +156,15 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .lang-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .lang-menu {
   position: absolute; top: calc(100% + 8px); right: 0; min-width: 100%;
-  margin: 0; padding: 6px; list-style: none;
-  background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+  margin: 0; padding: 0; list-style: none;   /* no panel: the options are plain words under the pill */
 }
 .lang-menu[hidden] { display: none; }
 .lang-menu button {
-  display: block; width: 100%; padding: 10px 12px; border: 0; border-radius: 9px;
+  display: block; width: 100%; padding: 8px 12px; border: 0;
   background: none; cursor: pointer; text-align: center;
-  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ink-2);
+  font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ink-2);
 }
-.lang-menu button:hover, .lang-menu button:focus-visible { background: var(--paper-2); color: var(--ink); }
+.lang-menu button:hover, .lang-menu button:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; }
 .lang-menu li:has(button[aria-pressed="true"]) { display: none; }   /* the current language is on the pill */
 .lng-abbr { display: none; }
 .nav-cta {
