@@ -24,8 +24,8 @@
      Nav · Hero (what JoanX is) ·
      01 What happens when they look down while walking?   — the safety moment
      02 What does my child get out of it?                   — the game
-     03 What do I get as a parent?                          — report, alerts, groups
-     04 What can I see — and what can't I?                  — privacy
+     03 What can I see — and what can't I?                  — privacy, then the green takeover
+     04 What do I get as a parent?                          — report, alerts, groups (stacked cards)
      05 How do I start?                                     — three steps
      06 Anything else?                                      — FAQ (only what 01–05 don't answer)
      Get JoanX · Footer
@@ -486,11 +486,47 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 03 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
+<!-- ═══ 03 · PRIVACY — then the takeover ══════════════════════════════════ -->
+<section class="takeover" id="privacy">
+  <div class="takeover-stage section alt">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
+        <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
+        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
+      </header>
+    <div class="privacy">
+      <div>
+        <h3 data-i18n="pv.y">What you can see</h3>
+        <ul>
+          <li><span data-i18n="pv.y1">How long they walked safely</span><span data-i18n="pv.y1n">minutes</span></li>
+          <li><span data-i18n="pv.y2">Warnings, and how each one ended</span><span data-i18n="pv.y2n">stopped or not</span></li>
+          <li><span data-i18n="pv.y3">Their points and streak</span><span data-i18n="pv.y3n">the game layer</span></li>
+          <li><span data-i18n="pv.y4">Whether protection is on</span><span data-i18n="pv.y4n">device &amp; permissions</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 data-i18n="pv.n">What nobody sees</h3>
+        <ul>
+          <li><span data-i18n="pv.n1">Where they are</span><span data-i18n="pv.n1n">no map</span></li>
+          <li><span data-i18n="pv.n2">Their messages and guestbook</span><span data-i18n="pv.n2n">never read</span></li>
+          <li><span data-i18n="pv.n3">Their photos</span><span data-i18n="pv.n3n">never read</span></li>
+          <li><span data-i18n="pv.n4">Which apps they use</span><span data-i18n="pv.n4n">never shown</span></li>
+        </ul>
+      </div>
+    </div>
+    </div>
+    <div class="takeover-fill" aria-hidden="true"></div>
+    <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
+  </div>
+  <div class="takeover-run" aria-hidden="true"></div>
+</section>
+
+<!-- ═══ 04 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
 <section class="section" id="parents">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="q.you">What do I get as a parent?</span></p>
+        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.you">What do I get as a parent?</span></p>
         <h2 data-i18n="v.yh">A weekly report that shows whether it is working</h2>
         <p class="lede" data-i18n="v.yl">And an alert only when something needs you now.</p>
       </header>
@@ -523,42 +559,6 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 
     </div>
   </div>
-</section>
-
-<!-- ═══ 04 · PRIVACY — then the takeover ══════════════════════════════════ -->
-<section class="takeover" id="privacy">
-  <div class="takeover-stage section alt">
-    <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
-        <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
-        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
-      </header>
-    <div class="privacy">
-      <div>
-        <h3 data-i18n="pv.y">What you can see</h3>
-        <ul>
-          <li><span data-i18n="pv.y1">How long they walked safely</span><span data-i18n="pv.y1n">minutes</span></li>
-          <li><span data-i18n="pv.y2">Warnings, and how each one ended</span><span data-i18n="pv.y2n">stopped or not</span></li>
-          <li><span data-i18n="pv.y3">Their points and streak</span><span data-i18n="pv.y3n">the game layer</span></li>
-          <li><span data-i18n="pv.y4">Whether protection is on</span><span data-i18n="pv.y4n">device &amp; permissions</span></li>
-        </ul>
-      </div>
-      <div>
-        <h3 data-i18n="pv.n">What nobody sees</h3>
-        <ul>
-          <li><span data-i18n="pv.n1">Where they are</span><span data-i18n="pv.n1n">no map</span></li>
-          <li><span data-i18n="pv.n2">Their messages and guestbook</span><span data-i18n="pv.n2n">never read</span></li>
-          <li><span data-i18n="pv.n3">Their photos</span><span data-i18n="pv.n3n">never read</span></li>
-          <li><span data-i18n="pv.n4">Which apps they use</span><span data-i18n="pv.n4n">never shown</span></li>
-        </ul>
-      </div>
-    </div>
-    </div>
-    <div class="takeover-fill" aria-hidden="true"></div>
-    <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
-  </div>
-  <div class="takeover-run" aria-hidden="true"></div>
 </section>
 
 <!-- ═══ 05 · GETTING STARTED ══════════════════════════════════════════════ -->
