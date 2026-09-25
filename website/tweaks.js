@@ -8,8 +8,8 @@
    and list it in VERSIONS and in vite.config.js.                          */
 
 const VERSIONS = [
-  { id: 'v1', label: 'v1', note: 'Current page', href: '/website/' },
-  { id: 'v2', label: 'v2', note: 'Alternative', href: '/website/v2/' },
+  { id: 'v1', label: 'AI generated', note: 'The AI-generated page', href: '/website/' },
+  { id: 'v2', label: 'Human', note: 'The human-made page', href: '/website/v2/' },
 ];
 
 const path = location.pathname;
@@ -55,7 +55,7 @@ if (/^\/website(\/|$)/.test(path)) {
         <div class="sitetw-head"><b>Tweaks</b><button type="button" class="sitetw-x" aria-label="Close">×</button></div>
         <div class="sitetw-label">Website version</div>
         <div class="sitetw-seg">${links}</div>
-        <div class="sitetw-note">${current.label} · ${current.note}</div>
+        <div class="sitetw-note">${current.note}</div>
       </div>`;
     root.querySelector('.sitetw-x').onclick = () => set(false);
   };
