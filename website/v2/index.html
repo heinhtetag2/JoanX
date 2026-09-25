@@ -46,7 +46,7 @@
   --accent:  #4B814F;   /* JoanX brand green */
 
   --font:    "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --fs-h1:   clamp(34px, 5vw, 52px);
+  --fs-h1:   clamp(36px, 5.4vw, 56px);   /* same as the AI-generated page */
   --fs-h2:   clamp(26px, 3.4vw, 36px);
   --fs-h3:   clamp(20px, 2.2vw, 24px);
   --fs-body: 17px;
@@ -77,7 +77,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 :root:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
 h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
 h1, h2, h3, h4 { font-weight: 700; letter-spacing: -.02em; line-height: 1.2; text-wrap: balance; }
-h1 { font-size: var(--fs-h1); line-height: 1.1; }
+h1 { font-size: var(--fs-h1); line-height: 1.05; }
 h2 { font-size: var(--fs-h2); }
 h3 { font-size: var(--fs-h3); }
 h4 { font-size: 17px; }
@@ -194,9 +194,20 @@ section[id], header[id] { scroll-margin-top: 72px; }
 /* the hero fills the first screen on its own, so the next section starts below the fold */
 .hero { min-height: calc(100vh - var(--nav-h)); min-height: calc(100svh - var(--nav-h)); display: flex; align-items: center; padding-block: clamp(48px, 7vw, 96px); }
 .hero-in { display: grid; gap: var(--space-block); align-items: center; width: 100%; }
-.hero-text { display: grid; gap: 22px; justify-items: start; max-width: 720px; }
-.checks { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: var(--fs-small); color: var(--ink-2); }
-.checks li::before { content: "✓ "; color: var(--accent); }
+.hero-text { display: grid; gap: 18px; justify-items: start; max-width: 720px; }
+/* sizes below match the AI-generated page's hero */
+.hero-text { line-height: 1.6; }
+.hero .lede { font-size: clamp(16.5px, 1.6vw, 19px); max-width: 56ch; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 6px 15px 6px 6px; border-radius: 999px;
+  background: var(--paper); border: 1px solid var(--line);
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.hero-badge .pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; }
+.checks { list-style: none; padding: 0; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--ink-2); }
+.checks li { display: inline-flex; align-items: center; gap: 8px; }
+.checks svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
 
 /* at a glance */
 .glance { display: grid; grid-template-columns: repeat(2, 1fr); border-block: 1px solid var(--line); }
@@ -291,12 +302,13 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <header class="hero" id="top">
   <div class="wrap hero-in">
     <div class="hero-text">
+      <span class="hero-badge"><span class="pill">NEW</span><span data-i18n="h.badge">Guardian groups — invite by QR or code</span></span>
       <h1 data-i18n="h.h1"><em class="hl">Heads up</em>, the whole way to school.</h1>
       <p class="lede" data-i18n="v.hl">JoanX is an app for your child’s phone. When they walk while looking at the screen, it starts with a single buzz — it never locks the phone. Looking up earns points in a game they care about.</p>
       <ul class="checks">
-        <li data-i18n="h.t1">Never locks the screen</li>
-        <li data-i18n="h.t2">No location tracking</li>
-        <li data-i18n="h.t3">Works on the phone they have</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg><span data-i18n="h.t1">Never locks the screen</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg><span data-i18n="h.t2">No location tracking</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg><span data-i18n="h.t3">Works on the phone they have</span></li>
       </ul>
     </div>
   </div>
@@ -743,6 +755,7 @@ var MN = {
  "n.cta": "Татах",
  "h.h1": "Сургууль хүртэл <em class=\"hl\">толгойгоо өндийлгөөрэй.</em>",
  "v.hl": "JoanX бол таны хүүхдийн утсанд суулгадаг апп. Хүүхэд алхаж явахдаа дэлгэц рүү харвал эхлээд ганц чичиргээгээр сануулна — утсыг хэзээ ч түгжихгүй. Дээш харвал хүүхдийн дуртай тоглоомд оноо цуглуулна.",
+ "h.badge": "Асран хамгаалагчийн бүлэг — QR эсвэл кодоор урих",
  "h.store2s": "Татаж авах",
  "h.t1": "Дэлгэцийг түгжихгүй",
  "h.t2": "Байршил хянахгүй",
