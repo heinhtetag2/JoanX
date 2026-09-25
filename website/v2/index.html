@@ -216,6 +216,17 @@ section[id], header[id] { scroll-margin-top: 72px; }
   background: var(--hero-bg); color: #fff;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { --hero-bg: #2B4F30; } }
+/* scrolling out of the hero, the page's own ground rises into it as a dome — the hero rounds
+   off into the next section. --p (0 → 1) is the scroll progress, set by the script below. */
+.hero { position: relative; overflow: hidden; }
+.hero-in { position: relative; z-index: 1; }
+.hero-curve {
+  position: absolute; z-index: 2; left: -25%; right: -25%; bottom: -1px; height: clamp(130px, 24vw, 380px);
+  background: var(--paper); border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transform: scaleY(var(--p, 0)); transform-origin: 50% 100%;
+  pointer-events: none; will-change: transform;
+}
+.hero + .section { border-top: 0; }
 .hero h1 { color: #fff; }
 .hero h1 em { color: #CFE6CF; }
 .hero .lede { color: rgba(255,255,255,.86); }
@@ -330,6 +341,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       </ul>
     </div>
   </div>
+  <div class="hero-curve" aria-hidden="true"></div>
 </header>
 
 <!-- ═══ 01 · WHAT HAPPENS — THE SAFETY MOMENT ═════════════════════════════ -->
@@ -921,6 +933,22 @@ var MN = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
+
+  /* the dome under the hero follows the scroll */
+  var hero = document.querySelector('.hero');
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function curve() {
+    var p = still.matches ? 0.35 : Math.min(1, Math.max(0, window.scrollY / (hero.offsetHeight * 0.75)));
+    hero.style.setProperty('--p', p.toFixed(3));
+  }
+  var curving = false;
+  window.addEventListener('scroll', function () {
+    if (curving) return;
+    curving = true;
+    requestAnimationFrame(function () { curve(); curving = false; });
+  }, { passive: true });
+  window.addEventListener('resize', curve);
+  curve();
 
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
