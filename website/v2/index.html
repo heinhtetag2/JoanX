@@ -139,7 +139,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--accent); }
 @media (min-width: 1000px) { .nav-links { display: flex; } }
-@media (max-width: 999px) { .nav-cta { margin-left: auto; } }   /* language sits last, at the far right */
+.nav-cta { margin-left: auto; }   /* logo left; Download and language on the right, language last */
 /* language — an outlined pill that opens a short list of plain words beneath it. Normal: outline. Open: filled.
    The list shows only the languages you are not on, like a store's region picker. */
 .lang { position: relative; flex-shrink: 0; }
@@ -184,6 +184,22 @@ section[id], header[id] { scroll-margin-top: 72px; }
 }
 @media (prefers-reduced-motion: reduce) { .nav, .nav-cta, .lang-btn, .lang-btn .chev { transition: none; } .nav-cta:hover { transform: none; } }
 
+/* nav while it sits on the green hero — light on green; the stuck bar goes back to normal */
+/* the wordmark's A and X are brand green, which vanishes on the green hero — go all-white there */
+.nav:not(.is-stuck) .logo .mark { filter: brightness(0) invert(1); }
+.nav:not(.is-stuck) .mark-sm circle { fill: #fff; }
+.nav:not(.is-stuck) .mark-sm path { stroke: #4B814F; }
+.nav:not(.is-stuck) .nav-links a { color: rgba(255,255,255,.82); }
+.nav:not(.is-stuck) .nav-links a:hover, .nav:not(.is-stuck) .nav-links a[aria-current="true"] { color: #fff; }
+.nav:not(.is-stuck) .lang-btn { color: #fff; border-color: rgba(255,255,255,.55); }
+.nav:not(.is-stuck) .lang-btn:hover { border-color: #fff; }
+.nav:not(.is-stuck) .lang-btn[aria-expanded="true"] { background: #fff; color: var(--nav-green-deep); border-color: #fff; }
+.nav:not(.is-stuck) .lang-menu button { color: rgba(255,255,255,.85); }
+.nav:not(.is-stuck) .lang-menu button:hover, .nav:not(.is-stuck) .lang-menu button:focus-visible { color: #fff; }
+.nav:not(.is-stuck) .nav-cta { background: #fff; color: var(--nav-green-deep); }
+.nav:not(.is-stuck) .nav-cta:hover { background: #E8F0E8; }
+@media (max-width: 520px) { .nav .logo .mark.mark-dark, .nav .logo .mark.mark-light { display: none; } }   /* phones show only the round mark */
+
 /* buttons */
 .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
 .btn.store { display: inline-grid; line-height: 1.2; padding: 10px 18px; }
@@ -192,7 +208,17 @@ section[id], header[id] { scroll-margin-top: 72px; }
 
 /* hero */
 /* the hero fills the first screen on its own, so the next section starts below the fold */
-.hero { min-height: calc(100vh - var(--nav-h)); min-height: calc(100svh - var(--nav-h)); display: flex; align-items: center; padding-block: clamp(48px, 7vw, 96px); }
+.hero {
+  --hero-bg: #4B814F;   /* JoanX brand green, flat */
+  /* pulled up under the sticky nav so the green starts at the very top and the bar sits on it */
+  margin-top: calc(-1 * var(--nav-h)); padding-top: calc(var(--nav-h) + clamp(48px, 7vw, 96px)); padding-bottom: clamp(48px, 7vw, 96px);
+  min-height: 100vh; min-height: 100svh; display: flex; align-items: center;
+  background: var(--hero-bg); color: #fff;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { --hero-bg: #2B4F30; } }
+.hero h1 { color: #fff; }
+.hero h1 em { color: #CFE6CF; }
+.hero .lede { color: rgba(255,255,255,.86); }
 .hero-in { display: grid; gap: var(--space-block); align-items: center; width: 100%; }
 .hero-text { display: grid; gap: 18px; justify-items: start; max-width: 720px; }
 /* sizes below match the AI-generated page's hero */
@@ -201,13 +227,13 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 9px;
   padding: 6px 15px 6px 6px; border-radius: 999px;
-  background: var(--paper); border: 1px solid var(--line);
-  font-size: 13px; font-weight: 600; color: var(--ink);
+  background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.32);
+  font-size: 13px; font-weight: 600; color: #fff;
 }
-.hero-badge .pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; }
-.checks { list-style: none; padding: 0; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--ink-2); }
+.hero-badge .pill { background: #fff; color: var(--hero-bg); border-radius: 999px; padding: 4px 10px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; }
+.checks { list-style: none; padding: 0; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: rgba(255,255,255,.86); }
 .checks li { display: inline-flex; align-items: center; gap: 8px; }
-.checks svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+.checks svg { width: 16px; height: 16px; color: #CFE6CF; flex-shrink: 0; }
 
 /* at a glance */
 .glance { display: grid; grid-template-columns: repeat(2, 1fr); border-block: 1px solid var(--line); }
@@ -274,14 +300,6 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <img class="mark mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
       <svg class="mark-sm" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="48" fill="#4B814F"></circle><path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg>
     </a>
-    <div class="nav-links">
-      <a href="#safety" data-i18n="n.safety">Safety moment</a>
-      <a href="#game" data-i18n="n.game">The game</a>
-      <a href="#parents" data-i18n="n.parents">For parents</a>
-      <a href="#privacy" data-i18n="n.privacy">Privacy</a>
-      <a href="#how" data-i18n="n.start">Getting started</a>
-      <a href="#faq" data-i18n="n.faq">FAQ</a>
-    </div>
     <a class="nav-cta" href="#get" data-i18n="n.cta">Download</a>
     <div class="lang">
       <button type="button" class="lang-btn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="Language / 언어">
