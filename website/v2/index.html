@@ -57,6 +57,7 @@
   --max:     1120px;
   --radius:  14px;
   --shot-w:  240px;     /* screenshot width in the section rows */
+  --nav-h:   73px;      /* height of the sticky nav bar, border included */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -124,11 +125,11 @@ section[id], header[id] { scroll-margin-top: 72px; }
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-bottom-color: var(--line);
 }
-.nav-in { display: flex; align-items: center; gap: 14px; padding-block: 11px; }
+.nav-in { display: flex; align-items: center; gap: 14px; height: calc(var(--nav-h) - 1px); }
 .logo { display: inline-flex; align-items: center; text-decoration: none; flex-shrink: 0; }
-.logo .mark { height: 25px; width: auto; }
+.logo .mark { height: 20px; width: auto; }
 .logo .mark-dark { display: none; }
-.logo .mark-sm { display: none; width: 30px; height: 30px; }
+.logo .mark-sm { display: none; width: 28px; height: 28px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .logo .mark-light { display: none; }
   :root:not([data-theme="light"]) .logo .mark-dark { display: inline; }
@@ -138,7 +139,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--accent); }
 @media (min-width: 1000px) { .nav-links { display: flex; } }
-@media (max-width: 999px) { .lang { margin-left: auto; } }
+@media (max-width: 999px) { .nav-cta { margin-left: auto; } }   /* language sits last, at the far right */
 /* language — an outlined pill that opens a short list of plain words beneath it. Normal: outline. Open: filled.
    The list shows only the languages you are not on, like a store's region picker. */
 .lang { position: relative; flex-shrink: 0; }
@@ -190,8 +191,9 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .note { font-size: var(--fs-small); color: var(--ink-3); }
 
 /* hero */
-.hero { padding-block: clamp(48px, 7vw, 96px); }
-.hero-in { display: grid; gap: var(--space-block); align-items: center; }
+/* the hero fills the first screen on its own, so the next section starts below the fold */
+.hero { min-height: calc(100vh - var(--nav-h)); min-height: calc(100svh - var(--nav-h)); display: flex; align-items: center; padding-block: clamp(48px, 7vw, 96px); }
+.hero-in { display: grid; gap: var(--space-block); align-items: center; width: 100%; }
 .hero-text { display: grid; gap: 22px; justify-items: start; max-width: 720px; }
 .checks { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: var(--fs-small); color: var(--ink-2); }
 .checks li::before { content: "✓ "; color: var(--accent); }
@@ -269,6 +271,7 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <a href="#how" data-i18n="n.start">Getting started</a>
       <a href="#faq" data-i18n="n.faq">FAQ</a>
     </div>
+    <a class="nav-cta" href="#get" data-i18n="n.cta">Download</a>
     <div class="lang">
       <button type="button" class="lang-btn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="Language / 언어">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"></path></svg>
@@ -278,9 +281,9 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <ul class="lang-menu" id="langMenu" hidden>
         <li><button type="button" id="langEn" data-lang="en" aria-pressed="true">English</button></li>
         <li><button type="button" id="langKo" data-lang="ko" aria-pressed="false">한국어</button></li>
+        <li><button type="button" id="langMn" data-lang="mn" aria-pressed="false">Монгол</button></li>
       </ul>
     </div>
-    <a class="nav-cta" href="#get" data-i18n="n.cta">Download</a>
   </div>
 </nav>
 
@@ -290,7 +293,6 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
     <div class="hero-text">
       <h1 data-i18n="h.h1"><em class="hl">Heads up</em>, the whole way to school.</h1>
       <p class="lede" data-i18n="v.hl">JoanX is an app for your child’s phone. When they walk while looking at the screen, it starts with a single buzz — it never locks the phone. Looking up earns points in a game they care about.</p>
-      <a class="btn store" href="#get"><small data-i18n="h.store2s">Get it on</small>Google Play</a>
       <ul class="checks">
         <li data-i18n="h.t1">Never locks the screen</li>
         <li data-i18n="h.t2">No location tracking</li>
@@ -730,6 +732,126 @@ var KO = {
   'ft.l': '조안X는 아직 출시 전이며, 화면은 출시 전 빌드의 예시 데이터입니다.'
 };
 
+/* ── Mongolian copy — the app itself has no Mongolian yet, so screenshots stay in English ── */
+var MN = {
+ "n.safety": "Аюулгүй мөч",
+ "n.game": "Тоглоом",
+ "n.parents": "Эцэг эхэд",
+ "n.privacy": "Нууцлал",
+ "n.start": "Эхлэх",
+ "n.faq": "Түгээмэл асуулт",
+ "n.cta": "Татах",
+ "h.h1": "Сургууль хүртэл <em class=\"hl\">толгойгоо өндийлгөөрэй.</em>",
+ "v.hl": "JoanX бол таны хүүхдийн утсанд суулгадаг апп. Хүүхэд алхаж явахдаа дэлгэц рүү харвал эхлээд ганц чичиргээгээр сануулна — утсыг хэзээ ч түгжихгүй. Дээш харвал хүүхдийн дуртай тоглоомд оноо цуглуулна.",
+ "h.store2s": "Татаж авах",
+ "h.t1": "Дэлгэцийг түгжихгүй",
+ "h.t2": "Байршил хянахгүй",
+ "h.t3": "Одоо байгаа утсан дээр ажиллана",
+ "q.safety": "Алхаж явахдаа утас руу харвал юу болох вэ?",
+ "v.sh": "Эхлээд чичиргээ. Үргэлжлүүлбэл л мессеж гарна.",
+ "v.sl": "JoanX дэлгэцийг хэзээ ч хаахгүй. Өмнөх алхам үр дүнгүй бол л дараагийн алхам болно.",
+ "v.st1": "1 · Чичиргээ",
+ "v.st1s": "Ганц чичиргээ, дэлгэц хараахан гарахгүй",
+ "v.st2": "2 · Карт",
+ "v.st2s": "Нэг мөр, нэг товч",
+ "v.st3": "3 · Илүү чанга мессеж",
+ "v.st3s": "Толгойгоо доош харсаар алхвал",
+ "v.s1h": "Эрт зогсох нь хамгийн их оноо",
+ "v.s1p": "Чичиргээнээс хойш хоёр секундэд дээш харвал анхааруулга гарахгүй — хамгийн их оноо ч авна.",
+ "v.s2h": "Дуудлага, мессеж үргэлж ажиллана",
+ "v.s2p": "Утсыг хэзээ ч булааж авахгүй тул хүүхэд тантай үргэлж холбогдож чадна.",
+ "v.s3h": "Үл тоовол тэмдэглэгдэнэ",
+ "v.s3p": "Толгойгоо доош харсаар алхвал мессеж илүү чанга дахин гарч, таны тайланд бичигдэнэ.",
+ "q.child": "Хүүхдэд юу өгөх вэ?",
+ "v.ch": "Дээш харвал дуртай тоглоомдоо оноо цуглуулна",
+ "v.cl": "Аюулгүй алхвал оноо цуглуулна. Оноогоор баддигаа өсгөж, хүчирхэгжсэн бадди муу санаатныг ялна.",
+ "g.s5": "Цуглуулга",
+ "g.s5s": "Олсон бадди, мөн хараахан олоогүй нь",
+ "g.s1": "Зам",
+ "g.s1s": "Дарааллаар нээгдэх арван өрсөлдөгч",
+ "g.s4": "Үр дүн",
+ "g.s4s": "Ялалтын оноо ба XP",
+ "v.c1h": "Минутад 10 оноо",
+ "v.c1p": "Утсаа доош тавьж алхсан минут бүр 10 оноо. Анхааруулгаас өмнө өөрөө зогсвол 50 оноо.",
+ "v.c2h": "Өсөж томрох бадди",
+ "v.c2p": "Арван түвшин, гурван үе шат — мөн ялалт бүрээр нэг нэгээр нээгдэх арван муу санаатан.",
+ "v.c3h": "Чат байхгүй, худалдан авах зүйл байхгүй",
+ "v.c3p": "Найзууд бие биеийнхээ өрөөнд зочилж, шалгагдсан нэг мөр тэмдэглэл үлдээж болно. Жинхэнэ мөнгөөр юу ч худалдаж авахгүй.",
+ "q.you": "Эцэг эх надад юу өгөх вэ?",
+ "v.yh": "Үр дүнтэй эсэхийг харуулах долоо хоногийн тайлан",
+ "v.yl": "Мөн яг одоо таны оролцоо хэрэгтэй үед л мэдэгдэл ирнэ.",
+ "pa.1": "Энэ долоо хоног",
+ "pa.1s": "Зогссон · үл тоосон · минут · дараалал",
+ "pa.6": "Мэдэгдэл",
+ "pa.6s": "Зөвхөн үнэхээр болсон зүйл",
+ "pa.3": "Таны бүлгүүд",
+ "pa.3s": "Хэн харж байгаа, хэн хүлээж байгаа",
+ "p.b1h": "Долоо хоног дөрвөн тоогоор",
+ "p.b1p": "Зогсоход хүргэсэн анхааруулга, үл тоосон анхааруулга, аюулгүй алхсан минут, одоогийн дараалсан өдөр — өнгөрсөн долоо хоногтой харьцуулан.",
+ "p.b3h": "Хүчтэй цохилтыг танд мэдэгдэнэ",
+ "p.b3p": "Унасныг илрүүлбэл утас хүүхдээс хорин секундийн турш зүгээр эсэхийг асууна. Хариу өгөхгүй бол танд шууд мэдэгдэнэ.",
+ "v.grph": "Тусалдаг хүн бүр ижил долоо хоногийг харна",
+ "v.grpp": "Хамтран асран хамгаалагч эсвэл эмээ өвөөг QR эсвэл кодоор бүлэгт урь. Хүсэлт бүрийг админ зөвшөөрнө.",
+ "q.privacy": "Би юуг харж чадах вэ — юуг харж чадахгүй вэ?",
+ "pv.h": "Таны харах зүйл, <em class=\"hl\">хэзээ ч харахгүй зүйл</em>",
+ "pv.l": "Асран хамгаалагчийн харж чадах бүх зүйл энэ жагсаалтад байна. Бусад бүх зүйл хүүхдийнх хэвээр үлдэнэ.",
+ "pv.y": "Таны харж чадах зүйл",
+ "pv.y1": "Хэр удаан аюулгүй алхсан",
+ "pv.y1n": "минутаар",
+ "pv.y2": "Анхааруулга, тус бүр хэрхэн дууссан",
+ "pv.y2n": "зогссон эсэх",
+ "pv.y3": "Оноо ба дараалсан өдөр",
+ "pv.y3n": "тоглоомын мэдээлэл",
+ "pv.y4": "Хамгаалалт асаалттай эсэх",
+ "pv.y4n": "төхөөрөмж ба зөвшөөрөл",
+ "pv.n": "Хэн ч харахгүй зүйл",
+ "pv.n1": "Хаана байгаа",
+ "pv.n1n": "газрын зураггүй",
+ "pv.n2": "Мессеж ба зочны дэвтэр",
+ "pv.n2n": "хэзээ ч уншихгүй",
+ "pv.n3": "Зургууд",
+ "pv.n3n": "хэзээ ч уншихгүй",
+ "pv.n4": "Ямар апп ашигладаг",
+ "pv.n4n": "хэзээ ч харуулахгүй",
+ "q.start": "Яаж эхлэх вэ?",
+ "hw.h": "Ойролцоогоор <em class=\"hl\">гурван минутад</em> тохируулна",
+ "hw.n1": "1-Р АЛХАМ",
+ "hw.h1": "Утсыг холбох",
+ "hw.p1": "Хүүхдийн утсанд JoanX суулгаад таны аппад гарсан кодыг оруулна — эсвэл тэдний дэлгэц дээрх QR-г уншуулна. Бугуйн төхөөрөмж, шинэ тоног төхөөрөмж, худалдаж авах зүйл хэрэггүй.",
+ "hw.n2": "2-Р АЛХАМ",
+ "hw.h2": "Алхаж байхад ганц зүйлийг л ажиглана",
+ "hw.p2": "Зөвхөн алхаж байхад, зөвхөн алхах ба утас ашиглах нь давхцах үед. Өдрийн бусад үед JoanX юу ч хийхгүй.",
+ "hw.n3": "3-Р АЛХАМ",
+ "hw.h3": "Та долоо хоногийг уншина",
+ "hw.p3": "Анхааруулахад хэр олон удаа зогссон, хэр олон удаа зогсоогүй, мөн долоо хоногийн турш багасч байгаа эсэх.",
+ "q.faq": "Өөр асуух зүйл байна уу?",
+ "f.h": "Эцэг эхчүүдийн <em class=\"hl\">хамгийн түрүүнд</em> асуудаг асуулт",
+ "f.q3": "Алхаж, утас ашиглаж байгааг яаж мэдэх вэ?",
+ "f.a3": "Утасны өөрийн хурдатгал мэдрэгчээр. Тогтвортой алхааны хэмнэл ойролцоогоор найман секунд үргэлжилбэл алхаж байна гэж үзнэ; тэр үед дэлгэц арав ба түүнээс дээш секунд ашиглагдвал аюулгүй мөч эхэлнэ. Илрүүлэлт утсан дээрээ явагдах бөгөөд таны тайлан бүртгэгдсэн мөчүүдээс бүрдэнэ.",
+ "f.q2": "Хүүхэд маань хаана байгааг харж болох уу?",
+ "f.a2": "Үгүй, энэ нь санаатай. JoanX-д газрын зураг ч, байршлын мөр ч байхгүй — алхаж буйг утасны хөдөлгөөний мэдрэгчээр мэднэ. Хянагдаж байна гэж мэдэрсэн хүүхэд аппыг устгадаг, тэгвэл хэнийг ч хамгаалахгүй.",
+ "f.q5": "Хүүхэд маань зүгээр л унтрааж чадах уу?",
+ "f.a5": "Хүүхдийн утас хүнд биш таны бүртгэлд холбогддог тул хүүхэд өөрөө чимээгүй салгаж чадахгүй — зөвхөн асран хамгаалагч салгана. Анхааруулгыг хааж болох ч толгойгоо доош харсаар алхвал илүү чанга дахин гарч, үл тоосон анхааруулга таны тайланд харагдана.",
+ "f.q7": "Үнэ хэд вэ?",
+ "f.a7": "Долоо хоногийн үнэгүй туршилт төлөвлөгдсөн. Үнэ хараахан зарлагдаагүй — зарлагдмагц энэ хуудсыг шинэчилнэ.",
+ "f.q8": "Хэдэн хүүхэд нэмж болох вэ?",
+ "f.a8": "Тав хүртэл, тус бүр өөрийн дүрэм, өөрийн бадди, өөрийн долоо хоногийн тайлантай. Хяналтын самбарын дээд хэсгээс хооронд нь шилжих ба тусалдаг бусад насанд хүрэгчдийг — хамтран асран хамгаалагч, эмээ өвөө, сургуульд хүргэдэг хүмүүс — аль ч хүүхдийн бүлэгт нэмж болно.",
+ "cta.h": "JoanX авах",
+ "cta.p": "Гарахад долоо хоног үнэгүй туршиж болно. Хүүхдийн утсанд нэг, таны утсанд нэг суулгаад холбоход ойролцоогоор гурван минут.",
+ "cta.s": "Google Play-д удахгүй гарна.",
+ "ft.p": "Хүүхдэд зориулсан аюулгүй алхах тоглоом, асран хамгаалагчдад зориулсан тайван долоо хоногийн тайлан.",
+ "ft.h1": "Бүтээгдэхүүн",
+ "ft.h2": "Үзэх",
+ "ft.h3": "Итгэл",
+ "ft.store": "Дэлгүүрийн зургууд",
+ "ft.back": "← Сонголт руу буцах",
+ "ft.t1": "Бидний цуглуулдаг мэдээлэл",
+ "ft.t2": "Хэзээ ч цуглуулдаггүй мэдээлэл",
+ "ft.t3": "Эцэг эхийн хяналт",
+ "ft.c": "© 2026 Joan Company",
+ "ft.l": "JoanX хараахан гараагүй байна. Харуулсан дэлгэцүүд нь жишээ өгөгдөлтэй, гаралтын өмнөх хувилбараас авсан."
+};
+
 (function () {
   /* the way back to the chooser — only inside the prototype build */
   if (/\/website\/v2\/?($|index\.html)/.test(location.pathname)) {
@@ -741,7 +863,8 @@ var KO = {
   var buttons = document.querySelectorAll('.lang-menu [data-lang]');
   var langBtn = document.querySelector('.lang-btn');
   var langMenu = document.getElementById('langMenu');
-  var NAMES = { en: ['English', 'EN'], ko: ['한국어', 'KO'] };
+  var NAMES = { en: ['English', 'EN'], ko: ['한국어', 'KO'], mn: ['Монгол', 'MN'] };
+  var DICT = { ko: KO, mn: MN };
   function openMenu(open) {
     langBtn.setAttribute('aria-expanded', String(open));
     langMenu.hidden = !open;
@@ -750,11 +873,11 @@ var KO = {
   document.addEventListener('click', function (e) { if (!e.target.closest('.lang')) openMenu(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !langMenu.hidden) { openMenu(false); langBtn.focus(); } });
   function setLang(lang) {
-    var ko = lang === 'ko';
-    document.documentElement.lang = ko ? 'ko' : 'en';
+    var dict = DICT[lang] || null;
+    document.documentElement.lang = dict ? lang : 'en';
     nodes.forEach(function (el) {
       if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
-      var txt = ko ? KO[el.dataset.i18n] : null;
+      var txt = dict ? dict[el.dataset.i18n] : null;
       el.innerHTML = txt === undefined || txt === null ? el.dataset.en : txt;
     });
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
@@ -766,7 +889,7 @@ var KO = {
   var saved = null;
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
-  if (saved === 'ko') setLang('ko');
+  if (saved === 'ko' || saved === 'mn') setLang(saved);
 
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
