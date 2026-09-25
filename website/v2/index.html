@@ -116,6 +116,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav {
   --nav-green: #4B814F; --nav-green-deep: #2B4F30;
   --nav-outline: rgba(26,32,28,.28);
+  --ctl-h: 42px;   /* Download and the language pill share one height */
   position: sticky; top: 0; z-index: 40;
   background: transparent; border-bottom: 1px solid transparent;
   transition: background .22s ease, border-color .22s ease;
@@ -146,7 +147,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .lang-btn {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1;
-  padding: 9px 14px 9px 12px; border-radius: 999px; cursor: pointer;
+  height: var(--ctl-h); padding: 0 16px 0 14px; border-radius: 999px; cursor: pointer;
   background: transparent; color: var(--ink); border: 1.5px solid var(--nav-outline);
   transition: background .14s ease, color .14s ease, border-color .14s ease;
 }
@@ -171,15 +172,16 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
   font-family: inherit; font-size: 14.5px; font-weight: 700; line-height: 1; white-space: nowrap;
-  padding: 11px 18px; border-radius: 999px; background: var(--nav-green); color: #fff; text-decoration: none;
+  height: var(--ctl-h); padding: 0 24px; border-radius: 999px; background: var(--nav-green); color: #fff; text-decoration: none;
   transition: background .14s ease, transform .14s ease;
 }
 .nav-cta:hover { background: var(--nav-green-deep); transform: translateY(-1px); }
 @media (max-width: 520px) {
   .lng-full { display: none; } .lng-abbr { display: inline; }
   .nav-in { gap: 10px; }
-  .nav-cta { padding: 10px 14px; font-size: 13.5px; }
-  .lang-btn { padding: 9px 11px 9px 10px; gap: 6px; font-size: 13px; }
+  .nav { --ctl-h: 38px; }
+  .nav-cta { padding: 0 16px; font-size: 13.5px; }
+  .lang-btn { padding: 0 12px 0 11px; gap: 6px; font-size: 13px; }
   .logo .mark { display: none; } .logo .mark-sm { display: block; }
 }
 @media (prefers-reduced-motion: reduce) { .nav, .nav-cta, .lang-btn, .lang-btn .chev { transition: none; } .nav-cta:hover { transform: none; } }
