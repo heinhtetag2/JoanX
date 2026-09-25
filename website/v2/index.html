@@ -17,15 +17,16 @@
    How it is organised
      1. Tokens      colour, type, space — change these first
      2. Base        elements
-     3. Layout      .wrap, .section, .sec-head, .part (text + screenshots)
+     3. Layout      .wrap, .section, .sec-head, .visuals (three screens)
      4. Pieces      nav, buttons, lists, table, faq, footer
 
    Page map (each section is marked in the HTML with a ═══ banner)
-     Nav · Hero · At a glance ·
-     01 Why JoanX · 02 How it works · 03 The safety moment ·
-     04 The game (4.1 buddy · 4.2 villains · 4.3 battle) ·
-     05 For parents (5.1 report · 5.2 groups · 5.3 settings & alerts) ·
-     06 The difference · 07 Privacy · 08 FAQ · Get JoanX · Footer
+     Nav · Hero ·
+     01 How it works · 02 The safety moment · 03 For your child (the game) ·
+     04 For you (the parent app) · 05 Privacy · 06 FAQ · Get JoanX · Footer
+
+   Each of 01–04 answers one question with the same anatomy:
+     the message (heading + one line) → what it looks like (screens) → the key points (three)
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── 1. Tokens ───────────────────────────────────────────────────────── */
@@ -87,18 +88,12 @@ section[id], header[id] { scroll-margin-top: 72px; }
 
 /* every section opens the same way: number + name, heading, one-line intro */
 .sec-head { display: grid; gap: 14px; margin-bottom: var(--space-block); max-width: 720px; }
-.sec-label, .part-label { display: flex; gap: 10px; font-size: var(--fs-small); font-weight: 700; color: var(--ink-2); }
+.sec-label { display: flex; gap: 10px; font-size: var(--fs-small); font-weight: 700; color: var(--ink-2); }
 .sec-num { color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* a part = one topic inside a section: text on one side, screenshots on the other */
-.part { display: grid; gap: var(--space-block); align-items: center; }
-.part + .part { margin-top: var(--space-section); }
-.part-text { display: grid; gap: 14px; align-content: start; }
-.part-media { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-@media (min-width: 900px) {
-  .part { grid-template-columns: 1fr 1fr; }
-  .part.flip .part-media { order: -1; }
-}
+/* what it looks like: three screens side by side, captioned — at every width */
+.visuals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 3vw, 36px); max-width: 880px; margin: 0 auto var(--space-block); }
+.visuals .shot { width: auto; max-width: none; }
 
 /* screenshots: the capture itself, rounded, on a hairline — no device chrome */
 .shot { width: var(--shot-w); max-width: 44vw; }
@@ -106,9 +101,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .shot figcaption { margin-top: 10px; font-size: var(--fs-small); display: grid; }
 .shot figcaption span { font-weight: 700; }
 .shot figcaption small { color: var(--ink-3); font-size: 13px; }
-/* three stages side by side: they share the column instead of wrapping */
-.part-media.three { flex-wrap: nowrap; }
-.part-media.three .shot { flex: 1 1 0; width: auto; max-width: 200px; }
+.shot.sm { --shot-w: 200px; max-width: 30vw; }
 
 /* ── 4. Pieces ───────────────────────────────────────────────────────── */
 /* nav */
@@ -156,8 +149,8 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .cols > * { display: grid; gap: 8px; align-content: start; }
 .cols p { color: var(--ink-2); }
 .steps { list-style: none; padding: 0; }
-.steps li { border-top: 2px solid var(--ink); padding-top: 14px; }
-.steps .n { font-size: var(--fs-small); font-weight: 700; color: var(--accent); }
+.steps .shot { width: auto; max-width: 260px; margin-bottom: 20px; }
+.steps .n { display: block; padding-top: 14px; border-top: 2px solid var(--ink); font-size: var(--fs-small); font-weight: 700; color: var(--accent); }
 .points { list-style: none; padding: 0; display: grid; gap: 16px; margin-top: 8px; }
 .points p { color: var(--ink-2); font-size: 15.5px; }
 .timeline { list-style: none; padding: 0; display: grid; gap: 4px; font-size: 15px; border-left: 2px solid var(--line); padding-left: 16px; }
@@ -242,276 +235,125 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </header>
 
-<!-- ═══ AT A GLANCE ═══════════════════════════════════════════════════════ -->
-<section class="wrap" aria-label="At a glance">
-  <div class="glance">
-    <div><b data-i18n="s.1b">Up to 5</b><span data-i18n="s.1">Children on one account</span></div>
-    <div><b data-i18n="s.2b">No map</b><span data-i18n="s.2">Where they are is never shown to you</span></div>
-    <div><b data-i18n="s.3b">2 apps</b><span data-i18n="s.3">One for them, one for you</span></div>
-    <div><b data-i18n="s.4b">No payments</b><span data-i18n="s.4">Nothing a child can buy with real money</span></div>
-  </div>
-</section>
-
-<!-- ═══ 01 · WHY JOANX ════════════════════════════════════════════════════ -->
-<section class="section" id="why">
+<!-- ═══ 01 · HOW IT WORKS ═════════════════════════════════════════════════ -->
+<section class="section" id="how">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="sec.why">Why JoanX</span></p>
-        <h2 data-i18n="w.h">A safety app your child <em class="hl">won't want to switch off</em></h2>
-        <p class="lede" data-i18n="w.l">Blockers get turned off and trackers get resented. JoanX gives your child a reason to keep it on.</p>
-      </header>
-    <div class="cols">
-      <div><h3 data-i18n="w.c1h">One buzz, never a block</h3><p data-i18n="w.c1p">A single vibration, then a card, then their buddy asking them to look up. The phone is never taken away — and calls and texts can never be blocked.</p></div>
-      <div><h3 data-i18n="w.c2h">Looking up is how you win</h3><p data-i18n="w.c2p">Every phone-free minute pays points. Points hatch eggs and grow a buddy through ten levels — strong enough to take on the ten villains. Stop fastest and you earn the most.</p></div>
-      <div><h3 data-i18n="w.c3h">Progress, not surveillance</h3><p data-i18n="w.c3p">You get a weekly read on whether the behaviour is changing. No map, no location trail, no reading their messages.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 02 · HOW IT WORKS ═════════════════════════════════════════════════ -->
-<section class="section alt" id="how">
-  <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="sec.how">How it works</span></p>
+        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="sec.how">How it works</span></p>
         <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
       </header>
-    <ol class="cols steps">
-      <li><span class="n" data-i18n="hw.n1">STEP 1</span><h3 data-i18n="hw.h1">Pair their phone</h3><p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p></li>
-      <li><span class="n" data-i18n="hw.n2">STEP 2</span><h3 data-i18n="hw.h2">They walk, it watches one thing</h3><p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p></li>
-      <li><span class="n" data-i18n="hw.n3">STEP 3</span><h3 data-i18n="hw.h3">You read the week</h3><p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p></li>
+    <ol class="steps cols">
+      <li><figure class="shot">
+          <img src="../media/shots/parent-pairing.png" width="535" height="1200" alt="The parent app showing a six-digit code to type into the child's phone, valid for five minutes." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n1">STEP 1</span><h3 data-i18n="hw.h1">Pair their phone</h3><p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p></li>
+      <li><figure class="shot">
+          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="A single vibration, shown as a small buzz marker over the child's home screen." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n2">STEP 2</span><h3 data-i18n="hw.h2">They walk, it watches one thing</h3><p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p></li>
+      <li><figure class="shot">
+          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
+        </figure>
+        <span class="n" data-i18n="hw.n3">STEP 3</span><h3 data-i18n="hw.h3">You read the week</h3><p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p></li>
     </ol>
   </div>
 </section>
 
-<!-- ═══ 03 · THE SAFETY MOMENT ════════════════════════════════════════════ -->
-<section class="section" id="safety">
+<!-- ═══ 02 · THE SAFETY MOMENT ════════════════════════════════════════════ -->
+<section class="section alt" id="safety">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="sec.safety">The safety moment</span></p>
+        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="sec.safety">The safety moment</span></p>
         <h2 data-i18n="sm.h">Ten seconds of grace, then <em class="hl">one buzz</em></h2>
         <p class="lede" data-i18n="sm.l">Nobody is warned for putting the phone away. Keep going, and only the tone gets firmer — never the force.</p>
       </header>
-    <div class="part">
-      <div class="part-text">
-        <ol class="timeline">
-          <li><b>10s</b> <span data-i18n="sm.ch1">grace — a heads-up, no buzz</span></li>
-          <li><b>1</b> <span data-i18n="sm.ch2">vibration per round, never a constant buzz</span></li>
-          <li><b>2s</b> <span data-i18n="sm.ch3">to stop before any screen shows</span></li>
-          <li><b data-i18n="sm.ch4b">Card</b> <span data-i18n="sm.ch4">one line, one button</span></li>
-          <li><b>5s</b> <span data-i18n="sm.ch5">quiet, then firmer</span></li>
-        </ol>
-        <ul class="points">
+    <div class="visuals">
+        <figure class="shot">
+          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="Stage one: a single vibration over the child's home screen — no card yet." loading="lazy">
+          <figcaption><span data-i18n="v.st1">1 · A buzz</span><small data-i18n="v.st1s">One vibration, no screen yet</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/stage-card.png" width="535" height="1200" alt="Stage two: the warning card — “Hey, you should look ahead.” and one button." loading="lazy">
+          <figcaption><span data-i18n="v.st2">2 · A card</span><small data-i18n="v.st2s">One line, one button</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../media/shots/stage-message.png" width="535" height="1200" alt="Stage three: a firmer message — “You're looking again. Now really look ahead.” with one button." loading="lazy">
+          <figcaption><span data-i18n="v.st3">3 · A firmer message</span><small data-i18n="v.st3s">If they keep walking head-down</small></figcaption>
+        </figure>
+    </div>
+    <ul class="points cols">
+          <li><h4 data-i18n="w.c1h">One buzz, never a block</h4><p data-i18n="w.c1p">A single vibration, then a card, then their buddy asking them to look up. The phone is never taken away — and calls and texts can never be blocked.</p></li>
           <li><h4 data-i18n="sm.b1h">The best outcome has no screen at all</h4><p data-i18n="sm.b1p">Look up within two seconds of the buzz and no warning is ever drawn — and that path pays the most points.</p></li>
           <li><h4 data-i18n="sm.b2h">Every reminder is on the record</h4><p data-i18n="sm.b2p">Keep walking head-down and it comes back five seconds later, firmer — and a warning they ignore shows up in your report.</p></li>
-          <li><h4 data-i18n="sm.b3h">It gets firmer. It never gets mean</h4><p data-i18n="sm.b3p">The strongest thing JoanX can do is say so plainly — and note it in your report.</p></li>
-        </ul>
-      </div>
-      <div class="part-media three">
-        <figure class="shot">
-          <img src="../media/shots/stage-buzz.png" width="535" height="1200" alt="Stage one: a single vibration, shown as a small buzz marker over the child's home screen — no card yet." loading="lazy">
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/stage-card.png" width="535" height="1200" alt="Stage two: the warning card — the mascot with a hand raised, “Hey, you should look ahead.” and one button." loading="lazy">
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/stage-message.png" width="535" height="1200" alt="Stage three: a firmer message — “You're looking again. Now really look ahead.” with a single Okay, got it button." loading="lazy">
-        </figure>
-      </div>
-    </div>
+    </ul>
   </div>
 </section>
 
-<!-- ═══ 04 · THE GAME ═════════════════════════════════════════════════════ -->
-<section class="section alt" id="game">
+<!-- ═══ 03 · FOR YOUR CHILD — THE GAME ════════════════════════════════════ -->
+<section class="section" id="game">
   <div class="wrap">
-    <header class="sec-head">
-      <p class="sec-label"><span class="sec-num">04</span><span data-i18n="sec.game">The game</span></p>
-    </header>
-
-    <!-- 4.1 the buddy -->
-    <div class="part">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">4.1</span><span data-i18n="g.k">The buddy</span></p>
-        <h3 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h3>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">03</span><span data-i18n="sec.child">For your child</span></p>
+        <h2 data-i18n="g.h">A game that <em class="hl">only safe walking</em> can pay for</h2>
         <p class="lede" data-i18n="g.l">10 points a minute with the phone down, 50 for stopping before a warning. Nothing is bought with your card.</p>
-        <ul class="points">
-          <li><h4 data-i18n="g.b1h">A buddy that visibly grows</h4><p data-i18n="g.b1p">Ten levels, three stages. It transforms the moment the level lands — even straight off a battle win.</p></li>
-          <li><h4 data-i18n="g.b2h">The rarest buddies are earned, not bought</h4><p data-i18n="g.b2p">Epic eggs can't be bought at all — they come from a thirty-day streak, reaching level ten, or beating the final villain. A child who never spends a point can still collect the best of them.</p></li>
-          <li><h4 data-i18n="g.b3h">Rooms, friends, no chat</h4><p data-i18n="g.b3p">Visit a friend's room, leave a like or one screened line. There is no messaging between children, by design.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
+      </header>
+    <div class="visuals">
         <figure class="shot">
           <img src="../media/shots/child-collection.png" width="535" height="1200" alt="The collection screen showing buddies the child has earned and slots still locked." loading="lazy">
           <figcaption><span data-i18n="g.s5">The collection</span><small data-i18n="g.s5s">Earned buddies, and the ones still out there</small></figcaption>
         </figure>
         <figure class="shot">
-          <img src="../media/shots/child-decorate.png" width="535" height="1200" alt="Dressing up the buddy Lumi: a hat and coat wardrobe priced in points, and a buy bar." loading="lazy">
-          <figcaption><span data-i18n="g.s6">The wardrobe</span><small data-i18n="g.s6s">Hats and coats, priced in points</small></figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <!-- 4.2 the villains -->
-    <div class="part flip">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">4.2</span><span data-i18n="g2.k">The villains</span></p>
-        <h3 data-i18n="g2.h"><em class="hl">Ten habits with names</em>, fought one at a time</h3>
-        <p class="lede" data-i18n="g2.l">Each villain is a real habit that pulls eyes down — like Ping, the notification that never stops asking.</p>
-        <ul class="points">
-          <li><h4 data-i18n="g2.b1h">No skipping ahead</h4><p data-i18n="g2.b1p">Each win unlocks the next villain, so how far along the road they are is a record of how long they have been walking safely.</p></li>
-          <li><h4 data-i18n="g2.b2h">A character, not a stat block</h4><p data-i18n="g2.b2p">Each one has a story and a move of its own, written to put a name to a habit rather than to look frightening.</p></li>
-          <li><h4 data-i18n="g2.b3h">Five tries a day</h4><p data-i18n="g2.b3p">Battles are capped. This is a reward for a day of safe walking, not something to sit and grind.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
-        <figure class="shot">
           <img src="../media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road: a painted map with ten villains — the first, Ping, ready to fight and the rest still hidden." loading="lazy">
           <figcaption><span data-i18n="g.s1">The road</span><small data-i18n="g.s1s">Ten opponents, unlocked in order</small></figcaption>
         </figure>
         <figure class="shot">
-          <img src="../media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping, level 1: power, reward, the habit it stands for, its story and its special move, above a Start battle button." loading="lazy">
-          <figcaption><span data-i18n="g.s2">The villain</span><small data-i18n="g.s2s">What it is, and what beating it pays</small></figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <!-- 4.3 the battle -->
-    <div class="part">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">4.3</span><span data-i18n="g3.k">The battle</span></p>
-        <h3 data-i18n="g3.h">Fought with a buddy <em class="hl">their walking built</em></h3>
-        <p class="lede" data-i18n="g3.l">The buddy in the ring is the one they grew by walking with the phone down.</p>
-        <ul class="points">
-          <li><h4 data-i18n="g3.b1h">The odds are shown first</h4><p data-i18n="g3.b1p">Win chance and both power totals, before they commit — so a loss is never a nasty surprise.</p></li>
-          <li><h4 data-i18n="g3.b2h">A win pays twice</h4><p data-i18n="g3.b2p">Points towards the next egg and XP towards the next level — and a win that tips a level can evolve the buddy on the spot.</p></li>
-          <li><h4 data-i18n="g3.b3h">It stops when they start walking</h4><p data-i18n="g3.b3p">Begin moving and the battle closes itself. The game is never allowed to compete with the road.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
-        <figure class="shot">
-          <img src="../media/shots/child-battle-versus.png" width="535" height="1200" alt="The versus screen: Ping on one side, the child's buddy Lumi on the other, a VS crest between them." loading="lazy">
-          <figcaption><span data-i18n="g.s3">The face-off</span><small data-i18n="g.s3s">Their buddy against it</small></figcaption>
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/child-battle-result.png" width="535" height="1200" alt="The result screen: Victory, plus 120 points and 60 XP, with the battle maths." loading="lazy">
+          <img src="../media/shots/child-battle-result.png" width="535" height="1200" alt="The result screen: Victory, plus 120 points and 60 XP." loading="lazy">
           <figcaption><span data-i18n="g.s4">The result</span><small data-i18n="g.s4s">Points and XP for the win</small></figcaption>
         </figure>
-      </div>
     </div>
+    <ul class="points cols">
+          <li><h4 data-i18n="w.c2h">Looking up is how you win</h4><p data-i18n="w.c2p">Every phone-free minute pays points. Points hatch eggs and grow a buddy through ten levels — strong enough to take on the ten villains. Stop fastest and you earn the most.</p></li>
+          <li><h4 data-i18n="g2.b1h">No skipping ahead</h4><p data-i18n="g2.b1p">Each win unlocks the next villain, so how far along the road they are is a record of how long they have been walking safely.</p></li>
+          <li><h4 data-i18n="g.b3h">Rooms, friends, no chat</h4><p data-i18n="g.b3p">Visit a friend's room, leave a like or one screened line. There is no messaging between children, by design.</p></li>
+    </ul>
   </div>
 </section>
 
-<!-- ═══ 05 · FOR PARENTS ══════════════════════════════════════════════════ -->
-<section class="section" id="parents">
+<!-- ═══ 04 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
+<section class="section alt" id="parents">
   <div class="wrap">
-    <header class="sec-head">
-      <p class="sec-label"><span class="sec-num">05</span><span data-i18n="sec.parents">For parents</span></p>
-    </header>
-
-    <!-- 5.1 the weekly report -->
-    <div class="part">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">5.1</span><span data-i18n="p.k">The weekly report</span></p>
-        <h3 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h3>
+      <header class="sec-head">
+        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="sec.you">For you</span></p>
+        <h2 data-i18n="p.h"><em class="hl">One page a week</em>, and it answers the real question</h2>
         <p class="lede" data-i18n="p.l">Not just how often it happened — whether it is happening less as the week goes on.</p>
-        <ul class="points">
-          <li><h4 data-i18n="p.b1h">The week in four numbers</h4><p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p></li>
-          <li><h4 data-i18n="p.b2h">A summary in plain language</h4><p data-i18n="p.b2p">The verdict first, then the week's story, then one thing to try — not a wall of charts at 11pm.</p></li>
-          <li><h4 data-i18n="p.b3h">A hard knock reaches you</h4><p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p></li>
-          <li><h4 data-i18n="p.b4h">One dashboard, every child</h4><p data-i18n="p.b4p">Up to five children on one account, each with their own rules, device and week. You switch between them at the top of the page.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
+      </header>
+    <div class="visuals">
         <figure class="shot">
-          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
+          <img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The weekly report: warnings that ended in a stop, warnings ignored, safe-walking minutes and the streak." loading="lazy">
           <figcaption><span data-i18n="pa.1">This week</span><small data-i18n="pa.1s">Stops, ignored, minutes, streak</small></figcaption>
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/parent-children.png" width="535" height="1200" alt="The children list: each child's device, battery, and whether their setup permissions are on." loading="lazy">
-          <figcaption><span data-i18n="pa.2">Your children</span><small data-i18n="pa.2s">Device, battery and what they agreed to</small></figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <!-- 5.2 groups -->
-    <div class="part flip">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">5.2</span><span data-i18n="p2.k">Groups</span></p>
-        <h3 data-i18n="p2.h">Both parents, <em class="hl">the aunt on Tuesdays</em>, the school run</h3>
-        <p class="lede" data-i18n="p2.l">Everyone looking after the same child sees the same week, and nobody joins without approval.</p>
-        <ul class="points">
-          <li><h4 data-i18n="p2.b1h">Up to five circles</h4><p data-i18n="p2.b1p">A household, a grandparent, a school-run group — each with its own members and its own children.</p></li>
-          <li><h4 data-i18n="p2.b2h">Joined by QR or code</h4><p data-i18n="p2.b2p">Scan the group's QR or type its code — either way it is only a request. An admin accepts or declines, and the requester sees the answer.</p></li>
-          <li><h4 data-i18n="p2.b3h">One main guardian per child</h4><p data-i18n="p2.b3p">In each group, one adult is the named contact for each child — and it can be a different adult in a different group.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
-        <figure class="shot">
-          <img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: guardian groups with member counts, the children in each, and a request waiting for approval." loading="lazy">
-          <figcaption><span data-i18n="pa.3">Your groups</span><small data-i18n="pa.3s">Who is watching, and who is waiting</small></figcaption>
-        </figure>
-        <figure class="shot">
-          <img src="../media/shots/parent-group-detail.png" width="535" height="1200" alt="One group: a join request with Accept and Reject, the guardians in it, and the children with their main guardian." loading="lazy">
-          <figcaption><span data-i18n="pa.4">Inside a group</span><small data-i18n="pa.4s">Approve, or decline, in one tap</small></figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <!-- 5.3 settings and alerts -->
-    <div class="part">
-      <div class="part-text">
-        <p class="part-label"><span class="sec-num">5.3</span><span data-i18n="p3.k">Settings and alerts</span></p>
-        <h3 data-i18n="p3.h">Told when something happened, <em class="hl">not every step they take</em></h3>
-        <p class="lede" data-i18n="p3.l">Each child has a page for their phone and permissions. When something real happens, it lands in one place.</p>
-        <ul class="points">
-          <li><h4 data-i18n="p3.b1h">You can see what they agreed to</h4><p data-i18n="p3.b1p">Motion, screen use, notifications: exactly which protections your child accepted at setup, and which they turned down.</p></li>
-          <li><h4 data-i18n="p3.b2h">Two guardians, one alert</h4><p data-i18n="p3.b2p">Once one of you has checked a moment, the other sees that it is handled — so nobody chases the same thing twice.</p></li>
-          <li><h4 data-i18n="p3.b3h">It says when protection drops</h4><p data-i18n="p3.b3p">A permission switched off, or a phone gone offline, shows up here instead of quietly weakening in the background.</p></li>
-        </ul>
-      </div>
-      <div class="part-media">
-        <figure class="shot">
-          <img src="../media/shots/parent-rules.png" width="535" height="1200" alt="A child's rules page: the paired device, and the setup agreement showing which permissions were accepted." loading="lazy">
-          <figcaption><span data-i18n="pa.5">Rules & settings</span><small data-i18n="pa.5s">The device, and what they agreed to</small></figcaption>
         </figure>
         <figure class="shot">
           <img src="../media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed: an impact with a call button, a distraction warning, an ignored warning already checked by the other parent, a device gone offline." loading="lazy">
           <figcaption><span data-i18n="pa.6">Alerts</span><small data-i18n="pa.6s">Only what actually happened</small></figcaption>
         </figure>
-      </div>
+        <figure class="shot">
+          <img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: guardian groups, the children in each, and a request waiting for approval." loading="lazy">
+          <figcaption><span data-i18n="pa.3">Your groups</span><small data-i18n="pa.3s">Who is watching, and who is waiting</small></figcaption>
+        </figure>
     </div>
+    <ul class="points cols">
+          <li><h4 data-i18n="p.b1h">The week in four numbers</h4><p data-i18n="p.b1p">Warnings that ended in a stop, warnings ignored, safe-walking minutes, and the current streak — with the change since last week.</p></li>
+          <li><h4 data-i18n="p.b3h">A hard knock reaches you</h4><p data-i18n="p.b3p">If a fall is detected, the phone asks your child if they are okay for twenty seconds. No answer, and you are told right away.</p></li>
+          <li><h4 data-i18n="v.grph">Everyone who helps sees the same week</h4><p data-i18n="v.grpp">Invite a co-parent or grandparent into a group with a QR or a code. An admin approves every request.</p></li>
+    </ul>
   </div>
 </section>
 
-<!-- ═══ 06 · THE DIFFERENCE ═══════════════════════════════════════════════ -->
-<section class="section alt" id="difference">
-  <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="sec.diff">The difference</span></p>
-        <h2 data-i18n="c.h">Most apps fight your child. This one <em class="hl">recruits them</em>.</h2>
-      </header>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th scope="col"></th><th scope="col" data-i18n="c.th1">Apps that lock the screen</th><th scope="col">JoanX</th></tr></thead>
-        <tbody>
-          <tr><th scope="row" data-i18n="c.r1">When your child slips</th><td data-i18n="c.r1a">The phone is blocked</td><td class="us" data-i18n="c.r1b">One buzz, then a sentence</td></tr>
-          <tr><th scope="row" data-i18n="c.r2">What your child does about it</th><td data-i18n="c.r2a">Turns it off, or borrows a friend's phone</td><td class="us" data-i18n="c.r2b">Keeps it — the game is theirs</td></tr>
-          <tr><th scope="row" data-i18n="c.r3">Where they are</th><td data-i18n="c.r3a">Tracked and mapped</td><td class="us" data-i18n="c.r3b">Never shown or mapped</td></tr>
-          <tr><th scope="row" data-i18n="c.r4">What you get</th><td data-i18n="c.r4a">An alert every time</td><td class="us" data-i18n="c.r4b">A weekly read on the change, and alerts that matter</td></tr>
-          <tr><th scope="row" data-i18n="c.r5">Calling for help</th><td data-i18n="c.r5a">May be blocked with everything else</td><td class="us" data-i18n="c.r5b">Phone and texts can never be blocked</td></tr>
-          <tr><th scope="row" data-i18n="c.r6">Extra hardware</th><td data-i18n="c.r6a">Often a watch or tag</td><td class="us" data-i18n="c.r6b">The phone they already have</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 07 · PRIVACY ══════════════════════════════════════════════════════ -->
+<!-- ═══ 05 · PRIVACY ══════════════════════════════════════════════════════ -->
 <section class="section" id="privacy">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">07</span><span data-i18n="sec.privacy">Privacy</span></p>
+        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="sec.privacy">Privacy</span></p>
         <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
         <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
       </header>
@@ -538,11 +380,11 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
-<!-- ═══ 08 · FAQ ══════════════════════════════════════════════════════════ -->
+<!-- ═══ 06 · FAQ ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">08</span><span data-i18n="sec.faq">FAQ</span></p>
+        <p class="sec-label"><span class="sec-num">06</span><span data-i18n="sec.faq">FAQ</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
     <div class="faq">
@@ -557,10 +399,6 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <details>
         <summary data-i18n="f.q3">How does it know they are walking and using the phone?</summary>
         <p data-i18n="f.a3">The phone's own accelerometer. Walking is confirmed from a steady step cadence held for about eight seconds; if the screen is in use at the same time for ten seconds or more, the safety moment begins. Detection runs on the phone itself; your report is built from the moments it records.</p>
-      </details>
-      <details>
-        <summary data-i18n="f.q4">Does my child need a smartwatch or any other device?</summary>
-        <p data-i18n="f.a4">No. JoanX runs on the phone they already carry — nothing to buy, nothing to charge.</p>
       </details>
       <details>
         <summary data-i18n="f.q5">Can my child just turn it off?</summary>
@@ -634,6 +472,16 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 <script>
 /* ── Korean copy — same keys as the AI-generated page, so both stay in step ── */
 var KO = {
+  'sec.child': '아이에게는',
+  'sec.you': '보호자에게는',
+  'v.st1': '1 · 진동',
+  'v.st1s': '진동 한 번, 아직 화면은 없어요',
+  'v.st2': '2 · 카드',
+  'v.st2s': '한 줄, 버튼 하나',
+  'v.st3': '3 · 더 단호한 메시지',
+  'v.st3s': '계속 고개를 숙이고 걸으면',
+  'v.grph': '함께 돌보는 어른도 같은 한 주를 봐요',
+  'v.grpp': '공동 양육자나 조부모님을 QR이나 코드로 그룹에 초대해요. 모든 요청은 관리자가 승인해요.',
   'sec.why': '왜 조안X인가요', 'sec.how': '작동 방식', 'sec.safety': '안전 순간', 'sec.game': '게임',
   'sec.parents': '보호자용', 'sec.diff': '무엇이 다른가요', 'sec.privacy': '개인정보', 'sec.faq': '자주 묻는 질문',
 

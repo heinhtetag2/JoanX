@@ -104,6 +104,14 @@ const SHOTS = {
   'parent-reports': { run: async (p) => { await parent(p); await sleep(1200); } },
   'parent-alerts': { run: async (p) => { await parent(p); await tab(p, 'bell'); await sleep(1500); } },
   // the rest are the landing page's parent screens (website/media/shots/)
+  // the centre Connect tab opens on the scanner; flip it to the code a child types in
+  'parent-pairing': {
+    run: async (p) => {
+      await parent(p); await tab(p, 'scan-line'); await sleep(1000);
+      await p.locator('.screen button').filter({ has: p.locator('svg.lucide-keyboard') }).first().click();
+      await sleep(1200);
+    },
+  },
   'parent-children': { run: async (p) => { await parent(p); await tab(p, 'puzzle'); await sleep(1500); } },
   'parent-groups': { run: async (p) => { await parent(p); await tweak(p, 'Groups'); await sleep(1500); } },
   'parent-group-detail': { run: async (p) => { await parent(p); await tweak(p, 'Group detail'); await sleep(1500); } },
