@@ -9,7 +9,7 @@
 
 const VERSIONS = [
   { id: 'v1', label: 'AI generated', note: 'The AI-generated page', href: '/website/' },
-  { id: 'v2', label: 'Human', note: 'The human-made page', href: '/website/v2/' },
+  { id: 'v2', label: 'Human + AI', note: 'Made by a human, with AI', href: '/website/v2/' },
 ];
 
 const path = location.pathname;
