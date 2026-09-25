@@ -204,8 +204,8 @@ section[id], header[id] { scroll-margin-top: 72px; }
 @media (max-width: 520px) { .nav .logo .mark.mark-dark, .nav .logo .mark.mark-light { display: none; } }   /* phones show only the round mark */
 
 /* menu button: three lines, the last thing on the right */
-.burger { width: var(--ctl-h); height: var(--ctl-h); flex-shrink: 0; display: grid; place-content: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; margin-right: -8px; }
-.burger span { display: block; width: 26px; height: 2.5px; border-radius: 2px; background: var(--ink); }
+.burger { width: var(--ctl-h); height: var(--ctl-h); flex-shrink: 0; display: grid; place-content: center; gap: 4px; padding: 0; border: 0; background: none; cursor: pointer; margin-right: -11px; }
+.burger span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--ink); }   /* same size and weight as the globe icon */
 .nav:not(.is-stuck) .burger span { background: #fff; }
 
 /* full-screen menu — a green circle grows from the menu button (--mx/--my) to fill the screen */
@@ -217,8 +217,8 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .menu.is-open { clip-path: circle(150vmax at var(--mx, 100%) var(--my, 0px)); visibility: visible; transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s; }
 .menu-top { display: flex; align-items: center; justify-content: space-between; height: calc(var(--nav-h) - 1px); }
 .menu-logo img { height: 20px; width: auto; filter: brightness(0) invert(1); }
-.menu-close { width: var(--ctl-h); height: var(--ctl-h); margin-right: -8px; display: grid; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
-.menu-close svg { width: 30px; height: 30px; }
+.menu-close { width: var(--ctl-h); height: var(--ctl-h); margin-right: -11px; display: grid; place-items: center; border: 0; background: none; color: #fff; cursor: pointer; }
+.menu-close svg { width: 22px; height: 22px; }
 .menu-body { min-height: calc(100vh - var(--nav-h)); display: grid; align-content: center; gap: clamp(40px, 6vw, 80px); padding-block: 32px 56px; }
 @media (min-width: 900px) { .menu-body { grid-template-columns: 1.4fr 1fr; align-items: center; } }
 .menu-links { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(4px, 1vw, 12px); }
