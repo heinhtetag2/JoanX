@@ -131,6 +131,8 @@ body {
    itself — with the hill wider than the frame so its curve stays gentle. */
 .f-icon { width: 512px !important; height: 512px !important; background: #000000; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .f-icon .wordmark { width: 79%; display: block; margin-bottom: 4%; position: relative; z-index: 2; }
+/* the kids app's icon is the wordmark alone on black — no hill, no label — so it sits centred */
+.f-icon.plain .wordmark { margin-bottom: 0; }
 .f-icon .hill {
   position: absolute; left: 50%; bottom: -2px; width: 150%; height: 33%; margin-left: -75%;
   background: #4B814F;
@@ -402,9 +404,8 @@ html.export .thumb .frame { position: relative; transform: none !important; }
 
   <!-- Play's other two assets -->
   <section class="cell" data-slug="app-icon-kids" data-kind="icon">
-    <div class="thumb"><div class="frame f-icon">
+    <div class="thumb"><div class="frame f-icon plain">
       <img class="wordmark" src="media/brand/logo-wordmark.svg" alt="JoanX">
-      <div class="hill"><span data-t="icon.kids"></span></div>
     </div></div>
   </section>
 
