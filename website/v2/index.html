@@ -296,7 +296,13 @@ td.us { color: var(--ink); font-weight: 600; }
    its centre and the line's position are set by the script from scroll progress. */
 .takeover { position: relative; }
 .takeover-run { height: 220vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
-.takeover-stage { position: sticky; top: 0; overflow: hidden; }
+.takeover-stage {
+  position: sticky; top: 0; overflow: hidden;
+  /* at least a full screen, content centred, so when it pins it IS the page */
+  min-height: 100vh; min-height: 100svh; display: flex; align-items: center;
+  padding-top: calc(var(--nav-h) + clamp(24px, 4vw, 56px)); padding-bottom: clamp(24px, 4vw, 56px);
+}
+.takeover-stage > .wrap { width: 100%; }
 .takeover-fill {
   position: absolute; inset: 0; z-index: 50; background: #4B814F;
   clip-path: circle(0 at 100% 50%); pointer-events: none;
@@ -995,8 +1001,10 @@ var MN = {
     var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
     var c = clamp01(p / 0.35); c = c * c * (3 - 2 * c);   // circle: 0 → 35% of the pin
     tkFill.style.clipPath = 'circle(' + (c * 125).toFixed(2) + 'vmax at 100% ' + vy.toFixed(1) + 'px)';
-    // a sticky stage paints in its own layer: lift it above the nav only once the circle is in
-    tkStage.style.zIndex = c > 0 ? 45 : '';
+    // a sticky stage paints in its own layer: lift it above the nav only once the circle has
+    // actually grown up to the nav bar, so the nav stays while you read the lists
+    var rpx = c * 1.25 * Math.max(window.innerWidth, vh), navH = document.querySelector('.nav').offsetHeight;
+    tkStage.style.zIndex = rpx > (vh / 2 - navH) ? 45 : '';
     tkLine.style.top = vy.toFixed(1) + 'px';
     tkLine.style.visibility = c > 0.6 ? 'visible' : 'hidden';
     var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.4) / 0.45) * ws.length;   // words: 40% → 85%
