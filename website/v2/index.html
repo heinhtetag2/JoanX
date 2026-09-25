@@ -193,9 +193,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 /* hero */
 .hero { padding-block: clamp(48px, 7vw, 96px); }
 .hero-in { display: grid; gap: var(--space-block); align-items: center; }
-@media (min-width: 900px) { .hero-in { grid-template-columns: 1.1fr .9fr; } }
-.hero-text { display: grid; gap: 22px; justify-items: start; }
-.hero .shot { --shot-w: 280px; margin-inline: auto; }
+.hero-text { display: grid; gap: 22px; justify-items: start; max-width: 720px; }
 .checks { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: var(--fs-small); color: var(--ink-2); }
 .checks li::before { content: "✓ "; color: var(--accent); }
 
@@ -300,9 +298,6 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         <li data-i18n="h.t3">Works on the phone they have</li>
       </ul>
     </div>
-        <figure class="shot">
-          <img src="../media/shots/child-home.png" width="535" height="1200" alt="The JoanX child app: a star-shaped buddy called Lumi inside an XP ring, a points chip, and today's tasks." loading="lazy">
-        </figure>
   </div>
 </header>
 
