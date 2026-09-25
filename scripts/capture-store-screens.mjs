@@ -101,9 +101,30 @@ const SHOTS = {
       await sleep(1200);
     },
   },
-  'parent-reports': { run: async (p) => { await p.locator('.topbar button', { hasText: 'Parent app' }).click(); await sleep(2000); } },
-  'parent-alerts': { run: async (p) => { await p.locator('.topbar button', { hasText: 'Parent app' }).click(); await sleep(800); await tab(p, 'bell'); await sleep(1500); } },
+  'parent-reports': { run: async (p) => { await parent(p); await sleep(1200); } },
+  'parent-alerts': { run: async (p) => { await parent(p); await tab(p, 'bell'); await sleep(1500); } },
+  // the rest are the landing page's parent screens (website/media/shots/)
+  'parent-children': { run: async (p) => { await parent(p); await tab(p, 'puzzle'); await sleep(1500); } },
+  'parent-groups': { run: async (p) => { await parent(p); await tweak(p, 'Groups'); await sleep(1500); } },
+  'parent-group-detail': { run: async (p) => { await parent(p); await tweak(p, 'Group detail'); await sleep(1500); } },
+  // the first child's rules page, scrolled so the device and the setup agreement fill the phone
+  'parent-rules': {
+    run: async (p) => {
+      await parent(p); await tab(p, 'puzzle'); await sleep(1000);
+      await p.locator('.screen div[style*="cursor: pointer"]', { hasText: /Mina|미나/ }).first().click();
+      await sleep(1200);
+      await p.evaluate(() => {
+        const head = [...document.querySelectorAll('.screen div')].find(d => /^(Device|기기)$/.test(d.textContent.trim()));
+        let sc = head.parentElement;
+        while (sc && sc.scrollHeight <= sc.clientHeight + 1) sc = sc.parentElement;
+        const top = document.querySelector('.screen').getBoundingClientRect().top;
+        sc.scrollTop += head.getBoundingClientRect().top - top - 150;
+      });
+      await sleep(800);
+    },
+  },
 };
+async function parent(p) { await p.locator('.topbar button', { hasText: 'Parent app' }).click(); await sleep(800); }
 
 const only = process.argv.slice(2);
 const names = only.length ? only : Object.keys(SHOTS);

@@ -561,7 +561,7 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
 
     <div class="phones">
       <div class="device back"><img src="media/shots/parent-reports.png" width="535" height="1200" alt="The parent app's weekly report: 44 of 47 warnings ended in a stop, 312 minutes of safe walking, a five-day streak."><span class="island" aria-hidden="true"></span></div>
-      <div class="device front"><img src="media/shots/child-home.png" width="535" height="1200" alt="The JoanX child app: a star-shaped buddy called Rex inside an XP ring, a points chip, and today's tasks."><span class="island" aria-hidden="true"></span></div>
+      <div class="device front"><img src="media/shots/child-home.png" width="535" height="1200" alt="The JoanX child app: a star-shaped buddy called Lumi inside an XP ring, a points chip, and today's tasks."><span class="island" aria-hidden="true"></span></div>
       <img class="hero-mascot" src="media/art/mascot-halt.png" width="590" height="700" alt="King Cubix, the JoanX mascot — a blue cube-headed king holding up a hand to say stop.">
     </div>
   </div>
@@ -768,11 +768,11 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
       </div>
       <div class="row-media pair">
         <figure class="gshot" data-shot="child-villain-road.png">
-            <div class="device"><img src="media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road: a painted map with ten villains, the beaten ones in colour and the locked ones greyed out." loading="lazy"><span class="island" aria-hidden="true"></span></div>
+            <div class="device"><img src="media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road: a painted map with ten villains — the first, Ping, ready to fight and the rest still hidden." loading="lazy"><span class="island" aria-hidden="true"></span></div>
             <span class="cap"><span data-i18n="g.s1">The road</span><small data-i18n="g.s1s">Ten opponents, unlocked in order</small></span>
         </figure>
         <figure class="gshot" data-shot="child-villain-card.png">
-            <div class="device"><img src="media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Moody, level 4: power, reward, the habit it stands for, its story and its special move, above a Start battle button." loading="lazy"><span class="island" aria-hidden="true"></span></div>
+            <div class="device"><img src="media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping, level 1: power, reward, the habit it stands for, its story and its special move, above a Start battle button." loading="lazy"><span class="island" aria-hidden="true"></span></div>
             <span class="cap"><span data-i18n="g.s2">The villain</span><small data-i18n="g.s2s">What it is, and what beating it pays</small></span>
         </figure>
       </div>
@@ -811,7 +811,7 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
       </div>
       <div class="row-media pair">
         <figure class="gshot" data-shot="child-battle-versus.png">
-            <div class="device"><img src="media/shots/child-battle-versus.png" width="535" height="1200" alt="The versus screen: Moody at level 4 above, the child's buddy Rex at level 8 below, a VS crest between them." loading="lazy"><span class="island" aria-hidden="true"></span></div>
+            <div class="device"><img src="media/shots/child-battle-versus.png" width="535" height="1200" alt="The versus screen: Ping on one side, the child's buddy Lumi on the other, a VS crest between them." loading="lazy"><span class="island" aria-hidden="true"></span></div>
             <span class="cap"><span data-i18n="g.s3">The face-off</span><small data-i18n="g.s3s">Their buddy against it</small></span>
         </figure>
         <figure class="gshot" data-shot="child-battle-result.png">
@@ -892,7 +892,7 @@ footer { background: var(--ground-2); border-top: 1px solid var(--line); padding
           <div>
             <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"></path></svg></span>
             <div>
-              <h4 data-i18n="p2.b2h">Joined by scanning a QR</h4>
+              <h4 data-i18n="p2.b2h">Joined by QR or code</h4>
               <p data-i18n="p2.b2p">Scan the group's QR or type its code — either way it is only a request. An admin accepts or declines, and the requester sees the answer.</p>
             </div>
           </div>
@@ -1307,7 +1307,7 @@ var KO = {
   'p2.l': '한 아이를 돌보는 일이 어른 한 명의 몫인 경우는 드물어요. 그룹은 같은 아이를 함께 지켜보는 사람들이에요 — 모두 같은 한 주를 보고, 허락 없이는 아무도 들어올 수 없어요.',
   'p2.b1h': '최대 5개의 그룹',
   'p2.b1p': '우리 집, 할머니, 등하교 모임 — 그룹마다 멤버도 자녀도 따로 정해요.',
-  'p2.b2h': 'QR 스캔으로 참여해요',
+  'p2.b2h': 'QR이나 코드로 참여해요',
   'p2.b2p': '그룹 QR을 스캔하거나 코드를 입력해요 — 어느 쪽이든 요청일 뿐이에요. 관리자가 수락하거나 거절하고, 요청한 사람은 그 결과를 볼 수 있어요.',
   'p2.b3h': '자녀마다 주 보호자 한 명',
   'p2.b3p': '그룹마다 자녀를 대표해 연락받을 어른을 한 명 정해요. 다른 그룹에서는 다른 어른이 될 수도 있어요.',
@@ -1377,6 +1377,15 @@ var KO = {
   var nodes = document.querySelectorAll('[data-i18n]');
   var buttons = document.querySelectorAll('.lang button');
 
+  /* ── phone mockups follow the language: every capture has a Korean twin in media/shots/ko/ */
+  var shots = document.querySelectorAll('img[src^="media/shots/"]');
+  function setShots(ko) {
+    shots.forEach(function (img) {
+      if (!img.dataset.srcEn) img.dataset.srcEn = img.getAttribute('src');
+      img.setAttribute('src', ko ? img.dataset.srcEn.replace('media/shots/', 'media/shots/ko/') : img.dataset.srcEn);
+    });
+  }
+
   function setLang(lang) {
     var ko = lang === 'ko';
     document.documentElement.lang = ko ? 'ko' : 'en';
@@ -1386,6 +1395,7 @@ var KO = {
       el.innerHTML = txt === undefined || txt === null ? el.dataset.en : txt;
     });
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+    setShots(ko);
     try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window — fine */ }
   }
 
