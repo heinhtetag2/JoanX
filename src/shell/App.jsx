@@ -430,8 +430,9 @@ function App() {
           <a href="/website/store.html" title="Store listing screenshots, icons and feature graphic">
             <Icon name="images" size={15} color={THEME.fg3} stroke={2.2} />Store assets
           </a>
-          {/* the UI/UX case study — its own page (website/case-study.html), like Store assets */}
-          <a href="/website/case-study.html" target="_blank" rel="noopener" title="UI/UX case study: the problem, three design decisions, outcome">
+          {/* the UI/UX case study — published as a Claude Artifact; opens in a new tab.
+              The slide version still lives at website/case-study.html. */}
+          <a href="https://claude.ai/artifact/WUD3eSXaDjPiN7T5sBhwBZ" target="_blank" rel="noopener" title="UI/UX case study: the problem, three design decisions, outcome">
             <Icon name="trophy" size={15} color={THEME.fg3} stroke={2.2} />Case study
           </a>
         </div>
