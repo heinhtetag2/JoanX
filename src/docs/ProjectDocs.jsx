@@ -618,8 +618,12 @@ function ProjectDocs() {
               onClick={() => go('casestudy')}
             >
               <Icon name="trophy" size={13} color="#2b5782" stroke={2.2} />
-              Case study — the polished write-up
+              Case study — short summary (this page)
             </button>
+            <a className="doc-file live" href="/website/case-study.html">
+              <Icon name="trophy" size={13} color="#35603a" stroke={2.2} />
+              UI/UX case study — the full portfolio page
+            </a>
             {/* The public landing page — served by this same build from website/, so the link
                 stays inside the project instead of pointing at an external copy. */}
             <a className="doc-file live" href="/website/">
