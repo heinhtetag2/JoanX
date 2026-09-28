@@ -431,7 +431,7 @@ function App() {
             <Icon name="images" size={15} color={THEME.fg3} stroke={2.2} />Store assets
           </a>
           {/* the UI/UX case study — its own page (website/case-study.html), like Store assets */}
-          <a href="/website/case-study.html" title="UI/UX case study: the problem, three design decisions, outcome">
+          <a href="/website/case-study.html" target="_blank" rel="noopener" title="UI/UX case study: the problem, three design decisions, outcome">
             <Icon name="trophy" size={15} color={THEME.fg3} stroke={2.2} />Case study
           </a>
         </div>

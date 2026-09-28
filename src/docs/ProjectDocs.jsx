@@ -620,7 +620,7 @@ function ProjectDocs() {
               <Icon name="trophy" size={13} color="#2b5782" stroke={2.2} />
               Case study — short summary (this page)
             </button>
-            <a className="doc-file live" href="/website/case-study.html">
+            <a className="doc-file live" href="/website/case-study.html" target="_blank" rel="noopener">
               <Icon name="trophy" size={13} color="#35603a" stroke={2.2} />
               UI/UX case study — the full portfolio page
             </a>

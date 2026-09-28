@@ -6,561 +6,634 @@
 <title>JoanX · Case Study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
-   JoanX — UI/UX case study.
-   Structure: 1 Opening · 2 Context · 3 Problem · 4 Goals & constraints ·
-   5 Evidence · 6 Approach · 7 Three stories · 8 Whole experience ·
-   9 Validation · 10 Outcome & reflection.
-   Every claim here comes from the repo (spec, git history, the prototype).
-   Anything only the designer can supply is marked with .need — toggle
-   "Editing notes" in the bar to hide those markers for a clean read.
+   JoanX — UI/UX case study, as a presentation.
+   Full-screen slides, one idea each. ← → (or space / PageDown) to move,
+   N toggles the editing notes, Home / End jump to the ends.
+   Slides:  01 Cover · 02 Context · 03 Problem · 04 Goals & constraints ·
+            05 Evidence · 06 Principles · 07–12 Three stories (2 slides each) ·
+            13 Whole experience · 14 Validation · 15 Outcome · 16 Closing
+   Every claim is from the spec, git history or the build. What only the
+   designer can supply is marked .need, and hidden by the notes toggle.
    ═══════════════════════════════════════════════════════════════════════ */
 :root {
-  --paper: #FFFFFF; --paper-2: #F5F6F2; --ink: #1B1D1B; --ink-2: #53584F; --ink-3: #868A82;
-  --line: #E3E5DE; --green: #4B814F; --green-ink: #35603A; --green-tint: #E8F0E7; --night: #1E3A23;
+  --paper: #FFFFFF; --paper-2: #F4F5F1; --ink: #1B1D1B; --ink-2: #53584F; --ink-3: #868A82; --line: #E3E5DE;
+  --green: #4B814F; --green-ink: #35603A; --mint: #CFE6CF; --night: #16261A; --night-2: #1E3A23;
   --rust: #B5452F; --rust-tint: #FBEDE8;
   --font: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --display: Fredoka, "Noto Sans KR", sans-serif;
-  --max: 1080px; --radius: 14px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #121412; --paper-2: #181B18; --ink: #ECEDE8; --ink-2: #A9ADA3; --ink-3: #7C8077; --line: #2B2F2A;
-    --green: #6FA673; --green-ink: #97C99C; --green-tint: #1D2A1E; --night: #0E1A11; --rust: #E38571; --rust-tint: #2A1B17;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #121412; --paper-2: #181B18; --ink: #ECEDE8; --ink-2: #A9ADA3; --ink-3: #7C8077; --line: #2B2F2A;
-  --green: #6FA673; --green-ink: #97C99C; --green-tint: #1D2A1E; --night: #0E1A11; --rust: #E38571; --rust-tint: #2A1B17;
+  --pad: clamp(24px, min(5vw, 5vh), 72px);
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-h1, h2, h3, h4, p, ul, ol, figure, dl, dd { margin: 0; }
-h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.015em; line-height: 1.15; text-wrap: balance; }
-h1 { font-size: clamp(36px, 5.2vw, 58px); }
-h2 { font-size: clamp(26px, 3.2vw, 36px); }
-h3 { font-size: clamp(20px, 2vw, 24px); }
-h4 { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
-a { color: var(--green-ink); }
+html, body { margin: 0; height: 100%; }
+body { background: var(--night); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; overflow: hidden; }
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.02em; line-height: 1.08; text-wrap: balance; }
+a { color: inherit; }
 img { display: block; max-width: 100%; height: auto; }
 :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
-section[id] { scroll-margin-top: 72px; }
-.wrap { max-width: var(--max); margin: 0 auto; padding-inline: 20px; }
-.lede { font-size: clamp(17px, 1.6vw, 20px); color: var(--ink-2); max-width: 60ch; }
-.muted { color: var(--ink-2); }
 
-/* top bar: where this page sits among the project's other pages */
-.bar { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-.bar-in { display: flex; align-items: center; gap: 18px; height: 60px; }
-.bar img { height: 18px; width: auto; }
-.bar nav { display: flex; gap: 18px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
-.bar nav a { color: var(--ink-2); text-decoration: none; font-size: 14px; white-space: nowrap; }
-.bar nav a:hover { color: var(--ink); }
-.notes-toggle { flex-shrink: 0; font: inherit; font-size: 13px; color: var(--rust); background: none; border: 1px dashed var(--rust); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
-.logo-dark { display: none; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-light { display: none; } :root:not([data-theme="light"]) .logo-dark { display: block; } }
-@media (max-width: 760px) { .bar nav { display: none; } .notes-toggle { margin-left: auto; } }
+/* ── the deck: one slide per screen, snapping ─────────────────────────── */
+.deck { height: 100vh; height: 100svh; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.slide {
+  position: relative; min-height: 100vh; min-height: 100svh; scroll-snap-align: start;
+  display: flex; flex-direction: column; padding: calc(var(--pad) + 40px) clamp(24px, 5vw, 80px) calc(var(--pad) + 40px);
+  background: var(--paper); overflow: hidden;
+}
+.slide.tint { background: var(--paper-2); }
+.slide.dark { background: var(--night); color: #fff; }
+.slide.green { background: var(--green); color: #fff; }
+.slide > .in { flex: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; max-width: 1280px; margin: 0 auto; gap: clamp(16px, min(3vw, 3.4vh), 40px); }
 
-/* the editor's markers — what only the designer can fill in */
-.need { display: block; margin-top: 12px; padding: 10px 14px; border-left: 3px solid var(--rust); background: var(--rust-tint); color: var(--rust); font-size: 14.5px; line-height: 1.55; border-radius: 0 8px 8px 0; }
+/* slide chrome: section label top-left (per slide), deck controls fixed */
+.label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green-ink); }
+.dark .label, .green .label { color: var(--mint); }
+.chrome { position: fixed; z-index: 20; left: 0; right: 0; display: flex; align-items: center; gap: 16px; padding: 0 var(--pad); pointer-events: none; }
+.chrome > * { pointer-events: auto; }
+.chrome.top { top: 0; height: 64px; }
+.chrome.bottom { bottom: 0; height: 64px; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; text-decoration: none; }
+.brand img { height: 16px; width: auto; }
+.links { margin-left: auto; display: flex; gap: 16px; }
+.links a, .brand span { font-size: 13px; text-decoration: none; opacity: .72; }
+.links a:hover { opacity: 1; }
+.notes-toggle { font: inherit; font-size: 12.5px; color: inherit; background: none; border: 1px dashed currentColor; border-radius: 8px; padding: 4px 10px; cursor: pointer; opacity: .8; }
+.counter { font-family: var(--display); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.counter b { font-weight: 600; }
+.progress { flex: 1; height: 2px; background: currentColor; opacity: .18; position: relative; }
+.progress i { position: absolute; inset: 0 auto 0 0; background: currentColor; opacity: 1; width: 0; transition: width .3s ease; }
+.nav-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid currentColor; background: none; color: inherit; cursor: pointer; display: grid; place-items: center; opacity: .75; }
+.nav-btn:hover { opacity: 1; }
+.nav-btn svg { width: 18px; height: 18px; }
+/* chrome colour follows the slide under it (set by the script) */
+body[data-tone="light"] .chrome { color: var(--ink); }
+body[data-tone="dark"] .chrome { color: #fff; }
+.logo-w { display: none; }
+body[data-tone="dark"] .logo-d { display: none; }
+body[data-tone="dark"] .logo-w { display: block; filter: brightness(0) invert(1); }   /* all-white: the green A/X vanish on the green slides */
+@media (max-width: 760px) { .links { display: none; } .brand span { display: none; } .notes-toggle { margin-left: auto; } }
+
+/* the designer's markers */
+.need { padding: 10px 14px; border-left: 3px solid var(--rust); background: var(--rust-tint); color: var(--rust); font-size: 14px; line-height: 1.5; border-radius: 0 8px 8px 0; max-width: 62ch; }
 .need b { font-weight: 700; }
 body.clean .need { display: none; }
 
-/* sections */
-.sec { padding-block: clamp(56px, 8vw, 104px); border-top: 1px solid var(--line); }
-.sec.alt { background: var(--paper-2); }
-.sec-head { display: grid; gap: 12px; margin-bottom: clamp(28px, 4vw, 48px); max-width: 760px; }
-.num { font-size: 14px; font-weight: 700; color: var(--green-ink); }
+/* shared pieces */
+.lede { font-size: clamp(17px, 1.7vw, 22px); line-height: 1.55; color: var(--ink-2); max-width: 44em; }
+.dark .lede, .green .lede { color: rgba(255,255,255,.82); }
+.phone { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--paper-2); }
+.dark .phone { border-color: rgba(255,255,255,.12); }
+.phones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vw, 16px); }
+.phones figcaption { font-size: 13px; line-height: 1.4; margin-top: 8px; opacity: .8; }
+.phones figcaption b { display: block; opacity: 1; }
+.slide > .in.split { display: grid; gap: clamp(28px, 5vw, 72px); align-items: center; align-content: center; }
+@media (min-width: 960px) { .slide > .in.split { grid-template-columns: 1.15fr .85fr; } .slide > .in.split.rev { grid-template-columns: .85fr 1.15fr; } }
+/* screenshots are sized by the screen's height too, so a slide never outgrows the screen:
+   one phone is 535×1200, i.e. its width is ~0.45 of its height */
+.phones.fit { width: 100%; max-width: min(520px, calc((100vh - 250px) * 1.42)); justify-self: center; }
+.phones.fit.two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: min(380px, calc((100vh - 330px) * .95)); }
 
-/* 1 · opening */
-.open { padding-block: clamp(56px, 8vw, 96px) clamp(40px, 6vw, 72px); }
-.open-grid { display: grid; gap: clamp(32px, 5vw, 64px); align-items: center; }
-@media (min-width: 900px) { .open-grid { grid-template-columns: 1.1fr .9fr; } }
-.open .kicker { font-size: 14px; font-weight: 700; color: var(--green-ink); margin-bottom: 14px; }
-.open h1 { margin-bottom: 18px; }
-.meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
-.meta dt { font-size: 13px; color: var(--ink-3); }
-.meta dd { font-size: 15.5px; font-weight: 500; }
-.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.shot { border-radius: var(--radius); border: 1px solid var(--line); overflow: hidden; background: var(--paper-2); }
-.shot img { width: 100%; }
-figcaption { font-size: 13px; color: var(--ink-2); margin-top: 8px; line-height: 1.45; }
-figcaption b { color: var(--ink); display: block; }
+/* 01 · cover */
+.cover h1 { font-size: clamp(40px, min(6vw, 9vh), 96px); line-height: .98; }
+.cover h1 em { font-style: normal; color: var(--mint); }
+.meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 28px; border-top: 1px solid rgba(255,255,255,.18); padding-top: 22px; }
+.meta dt { font-size: 12.5px; color: rgba(255,255,255,.6); }
+.meta dd { font-size: 15px; font-weight: 500; }
+@media (max-width: 760px) { .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* lists and blocks */
-.cols { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
-.block { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); display: grid; gap: 10px; align-content: start; }
-.block h3 { font-size: 19px; }
-.block p, .block li { font-size: 15.5px; color: var(--ink-2); }
-.block ul { padding-left: 18px; display: grid; gap: 4px; }
-.tag { justify-self: start; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-ink); }
-.problem { font-family: var(--display); font-size: clamp(22px, 2.6vw, 30px); line-height: 1.3; font-weight: 500; max-width: 26em; margin-bottom: 32px; border-left: 4px solid var(--green); padding-left: 20px; }
-.diff dl { display: grid; gap: 8px; }
-.diff dt { font-size: 12.5px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
-.diff dd { font-size: 15.5px; color: var(--ink-2); }
-.two { display: grid; gap: 20px; }
-@media (min-width: 820px) { .two { grid-template-columns: 1fr 1fr; } }
-.table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
-.table th, .table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.table th { font-size: 13px; color: var(--ink-3); font-weight: 700; }
-.table td:first-child { font-weight: 500; }
-.scroll { overflow-x: auto; }
-.scroll .table { min-width: 620px; }
-.principles { counter-reset: p; display: grid; gap: 16px; list-style: none; padding: 0; }
-.principles li { counter-increment: p; display: grid; grid-template-columns: 40px 1fr; gap: 6px 14px; }
-.principles li::before { content: counter(p, decimal-leading-zero); font-family: var(--display); font-weight: 600; color: var(--green); font-size: 20px; grid-row: span 2; }
-.principles b { font-size: 18px; }
-.principles span { color: var(--ink-2); font-size: 15.5px; }
+/* 02 · context: three people as big columns */
+.people { display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.people > div { padding: 22px 24px 0 0; display: grid; gap: 10px; align-content: start; }
+.people > div + div { padding-left: 24px; border-left: 1px solid var(--line); }
+.people .who { font-family: var(--display); font-size: clamp(22px, 2.4vw, 32px); font-weight: 600; line-height: 1.1; }
+.people .when { font-size: 13px; font-weight: 700; color: var(--green-ink); letter-spacing: .04em; }
+.people ul { padding-left: 18px; color: var(--ink-2); font-size: 15.5px; line-height: 1.6; }
+@media (max-width: 820px) { .people { grid-template-columns: 1fr; } .people > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 18px; } }
 
-/* 7 · stories */
-.story { padding-block: clamp(48px, 6vw, 80px); border-top: 1px solid var(--line); }
-.story:first-of-type { border-top: 0; padding-top: 0; }
-.story-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
-.story-head .n { font-family: var(--display); font-size: 44px; font-weight: 600; color: var(--green); line-height: 1; }
-.story > .lede { margin-bottom: 32px; }
-.story-grid { display: grid; gap: clamp(28px, 4vw, 56px); }
-@media (min-width: 960px) { .story-grid { grid-template-columns: 1fr 380px; align-items: start; } .story-grid .visual { position: sticky; top: 84px; } }
-.steps { display: grid; gap: 22px; }
-.steps > div { display: grid; grid-template-columns: 128px 1fr; gap: 4px 18px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-.steps > div:last-child { border-bottom: 0; }
-.steps dt { font-size: 13px; font-weight: 700; color: var(--green-ink); padding-top: 3px; }
-.steps dd { color: var(--ink-2); font-size: 16px; }
-.steps dd ul { padding-left: 18px; display: grid; gap: 4px; }
-@media (max-width: 620px) { .steps > div { grid-template-columns: 1fr; } }
-.visual .trio { gap: 8px; }
-.explore { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.explore span { font-size: 13px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink-2); }
-.explore span.won { border-color: var(--green); color: var(--green-ink); font-weight: 700; }
-.annot { list-style: none; padding: 0; margin-top: 14px; display: grid; gap: 8px; counter-reset: a; }
-.annot li { counter-increment: a; font-size: 14px; color: var(--ink-2); display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+/* 03 · problem: one giant question */
+.hmw { font-family: var(--display); font-size: clamp(32px, 5vw, 72px); font-weight: 500; line-height: 1.08; letter-spacing: -.02em; max-width: 17em; }
+.hmw em { font-style: normal; color: var(--mint); }
+.risks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.risks > div { border-top: 1px solid rgba(255,255,255,.25); padding-top: 14px; font-size: 15px; line-height: 1.55; color: rgba(255,255,255,.82); }
+.risks b { display: block; color: #fff; font-size: 16px; margin-bottom: 4px; }
+@media (max-width: 820px) { .risks { grid-template-columns: 1fr; } }
+
+/* 04 · goals vs constraints */
+.vs { display: grid; gap: 0; grid-template-columns: 1fr 1fr; border-radius: 20px; overflow: hidden; }
+.vs > div { padding: clamp(24px, 3vw, 44px); display: grid; gap: 14px; align-content: start; }
+.vs .g { background: var(--green); color: #fff; }
+.vs .c { background: var(--paper); border: 1px solid var(--line); border-left: 0; border-radius: 0 20px 20px 0; }
+.vs h3 { font-size: clamp(22px, 2.4vw, 30px); }
+.vs ul { list-style: none; padding: 0; display: grid; gap: 10px; font-size: 16px; line-height: 1.5; }
+.vs .g li::before { content: "→ "; color: var(--mint); }
+.vs .c li::before { content: "■ "; color: var(--green); font-size: 10px; vertical-align: 2px; }
+.vs .c li { color: var(--ink-2); }
+.vs b { color: var(--ink); }
+.vs .g b { color: #fff; }
+@media (max-width: 820px) { .vs { grid-template-columns: 1fr; } .vs .c { border: 1px solid var(--line); border-top: 0; border-radius: 0 0 20px 20px; } }
+
+/* 05 · evidence: three numbered rows, finding → decision */
+.ev { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+.ev > div { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.ev .i { font-family: var(--display); font-size: 34px; font-weight: 600; color: var(--green); line-height: 1; }
+.ev .src { font-size: 13px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.ev p { font-size: 16.5px; line-height: 1.5; }
+.ev .to { color: var(--green-ink); font-weight: 500; }
+.ev .to::before { content: "→ "; }
+@media (max-width: 820px) { .ev > div { grid-template-columns: 44px 1fr; } .ev .to { grid-column: 2; } }
+
+/* 06 · principles: a 2×2 of big numbers */
+.pr { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; overflow: hidden; }
+.pr > div { background: var(--green); padding: clamp(22px, 3vw, 40px); display: grid; gap: 8px; }
+.pr .n { font-family: var(--display); font-size: clamp(36px, 4vw, 56px); font-weight: 600; line-height: 1; color: var(--mint); }
+.pr h3 { font-size: clamp(22px, 2.4vw, 32px); }
+.pr p { color: rgba(255,255,255,.84); font-size: 16px; line-height: 1.5; }
+@media (max-width: 700px) { .pr { grid-template-columns: 1fr; } }
+
+/* 07–12 · stories */
+.story-no { font-family: var(--display); font-size: clamp(72px, min(11vw, 16vh), 160px); font-weight: 600; line-height: .8; color: var(--green); }
+.dark .story-no { color: var(--mint); }
+.story-title { font-size: clamp(30px, min(4.2vw, 6.4vh), 60px); }
+.cx { display: grid; gap: clamp(12px, 2vh, 22px); }
+.cx > div { display: grid; grid-template-columns: 130px 1fr; gap: 18px; padding-top: clamp(10px, 1.6vh, 16px); border-top: 1px solid var(--line); }
+.dark .cx > div { border-top-color: rgba(255,255,255,.16); }
+.cx dt { font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--green-ink); padding-top: 2px; }
+.dark .cx dt { color: var(--mint); }
+.cx dd { font-size: 16.5px; line-height: 1.55; }
+.dark .cx dd { color: rgba(255,255,255,.86); }
+.cx dd ul { padding-left: 18px; display: grid; gap: 4px; }
+@media (max-width: 620px) { .cx > div { grid-template-columns: 1fr; gap: 6px; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chips span { font-size: 13px; padding: 3px 10px; border: 1px solid rgba(255,255,255,.28); border-radius: 6px; color: rgba(255,255,255,.72); }
+.chips span.won { background: var(--mint); border-color: var(--mint); color: var(--night); font-weight: 700; }
+.annot { list-style: none; padding: 0; display: grid; gap: 8px; counter-reset: a; margin-top: 14px; }
+.annot li { counter-increment: a; display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
 .annot li::before { content: counter(a); width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.tradeoff { padding: 18px 22px; border-radius: 14px; background: var(--paper-2); border: 1px solid var(--line); }
+.tradeoff b { display: block; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: var(--rust); margin-bottom: 4px; }
 
-/* 8 · whole experience */
-.flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; counter-reset: f; }
-.flow li { list-style: none; counter-increment: f; font-size: 14px; color: var(--ink-2); }
-.flow li::before { content: counter(f); display: block; font-family: var(--display); font-weight: 600; color: var(--green); font-size: 22px; }
-.flow li b { color: var(--ink); display: block; }
-@media (max-width: 820px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.states { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); margin-top: 40px; }
+/* 13 · the whole flow as a line of steps */
+.flow { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); counter-reset: f; border-top: 2px solid var(--ink); }
+.flow li { counter-increment: f; padding: 16px 16px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
+.flow li::before { content: "0" counter(f); display: block; font-family: var(--display); font-weight: 600; font-size: 22px; color: var(--green); margin-bottom: 6px; }
+.flow b { display: block; color: var(--ink); font-size: 16px; }
+@media (max-width: 900px) { .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 20px; } }
+.strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: min(100%, calc((100vh - 470px) * 2.4)); }
+.strip figcaption { font-size: 13px; margin-top: 8px; color: var(--ink-2); line-height: 1.4; }
+.strip figcaption b { display: block; color: var(--ink); }
+@media (max-width: 760px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } .strip figure:nth-child(n+4) { display: none; } }
 
-/* 10 · outcome */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 32px; }
-.stats div { background: var(--paper); padding: 20px; }
-.stats b { display: block; font-family: var(--display); font-size: 30px; font-weight: 600; color: var(--green-ink); line-height: 1.1; }
-.stats span { font-size: 14px; color: var(--ink-2); }
-.takeaway { margin-top: 40px; padding: 32px; border-radius: var(--radius); background: var(--night); color: #fff; }
-.takeaway p { font-family: var(--display); font-size: clamp(20px, 2.4vw, 26px); line-height: 1.35; max-width: 34em; }
+/* 14 · validation: done / next */
+.dn { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.dn > div { padding: clamp(22px, 3vw, 36px); border-radius: 20px; display: grid; gap: 12px; align-content: start; }
+.dn .done { background: var(--paper); border: 1px solid var(--line); }
+.dn .next { background: var(--night-2); color: #fff; }
+.dn h3 { font-size: clamp(22px, 2.2vw, 28px); }
+.dn .t { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green-ink); }
+.dn .next .t { color: var(--mint); }
+.dn ul { padding-left: 18px; display: grid; gap: 8px; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.dn .next p { font-size: 16px; line-height: 1.5; color: rgba(255,255,255,.84); }
+.dn .next b { color: #fff; }
+@media (max-width: 820px) { .dn { grid-template-columns: 1fr; } }
 
-footer { padding-block: 40px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-3); }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-@media print { .bar, .need, .notes-toggle { display: none !important; } .sec, .story { break-inside: avoid; } }
+/* 15 · outcome: big numbers + three columns */
+.nums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.nums > div { padding: 18px 12px 0 0; }
+.nums b { display: block; font-family: var(--display); font-size: clamp(34px, 4vw, 56px); font-weight: 600; line-height: 1; color: var(--green); }
+.nums span { font-size: 13.5px; color: var(--ink-2); }
+@media (max-width: 820px) { .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 18px; } }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.three h3 { font-size: 20px; margin-bottom: 8px; }
+.three ul { padding-left: 18px; display: grid; gap: 6px; font-size: 15.5px; line-height: 1.5; color: var(--ink-2); }
+.three p { font-size: 15.5px; line-height: 1.5; color: var(--ink-2); }
+@media (max-width: 820px) { .three { grid-template-columns: 1fr; } }
+
+/* 16 · closing */
+.close-line { font-family: var(--display); font-size: clamp(30px, 4.4vw, 62px); font-weight: 500; line-height: 1.12; max-width: 18em; }
+.close-links { display: flex; flex-wrap: wrap; gap: 10px 26px; font-size: 16px; }
+.close-links a { color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.4); padding-bottom: 2px; }
+.close-links a:hover { border-color: #fff; }
+.keys { font-size: 13px; color: rgba(255,255,255,.55); }
+
+@media (max-height: 760px) and (min-width: 960px) { .slide { padding-top: 84px; padding-bottom: 84px; } .phones.fit { max-width: 420px; } }
+/* short laptop screens (≈720px tall): a notch smaller so every slide still fits */
+@media (max-height: 740px) and (min-width: 960px) { .lede { font-size: 16px; } .cx dd, .cx dd ul { font-size: 15px; line-height: 1.45; } .need { font-size: 13px; padding: 6px 10px; } .meta dd { font-size: 14px; } .tradeoff { padding: 12px 16px; font-size: 15px; } }
+@media (prefers-reduced-motion: reduce) { .deck { scroll-behavior: auto; } .progress i { transition: none; } }
+@media print {
+  body { overflow: visible; } .deck { height: auto; overflow: visible; } .chrome, .need { display: none !important; }
+  .slide { min-height: 100vh; break-after: page; }
+}
 </style>
 </head>
-<body>
+<body data-tone="dark">
 
-<header class="bar">
-  <div class="wrap bar-in">
-    <a href="#top" aria-label="JoanX case study, top">
-      <img class="logo-light" src="media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
-      <img class="logo-dark" src="media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
-    </a>
-    <nav aria-label="Project pages">
-      <a href="v2/">Website</a>
-      <a href="../?app">Prototype</a>
-      <a href="../?view=design">Design system</a>
-      <a href="../?view=checklist">Spec checklist</a>
-      <a href="../?view=docs">Documentation</a>
-      <a href="store.html">Store assets</a>
-    </nav>
-    <button type="button" class="notes-toggle" aria-pressed="true">Editing notes: on</button>
-  </div>
-</header>
+<div class="chrome top">
+  <a class="brand" href="#s1">
+    <img class="logo-d" src="media/brand/logo-wordmark-dark.svg" alt="JoanX" width="540" height="96">
+    <img class="logo-w" src="media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
+    <span>UI/UX case study</span>
+  </a>
+  <nav class="links" aria-label="Project pages">
+    <a href="v2/" target="_blank" rel="noopener">Website</a>
+    <a href="../?app" target="_blank" rel="noopener">Prototype</a>
+    <a href="../?view=design" target="_blank" rel="noopener">Design system</a>
+    <a href="../?view=checklist" target="_blank" rel="noopener">Spec checklist</a>
+    <a href="../?view=docs" target="_blank" rel="noopener">Documentation</a>
+  </nav>
+  <button type="button" class="notes-toggle" aria-pressed="true" title="Toggle editing notes (N)">Notes: on</button>
+</div>
 
-<main id="top">
+<div class="chrome bottom">
+  <span class="counter" aria-live="polite"><b id="cur">01</b> / <span id="tot">16</span></span>
+  <span class="progress" aria-hidden="true"><i id="bar"></i></span>
+  <button type="button" class="nav-btn" id="prev" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <button type="button" class="nav-btn" id="next" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
 
-<!-- ═══ 1 · OPENING ═══════════════════════════════════════════════════ -->
-<section class="open">
-  <div class="wrap open-grid">
-    <div>
-      <p class="kicker">UI/UX case study · 2026</p>
-      <h1>JoanX: getting children to look up while they walk</h1>
-      <p class="lede">A walking-safety game for children and a calm weekly dashboard for their parents. It answers phone-use-while-walking with one buzz instead of a locked screen, and makes stopping the thing that wins the game.</p>
+<main class="deck" id="deck">
+
+<!-- ═══ 01 · COVER ═══ -->
+<section class="slide dark cover" id="s1" data-tone="dark" aria-label="Cover">
+  <div class="in split">
+    <div style="display:grid;gap:28px">
+      <span class="label">UI/UX case study · 2026</span>
+      <h1>Getting children to <em>look up</em> while they walk</h1>
+      <p class="lede">JoanX is a walking-safety game for children and a calm weekly dashboard for their parents. It answers phone-use-while-walking with one buzz instead of a locked screen.</p>
       <dl class="meta">
         <div><dt>Role</dt><dd>Product design and front-end build</dd></div>
-        <div><dt>Scope</dt><dd>Two apps: child game and parent dashboard</dd></div>
-        <div><dt>Timeline</dt><dd>16 weeks · 5 Jun – 25 Sep 2026</dd></div>
-        <div><dt>Type</dt><dd>Client project · clickable prototype</dd></div>
+        <div><dt>Scope</dt><dd>Child app and parent app</dd></div>
+        <div><dt>Timeline</dt><dd>16 weeks · Jun–Sep 2026</dd></div>
+        <div><dt>Type</dt><dd>Client project · prototype</dd></div>
       </dl>
-      <p class="need"><b>Confirm:</b> your exact role and who else was on the team (PM, developers, illustrator?). "Product design and front-end build" is taken from the project documentation.</p>
+      <p class="need"><b>Confirm:</b> your exact role and the team around you. "Product design and front-end build" comes from the project documentation.</p>
     </div>
-    <div class="trio" aria-label="The safety moment in three steps">
-      <figure><div class="shot"><img src="media/shots/stage-buzz.png" width="535" height="1200" alt="Step one: a single vibration over the child's home screen."></div><figcaption><b>1 · A buzz</b>No screen yet</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/stage-card.png" width="535" height="1200" alt="Step two: a one-line warning card with one button."></div><figcaption><b>2 · A card</b>One line, one button</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/stage-message.png" width="535" height="1200" alt="Step three: a firmer message."></div><figcaption><b>3 · Firmer</b>Only if they keep going</figcaption></figure>
+    <div class="phones fit">
+      <figure><div class="phone"><img src="media/shots/stage-buzz.png" width="535" height="1200" alt="A single vibration over the child's home screen."></div><figcaption><b>A buzz</b>No screen yet</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/stage-card.png" width="535" height="1200" alt="A one-line warning card."></div><figcaption><b>A card</b>One line, one button</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/stage-message.png" width="535" height="1200" alt="A firmer message."></div><figcaption><b>Firmer</b>Only if they keep going</figcaption></figure>
     </div>
   </div>
 </section>
 
-<!-- ═══ 2 · CONTEXT ═══════════════════════════════════════════════════ -->
-<section class="sec alt" id="context">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">02 · Context</span>
-      <h2>Who uses it, and where</h2>
-      <p class="lede">Two people use JoanX, in two very different moments.</p>
+<!-- ═══ 02 · CONTEXT ═══ -->
+<section class="slide" id="s2" data-tone="light" aria-label="Context">
+  <div class="in">
+    <span class="label">02 · Context</span>
+    <h2 style="font-size:clamp(34px,4.4vw,60px)">Two people, two very different moments</h2>
+    <div class="people">
+      <div><span class="when">ON THE WALK</span><span class="who">The child</span>
+        <ul><li>Walks to school with the phone in hand</li><li>Glances at notifications, videos, feeds</li><li>Needs to keep the phone, and not feel watched</li></ul></div>
+      <div><span class="when">LATER, AT HOME</span><span class="who">The parent</span>
+        <ul><li>Isn't there during the walk</li><li>Decides whether to talk about phone habits</li><li>Needs to know if it's getting better, without spying</li></ul></div>
+      <div><span class="when">SHARED CARE</span><span class="who">Other guardians</span>
+        <ul><li>Co-parents, grandparents, the school run</li><li>Join a guardian group by QR or code</li><li>Need one shared picture, no duplicate alarms</li></ul></div>
     </div>
-    <div class="cols">
-      <div class="block">
-        <span class="tag">THE CHILD · ON THE WALK</span>
-        <h3>A school-age child with their own phone</h3>
-        <ul>
-          <li>Walks to school or around town with the phone in hand</li>
-          <li>Glances at notifications, short videos, feeds</li>
-          <li>Needs: to keep using the phone, and to not feel watched</li>
-        </ul>
-      </div>
-      <div class="block">
-        <span class="tag">THE PARENT · LATER, AT HOME</span>
-        <h3>A guardian who wants reassurance</h3>
-        <ul>
-          <li>Isn't there during the walk; checks in afterwards</li>
-          <li>Decides whether to talk to the child about phone habits</li>
-          <li>Needs: to know if it's getting better, without spying</li>
-        </ul>
-      </div>
-      <div class="block">
-        <span class="tag">OTHER GUARDIANS</span>
-        <h3>Co-parents, grandparents, the school run</h3>
-        <ul>
-          <li>Share care of the same child</li>
-          <li>Join a guardian group by QR or code, approved by an admin</li>
-          <li>Needs: one shared picture, no duplicate alarms</li>
-        </ul>
-      </div>
-    </div>
-    <p class="need"><b>Add if you have it:</b> the target age range and who the client is. The spec doesn't state an age, so the site doesn't either.</p>
+    <p class="need"><b>Add if you have it:</b> the target age range and who the client is. The spec doesn't state an age.</p>
   </div>
 </section>
 
-<!-- ═══ 3 · CORE PROBLEM ══════════════════════════════════════════════ -->
-<section class="sec" id="problem">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">03 · The core problem</span>
-      <h2>Change the behaviour without taking the phone away</h2>
+<!-- ═══ 03 · PROBLEM ═══ -->
+<section class="slide green" id="s3" data-tone="dark" aria-label="The core problem">
+  <div class="in">
+    <span class="label">03 · The core problem</span>
+    <p class="hmw">How might we get a child to <em>look up</em> while walking, when every tool that forces it gets switched off?</p>
+    <div class="risks">
+      <div><b>Blockers get turned off</b>A locked screen gets switched off or bypassed with a friend's phone, and a disabled app protects nobody.</div>
+      <div><b>Trackers break trust</b>A map and a feed of every event make a child feel watched, and they uninstall.</div>
+      <div><b>The moment is seconds long</b>A loud or constant warning becomes noise; the nudge has to land first time.</div>
     </div>
-    <p class="problem">How might we get a child to look up while walking, when every tool that forces it gets switched off?</p>
-    <div class="cols diff">
-      <div class="block">
-        <span class="tag">DESIGN RISK 1</span>
-        <dl>
-          <dt>The child wants to</dt><dd>keep watching or replying while walking</dd>
-          <dt>What gets in the way</dt><dd>a blocker locks the screen, so they switch it off or borrow a friend's phone</dd>
-          <dt>Why it matters</dt><dd>a safety app that gets turned off protects nobody</dd>
-        </dl>
-      </div>
-      <div class="block">
-        <span class="tag">DESIGN RISK 2</span>
-        <dl>
-          <dt>The parent wants to</dt><dd>know their child is safer</dd>
-          <dt>What gets in the way</dt><dd>trackers answer with a map and a feed of every event</dd>
-          <dt>Why it matters</dt><dd>a child who feels watched uninstalls, and the parent loses even the little they had</dd>
-        </dl>
-      </div>
-      <div class="block">
-        <span class="tag">DESIGN RISK 3</span>
-        <dl>
-          <dt>The child needs to</dt><dd>stop in the moment, not later</dd>
-          <dt>What gets in the way</dt><dd>a warning that's loud or constant becomes noise and gets dismissed</dd>
-          <dt>Why it matters</dt><dd>the moment passes in seconds; the nudge has to land first time</dd>
-        </dl>
-      </div>
-    </div>
-    <p class="need"><b>These are design risks, not observed pain points.</b> They come from the product brief and spec, not from research in this repo. If you interviewed parents or watched children use phones, replace them with what you saw, e.g. "7 of 8 parents said…".</p>
+    <p class="need"><b>These are design risks, not observed pain points.</b> They come from the product brief and spec. Replace them with what you saw, if you researched with parents or children.</p>
   </div>
 </section>
 
-<!-- ═══ 4 · GOALS & CONSTRAINTS ═══════════════════════════════════════ -->
-<section class="sec alt" id="goals">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">04 · Goals and constraints</span>
-      <h2>What a better experience had to do</h2>
-    </div>
-    <div class="two">
-      <div class="block">
-        <h3>Goals</h3>
-        <h4>For the child</h4>
-        <ul><li>Stop quickly, without losing the phone</li><li>Get something they care about for stopping</li></ul>
-        <h4>For the parent</h4>
-        <ul><li>See whether it's working, in one look</li><li>Hear about real problems only</li></ul>
-        <h4>For the product</h4>
-        <ul><li>Stay installed: be something a child doesn't want to switch off</li></ul>
+<!-- ═══ 04 · GOALS & CONSTRAINTS ═══ -->
+<section class="slide tint" id="s4" data-tone="light" aria-label="Goals and constraints">
+  <div class="in">
+    <span class="label">04 · Goals and constraints</span>
+    <div class="vs">
+      <div class="g">
+        <h3>What it had to do</h3>
+        <ul>
+          <li><b>Child:</b> stop quickly, without losing the phone</li>
+          <li><b>Child:</b> get something they care about for stopping</li>
+          <li><b>Parent:</b> see whether it's working, in one look</li>
+          <li><b>Parent:</b> hear about real problems only</li>
+          <li><b>Product:</b> stay installed</li>
+        </ul>
       </div>
-      <div class="block">
-        <h3>Constraints that shaped the work</h3>
+      <div class="c">
+        <h3>What it couldn't do</h3>
         <ul>
           <li><b>Never block the screen.</b> The strongest action is a firmer message.</li>
           <li><b>Calls and texts always stay open</b> (spec F-27).</li>
-          <li><b>No location.</b> The danger-zone and GPS features were cut from scope in the 18 Jun spec revision.</li>
-          <li><b>Motion sensors only:</b> walking is detected from step cadence, held for about 8 seconds.</li>
-          <li><b>Android first</b> (foreground service, F-27).</li>
-          <li><b>A 43-row functional spec</b> to trace every screen to.</li>
-          <li><b>Two languages:</b> English and Korean, with 1,200+ Korean strings.</li>
+          <li><b>No location:</b> GPS features were cut in the 18 Jun spec revision.</li>
+          <li><b>Motion sensors only:</b> walking is confirmed from about 8 s of step cadence.</li>
+          <li><b>Android first</b> (foreground service).</li>
+          <li><b>A 43-row functional spec,</b> in English and Korean.</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ 5 · EVIDENCE & INSIGHTS ═══════════════════════════════════════ -->
-<section class="sec" id="evidence">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">05 · Evidence and insights</span>
-      <h2>What shaped the decisions</h2>
-      <p class="lede">Three findings, each tied to a decision later in the case.</p>
+<!-- ═══ 05 · EVIDENCE ═══ -->
+<section class="slide" id="s5" data-tone="light" aria-label="Evidence and insights">
+  <div class="in">
+    <span class="label">05 · Evidence and insights</span>
+    <h2 style="font-size:clamp(32px,4vw,54px)">What shaped the decisions</h2>
+    <div class="ev">
+      <div><span class="i">1</span><div><div class="src">Functional spec · rev. 18 Jun</div><p>Warnings must escalate in stages and never force a block.</p></div><p class="to">Story 1: the staged safety moment</p></div>
+      <div><span class="i">2</span><div><div class="src">Spec audit, row by row</div><p>Every requirement needed a visible, testable state.</p></div><p class="to">Each spec ID traced to a screen in the spec checklist</p></div>
+      <div><span class="i">3</span><div><div class="src">Product-copy audit</div><p>About 30 claims on the first landing page didn't match the product.</p></div><p class="to">Every public claim is checked against the build</p></div>
     </div>
-    <div class="scroll">
-      <table class="table">
-        <thead><tr><th>Source</th><th>Finding</th><th>Led to</th></tr></thead>
-        <tbody>
-          <tr><td>Functional spec (rev. 18 Jun)</td><td>Warnings must escalate in stages and never force a block</td><td>Story 1: the staged safety moment</td></tr>
-          <tr><td>Spec audit, row by row</td><td>Every requirement needed a visible, testable state in the prototype</td><td>The <a href="../?view=checklist">spec checklist</a>: each ID traced to a screen</td></tr>
-          <tr><td>Product-copy audit</td><td>About 30 claims on the first landing page didn't match the product (e.g. "no location data at all", "one buzz, never repeated")</td><td>A rule: every public claim is checked against the build</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="need"><b>Add your research here</b> if you did any: interviews, competitor review (which blocker or tracker apps?), or observation. Keep 2–4 findings, and link each one to a decision in section 07.</p>
+    <p class="need"><b>Add your research</b> if you did any: interviews, competitor review, observation. Keep 2–4 findings, each linked to a decision.</p>
   </div>
 </section>
 
-<!-- ═══ 6 · APPROACH ══════════════════════════════════════════════════ -->
-<section class="sec alt" id="approach">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">06 · Design approach</span>
-      <h2>Four principles behind every choice</h2>
+<!-- ═══ 06 · PRINCIPLES ═══ -->
+<section class="slide green" id="s6" data-tone="dark" aria-label="Design approach">
+  <div class="in">
+    <span class="label">06 · Design approach</span>
+    <div class="pr">
+      <div><span class="n">01</span><h3>Nudge, never force</h3><p>Escalate the tone, never the power. The best outcome has no screen at all.</p></div>
+      <div><span class="n">02</span><h3>Reward the right moment</h3><p>Pay for stopping, not for dismissing. Stopping early pays the most.</p></div>
+      <div><span class="n">03</span><h3>Change, not surveillance</h3><p>Parents see whether it's improving, never where the child is.</p></div>
+      <div><span class="n">04</span><h3>Same truth for both</h3><p>What the parent can see is a short, fixed list, and the child can be shown it.</p></div>
     </div>
-    <ol class="principles">
-      <li><b>Nudge, never force</b><span>Escalate the tone, never the power. The best outcome has no screen at all.</span></li>
-      <li><b>Reward the right moment</b><span>Pay for stopping, not for dismissing. Stopping early pays the most.</span></li>
-      <li><b>Show change, not surveillance</b><span>Parents see whether it's improving, never where the child is.</span></li>
-      <li><b>Same truth for both sides</b><span>What the parent can see is a short, fixed list, and the child can be shown it.</span></li>
-    </ol>
   </div>
 </section>
 
-<!-- ═══ 7 · THREE STORIES ═════════════════════════════════════════════ -->
-<section class="sec" id="stories">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">07 · Three problem-solving stories</span>
-      <h2>Where the hard decisions were</h2>
+<!-- ═══ 07 · STORY 1 — setup ═══ -->
+<section class="slide dark" id="s7" data-tone="dark" aria-label="Story 1, the safety moment">
+  <div class="in split">
+    <div style="display:grid;gap:26px">
+      <span class="label">07 · Story 1 of 3</span>
+      <span class="story-no">1</span>
+      <h2 class="story-title">The safety moment</h2>
+      <dl class="cx">
+        <div><dt>Challenge</dt><dd>A warning has seconds to work. Too soft and it's ignored; too hard and the app is uninstalled. And it can't block anything.</dd></div>
+        <div><dt>Exploration</dt><dd>Seven warning layouts and two narrators, compared side by side.
+          <div class="chips"><span class="won">Spotlight</span><span>Card</span><span>Frame</span><span>Signal</span><span>Strip</span><span>Sheet</span><span>Banner</span></div>
+          <div class="chips"><span class="won">King Cubix narrates</span><span>The child's buddy narrates</span></div></dd></div>
+      </dl>
     </div>
-
-    <!-- story 1 -->
-    <article class="story">
-      <div class="story-head"><span class="n">1</span><h3>The safety moment</h3></div>
-      <p class="lede">Interrupting a child mid-walk without making them switch the app off.</p>
-      <div class="story-grid">
-        <dl class="steps">
-          <div><dt>Challenge</dt><dd>A warning has seconds to work. Too soft and it's ignored; too hard and the app gets uninstalled. It also can't block anything.</dd></div>
-          <div><dt>Exploration</dt><dd>Seven warning layouts were built and compared side by side, plus two narrators:
-            <div class="explore"><span class="won">Spotlight</span><span>Card</span><span>Frame</span><span>Signal</span><span>Strip</span><span>Sheet</span><span>Banner</span></div>
-            <div class="explore"><span class="won">King Cubix narrates</span><span>The child's buddy narrates</span></div></dd></div>
-          <div><dt>Decision</dt><dd>A staged sequence: 10 seconds of grace → one buzz → a one-line card → a firmer message, only if they keep going. King Cubix, a separate mascot, delivers the warning, so the child's own buddy isn't the one scolding them.</dd></div>
-          <div><dt>UX improvement</dt><dd>A child who looks up within 2 seconds of the buzz never sees a warning at all, and that path pays the most points. Stopping becomes the quickest way through.</dd></div>
-          <div><dt>UI improvement</dt><dd><ul><li>One line and one button per step</li><li>The button was renamed to "Okay, got it", and its check icon was dropped so it doesn't read as a reward</li><li>A three-tier tone ladder: gentle → firm → urgent</li><li>From the second reminder, a small note: "recorded in your report"</li></ul></dd></div>
-          <div><dt>Trade-off</dt><dd>No lockout, even after repeated ignoring. A determined child can keep walking head-down; JoanX records it instead of stopping it.</dd></div>
-        </dl>
-        <div class="visual">
-          <div class="trio">
-            <figure><div class="shot"><img src="media/shots/stage-buzz.png" width="535" height="1200" alt="Buzz stage."></div></figure>
-            <figure><div class="shot"><img src="media/shots/stage-card.png" width="535" height="1200" alt="Card stage."></div></figure>
-            <figure><div class="shot"><img src="media/shots/stage-message.png" width="535" height="1200" alt="Firmer message stage."></div></figure>
-          </div>
-          <ol class="annot">
-            <li>The buzz marker: no card yet, so the child can stop before any screen appears</li>
-            <li>The card: one line, one button, King Cubix with a hand raised</li>
-            <li>The firmer line, shown only if they keep walking head-down</li>
-          </ol>
-        </div>
-      </div>
-    </article>
-
-    <!-- story 2 -->
-    <article class="story">
-      <div class="story-head"><span class="n">2</span><h3>A game only safe walking can pay for</h3></div>
-      <p class="lede">Making stopping more rewarding than scrolling, without turning it into a slot machine.</p>
-      <div class="story-grid">
-        <dl class="steps">
-          <div><dt>Challenge</dt><dd>The reward has to matter to a child, but a game aimed at children can easily become a gacha that pressures them to spend.</dd></div>
-          <div><dt>Exploration</dt><dd>Several character lines (comic, Korean-style, 3D, 3D-cute), 20 collection layouts, 10 dex layouts, and several battle presentations before the painted versus arena.
-            <div class="explore"><span>Comic</span><span>Korean</span><span>3D</span><span>3D Cute</span><span class="won">Client line</span></div></dd></div>
-          <div><dt>Decision</dt><dd><ul><li>One currency, points, earned by safe walking: 10 per phone-down minute, 50 for stopping before a warning</li><li>Villains are real habits (Ping is notifications, Chrono is lost time), unlocked one win at a time</li><li>Epic buddies can't be bought; they come from a 30-day streak, level 10 or the final villain</li></ul></dd></div>
-          <div><dt>UX improvement</dt><dd>Every reward traces back to walking safely, so the game reinforces the behaviour instead of competing with it. Battles close themselves when the child starts walking.</dd></div>
-          <div><dt>UI improvement</dt><dd><ul><li>Win chance and both power totals are shown before a battle, so a loss isn't a surprise</li><li>The result screen shows the battle maths</li><li>Gold is reserved for points and XP only, so value always reads the same way</li></ul></dd></div>
-          <div><dt>Trade-off</dt><dd>No real-money purchases and no chat between children: only room visits, likes and a screened one-line note. That means less "engagement", on purpose.</dd></div>
-        </dl>
-        <div class="visual">
-          <div class="trio">
-            <figure><div class="shot"><img src="media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road."></div></figure>
-            <figure><div class="shot"><img src="media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping."></div></figure>
-            <figure><div class="shot"><img src="media/shots/child-battle-result.png" width="535" height="1200" alt="Battle result with points and XP."></div></figure>
-          </div>
-          <ol class="annot">
-            <li>The villain road: ten habits, unlocked in order</li>
-            <li>A villain card: the habit it stands for, its move, and the reward</li>
-            <li>The result: points and XP, with the battle maths shown</li>
-          </ol>
-        </div>
-      </div>
-    </article>
-
-    <!-- story 3 -->
-    <article class="story">
-      <div class="story-head"><span class="n">3</span><h3>A weekly report, not a live feed</h3></div>
-      <p class="lede">Giving parents reassurance without turning JoanX into surveillance.</p>
-      <div class="story-grid">
-        <dl class="steps">
-          <div><dt>Challenge</dt><dd>Parents want to know it's working, but a stream of events and a map would erode the child's trust, and the whole approach depends on that trust.</dd></div>
-          <div><dt>Exploration</dt><dd>The report's key numbers were redesigned several times in July and August: two-card KPIs, then streak swapped for an "Ignored" card, then a ratio "stopped" KPI, which was reverted to a plain count. Two KPI styles were kept to compare.
-            <div class="explore"><span class="won">Cards</span><span>Ring + stats</span></div></dd></div>
-          <div><dt>Decision</dt><dd><ul><li>Four numbers against last week: stopped when warned, ignored, safe-walking minutes, streak</li><li>An AI summary that starts with the verdict, then the week's story, then one thing to try</li><li>Alerts only for real events: a possible fall, a device offline, protection switched off</li></ul></dd></div>
-          <div><dt>UX improvement</dt><dd>The first thing a parent reads answers "is it getting better?". Two guardians don't chase the same alert: once one checks it, the other sees "already checked".</dd></div>
-          <div><dt>UI improvement</dt><dd><ul><li>Verdict-first hierarchy</li><li>"Warning acceptance" renamed to the plainer "Stopped when warned"</li><li>Urgent alerts marked in red with a call button</li><li>Offline and permission states shown instead of failing silently</li></ul></dd></div>
-          <div><dt>Trade-off</dt><dd>No location, no app names, no messages. Parents get less detail than a tracker offers, in exchange for an app the child keeps.</dd></div>
-        </dl>
-        <div class="visual">
-          <div class="trio">
-            <figure><div class="shot"><img src="media/shots/parent-reports.png" width="535" height="1200" alt="The weekly report."></div></figure>
-            <figure><div class="shot"><img src="media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed."></div></figure>
-            <figure><div class="shot"><img src="media/shots/parent-groups.png" width="535" height="1200" alt="Guardian groups."></div></figure>
-          </div>
-          <ol class="annot">
-            <li>This week: four numbers, each against last week</li>
-            <li>Alerts: urgent first, with "already checked" for shared guardians</li>
-            <li>Groups: everyone who helps sees the same week</li>
-          </ol>
-        </div>
-      </div>
-    </article>
-    <p class="need"><b>Add early work if you have it:</b> sketches, paper flows or first wireframes for any story. The repo starts at a working prototype (5 Jun), so anything earlier only exists on your side.</p>
+    <div class="phones fit">
+      <figure><div class="phone"><img src="media/shots/stage-buzz.png" width="535" height="1200" alt="Buzz stage." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/stage-card.png" width="535" height="1200" alt="Card stage." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/stage-message.png" width="535" height="1200" alt="Firmer message stage." loading="lazy"></div></figure>
+    </div>
   </div>
 </section>
 
-<!-- ═══ 8 · THE COMPLETE EXPERIENCE ═══════════════════════════════════ -->
-<section class="sec alt" id="whole">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">08 · The complete experience</span>
-      <h2>How the pieces fit together</h2>
+<!-- ═══ 08 · STORY 1 — decision ═══ -->
+<section class="slide" id="s8" data-tone="light" aria-label="Story 1, the decision">
+  <div class="in split rev">
+    <div class="phones fit two">
+      <figure><div class="phone"><img src="media/shots/stage-card.png" width="535" height="1200" alt="The warning card." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/stage-message.png" width="535" height="1200" alt="The firmer message." loading="lazy"></div></figure>
     </div>
+    <div style="display:grid;gap:22px">
+      <span class="label">08 · Story 1 · decision</span>
+      <dl class="cx">
+        <div><dt>Decision</dt><dd>10 s of grace → one buzz → a one-line card → a firmer message, only if they keep going. A separate mascot, King Cubix, delivers it, so the child's own buddy never scolds.</dd></div>
+        <div><dt>UX</dt><dd>Look up within 2 seconds of the buzz and no warning appears at all, and that path pays the most points. Stopping is the fastest way through.</dd></div>
+        <div><dt>UI</dt><dd><ul><li>One line and one button per step</li><li>"Okay, got it", with the check icon dropped so it doesn't read as a reward</li><li>A gentle → firm → urgent tone ladder</li><li>"Recorded in your report" from the second reminder</li></ul></dd></div>
+      </dl>
+      <div class="tradeoff"><b>Trade-off</b>No lockout, even after repeated ignoring. JoanX records it instead of stopping it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 09 · STORY 2 — setup ═══ -->
+<section class="slide dark" id="s9" data-tone="dark" aria-label="Story 2, the reward game">
+  <div class="in split">
+    <div style="display:grid;gap:26px">
+      <span class="label">09 · Story 2 of 3</span>
+      <span class="story-no">2</span>
+      <h2 class="story-title">A game only safe walking can pay for</h2>
+      <dl class="cx">
+        <div><dt>Challenge</dt><dd>The reward has to matter to a child, but a game aimed at children easily becomes a gacha that pressures them to spend.</dd></div>
+        <div><dt>Exploration</dt><dd>Several character lines, 20 collection layouts, 10 dex layouts, and several battle presentations before the painted arena.
+          <div class="chips"><span>Comic</span><span>Korean</span><span>3D</span><span>3D Cute</span><span class="won">Client line</span></div></dd></div>
+      </dl>
+    </div>
+    <div class="phones fit">
+      <figure><div class="phone"><img src="media/shots/child-villain-road.png" width="535" height="1200" alt="The villain road." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/child-battle-result.png" width="535" height="1200" alt="Battle result." loading="lazy"></div></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 10 · STORY 2 — decision ═══ -->
+<section class="slide" id="s10" data-tone="light" aria-label="Story 2, the decision">
+  <div class="in split rev">
+    <div>
+      <div class="phones fit two">
+        <figure><div class="phone"><img src="media/shots/child-villain-card.png" width="535" height="1200" alt="A villain card for Ping." loading="lazy"></div></figure>
+        <figure><div class="phone"><img src="media/shots/child-battle-result.png" width="535" height="1200" alt="The result with battle maths." loading="lazy"></div></figure>
+      </div>
+      <ol class="annot" style="max-width:380px;margin-inline:auto">
+        <li>The habit it stands for, its move, and the reward</li>
+        <li>Points and XP, with the battle maths shown</li>
+      </ol>
+    </div>
+    <div style="display:grid;gap:22px">
+      <span class="label">10 · Story 2 · decision</span>
+      <dl class="cx">
+        <div><dt>Decision</dt><dd><ul><li>One currency, earned by walking: 10 points a phone-down minute, 50 for stopping before a warning</li><li>Villains are real habits (Ping is notifications, Chrono is lost time), unlocked one win at a time</li><li>Epic buddies can't be bought: they come from a 30-day streak, level 10 or the final villain</li></ul></dd></div>
+        <div><dt>UX</dt><dd>Every reward traces back to walking safely, so the game reinforces the behaviour. Battles close themselves when the child starts walking.</dd></div>
+        <div><dt>UI</dt><dd><ul><li>Win chance and both power totals shown before a battle</li><li>Battle maths on the result screen</li><li>Gold reserved for points and XP only</li></ul></dd></div>
+      </dl>
+      <div class="tradeoff"><b>Trade-off</b>No real-money purchases and no chat between children, only visits, likes and a screened one-line note. Less "engagement", on purpose.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 11 · STORY 3 — setup ═══ -->
+<section class="slide dark" id="s11" data-tone="dark" aria-label="Story 3, the weekly report">
+  <div class="in split">
+    <div style="display:grid;gap:26px">
+      <span class="label">11 · Story 3 of 3</span>
+      <span class="story-no">3</span>
+      <h2 class="story-title">A weekly report, not a live feed</h2>
+      <dl class="cx">
+        <div><dt>Challenge</dt><dd>Parents want to know it's working, but a stream of events and a map would erode the child's trust, and the whole approach depends on it.</dd></div>
+        <div><dt>Exploration</dt><dd>The key numbers were redesigned several times in July and August: two-card KPIs, streak swapped for an "Ignored" card, a ratio "stopped" KPI that was reverted to a plain count.
+          <div class="chips"><span class="won">Cards</span><span>Ring + stats</span></div></dd></div>
+      </dl>
+    </div>
+    <div class="phones fit">
+      <figure><div class="phone"><img src="media/shots/parent-reports.png" width="535" height="1200" alt="The weekly report." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/parent-alerts.png" width="535" height="1200" alt="The alerts feed." loading="lazy"></div></figure>
+      <figure><div class="phone"><img src="media/shots/parent-groups.png" width="535" height="1200" alt="Guardian groups." loading="lazy"></div></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 12 · STORY 3 — decision ═══ -->
+<section class="slide" id="s12" data-tone="light" aria-label="Story 3, the decision">
+  <div class="in split rev">
+    <div>
+      <div class="phones fit two">
+        <figure><div class="phone"><img src="media/shots/parent-reports.png" width="535" height="1200" alt="This week's four numbers." loading="lazy"></div></figure>
+        <figure><div class="phone"><img src="media/shots/parent-alerts.png" width="535" height="1200" alt="Alerts with an already-checked state." loading="lazy"></div></figure>
+      </div>
+      <ol class="annot" style="max-width:380px;margin-inline:auto">
+        <li>Four numbers, each against last week</li>
+        <li>Urgent first; "already checked" for shared guardians</li>
+      </ol>
+    </div>
+    <div style="display:grid;gap:22px">
+      <span class="label">12 · Story 3 · decision</span>
+      <dl class="cx">
+        <div><dt>Decision</dt><dd><ul><li>Four numbers against last week: stopped, ignored, safe minutes, streak</li><li>An AI summary that opens with the verdict, then the week, then one thing to try</li><li>Alerts only for real events: a possible fall, a device offline, protection off</li></ul></dd></div>
+        <div><dt>UX</dt><dd>The first thing a parent reads answers "is it getting better?". Two guardians never chase the same alert.</dd></div>
+        <div><dt>UI</dt><dd><ul><li>Verdict-first hierarchy</li><li>"Warning acceptance" renamed "Stopped when warned"</li><li>Urgent alerts in red, with a call button</li><li>Offline and permission states shown, not hidden</li></ul></dd></div>
+      </dl>
+      <div class="tradeoff"><b>Trade-off</b>No location, no app names, no messages. Less detail than a tracker, in exchange for an app the child keeps.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 13 · WHOLE EXPERIENCE ═══ -->
+<section class="slide tint" id="s13" data-tone="light" aria-label="The complete experience">
+  <div class="in">
+    <span class="label">13 · The complete experience</span>
     <ol class="flow">
-      <li><b>Pair</b>Parent shows a 6-digit code; the child types it in</li>
-      <li><b>Consent</b>The child accepts motion, usage, overlay and notification permissions</li>
-      <li><b>Walk</b>Detection starts only while walking and using the phone</li>
+      <li><b>Pair</b>The parent shows a 6-digit code; the child types it in</li>
+      <li><b>Consent</b>Motion, usage, overlay and notifications</li>
+      <li><b>Walk</b>Detection only while walking and on the phone</li>
       <li><b>Nudge</b>Buzz, card, message</li>
-      <li><b>Play</b>Points grow the buddy and unlock villains</li>
+      <li><b>Play</b>Points grow the buddy, unlock villains</li>
       <li><b>Report</b>The parent reads the week</li>
     </ol>
-    <div class="states">
-      <figure><div class="shot"><img src="media/shots/parent-pairing.png" width="535" height="1200" alt="Pairing code, valid for 5 minutes."></div><figcaption><b>Pairing</b>Code valid for 5 minutes</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/parent-children.png" width="535" height="1200" alt="Children list with device, battery and permission states."></div><figcaption><b>Protection state</b>Permissions off show as "warnings limited"</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/parent-rules.png" width="535" height="1200" alt="A child's rules page with the setup agreement."></div><figcaption><b>Consent record</b>What the child accepted at setup</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/child-home.png" width="535" height="1200" alt="The child's home screen."></div><figcaption><b>Child home</b>Buddy, XP ring, today's tasks</figcaption></figure>
-      <figure><div class="shot"><img src="media/shots/child-collection.png" width="535" height="1200" alt="Collection with locked slots."></div><figcaption><b>Locked states</b>Buddies still to earn</figcaption></figure>
+    <div class="strip">
+      <figure><div class="phone"><img src="media/shots/parent-pairing.png" width="535" height="1200" alt="Pairing code." loading="lazy"></div><figcaption><b>Pairing</b>Valid for 5 minutes</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/parent-children.png" width="535" height="1200" alt="Protection state per child." loading="lazy"></div><figcaption><b>Protection state</b>"Warnings limited"</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/parent-rules.png" width="535" height="1200" alt="Setup agreement." loading="lazy"></div><figcaption><b>Consent record</b>What the child accepted</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/child-home.png" width="535" height="1200" alt="Child home." loading="lazy"></div><figcaption><b>Child home</b>Buddy, XP, today's tasks</figcaption></figure>
+      <figure><div class="phone"><img src="media/shots/child-collection.png" width="535" height="1200" alt="Collection with locked slots." loading="lazy"></div><figcaption><b>Locked states</b>Buddies still to earn</figcaption></figure>
     </div>
-    <p class="muted" style="margin-top:24px">Also designed: code expiry, device offline, permission switched off, parent empty states, a 20-second fall check, and new-device approval. See them all in the <a href="../?app">prototype</a>.</p>
   </div>
 </section>
 
-<!-- ═══ 9 · VALIDATION ════════════════════════════════════════════════ -->
-<section class="sec" id="validation">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">09 · Validation and iteration</span>
-      <h2>What was checked, and what would be tested first</h2>
-    </div>
-    <div class="two">
-      <div class="block">
-        <span class="tag">DONE</span>
+<!-- ═══ 14 · VALIDATION ═══ -->
+<section class="slide" id="s14" data-tone="light" aria-label="Validation and iteration">
+  <div class="in">
+    <span class="label">14 · Validation and iteration</span>
+    <div class="dn">
+      <div class="done">
+        <span class="t">Done</span>
         <h3>Checked against the spec and the product</h3>
         <ul>
-          <li>Every in-scope spec requirement traced to a screen in the <a href="../?view=checklist">spec checklist</a></li>
-          <li>The public website audited claim by claim against the build: expected it to be accurate → found about 30 mismatches → rewrote the copy to match</li>
+          <li>Every in-scope spec requirement traced to a screen</li>
+          <li>The website audited claim by claim: expected it accurate → found about 30 mismatches → rewrote the copy to match</li>
         </ul>
       </div>
-      <div class="block">
-        <span class="tag">NOT YET DONE</span>
-        <h3>First usability test</h3>
-        <p><b>Task:</b> "Walk to the corner while watching a video." Observe what the child does at the buzz.</p>
-        <p><b>Look for:</b> do they stop before the card appears? Do they read the card, or tap it away?</p>
+      <div class="next">
+        <span class="t">First test to run</span>
+        <h3>The buzz-to-stop moment</h3>
+        <p><b>Child task:</b> "Walk to the corner while watching a video." Do they stop before the card appears? Do they read it, or tap it away?</p>
         <p><b>Parent task:</b> "Is your child walking more safely this week?" Can they answer from the report alone?</p>
       </div>
     </div>
-    <p class="need"><b>No user testing appears in this repo.</b> If you ran any sessions or reviews, replace "Not yet done" with: expected X → observed Y → changed Z.</p>
+    <p class="need"><b>No user testing appears in the repo.</b> If you ran sessions, replace the right card with: expected X → observed Y → changed Z.</p>
   </div>
 </section>
 
-<!-- ═══ 10 · OUTCOME & REFLECTION ═════════════════════════════════════ -->
-<section class="sec alt" id="outcome">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="num">10 · Outcome and reflection</span>
-      <h2>What was delivered</h2>
-    </div>
-    <div class="stats">
-      <div><b>2</b><span>Apps: child and parent</span></div>
+<!-- ═══ 15 · OUTCOME & REFLECTION ═══ -->
+<section class="slide tint" id="s15" data-tone="light" aria-label="Outcome and reflection">
+  <div class="in">
+    <span class="label">15 · Outcome and reflection</span>
+    <div class="nums">
+      <div><b>2</b><span>Apps</span></div>
       <div><b>66</b><span>Screen files</span></div>
       <div><b>15</b><span>Buddies</span></div>
       <div><b>10</b><span>Villains</span></div>
-      <div><b>297</b><span>Commits in 16 weeks</span></div>
-      <div><b>EN · KO</b><span>Product languages</span></div>
+      <div><b>297</b><span>Commits, 16 weeks</span></div>
+      <div><b>2</b><span>Languages</span></div>
     </div>
-    <div class="cols">
-      <div class="block"><h3>Delivered</h3><ul><li>A clickable prototype of both apps</li><li>A design system and component pages</li><li>Play Store assets: phone, tablet, icon, feature graphic</li><li>A landing page, checked against the product</li></ul></div>
-      <div class="block"><h3>Not launched yet</h3><p>JoanX is a pre-release prototype with sample data, so there are no usage metrics to report.</p></div>
-      <div class="block"><h3>Reflection</h3><ul><li><b>Hardest:</b> balancing a reward strong enough to matter against a game that mustn't compete with the road</li><li><b>Learned:</b> copy is design, too. Most of the landing-page problems were promises the product didn't keep</li><li><b>Next:</b> test the buzz-to-stop moment with real children before polishing anything else</li></ul></div>
+    <div class="three">
+      <div><h3>Delivered</h3><ul><li>A clickable prototype of both apps</li><li>A design system</li><li>Play Store assets</li><li>A landing page checked against the product</li></ul></div>
+      <div><h3>Not launched yet</h3><p>A pre-release prototype with sample data, so there are no usage metrics to report.</p></div>
+      <div><h3>Reflection</h3><ul><li><b>Hardest:</b> a reward strong enough to matter, in a game that mustn't compete with the road</li><li><b>Learned:</b> copy is design; most site problems were promises the product didn't keep</li><li><b>Next:</b> test the buzz-to-stop moment with children</li></ul></div>
     </div>
-    <p class="need"><b>Reflection is a draft.</b> Rewrite it in your own words: what was genuinely hard for you, and what you'd do differently.</p>
-    <div class="takeaway">
-      <p>On JoanX I designed for trust first: a product that changes a child's behaviour by rewarding it, and tells parents what's improving without watching the child.</p>
-    </div>
+    <p class="need"><b>Reflection is a draft.</b> Rewrite it in your own words.</p>
+  </div>
+</section>
+
+<!-- ═══ 16 · CLOSING ═══ -->
+<section class="slide dark" id="s16" data-tone="dark" aria-label="Closing">
+  <div class="in" style="gap:44px">
+    <span class="label">Takeaway</span>
+    <p class="close-line">On JoanX I designed for trust first: a product that changes a child's behaviour by rewarding it, and tells parents what's improving without watching the child.</p>
+    <nav class="close-links" aria-label="See the work">
+      <a href="v2/" target="_blank" rel="noopener">The website</a>
+      <a href="../?app" target="_blank" rel="noopener">The prototype</a>
+      <a href="../?view=design" target="_blank" rel="noopener">Design system</a>
+      <a href="../?view=checklist" target="_blank" rel="noopener">Spec checklist</a>
+      <a href="../?view=docs" target="_blank" rel="noopener">Documentation</a>
+      <a href="store.html" target="_blank" rel="noopener">Store assets</a>
+    </nav>
+    <p class="keys">← → to move · N for notes · Home / End to jump</p>
   </div>
 </section>
 
 </main>
 
-<footer>
-  <div class="wrap">
-    <span>JoanX · UI/UX case study</span>
-    <a href="v2/">Website</a>
-    <a href="../?app">Prototype</a>
-    <a href="../?view=design">Design system</a>
-    <a href="../?view=checklist">Spec checklist</a>
-    <a href="../?view=docs">Documentation</a>
-    <a href="store.html">Store assets</a>
-  </div>
-</footer>
-
 <script>
 (function () {
+  var deck = document.getElementById('deck');
+  var slides = [].slice.call(document.querySelectorAll('.slide'));
+  var cur = document.getElementById('cur'), bar = document.getElementById('bar');
+  document.getElementById('tot').textContent = String(slides.length).padStart(2, '0');
+  var index = 0;
+
+  function go(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[i].scrollIntoView({ block: 'start' });
+  }
+  function show(i) {
+    index = i;
+    cur.textContent = String(i + 1).padStart(2, '0');
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    document.body.dataset.tone = slides[i].dataset.tone || 'light';
+    if (history.replaceState) history.replaceState(null, '', '#' + slides[i].id);
+  }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) show(slides.indexOf(e.target)); });
+  }, { root: deck, threshold: 0.55 });
+  slides.forEach(function (s) { io.observe(s); });
+
+  document.getElementById('prev').addEventListener('click', function () { go(index - 1); });
+  document.getElementById('next').addEventListener('click', function () { go(index + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest('input, textarea')) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].indexOf(e.key) > -1) { e.preventDefault(); go(index + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].indexOf(e.key) > -1) { e.preventDefault(); go(index - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === 'n' || e.key === 'N') setNotes(document.body.classList.contains('clean'));
+  });
+
+  // open on the slide named in the URL
+  var start = slides.findIndex(function (s) { return '#' + s.id === location.hash; });
+  if (start > 0) { deck.style.scrollBehavior = 'auto'; slides[start].scrollIntoView({ block: 'start' }); deck.style.scrollBehavior = ''; }
+
+  // editing notes
   var btn = document.querySelector('.notes-toggle');
-  function set(on) {
+  function setNotes(on) {
     document.body.classList.toggle('clean', !on);
     btn.setAttribute('aria-pressed', String(on));
-    btn.textContent = 'Editing notes: ' + (on ? 'on' : 'off');
+    btn.textContent = 'Notes: ' + (on ? 'on' : 'off');
     try { localStorage.setItem('joanx.case.notes', on ? '1' : '0'); } catch (e) {}
   }
   var saved = null; try { saved = localStorage.getItem('joanx.case.notes'); } catch (e) {}
-  set(saved !== '0');
-  btn.addEventListener('click', function () { set(document.body.classList.contains('clean')); });
+  setNotes(saved !== '0');
+  btn.addEventListener('click', function () { setNotes(document.body.classList.contains('clean')); });
 })();
 </script>
 </body>
