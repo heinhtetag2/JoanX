@@ -472,15 +472,15 @@ td.us { color: var(--ink); font-weight: 600; }
 .scard h3 { font-size: clamp(24px, 3vw, 38px); line-height: 1.2; color: #fff; }
 .scard-text > p:last-child { color: rgba(255,255,255,.86); font-size: 17px; }
 /* the right side of each card: a flat graphic, not a phone screen */
-.scard-vis { --vs: clamp(260px, 32vw, 440px); width: var(--vs); justify-self: center; }
-@media (max-width: 899px) { .scard-vis { --vs: min(82vw, 340px); } }
+.scard-vis { --vs: clamp(230px, 27vw, 380px); width: var(--vs); justify-self: center; }
+@media (max-width: 899px) { .scard-vis { --vs: min(76vw, 300px); } }
 /* the week: four white tiles, the report's own icons, each number with its change */
 .vis-week { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.vw { background: #fff; border-radius: 22px; padding: clamp(16px, 1.8vw, 24px); display: grid; gap: 6px; justify-items: start; color: #1A201C; }
-.vw img { width: clamp(44px, 4vw, 58px); height: auto; aspect-ratio: 1; border-radius: 12px; }
-.vw b { font-size: clamp(32px, 3.4vw, 48px); line-height: 1.05; letter-spacing: -.02em; }
+.vw { background: #fff; border-radius: 20px; padding: clamp(14px, 1.5vw, 20px); display: grid; gap: 5px; justify-items: start; color: #1A201C; }
+.vw img { width: clamp(38px, 3.4vw, 50px); height: auto; aspect-ratio: 1; border-radius: 10px; }
+.vw b { font-size: clamp(28px, 2.9vw, 40px); line-height: 1.05; letter-spacing: -.02em; }
 .vw b small { font-size: .55em; margin-left: 2px; }
-.vw span { font-size: clamp(13px, 1.1vw, 16px); font-weight: 700; }
+.vw span { font-size: clamp(12px, 1vw, 15px); font-weight: 700; }
 .vw .up { color: #2E7D32; } .vw .down { color: #C23B22; }
 /* the fall: the child's 20-second check, then the guardian's call button */
 .vis-alert { position: relative; aspect-ratio: 1; }
@@ -507,7 +507,9 @@ td.us { color: var(--ink); font-weight: 600; }
 .sc-center { position: relative; z-index: 1; display: grid; justify-items: center; gap: clamp(18px, 2.4vw, 32px); transform-origin: 50% 50%; }
 .sc-title { margin: 0; display: grid; justify-items: center; line-height: 1.1; text-align: center; letter-spacing: -.03em; }
 /* a display step above h1 (h1 is 36–56px); still fits between the card columns */
-.sc-l1 { font-size: var(--fs-display); font-weight: 300; }
+/* line 1 is a smaller lead-in ("The story of"), line 2 the big name — also keeps the wider
+   English line inside the gap between the two image columns */
+.sc-l1 { font-size: calc(var(--fs-display) * .6); font-weight: 400; letter-spacing: -.01em; }
 .sc-l2 { font-size: var(--fs-display); font-weight: 800; }
 :lang(en) .sc-title { text-transform: uppercase; }
 .sc-cta { transform: translateY(10px); opacity: 0; color: #fff; font-weight: 700; font-size: var(--fs-body); text-decoration: none; white-space: nowrap; }
@@ -581,19 +583,26 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 }
 .rise-wash { position: absolute; inset: 0; background: #F4F8F2; opacity: clamp(0, calc((var(--p) - .55) / .3), 1); }
 .rise-copy {
-  position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 8px; padding: 0 20px;
+  position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 14px; padding: 0 20px; width: 100%; max-width: 1040px;
   /* already solid, just still below the screen: it scrolls up through the pale lower part of the
      columns and settles in the middle as the ground turns pale */
   --c: clamp(0, calc((var(--p) - .3) / .6), 1);
   transform: translateY(calc((1 - var(--c)) * 85vh));
 }
 .rise-label { margin: 0; font-size: var(--fs-small); font-weight: 700; color: #4B814F; }
-.rise-copy h2 { margin: 0; max-width: 20em; font-size: var(--fs-h2); color: #1A201C; text-wrap: balance; }
+.rise-copy h2 { margin: 0; max-width: 22em; font-size: var(--fs-h2); line-height: 1.3; color: #1A201C; text-wrap: balance; }
+/* three steps, read left to right: a number, a short title, one plain sentence */
+.rise-steps { list-style: none; margin: clamp(20px, 3vw, 40px) 0 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); text-align: left; }
+.rise-steps li { display: grid; gap: 6px; align-content: start; padding-top: 18px; border-top: 2px solid rgba(26,32,28,.14); }
+.rise-steps .rs-n { font-size: 14px; font-weight: 700; color: #4B814F; font-variant-numeric: tabular-nums; }
+.rise-steps b { font-size: clamp(19px, 1.7vw, 23px); font-weight: 700; color: #1A201C; letter-spacing: -.01em; }
+.rise-steps li > span:last-child { font-size: clamp(15px, 1.2vw, 17px); line-height: 1.6; color: #52594F; }
+@media (max-width: 720px) { .rise-steps { grid-template-columns: 1fr; gap: 14px; } .rise-steps li { padding-top: 12px; } }
 .rise-big { margin: 0; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
-.rise-egg { width: clamp(150px, 20vw, 260px); height: auto; margin-top: -1vw; transform: translateY(calc((1 - var(--c)) * 30vh)); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .rise-wash { background: var(--paper-2); }
-  :root:not([data-theme="light"]) .rise-copy h2, :root:not([data-theme="light"]) .rise-big { color: var(--ink); }
+  :root:not([data-theme="light"]) .rise-copy h2, :root:not([data-theme="light"]) .rise-big, :root:not([data-theme="light"]) .rise-steps b { color: var(--ink); }
+  :root:not([data-theme="light"]) .rise-steps li > span:last-child { color: var(--ink-2); }
 }
 @media (prefers-reduced-motion: reduce) {
   .rise-run { display: none; }
@@ -777,9 +786,13 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
     <div class="rise-wash" aria-hidden="true"></div>
     <div class="rise-copy">
       <p class="rise-label" data-i18n="rs.l">Hatch day</p>
-      <h2 data-i18n="rs.h">Safe walks earn points. Points hatch a new buddy.</h2>
       <p class="rise-big" data-i18n="rs.big">Hatch!</p>
-      <img class="rise-egg" src="../media/art/egg-rare.png" width="420" height="420" alt="A rare egg, ready to hatch." loading="lazy">
+      <h2 data-i18n="rs.h">Safe walks earn points. Points hatch a new buddy.</h2>
+      <ol class="rise-steps">
+        <li><span class="rs-n">01</span><b data-i18n="rs.s1h">Walk safely</b><span data-i18n="rs.s1p">10 points for every safe minute, 50 for stopping at the buzz.</span></li>
+        <li><span class="rs-n">02</span><b data-i18n="rs.s2h">Save up</b><span data-i18n="rs.s2p">A Common egg costs 500 points, a Rare egg 1,500.</span></li>
+        <li><span class="rs-n">03</span><b data-i18n="rs.s3h">Hatch</b><span data-i18n="rs.s3p">A new buddy joins the collection. The rarest ones can only be earned.</span></li>
+      </ol>
     </div>
   </div>
   <div class="rise-run" aria-hidden="true"></div>
@@ -902,7 +915,8 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 </section>
 
 <!-- ═══ 04 · PROMISES ═════════════════════════════════════════════════════ -->
-<section class="section promises" id="promises">
+<!-- hidden for now; remove `hidden` (and renumber the FAQ back to 05) to bring it back -->
+<section class="section promises" id="promises" hidden>
   <div class="wrap">
       <header class="sec-head">
         <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.promise">What can I count on?</span></p>
@@ -918,11 +932,11 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
   </div>
 </section>
 
-<!-- ═══ 05 · FAQ ══════════════════════════════════════════════════════════ -->
+<!-- ═══ 05 · FAQ (shown as 04 while promises is hidden) ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
   <div class="wrap">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">05</span><span data-i18n="q.faq">Anything else?</span></p>
+        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.faq">Anything else?</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
     <div class="faq">
@@ -950,8 +964,8 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
   </div>
 </section>
 
-<!-- ═══ SHOWCASE — INSIDE JOANX ═══════════════════════════════════════════ -->
-<section class="showcase" aria-label="Inside JoanX">
+<!-- ═══ SHOWCASE — THE STORY OF JOANX ═══════════════════════════════════════════ -->
+<section class="showcase" aria-label="The story of JoanX">
   <div class="sc-stage">
     <!-- background film: shows around the dark circle once it shrinks; muted, looping, inline -->
     <video class="sc-video" muted loop playsinline preload="metadata" poster="../media/Video/showcase-poster.jpg" aria-hidden="true">
@@ -959,7 +973,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
     </video>
     <div class="sc-dark" aria-hidden="true"></div>
     <div class="sc-center">
-      <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">Inside</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
+      <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">The story of</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
       <a class="sc-cta" href="#get"><span data-i18n="cta.h">Get JoanX</span> →</a>
     </div>
     <div class="sc-cols">
@@ -1086,8 +1100,8 @@ var KO = {
   'pr.5p': '폰을 내리고 걸으면 1분에 10포인트, 안전한 날마다 연속 기록이 자라요.',
   'pr.6h': '조용하게, 필요할 때만',
   'pr.6p': '주 1회 리포트, 그리고 지금 확인이 필요할 때만 알림을 보내요.',
-  'sc.1': '조안X',
-  'sc.2': '들여다보기',
+  'sc.1': '조안X의',
+  'sc.2': '이야기',
   'v.tk': '아이의 폰을 잠그는 대신, 고개를 들 이유를 만들어요.',
   'v.tk2': '고개를 들 때마다, | 버디가 조금씩 자라요.',
   'q.faq': '더 궁금한 점이 있나요?',
@@ -1127,6 +1141,9 @@ var KO = {
   'h.badge': '보호자 그룹 — QR이나 코드로 초대하기', 'h.dl': '조안X 다운로드',
   'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '부화하는 날',
   'rs.h': '안전하게 걸으면 포인트, 포인트로 새 친구가 태어나요.', 'rs.big': '부화!',
+  'rs.s1h': '안전하게 걷기', 'rs.s1p': '안전하게 걸은 1분마다 10포인트, 진동에 바로 멈추면 50포인트예요.',
+  'rs.s2h': '포인트 모으기', 'rs.s2p': '일반 알은 500포인트, 레어 알은 1,500포인트예요.',
+  'rs.s3h': '부화', 'rs.s3p': '새 버디가 컬렉션에 들어와요. 가장 희귀한 버디는 모아서만 얻을 수 있어요.',
   'cast.h': '고개 들고, <em>매일 걷는 길을 안전하게.</em>',
   'pv.c1h': '주간 리포트', 'pv.c1s': '안전하게 걸은 시간, 멈춘 경고, 연속 일수',
   'pv.c2h': '아이별로 한눈에', 'pv.c2s': '보호 켜짐 여부, 배터리, 권한',
@@ -1309,6 +1326,9 @@ var MN = {
  "h.dl": "JoanX татах",
  "rs.tease": "Аюулгүй алхам бүр нэмэгдсээр.", "rs.l": "Өндөг хагарах өдөр",
  "rs.h": "Аюулгүй алхвал оноо, оноогоор шинэ найз гарна.", "rs.big": "Хагарлаа!",
+ "rs.s1h": "Аюулгүй алх", "rs.s1p": "Аюулгүй алхсан минут бүрт 10 оноо, чичиргээнд зогсвол 50 оноо.",
+ "rs.s2h": "Оноо цуглуул", "rs.s2p": "Энгийн өндөг 500 оноо, ховор өндөг 1,500 оноо.",
+ "rs.s3h": "Хагалах", "rs.s3p": "Шинэ найз цуглуулгад нэмэгдэнэ. Хамгийн ховорыг нь зөвхөн хичээж олно.",
  "cast.h": "Толгойгоо өргө, <em>гэр хүртэлх зам бүрт.</em>",
  "pv.c1h": "Долоо хоногийн тайлан", "pv.c1s": "Аюулгүй алхсан минут, зогссон сануулга, цуврал",
  "pv.c2h": "Хүүхэд бүрийг нэг дороос", "pv.c2s": "Хамгаалалт асаалттай эсэх, батерей, зөвшөөрөл",
@@ -1349,8 +1369,8 @@ var MN = {
  "g.s2s": "Юу болох, ялвал юу авах",
  "g.s3": "Нүүр тулах",
  "g.s3s": "Өөрийн баддигаар тулалдана",
- "sc.1": "JoanX",
- "sc.2": "дотроос нь",
+ "sc.1": "JoanX-ийн",
+ "sc.2": "түүх",
  "g.s4": "Үр дүн",
  "g.s4s": "Ялалтын оноо ба XP",
  "v.c1h": "Минутад 10 оноо",
@@ -1622,6 +1642,24 @@ var MN = {
     // starts once the section almost fills the screen, done a little before the pin ends
     var p = Math.min(1, Math.max(0, (vh * 0.15 - top) / (vh * 0.15 + run * 0.9)));
     castStage.style.setProperty('--p', (1 - Math.pow(1 - p, 2)).toFixed(3));
+  }
+
+  /* every Download link lands on the finished Get JoanX view — characters parted, copy and
+     button showing — not the top of the section, where the cast still covers the copy */
+  function getTarget() {
+    var run = castEl.offsetHeight - castStage.offsetHeight;
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return castEl.getBoundingClientRect().top + window.scrollY + (still ? 0 : run * 0.95);
+  }
+  if (castEl) {
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href="#get"]');
+      if (!a || e.defaultPrevented) return;   // the desktop Download pill opens its QR instead
+      e.preventDefault();
+      window.scrollTo({ top: getTarget(), behavior: 'smooth' });
+      history.replaceState(null, '', '#get');
+    });
+    if (location.hash === '#get') window.addEventListener('load', function () { window.scrollTo({ top: getTarget(), behavior: 'instant' }); });
   }
 
   /* back to top: on once the first screen has scrolled away */
