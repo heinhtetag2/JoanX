@@ -1114,7 +1114,7 @@ function HomeSimpleFocus({ ctx }) {
               own keyframe animation drives that element's transform every frame, which would
               silently stomp a static translateY set on the same node */}
           <div style={{ transform: 'translateY(-14px)' }}>
-            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={160} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /></div>
+            <div className="jx-float"><Mascot species={c.species} stage={c.stage} color={c.color} size={160} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(c.worn, OUTFITS, 'glasses')} /></div>
           </div>
         </div>
         {/* XP pill on the ring — progress toward the buddy's next level */}

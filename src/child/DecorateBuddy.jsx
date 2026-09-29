@@ -378,7 +378,11 @@ function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
   // whichever free item in each slot is already unlocked so a buddy still shows up
   // dressed the very first time this sheet ever opens for it.
   const [wornBySlot, setWornBySlot] = React.useState(() => {
-    const init = { ...(orig.worn || {}) };
+    // keep only what belongs to the wardrobe she's in now — a stage-1 hat can't carry
+    // over onto her stage-2 art (there's no photo of it)
+    const valid = new Set(outfitItemsFor(orig, OUTFITS).map(o => o.id));
+    const init = {};
+    Object.entries(orig.worn || {}).forEach(([slot, id]) => { if (valid.has(id)) init[slot] = id; });
     outfitItemsFor(orig, OUTFITS).forEach(o => {
       if (!init[o.slot] && o.price === 0 && stage >= o.minStage) init[o.slot] = o.id;
     });
@@ -424,6 +428,9 @@ function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
   // moves in this app.
   const [previewId, setPreviewId] = React.useState(null);
   const previewOutfit = previewId ? OUTFITS.find(x => x.id === previewId) : null;
+  // what the buddy preview shows: the saved outfit, with the item being tried on swapped
+  // into its slot — so trying something on actually shows it before any points are spent
+  const shownWorn = previewOutfit ? { ...wornBySlot, [previewOutfit.slot]: previewOutfit.id } : wornBySlot;
   const cancelPreview = () => setPreviewId(null);
   const confirmPreview = () => {
     if (!previewOutfit) return;
@@ -506,7 +513,7 @@ function DecorateBuddy({ ctx, tabStyle = 'pin', buyStyle = 'bar' }) {
       } />
       <div style={{ padding: '0 16px' }}>
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 18, marginBottom: 38 }}>
-          <Mascot species={orig.species} stage={stage} color={orig.color} mood={moodForStage(stage)} size={168} wornHat={wornSlugFor(wornBySlot, OUTFITS, 'hat')} wornClothing={wornSlugFor(wornBySlot, OUTFITS, 'clothing')} />
+          <Mascot species={orig.species} stage={stage} color={orig.color} mood={moodForStage(stage)} size={168} wornHat={wornSlugFor(shownWorn, OUTFITS, 'hat')} wornClothing={wornSlugFor(shownWorn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(shownWorn, OUTFITS, 'glasses')} />
           {(buyStyle === 'fab' || buyStyle === 'badge') && (
             <PreviewCta buyStyle={buyStyle} item={previewOutfit} accent={accent} onBuy={confirmPreview} onCancel={cancelPreview} />
           )}

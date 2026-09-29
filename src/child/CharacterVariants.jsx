@@ -23,7 +23,7 @@ function BuddyView({ id, species, stage, color, worn, size, charBounce }) {
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div className={window.JX_CHAR_STYLE === 'client' ? 'jx-float' : ''}>
         <div key={charBounce || 'still'} className={charBounce ? 'jx-pop' : ''}>
-          <Mascot id={id} species={species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" wornHat={wornSlugFor(worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(worn, OUTFITS, 'clothing')} />
+          <Mascot id={id} species={species} stage={stage} color={color} mood={moodForStage(stage)} size={size} context="detail" wornHat={wornSlugFor(worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(worn, OUTFITS, 'glasses')} />
         </div>
       </div>
     </div>

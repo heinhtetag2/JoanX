@@ -1242,7 +1242,7 @@ const OUTFITS = [
   { id: 'glasses', icon: 'glasses',        name: 'Cool Shades',   category: 'character', slot: 'glasses',   price: 250, minStage: 1, minLevel: 0 },
   { id: 'cap',     icon: 'graduation-cap', name: 'Explorer Cap',  category: 'character', slot: 'hat',       price: 280, minStage: 2, minLevel: 0 },
   { id: 'crown',   icon: 'crown',          name: 'Star Crown',    category: 'character', slot: 'hat',       price: 300, minStage: 3, minLevel: 0 },
-  // Milo — his own hat/coat art (character-references/characters/02-milo/accessories),
+  // Milo — his own hat/coat art (character-references/characters/02-milo/accessories/base-form),
   // replacing the shared catalog above rather than adding to it (see charId note).
   { id: 'milo-aviator-goggles', img: '/assets/characters/outfits/milo/aviator-goggles.png', name: 'Aviator Goggles', category: 'character', slot: 'hat',      price: 0,   minStage: 1, minLevel: 0, charId: 'c10' },
   { id: 'milo-bucket-hat',      img: '/assets/characters/outfits/milo/bucket-hat.png',      name: 'Bucket Hat',      category: 'character', slot: 'hat',      price: 180, minStage: 1, minLevel: 0, charId: 'c10' },
@@ -1250,7 +1250,7 @@ const OUTFITS = [
   { id: 'milo-pirate-coat',     img: '/assets/characters/outfits/milo/pirate-coat.png',     name: 'Pirate Coat',     category: 'character', slot: 'clothing', price: 0,   minStage: 1, minLevel: 0, charId: 'c10' },
   { id: 'milo-pocket-watch',    img: '/assets/characters/outfits/milo/pocket-watch.png',    name: 'Pocket Watch',    category: 'character', slot: 'clothing', price: 220, minStage: 1, minLevel: 0, charId: 'c10' },
   { id: 'milo-suspenders',      img: '/assets/characters/outfits/milo/suspenders.png',      name: 'Suspenders',      category: 'character', slot: 'clothing', price: 200, minStage: 2, minLevel: 0, charId: 'c10' },
-  // Lumi — her own hat/coat art (character-references/characters/05-lumi/accessories),
+  // Lumi — her own hat/coat art (character-references/characters/05-lumi/accessories/base-form),
   // replacing the shared catalog above rather than adding to it (see charId note).
   { id: 'lumi-gold-hat',           img: '/assets/characters/outfits/lumi/gold-hat.png',           name: 'Gold Hat',           category: 'character', slot: 'hat',      price: 0,   minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-green-beret',        img: '/assets/characters/outfits/lumi/green-beret.png',        name: 'Green Beret',        category: 'character', slot: 'hat',      price: 180, minStage: 1, minLevel: 0, charId: 'c15' },
@@ -1261,6 +1261,16 @@ const OUTFITS = [
   { id: 'lumi-navy-duffle-coat',   img: '/assets/characters/outfits/lumi/navy-duffle-coat.png',   name: 'Navy Duffle Coat',   category: 'character', slot: 'clothing', price: 0,   minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-red-button-jacket',  img: '/assets/characters/outfits/lumi/red-button-jacket.png',  name: 'Red Button Jacket',  category: 'character', slot: 'clothing', price: 220, minStage: 1, minLevel: 0, charId: 'c15' },
   { id: 'lumi-tan-trench-coat',    img: '/assets/characters/outfits/lumi/tan-trench-coat.png',    name: 'Tan Trench Coat',    category: 'character', slot: 'clothing', price: 200, minStage: 2, minLevel: 0, charId: 'c15' },
+  // Lumi, stage 2 — the wizard wardrobe (character-references/characters/05-lumi/accessories/stage-2).
+  // `form: 2` = only offered, and only drawn, once she's reached her stage-2 art; the
+  // rows above are her stage-1 (form 1) set. A free hat and cape like stage 1; glasses are
+  // always a choice, so neither pair is free.
+  { id: 'lumi-purple-wizard-hat',          img: '/assets/characters/outfits/lumi/purple-wizard-hat.webp',          name: 'Wizard Hat',     category: 'character', slot: 'hat',      price: 0,   minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
+  { id: 'lumi-purple-wizard-hood',         img: '/assets/characters/outfits/lumi/purple-wizard-hood.webp',         name: 'Wizard Hood',    category: 'character', slot: 'hat',      price: 280, minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
+  { id: 'lumi-purple-star-cape',           img: '/assets/characters/outfits/lumi/purple-star-cape.webp',           name: 'Star Cape',      category: 'character', slot: 'clothing', price: 0,   minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
+  { id: 'lumi-purple-tattered-cape',       img: '/assets/characters/outfits/lumi/purple-tattered-cape.webp',       name: 'Tattered Cape',  category: 'character', slot: 'clothing', price: 240, minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
+  { id: 'lumi-gold-oval-spectacles',       img: '/assets/characters/outfits/lumi/gold-oval-spectacles.webp',       name: 'Oval Spectacles', category: 'character', slot: 'glasses', price: 200,   minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
+  { id: 'lumi-gold-monocle-with-gem-chain', img: '/assets/characters/outfits/lumi/gold-monocle-with-gem-chain.webp', name: 'Gem Monocle',   category: 'character', slot: 'glasses', price: 320, minStage: 2, minLevel: 0, charId: 'c15', form: 2 },
   // also earned — the grant rules below hand these out (A-5.1)
   { id: 'goggles', icon: 'glasses',        name: 'Night Goggles', category: 'character', slot: 'glasses',   price: 320, minStage: 1, minLevel: 8 },
   { id: 'medal',   icon: 'medal',          name: 'Victory Medal', category: 'character', slot: 'accessory', price: 280, minStage: 1, minLevel: 0 },
@@ -1589,7 +1599,8 @@ const rollRarity = (egg, rnd = Math.random) => {
 const hatchEgg = (egg, rnd = Math.random) => {
   const rarity = rollRarity(egg, rnd);
   if (!rarity) return null;
-  const pool = charactersOfRarity(rarity);
+  // every egg hatches Lumi for now (a duplicate → XP); the locked buddies have no art yet
+  const pool = CHARACTERS.filter(c => c.id === 'c15');   // only Lumi has art for now; others are locked slots
   if (!pool.length) return null;
   const bag = pool.flatMap(c => Array(c.owned ? 1 : 3).fill(c));
   return bag[Math.floor(rnd() * bag.length)];
@@ -1852,12 +1863,18 @@ const rarityOf = (key) => RARITIES.find(r => r.key === key) || RARITIES[0];
 // the server) without touching any screen — the dex renders whatever the roster holds.
 //   owned  — in the child's collection
 //   locked — how an unowned character is obtained (dex hint; hidden tiers never show it)
-// A new child owns exactly one buddy, Lumi; every other character is earned from eggs/goals.
+// A new child owns exactly one buddy, Lumi — and for now she is the whole roster.
 const CHARACTERS = [
-  // ── Common ×8 ──
-  // level 5, not 4: stage is derived (A-3.3) and Stage 2 starts at Lv.5, so a Lv.4 buddy
-  // hand-marked Stage 2 was simply illegal. Levelled up rather than demoted — Munch is
-  // the starter buddy and is drawn at Stage 2 throughout.
+  // Lumi is the only buddy for now — the other 13 (Munch, Pip, Milo, Cocoa, Dewey, Bolt, Theo,
+  // Rex, Blaze, Glim, Sailo, Ember, Zephyr) were taken out of the roster; git history has them.
+  // Eggs still hatch: with nobody else in the pool they give Lumi, as a duplicate → XP.
+  // The rest of the roster shows in the collection as locked slots (art isn't ready), and eggs
+  // only hatch Lumi (duplicate → XP) until their art lands. Epics stay out (hidden anyway).
+  // `worn` — the outfit a buddy is already dressed in, same { [slot]: outfitId } map
+  // DecorateBuddy writes on save. Lumi ships wearing hers: her reference art has a real
+  // photo per hat/coat combo, and showing her bare everywhere until someone opens the
+  // wardrobe hid the best-looking thing in the collection behind a screen nobody visits.
+  { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 52, speed: 64, heart: 70 }, worn: { hat: 'lumi-riding-helmet', clothing: 'lumi-navy-duffle-coat' }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
   { id: 'c2',  species: 'cat',  name: 'Munch',   color: '#e1874a', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 55, speed: 80, heart: 60 }, bio: "Lives for snacks and having fun — patience isn't really his thing, so trouble tends to find him." },
   { id: 'c3',  species: 'bird', name: 'Pip',     color: '#447aaf', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 40, speed: 72, heart: 50 } },
   { id: 'c10', species: 'cat',  name: 'Milo',    color: '#a8c3eb', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 55, speed: 80, heart: 60 }, bio: 'Easygoing and hard to rattle. Milo takes things as they come, at his own pace.' },
@@ -1865,19 +1882,10 @@ const CHARACTERS = [
   { id: 'c12', species: 'bird', name: 'Dewey',   color: '#5aa9e6', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 38, speed: 78, heart: 55 }, bio: 'Quiet and sensitive, easily spooked — but turns brave the moment a friend needs him.' },
   { id: 'c13', species: 'croc', name: 'Bolt',    color: '#5c9e6b', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 72, speed: 44, heart: 58 }, bio: 'Loves taking things apart and fixing them back up. Blunt and to the point, but always someone you can count on.' },
   { id: 'c14', species: 'owl',  name: 'Theo',    color: '#8b8073', rarity: 'common', set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Common Egg', room: null, traits: { guard: 60, speed: 50, heart: 66 }, bio: 'Sharp and always thinking things through — and he knows it, which makes him a little much sometimes.' },
-  // `worn` — the outfit a buddy is already dressed in, same { [slot]: outfitId } map
-  // DecorateBuddy writes on save. Lumi ships wearing hers: her reference art has a real
-  // photo per hat/coat combo, and showing her bare everywhere until someone opens the
-  // wardrobe hid the best-looking thing in the collection behind a screen nobody visits.
-  { id: 'c15', species: 'fox',  name: 'Lumi',    color: '#d8a657', rarity: 'common', set: 'mvp', level: 5, xp: 140, owned: true,  room: 'green', traits: { guard: 52, speed: 64, heart: 70 }, worn: { hat: 'lumi-riding-helmet', clothing: 'lumi-navy-duffle-coat' }, bio: 'Looks perfectly well-behaved, but secretly loves being the center of attention.' },
-  // ── Rare ×5 ──
   { id: 'c1',  species: 'fox',  name: 'Rex',     color: '#4b814f', rarity: 'rare',   set: 'mvp', level: 0, xp: 0,   owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 78, speed: 62, heart: 90 }, bio: "Confident and sure he's in charge. A little full of himself, but steps up and takes responsibility when it really counts." },
   { id: 'c6',  species: 'owl',  name: 'Blaze',   color: '#e0554a', rarity: 'rare',   set: 'mvp', level: 0, xp: 0,   owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 60, speed: 85, heart: 64 }, bio: 'Warm-hearted but quick to heat up — competitive, a bit hot-tempered, and hates losing.' },
   { id: 'c16', species: 'owl',  name: 'Glim',    color: '#7c5cbf', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 66, speed: 58, heart: 74 }, bio: 'Quiet and a little mysterious — the one the others find hardest to figure out.' },
   { id: 'c17', species: 'croc', name: 'Sailo',   color: '#3f7f8c', rarity: 'rare',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Hatch a Rare Egg', room: null, traits: { guard: 84, speed: 48, heart: 68 }, bio: 'Adventurous and always up for somewhere new. Tends to leap first and think later.' },
-  // ── Epic ×2 — hidden until unlocked (F-15.2): no dex slot, no silhouette, no name ──
-  { id: 'c18', species: 'croc', name: 'Ember',   color: '#9867e4', rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Walk safely 30 days in a row', room: null, traits: { guard: 95, speed: 70, heart: 88 } },
-  { id: 'c19', species: 'bird', name: 'Zephyr',  color: '#e0559a', rarity: 'epic',   set: 'mvp', level: 0, xp: 0, owned: false, locked: 'Win a special event mission', room: null, traits: { guard: 80, speed: 96, heart: 82 } },
 ];
 
 // F-15.2 — an Epic stays invisible until it is unlocked. Every "show me the roster"

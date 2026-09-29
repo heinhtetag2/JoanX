@@ -61,7 +61,7 @@ function FighterCarousel({ owned, sel, setSel, villain, power }) {
               justifyContent: 'center', alignItems: 'flex-end', cursor: 'pointer',
               opacity: on ? 1 : .82, transform: `scale(${on ? 1 : .82})`, transition: 'opacity .25s ease, transform .25s ease',
             }}>
-              <DemoMascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={170} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
+              <DemoMascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={170} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(c.worn, OUTFITS, 'glasses')} />
             </div>
           );
         })}
@@ -112,7 +112,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
   // Rex (c1, the gold-star demo art) is the default centred pick when nothing else picked
   // one for us — the carousel should always open there rather than whichever buddy happens
   // to be first in CHARACTERS.
-  const [sel, setSel] = React.useState(preChar || owned.find(c => c.id === 'c1') || owned[0]);
+  const [sel, setSel] = React.useState(preChar || owned.find(c => c.id === 'c15') || owned[0]);
   const [chooserOpen, setChooserOpen] = React.useState(!preChar);
   // Tweaks → "Versus screen" jumps straight to the fight staging so a layout can be read
   // without playing a battle for it. It rolls NOTHING: no daily challenge is spent, no
@@ -689,7 +689,7 @@ function Battle({ ctx, layout = 'classic', versus = 'classic', clashStyle = 'imp
             <React.Fragment>
               <SectionHead title={L('Your fighter')} action={L('Change')} onAction={() => setChooserOpen(true)} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: THEME.successLight, borderRadius: 18, padding: '12px 14px', border: `2px solid ${THEME.success}`, marginBottom: 16 }}>
-                <div style={{ flexShrink: 0 }}><DemoMascot id={sel.id} species={sel.species} stage={sel.stage} color={sel.color} size={52} wornHat={wornSlugFor(sel.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(sel.worn, OUTFITS, 'clothing')} /></div>
+                <div style={{ flexShrink: 0 }}><DemoMascot id={sel.id} species={sel.species} stage={sel.stage} color={sel.color} size={52} wornHat={wornSlugFor(sel.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(sel.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(sel.worn, OUTFITS, 'glasses')} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: THEME.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sel.name}</div>
                   <div style={{ fontSize: 11.5, color: THEME.fg2, fontWeight: 600, marginTop: 1 }}>Lv {sel.level} · {L('Power')} {power(sel)}</div>
@@ -758,7 +758,7 @@ function WalkingBlock({ ctx, buddy }) {
           <div className="jx-ring-slow" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-ring" style={{ position: 'absolute', width: 170, height: 170, borderRadius: 999, border: `2px solid ${shade(buddy.color, 52)}` }} />
           <div className="jx-float" style={{ position: 'relative' }}>
-            <Mascot species={buddy.species} stage={buddy.stage} color={buddy.color} size={140} wornHat={wornSlugFor(buddy.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(buddy.worn, OUTFITS, 'clothing')} />
+            <Mascot species={buddy.species} stage={buddy.stage} color={buddy.color} size={140} wornHat={wornSlugFor(buddy.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(buddy.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(buddy.worn, OUTFITS, 'glasses')} />
           </div>
         </div>
 

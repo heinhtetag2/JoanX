@@ -1,10 +1,10 @@
 // JoanX — child app · shared
 
 import React from 'react';
-import { CHARACTERS, moodForStage, PLAYER, stageOf } from '../core/data.jsx';
+import { CHARACTERS, OUTFITS, moodForStage, PLAYER, stageOf } from '../core/data.jsx';
 import { Icon, SafePointIcon, RARITY, THEME, isNeon, mixHue, pastelHue, screenBgFor } from '../core/primitives.jsx';
 import { L } from '../core/i18n.jsx';
-import { Mascot, shade } from '../core/characters.jsx';
+import { Mascot, clientFormOf, shade } from '../core/characters.jsx';
 import { DexHeader } from './DexHeaders.jsx';
 import { sfx } from '../core/sound.jsx';
 
@@ -37,19 +37,31 @@ const CHAR_OUTFIT_SLOTS = {
     { id: 'hat',      label: 'Hat',  icon: 'crown' },
     { id: 'clothing', label: 'Coat', icon: 'shirt' },
   ],
-  c15: [   // Lumi
-    { id: 'hat',      label: 'Hat',  icon: 'crown' },
-    { id: 'clothing', label: 'Coat', icon: 'shirt' },
+  c15: [   // Lumi — glasses only exist from her stage-2 wardrobe; the tab hides until then
+    { id: 'hat',      label: 'Hat',     icon: 'crown' },
+    { id: 'clothing', label: 'Coat',    icon: 'shirt' },
+    { id: 'glasses',  label: 'Glasses', icon: 'glasses' },
   ],
 };
-const outfitSlotsFor = (character) => CHAR_OUTFIT_SLOTS[character?.id] || OUTFIT_SLOTS;
+// A buddy's own slot list, minus any slot with nothing in it at the stage they're at now.
+const outfitSlotsFor = (character) => {
+  const own = CHAR_OUTFIT_SLOTS[character?.id];
+  if (!own) return OUTFIT_SLOTS;
+  const items = outfitItemsFor(character, OUTFITS);
+  const used = own.filter(s => items.some(o => o.slot === s.id));
+  return used.length ? used : own;
+};
 
 // A character with its own scoped slot list also gets its own scoped OUTFITS items (see
 // the `charId` note on OUTFITS in core/data.jsx) — its own art replaces the shared catalog
 // rather than sitting alongside it, so this filter and outfitSlotsFor stay in lockstep.
-const outfitItemsFor = (character, allOutfits) => CHAR_OUTFIT_SLOTS[character?.id]
-  ? allOutfits.filter(o => o.charId === character.id)
-  : allOutfits.filter(o => !o.charId);
+// A buddy with its own wardrobe only sees the set for the photoshoot it's drawn with now
+// (`form` — stage-1 items on the stage-1 art, the stage-2 set once it has evolved).
+const outfitItemsFor = (character, allOutfits) => {
+  if (!CHAR_OUTFIT_SLOTS[character?.id]) return allOutfits.filter(o => !o.charId);
+  const form = clientFormOf(character.id, character.stage);
+  return allOutfits.filter(o => o.charId === character.id && (o.form || 1) === form);
+};
 
 // Looks up the real-photo slug MascotClient's CLIENT_OUTFIT_DIR needs for one worn slot
 // (e.g. 'green-beret') straight from that item's own image filename, so it can't drift
@@ -57,7 +69,7 @@ const outfitItemsFor = (character, allOutfits) => CHAR_OUTFIT_SLOTS[character?.i
 // { [slot]: outfitId } map (see DecorateBuddy.jsx's Save button).
 const wornSlugFor = (worn, allOutfits, slot) => {
   const o = allOutfits.find(x => x.id === worn?.[slot]);
-  return o?.img ? o.img.split('/').pop().replace(/\.png$/, '') : undefined;
+  return o?.img ? o.img.split('/').pop().replace(/\.(png|webp)$/, '') : undefined;
 };
 
 // `left` fills the leading slot on screens with no back button — tab roots that still

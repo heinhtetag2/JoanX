@@ -419,8 +419,7 @@ const STYLE_BUDDIES = {
   // effect) — so a species has to be added the moment it gets its own CLIENT_SRC entry,
   // or picking it as your buddy silently overwrites it back to the first row here.
   client: [
-    ['cat', 'Milo', THEME.brand],
-    ['fox', 'Lumi', '#d8a657'],
+    ['fox', 'Lumi', '#d8a657'],   // the only buddy now (Milo was taken out with the rest of the roster)
   ],
   toy: [
     ['cat',  'Mochi', '#e79a52'],   // only Mochi has a real 3D render for now
@@ -691,20 +690,103 @@ const CLIENT_FRAME = {
 // When a caller doesn't know which specific character it's drawing (a bare species
 // preview, no `id` given), fall back to whichever id owns that species' approved art —
 // the same "everyone snaps to a listed buddy" rule STYLE_BUDDIES.client already documents.
-const CLIENT_SPECIES_FALLBACK = { cat: 'c10', fox: 'c15' };
-function MascotClient({ id, species = 'cat', stage = 2, color, mood, size = 160, style, wornHat, wornClothing }) {
+// Lumi is the only buddy now, so any species preview (a friend's buddy, a bare species
+// tile) draws her rather than the droplet render.
+const CLIENT_SPECIES_FALLBACK = { cat: 'c15', fox: 'c15', bird: 'c15', owl: 'c15', croc: 'c15' };
+// The items each buddy's stage-1 photos were shot with. A slug from a later stage's
+// wardrobe is ignored on the stage-1 body (there is no photo of it), never turned into
+// a file name that doesn't exist.
+const CLIENT_FORM1_SLUGS = {
+  c15: new Set(['gold-hat', 'green-beret', 'riding-helmet', 'navy-duffle-coat', 'red-button-jacket', 'tan-trench-coat']),
+};
+// Each photoshoot's default look. When a worn item belongs to a different stage's wardrobe
+// (a starter still wearing her stage-1 helmet the day she evolves), that slot shows this
+// stage's default instead of going bare; a slot the child emptied stays empty.
+const CLIENT_FORM1_DEFAULTS = { c15: { hat: 'riding-helmet', clothing: 'navy-duffle-coat' } };
+// Later stages: a buddy that has reached a stage with its own photoshoot swaps to that
+// art (and that stage's wardrobe). Keyed by character id, then by the app stage the art
+// belongs to (see STAGE_DEFAULTS — stage 2 starts at Lv4). Source renders:
+// character-references/characters/<nn-name>/stage-<n>-with-accessories/.
+// Combo files are `<hat>+<coat>+<glasses>` (whichever are worn, in that order); `combos`
+// lists the ones actually shot, so a missing combination falls back to the nearest one
+// that exists (dropping glasses first, then the coat, then the hat).
+const CLIENT_STAGE_ART = {
+  c15: {   // Lumi — stage 2: the wizard look (hat/hood, star/tattered cape, spectacles/monocle)
+    2: {
+      dir: 'lumi-s2', ext: 'webp', plain: 'lumi-s2/lumi.webp',
+      frame: { base: 1.41, shiftY: 0.23 },   // one canvas for every render; the character fills ~79% of its height
+      defaults: { hat: 'purple-wizard-hat', clothing: 'purple-star-cape' },
+      combos: new Set([
+        'gold-monocle-with-gem-chain',
+        'gold-oval-spectacles',
+        'purple-star-cape',
+        'purple-star-cape+gold-monocle-with-gem-chain',
+        'purple-star-cape+gold-oval-spectacles',
+        'purple-tattered-cape',
+        'purple-tattered-cape+gold-monocle-with-gem-chain',
+        'purple-tattered-cape+gold-oval-spectacles',
+        'purple-wizard-hat',
+        'purple-wizard-hat+gold-monocle-with-gem-chain',
+        'purple-wizard-hat+gold-oval-spectacles',
+        'purple-wizard-hat+purple-star-cape',
+        'purple-wizard-hat+purple-star-cape+gold-monocle-with-gem-chain',
+        'purple-wizard-hat+purple-star-cape+gold-oval-spectacles',
+        'purple-wizard-hat+purple-tattered-cape',
+        'purple-wizard-hat+purple-tattered-cape+gold-monocle-with-gem-chain',
+        'purple-wizard-hood',
+        'purple-wizard-hood+gold-monocle-with-gem-chain',
+        'purple-wizard-hood+gold-oval-spectacles',
+        'purple-wizard-hood+purple-star-cape',
+        'purple-wizard-hood+purple-star-cape+gold-monocle-with-gem-chain',
+        'purple-wizard-hood+purple-star-cape+gold-oval-spectacles',
+        'purple-wizard-hood+purple-tattered-cape',
+        'purple-wizard-hood+purple-tattered-cape+gold-oval-spectacles',
+      ]),
+    },
+  },
+};
+// Which of a buddy's photoshoots applies at a given stage: the highest shot stage at or
+// below it, else the stage-1 art. Also decides which wardrobe the Decorate sheet offers.
+function clientFormOf(id, stage = 1) {
+  const shots = CLIENT_STAGE_ART[id];
+  if (!shots) return 1;
+  return Object.keys(shots).map(Number).filter(n => n <= stage).sort((a, b) => b - a)[0] || 1;
+}
+function MascotClient({ id, species = 'cat', stage, color, mood, size = 160, style, wornHat, wornClothing, wornGlasses }) {
   // a NAMED character (id given) with no reference render of their own must not borrow
   // another buddy's real photo (that's how Rex ended up looking like a duplicate Lumi) —
   // fall back to the app's own flat art instead. Only a caller with no id at all (an
   // anonymous species preview) gets the species→buddy snap-to fallback below.
-  const artId = id ? (CLIENT_SRC[id] ? id : null) : (CLIENT_SPECIES_FALLBACK[species] || 'c10');
+  const artId = id ? (CLIENT_SRC[id] ? id : null) : (CLIENT_SPECIES_FALLBACK[species] || 'c15');
   if (id && !artId) return <MascotClassic species={species} stage={stage} color={color} mood={mood} size={size} style={style} />;
-  const dir = CLIENT_OUTFIT_DIR[artId];
-  const comboKey = dir && (wornHat || wornClothing)
-    ? [wornHat, wornClothing].filter(Boolean).join('+')
-    : null;
-  const file = comboKey ? `${dir}/${comboKey}.png` : (CLIENT_SRC[artId] || CLIENT_SRC.c10);
-  const { base: CLIENT_BASE, shiftY: CLIENT_SHIFT_Y } = CLIENT_FRAME[artId] || CLIENT_FRAME.c10;
+  const form = clientFormOf(artId, stage ?? 1);
+  let file, frame, comboKey = null;
+  if (form > 1) {
+    // a later stage's photoshoot: the exact combo if it was shot, else the nearest one
+    const art = CLIENT_STAGE_ART[artId][form];
+    const own = new Set([...art.combos].flatMap(k => k.split('+')));
+    const fit = (slug, slot) => (!slug ? undefined : own.has(slug) ? slug : art.defaults[slot]);
+    const worn = [fit(wornHat, 'hat'), fit(wornClothing, 'clothing'), fit(wornGlasses, 'glasses')];
+    const tries = [[0, 1, 2], [0, 1], [0, 2], [0], [1, 2], [1], [2]];
+    for (const t of tries) {
+      const parts = t.map(i => worn[i]);
+      if (parts.some(x => !x)) continue;
+      const key = parts.join('+');
+      if (art.combos.has(key)) { comboKey = key; break; }
+    }
+    file = comboKey ? `${art.dir}/${comboKey}.${art.ext}` : art.plain;
+    frame = art.frame;
+  } else {
+    const dir = CLIENT_OUTFIT_DIR[artId];
+    const known = CLIENT_FORM1_SLUGS[artId];
+    const defs = CLIENT_FORM1_DEFAULTS[artId] || {};
+    const fit = (slug, slot) => (!slug || !known || known.has(slug) ? slug : defs[slot]);
+    const hat = fit(wornHat, 'hat'), coat = fit(wornClothing, 'clothing');
+    comboKey = dir && (hat || coat) ? [hat, coat].filter(Boolean).join('+') : null;
+    file = comboKey ? `${dir}/${comboKey}.png` : (CLIENT_SRC[artId] || CLIENT_SRC.c10);
+    frame = CLIENT_FRAME[artId] || CLIENT_FRAME.c10;
+  }
+  const { base: CLIENT_BASE, shiftY: CLIENT_SHIFT_Y } = frame;
   return (
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', ...style }}>
       {/* keyed on `file` so swapping outfit combos remounts this wrapper and replays the
@@ -1120,9 +1202,9 @@ function KingCubixChip({ pose, size = 48, bg }) {
 // through the versus stage and the result screen, instead of reverting to the procedural
 // render the moment the fight starts.
 const DEMO_ART = { c2: 'Demo1.png', c3: 'Demo2.png', c10: 'Demo3.png', c1: 'Demo4.png', c6: 'Demo5.png' };
-function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothing }) {
+function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothing, wornGlasses }) {
   const file = DEMO_ART[id];
-  if (!file) return <Mascot species={species} stage={stage} color={color} size={size} wornHat={wornHat} wornClothing={wornClothing} />;
+  if (!file) return <Mascot species={species} stage={stage} color={color} size={size} wornHat={wornHat} wornClothing={wornClothing} wornGlasses={wornGlasses} />;
   return (
     <div style={{ width: size, height: size, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <img src={`/assets/democharacters/${file}`} alt="" draggable="false"
@@ -1131,4 +1213,4 @@ function DemoMascot({ id, species, stage, color, size = 48, wornHat, wornClothin
   );
 }
 
-export { Mascot, MascotChip, DemoMascot, VillainMascot, VillainShape, KingCubix, KingCubixChip, STYLE_BUDDIES, shade, styleBrand, tint };
+export { Mascot, MascotChip, DemoMascot, VillainMascot, VillainShape, KingCubix, KingCubixChip, STYLE_BUDDIES, clientFormOf, shade, styleBrand, tint };

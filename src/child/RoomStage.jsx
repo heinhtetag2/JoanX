@@ -269,7 +269,7 @@ function RoomStage({ theme, draft, buddies, placedDecor, catalog = [], onPuck = 
         {buddies.map(c => (
           <Mascot key={c.id} species={c.species} stage={c.stage} color={c.color} float={buddies.length <= 1}
             size={buddies.length <= 1 ? (buddySize || 132) : buddies.length <= 2 ? 96 : buddies.length <= 4 ? 72 : 54}
-            wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} />
+            wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(c.worn, OUTFITS, 'glasses')} />
         ))}
       </div>
 

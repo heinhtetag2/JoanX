@@ -296,12 +296,15 @@ const KO = {
   'You taught me every step of this.': '이 모든 걸 네가 가르쳐줬어.',
   'Items': '아이템', '%n items': '아이템 %n개', 'Hero Scarf': '히어로 스카프', 'Guardian Cape': '수호자 망토', 'Star Crown': '별 왕관', 'Cool Shades': '멋진 선글라스',
   'Clothing': '의상', 'Hat': '모자', 'Coat': '코트', 'Glasses': '안경', 'Accessory': '액세서리',
-  // Milo's own hat/coat catalog (character-references/characters/02-milo/accessories)
+  // Milo's own hat/coat catalog (character-references/characters/02-milo/accessories/base-form)
   'Aviator Goggles': '비행 고글', 'Bucket Hat': '벙거지 모자', 'Captain’s Cap': '선장 모자',
   'Pirate Coat': '해적 코트', 'Pocket Watch': '회중시계', 'Suspenders': '멜빵',
-  // Lumi's own hat/coat catalog (character-references/characters/05-lumi/accessories)
+  // Lumi's own hat/coat catalog (character-references/characters/05-lumi/accessories/base-form)
   'Gold Hat': '골드 모자', 'Green Beret': '그린 베레모', 'Riding Helmet': '라이딩 헬멧',
   'Navy Duffle Coat': '네이비 더플코트', 'Red Button Jacket': '레드 버튼 재킷', 'Tan Trench Coat': '탄 트렌치코트',
+  // Lumi's stage-2 wizard wardrobe (…/05-lumi/accessories/stage-2)
+  'Wizard Hat': '마법사 모자', 'Wizard Hood': '마법사 후드', 'Star Cape': '별 망토', 'Tattered Cape': '낡은 망토',
+  'Oval Spectacles': '동그란 안경', 'Gem Monocle': '보석 외알 안경',
   'Equipped': '착용 중', 'Tap to equip': '눌러서 착용',
   'Set as my buddy': '내 친구로 설정', 'Evolving!': '진화 중!',
   // buddy bios — the character detail screen's Story tab

@@ -527,7 +527,7 @@ function CollectionVariant({ variant = 'shelf', ctx }) {
         {buddiesSorted.map(c => { const lk = lockedCard(c, ctx); return (
           <button key={c.id} disabled={!c.owned && !lk.onClick} onClick={() => (c.owned ? openC(c) : lk.onClick && lk.onClick())} style={{ background: '#fff', borderRadius: 18, padding: '20px 8px 11px', boxShadow: THEME.shadowCard, border: 'none', cursor: c.owned || lk.onClick ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden', ...lk.style }}>
             {!c.owned && lockedCard(c).cornerLock && <div style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={13} color={THEME.fg3} stroke={2.4} /></div>}
-            {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} /> : <LockedBuddyArt c={c} size={62} />}
+            {c.owned ? <Mascot id={c.id} species={c.species} stage={c.stage} color={c.color} size={62} wornHat={wornSlugFor(c.worn, OUTFITS, 'hat')} wornClothing={wornSlugFor(c.worn, OUTFITS, 'clothing')} wornGlasses={wornSlugFor(c.worn, OUTFITS, 'glasses')} /> : <LockedBuddyArt c={c} size={62} />}
             {!lk.hideName && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4, ...(lk.text && { color: lk.text }) }}>{c.owned ? c.name : '???'}</div>}
             <Badge variant={c.rarity === 'epic' ? 'epic' : c.rarity === 'rare' ? 'primary' : 'default'} style={{ marginTop: 4, fontSize: 9, padding: '2px 6px' }}>{L(RARITY[c.rarity].label)}</Badge>
           </button>

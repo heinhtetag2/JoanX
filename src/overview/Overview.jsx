@@ -22,7 +22,7 @@ function Phone({ children, tabs, active, dark, over, mode = 'smart' }) {
 }
 
 const mk = (over, mode = 'smart') => ({
-  nav: () => {}, back: () => {}, params: { id: 'c1' }, mode,
+  nav: () => {}, back: () => {}, params: { id: 'c15' }, mode,
   tweaks: { overlay: over || 'sheet' },
   openOverlay: () => {}, closeOverlay: () => {}, finishOnboarding: () => {},
   setBuddy: () => {}, lang: 'en', setLang: () => {},

@@ -287,7 +287,7 @@ function HowItWorks({ onClose, onStart, theme = 'iris' }) {
   Object.assign(V, BASE_V, STORY_THEMES[theme] || STORY_THEMES.iris);   // reset base, stamp skin
   // Rex (c1) is the child's starter buddy, so the hero should show Rex — not just
   // whichever owned character happens to sort first in the roster.
-  const buddy = CHARACTERS.find(c => c.id === 'c1') || CHARACTERS.find(c => c.owned) || CHARACTERS[0];
+  const buddy = CHARACTERS.find(c => c.id === 'c15') || CHARACTERS.find(c => c.owned) || CHARACTERS[0];
   const roster = (visibleCharacters ? visibleCharacters() : CHARACTERS).length;
   const scroller = React.useRef(null);
   const endRef = React.useRef(null);          // sentinel at the foot of the story
