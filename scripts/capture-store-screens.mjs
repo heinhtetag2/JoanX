@@ -53,6 +53,13 @@ const SHOTS = {
   },
   // the Collection House grid (Buddies tab) — locked cards use the Tweaks default
   'child-collection': { query: '&screen=collection', run: async () => sleep(2000) },
+  // My House as a child first sees it: the Dream Room, decorated, buddy centre stage
+  'child-house': { query: '&screen=myhouse', run: async () => sleep(2500) },
+  // the Collection House's Badges tab — the medals earned and the ones still locked
+  'child-badges': {
+    query: '&screen=collection',
+    run: async (p) => { await sleep(1500); await p.locator('.screen button', { hasText: /Badges|배지/ }).first().click(); await sleep(1800); },
+  },
   // the villain card — the road opens with the current villain's card already up
   'child-villain-card': { run: async (p) => { await tweak(p, 'Road map'); await sleep(2500); } },
   'child-decorate': {
