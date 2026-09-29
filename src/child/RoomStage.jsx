@@ -609,8 +609,8 @@ function RoomSlotSheet({ slot, onClose, ed, onDragProgress }) {
 // the room's own bottom edge (see BottomSheet), so the bar sits right above it there.
 // Once the picker's closed, the host has faded out everything below the room too (see
 // MyHouse's name/reactions/guestbook block) freeing the rest of the screen — the bar
-// drops down to use that space instead of floating awkwardly mid-room, closer to
-// where a thumb already rests.
+// drops down to use that space instead of floating awkwardly mid-room, but stops well
+// above the bottom edge, where a thumb already rests.
 // `hidden` — true while the piece itself is actively being re-dragged (see RoomStage's
 // `ed`/`onDragProgress`) — the bubble still names the OLD position until the drag
 // ends, so showing it mid-carry would read as a second, stale copy of the piece.
@@ -620,7 +620,9 @@ function JustDroppedBar({ ed, sheetOpen = false, hidden = false }) {
   const r = stageRef.current.getBoundingClientRect();
   const screenEl = document.querySelector('.screen');
   const screenRect = !sheetOpen && screenEl ? screenEl.getBoundingClientRect() : null;
-  const top = screenRect ? screenRect.bottom - 64 : r.bottom - 66;
+  // lifted clear of the home-indicator strip at the very bottom — right at the edge the
+  // buttons were hard to hit; this height is where a thumb already rests
+  const top = screenRect ? screenRect.bottom - 136 : r.bottom - 66;
   return createPortal(
     <div style={{ position: 'fixed', left: r.left + r.width / 2, top, transform: 'translateX(-50%)', zIndex: 97, display: 'flex', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, background: '#fff', boxShadow: '0 8px 22px rgba(0,0,0,.28)', transition: 'top .2s ease' }}>
       <button onClick={() => setJustDropped(null)} aria-label={L('Done')}
