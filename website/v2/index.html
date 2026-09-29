@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JoanX · Human + AI</title>
+<title>JoanX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
@@ -47,7 +47,7 @@
 
   --font:    "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --fs-h1:   clamp(36px, 5.4vw, 56px);   /* same as the AI-generated page */
-  --fs-display: clamp(42px, 6.4vw, 80px);   /* one showcase title, a step above h1 */
+  --fs-display: clamp(40px, 5.6vw, 64px);   /* one showcase title, a small step above h1 */
   --fs-h2:   clamp(26px, 3.4vw, 36px);
   --fs-h3:   clamp(20px, 2.2vw, 24px);
   --fs-body: 17px;
@@ -55,7 +55,8 @@
 
   --space-section: clamp(64px, 9vw, 120px);
   --space-block:   clamp(32px, 4vw, 48px);
-  --max:     1120px;
+  --max:     1440px;
+  --gutter:  clamp(20px, 4vw, 56px);   /* side padding inside .wrap */
   --radius:  14px;
   --shot-w:  240px;     /* screenshot width in the section rows */
   --nav-h:   73px;      /* height of the sticky nav bar, border included */
@@ -90,7 +91,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .lede { color: var(--ink-2); max-width: 56ch; }
 
 /* ── 3. Layout ───────────────────────────────────────────────────────── */
-.wrap { max-width: var(--max); margin: 0 auto; padding-inline: 20px; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
 .section { padding-block: var(--space-section); border-top: 1px solid var(--line); }
 .section.alt { background: var(--paper-2); }
 
@@ -222,7 +223,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .menu-body { min-height: calc(100vh - var(--nav-h)); display: grid; align-content: center; gap: clamp(40px, 6vw, 80px); padding-block: 32px 56px; }
 @media (min-width: 900px) { .menu-body { grid-template-columns: 1.4fr 1fr; align-items: center; } }
 .menu-links { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(8px, 1.4vw, 16px); }
-.menu-links a { position: relative; display: inline-block; color: #fff; text-decoration: none; font-size: var(--fs-h2); font-weight: 500; line-height: 1.3; letter-spacing: -.01em; transition: transform .25s ease; }   /* the section-heading size, medium weight */
+.menu-links a { position: relative; display: inline-block; color: #fff; text-decoration: none; font-size: clamp(36px, 5vw, 64px); font-weight: 500; line-height: 1.25; letter-spacing: -.02em; transition: transform .25s ease; }   /* big, the one thing on this screen; medium weight */
 .menu-links a::before { content: ""; position: absolute; left: -.55em; top: 50%; width: .22em; height: .22em; border-radius: 50%; background: #fff; transform: translateY(-50%) scale(0); transition: transform .25s ease; }
 .menu-links a:hover, .menu-links a:focus-visible { transform: translateX(.55em); }
 .menu-links a:hover::before, .menu-links a:focus-visible::before { transform: translateY(-50%) scale(1); }
@@ -264,7 +265,9 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .hero-edge { position: relative; overflow: hidden; height: clamp(120px, 17vw, 260px); background: var(--hero-bg); }
 .hero-curve {
   position: absolute; left: -25%; right: -25%; bottom: -1px; height: 100%;
-  background: var(--paper); border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  /* rises as a dome, then flattens: full curve for the first 80% of the rise, straight only at the very top */
+  --r: clamp(0, calc((1 - var(--p, 0)) * 5), 1);
+  background: var(--paper); border-radius: 50% 50% 0 0 / calc(var(--r) * 100%) calc(var(--r) * 100%) 0 0;
   transform: scaleY(var(--p, 0)); transform-origin: 50% 100%;
   pointer-events: none; will-change: transform;
 }
@@ -287,6 +290,34 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .checks { list-style: none; padding: 0; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: rgba(255,255,255,.86); }
 .checks li { display: inline-flex; align-items: center; gap: 8px; }
 .checks svg { width: 16px; height: 16px; color: #CFE6CF; flex-shrink: 0; }
+/* the hero's one big action: a white pill with a phone glyph, flat on the green */
+.hero-dl {
+  display: inline-flex; align-items: center; gap: 14px; margin-top: 8px; margin-bottom: 4px;
+  height: 64px; padding: 0 34px 0 28px; border-radius: 999px;
+  background: #fff; color: var(--hero-bg); text-decoration: none;
+  font-size: 19px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap;
+  transition: transform .2s ease, background-color .2s ease;
+}
+.hero-dl svg { width: 22px; height: 22px; flex-shrink: 0; }
+.hero-dl:hover { background: #EEF6EC; transform: translateY(-2px); }
+.hero-dl:focus-visible { outline: 3px solid #CFE6CF; outline-offset: 3px; }
+@media (max-width: 520px) { .hero-dl { height: 56px; padding: 0 26px 0 22px; font-size: 17px; } }
+@media (prefers-reduced-motion: reduce) { .hero-dl { transition: none; } .hero-dl:hover { transform: none; } }
+/* click Download on a computer → a QR card drops under the button to scan with your phone.
+   On a phone there is nothing to scan with, so the button just goes to #get. */
+.hero-get { position: relative; display: inline-block; }
+.hero-get.is-open .hero-dl { background: #E3F0E1; transform: none; }
+.hero-qr {
+  position: absolute; top: calc(100% + 12px); left: 50%; z-index: 5;
+  width: 236px; padding: 22px 22px 18px; border-radius: 22px;
+  background: #fff; color: #1F3A23; text-align: center;
+  opacity: 0; visibility: hidden; transform: translate(-50%, -6px);
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+.hero-get.is-open .hero-qr { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity .18s ease, transform .18s ease; }
+.hero-qr svg { display: block; width: 100%; height: auto; }
+.hero-qr p { margin: 14px 0 0; font-size: 15px; font-weight: 500; line-height: 1.4; color: #1F3A23; }
+@media (prefers-reduced-motion: reduce) { .hero-qr, .hero-get.is-open .hero-qr { transition: none; } }
 
 /* at a glance */
 .glance { display: grid; grid-template-columns: repeat(2, 1fr); border-block: 1px solid var(--line); }
@@ -335,7 +366,7 @@ td.us { color: var(--ink); font-weight: 600; }
    word by word. .takeover-run below the stage is the scroll distance the pin lasts. Circle size,
    its centre and the line's position are set by the script from scroll progress. */
 .takeover { position: relative; }
-.takeover-run { height: 220vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
+.takeover-run { height: 700vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
 .takeover-stage {
   position: sticky; top: 0; overflow: hidden;
   /* at least a full screen, content centred, so when it pins it IS the page */
@@ -355,6 +386,28 @@ td.us { color: var(--ink); font-weight: 600; }
 }
 .takeover-line .w { display: inline-block; opacity: calc(.12 + var(--w, 0) * .88); transform: translateY(calc((1 - var(--w, 0)) * .35em)); }
 .takeover + .section { border-top: 0; }
+/* while the privacy stage is pinned, the row slides left and three cards come in from the right
+   (--x set by the script); each card grows in as it enters (--e). Then the green circle sweeps. */
+.pv-track { display: flex; align-items: center; gap: clamp(28px, 5vw, 72px); width: max-content; transform: translateX(var(--x, 0px)); will-change: transform; }
+.pv-panel { flex: 0 0 auto; width: calc(min(var(--max), 100vw) - 2 * var(--gutter)); }
+.pv-card { --s: clamp(220px, min(44vh, 30vw), 400px); position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
+  opacity: calc(.2 + var(--e, 1) * .8); transform: translateY(calc((1 - var(--e, 1)) * 60px)) scale(calc(.88 + var(--e, 1) * .12)); }
+/* a zigzag: squares ride low, circles ride high */
+.pv-sq { top: calc(var(--s) * .2); }
+.pv-round { top: calc(var(--s) * -.2); }
+.pv-vis { position: relative; width: var(--s); height: var(--s); display: grid; place-items: center; overflow: hidden; background: #E4EEE1; border-radius: clamp(18px, 2vw, 28px); }
+.pv-round .pv-vis { border-radius: 50%; background: #4B814F; }
+.pv-vis img { width: 46%; height: 78%; object-fit: cover; object-position: top; border-radius: clamp(12px, 1.4vw, 20px); border: 1px solid rgba(26,32,28,.1); background: #fff; }
+.pv-round .pv-vis img { border-color: rgba(255,255,255,.3); }
+.pv-card figcaption { display: grid; gap: 4px; margin-top: clamp(14px, 1.8vw, 22px); }
+.pv-card figcaption span { font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pv-sq .pv-vis { background: #22301F; } :root:not([data-theme="light"]) .pv-round .pv-vis { background: #2B4F30; } }
+@media (max-width: 720px) { .pv-card { --s: min(66vw, 38vh); } }
+@media (prefers-reduced-motion: reduce) {
+  .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
+  .pv-card { opacity: 1; transform: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .takeover-run { display: none; }
   .takeover-stage { position: relative; }
@@ -417,6 +470,126 @@ td.us { color: var(--ink); font-weight: 600; }
 .pr-card p { color: var(--ink-2); }
 
 /* get + footer */
+/* back to top — a white rounded square with a black arrow, bottom right; flat, a hairline so it
+   still reads on white sections. Sits above the prototype's Tweaks panel when that is on screen. */
+.to-top {
+  position: fixed; right: 16px; bottom: 16px; z-index: 80; width: 56px; height: 56px; border-radius: 18px;
+  display: grid; place-items: center; background: #fff; color: #111; border: 1px solid rgba(26,32,28,.12);
+  opacity: 0; visibility: hidden; transform: translateY(12px);
+  transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+}
+.to-top.is-on { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .2s ease; }
+.to-top:hover { transform: translateY(-2px); }
+.to-top:focus-visible { outline: 3px solid #4B814F; outline-offset: 3px; }
+.to-top svg { width: 24px; height: 24px; }
+body:has(.sitetw-open) .to-top { bottom: 72px; }
+body:has(.sitetw-panel) .to-top { bottom: 184px; }
+@media (prefers-reduced-motion: reduce) { .to-top, .to-top.is-on { transition: none; } }
+
+/* hatch — the stage pins on a dark ground; seven green columns rise from the bottom (the outer
+   ones first, the middle last), fill the screen, then wash out to a pale ground where the copy
+   and the egg come up. --p (0 → 1) is set by the script from scroll progress. */
+.rise { position: relative; }
+.rise-run { height: 260vh; }
+.rise-stage { --p: 0; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #17211A; display: grid; place-items: center; }
+.rise-tease {
+  position: absolute; left: 20px; right: 20px; top: 50%; margin: 0 auto; max-width: 17em; text-align: center;
+  translate: 0 -50%;
+  /* a full-screen statement, so the h1 step — same as the takeover line and the Get JoanX headline */
+  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; color: #fff;
+  opacity: clamp(0, calc(1 - var(--p) * 3.2), 1);
+}
+.rise-bars { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1.2fr 1.2fr 2.3fr 1.2fr 1.2fr 1fr; }
+.rise-bars span {
+  /* each column: a soft top edge, brand green, easing to the pale ground at the bottom */
+  --b: clamp(0, calc((var(--p) - var(--k) * .07) / .34), 1);
+  align-self: end; height: calc(100% + 90px);
+  margin-right: -1px;   /* overlap the next column by a pixel, so no dark seam shows between them */
+  background: linear-gradient(to bottom, rgba(75,129,79,0) 0, #4B814F 90px, #5E9461 38%, #A9CBA6 72%, #EEF5EC 100%);
+  transform: translateY(calc((1 - var(--b)) * 100%));
+  will-change: transform;
+}
+.rise-wash { position: absolute; inset: 0; background: #F4F8F2; opacity: clamp(0, calc((var(--p) - .55) / .3), 1); }
+.rise-copy {
+  position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 8px; padding: 0 20px;
+  /* already solid, just still below the screen: it scrolls up through the pale lower part of the
+     columns and settles in the middle as the ground turns pale */
+  --c: clamp(0, calc((var(--p) - .3) / .6), 1);
+  transform: translateY(calc((1 - var(--c)) * 85vh));
+}
+.rise-label { margin: 0; font-size: var(--fs-small); font-weight: 700; color: #4B814F; }
+.rise-copy h2 { margin: 0; max-width: 20em; font-size: var(--fs-h2); color: #1A201C; text-wrap: balance; }
+.rise-big { margin: 0; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
+.rise-egg { width: clamp(150px, 20vw, 260px); height: auto; margin-top: -1vw; transform: translateY(calc((1 - var(--c)) * 30vh)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rise-wash { background: var(--paper-2); }
+  :root:not([data-theme="light"]) .rise-copy h2, :root:not([data-theme="light"]) .rise-big { color: var(--ink); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise-run { display: none; }
+  .rise-stage { --p: 1; position: relative; }
+}
+
+/* get JoanX — the cast. The stage pins; the characters start huddled over the middle and step
+   out to both sides as you scroll (--p, 0 → 1, set by the script), uncovering the copy. */
+/* a pale-sage ground of its own, so it reads as a new section after the green showcase */
+.cast { position: relative; --cast-bg: #EAF2E6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cast { --cast-bg: var(--paper-2); } }
+.cast-run { height: 150vh; }
+.cast-stage {
+  --p: 0; --u: min(1vh, .62vw);   /* character sizes follow the shorter side of the screen */
+  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+  display: grid; place-items: center; background: var(--cast-bg); color: var(--ink);
+}
+.cast-copy {
+  position: relative; z-index: 1; max-width: 520px; padding: 0 20px; text-align: center;
+  display: grid; justify-items: center; gap: 16px;
+  opacity: clamp(0, calc((var(--p) - .3) * 2.2), 1);
+  transform: translateY(calc(clamp(0, 1 - (var(--p) - .3) * 2.2, 1) * 28px));
+}
+.cast-label { font-size: var(--fs-small); font-weight: 700; color: var(--accent); margin: 0; }
+.cast-copy h2 { margin: 0; color: var(--ink); font-size: var(--fs-h1); line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; }
+.cast-copy h2 em { font-style: normal; color: var(--accent); }
+.cast-copy .lede { color: var(--ink-2); margin: 0; }
+/* the same Download pill as the hero; on this light ground it is filled green instead of white */
+.cast .hero-dl { margin-top: 6px; background: #4B814F; color: #fff; }
+.cast .hero-dl:hover { background: #3E6E42; }
+.cast .hero-get.is-open .hero-dl { background: #3E6E42; }
+.cast .hero-qr { border: 1px solid var(--line); }
+/* opens upward when there is more room above the button than below (set by the script) */
+.hero-get.up .hero-qr { top: auto; bottom: calc(100% + 12px); transform: translate(-50%, 6px); }
+.hero-get.up.is-open .hero-qr { transform: translate(-50%, 0); }
+/* each side is one layered group of three (they overlap, like a group photo), sized in --u so
+   the group always fits between the screen edge and the copy. --off is the gap from the middle
+   to the copy's edge. The groups start pulled in to meet over the middle and move as one block. */
+.cast-stage { --off: 290px; --u: min(1.2vh, calc((48vw - var(--off)) / 48)); --tx: var(--off); --ty: 0px; --cy: -50%; }
+.cast-group {
+  position: absolute; z-index: 2; top: 50%; width: calc(48 * var(--u)); height: calc(66 * var(--u)); pointer-events: none;
+  transform: translate(calc(var(--s) * -1 * (1 - var(--p)) * var(--tx)), calc(var(--cy) + (1 - var(--p)) * var(--ty)));
+  will-change: transform;
+}
+.cast-l { right: calc(50% + var(--off)); }
+.cast-r { left: calc(50% + var(--off)); }
+.ch { position: absolute; display: block; width: auto; height: calc(var(--h) * var(--u)); }
+.ch-sprout { --h: 26; left: calc(20 * var(--u)); top: 0; }
+.ch-cubix  { --h: 40; left: 0;                  top: calc(15 * var(--u)); }
+.ch-chick  { --h: 20; left: calc(23 * var(--u)); top: calc(45 * var(--u)); }
+.ch-goblin { --h: 18; right: calc(22 * var(--u)); top: 0; }
+.ch-time   { --h: 40; right: 0;                   top: calc(12 * var(--u)); }
+.ch-thief  { --h: 27; right: calc(19 * var(--u)); top: calc(38 * var(--u)); }
+/* mid-size screens: a narrower column of copy leaves the groups room */
+@media (min-width: 901px) and (max-width: 1200px) { .cast-stage { --off: 225px; } .cast-copy { max-width: 400px; } }
+/* phones and small tablets: copy on top, the two groups in the bottom corners, rising in */
+@media (max-width: 900px) {
+  .cast-stage { --u: min(.95vw, .42vh); --tx: 0px; --ty: 30vh; --cy: 0px; place-items: start center; padding-top: calc(var(--nav-h) + 28px); }
+  .cast-group { top: auto; bottom: 2%; }
+  .cast-l { right: auto; left: 2%; }
+  .cast-r { left: auto; right: 2%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cast-run { display: none; }
+  .cast-stage { --p: 1; position: relative; }
+}
 .get-in { display: grid; gap: 20px; }
 @media (min-width: 900px) { .get-in { grid-template-columns: 1fr auto; align-items: center; } }
 footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--ink-2); }
@@ -487,6 +660,13 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
       <span class="hero-badge"><span class="pill">NEW</span><span data-i18n="h.badge">Guardian groups — invite by QR or code</span></span>
       <h1 data-i18n="h.h1"><em class="hl">Heads up</em>, the whole way to school.</h1>
       <p class="lede" data-i18n="v.hl">JoanX is an app for your child’s phone. When they walk while looking at the screen, it starts with a single buzz — it never locks the phone. Looking up earns points in a game they care about.</p>
+      <div class="hero-get">
+        <a class="hero-dl" href="#get" aria-expanded="false" aria-controls="hero-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"></rect><path d="M11 18h2"></path></svg><span data-i18n="h.dl">Download JoanX</span></a>
+        <div class="hero-qr" id="hero-qr" role="dialog" aria-label="Scan to download">
+          <svg class="hero-qr-code" viewBox="0 0 10 10" aria-hidden="true"></svg>
+          <p data-i18n="h.qr">Scan the QR to get the app on your phone</p>
+        </div>
+      </div>
       <ul class="checks">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg><span data-i18n="h.t1">Never locks the screen</span></li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg><span data-i18n="h.t2">No location tracking</span></li>
@@ -557,10 +737,30 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </section>
 
+<!-- ═══ HATCH — the rising columns ══════════════════════════════════════════ -->
+<section class="rise" id="hatch">
+  <div class="rise-stage">
+    <p class="rise-tease" data-i18n="rs.tease">Every safe walk adds up.</p>
+    <div class="rise-bars" aria-hidden="true">
+      <span style="--k:0"></span><span style="--k:1"></span><span style="--k:2"></span><span style="--k:3"></span><span style="--k:2"></span><span style="--k:1"></span><span style="--k:0"></span>
+    </div>
+    <div class="rise-wash" aria-hidden="true"></div>
+    <div class="rise-copy">
+      <p class="rise-label" data-i18n="rs.l">Hatch day</p>
+      <h2 data-i18n="rs.h">Safe walks earn points. Points hatch a new buddy.</h2>
+      <p class="rise-big" data-i18n="rs.big">Hatch!</p>
+      <img class="rise-egg" src="../media/art/egg-rare.png" width="420" height="420" alt="A rare egg, ready to hatch." loading="lazy">
+    </div>
+  </div>
+  <div class="rise-run" aria-hidden="true"></div>
+</section>
+
 <!-- ═══ 03 · PRIVACY — then the takeover ══════════════════════════════════ -->
 <section class="takeover" id="privacy">
   <div class="takeover-stage section alt">
     <div class="wrap">
+      <div class="pv-track">
+      <div class="pv-panel">
       <header class="sec-head">
         <p class="sec-label"><span class="sec-num">03</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
         <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
@@ -586,9 +786,36 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
         </ul>
       </div>
     </div>
+      </div>
+      <figure class="pv-card pv-sq" style="--k:0">
+        <div class="pv-vis"><img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The guardian's weekly report: safe-walking minutes, warnings stopped, and the streak." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
+      </figure>
+      <figure class="pv-card pv-round" style="--k:1">
+        <div class="pv-vis"><img src="../media/shots/parent-children.png" width="535" height="1200" alt="Each child on one screen: whether protection is on, battery, and permissions." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
+      </figure>
+      <figure class="pv-card pv-sq" style="--k:2">
+        <div class="pv-vis"><img src="../media/shots/parent-rules.png" width="535" height="1200" alt="The setup agreement: every permission the child accepted, listed one by one." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
+      </figure>
+      <figure class="pv-card pv-round" style="--k:3">
+        <div class="pv-vis"><img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: every guardian who shares a child's reports, listed by group." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
+      </figure>
+      <figure class="pv-card pv-sq" style="--k:4">
+        <div class="pv-vis"><img src="../media/shots/parent-group-detail.png" width="535" height="1200" alt="A group's page with a join request waiting for the admin to accept or reject it." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
+      </figure>
+      <figure class="pv-card pv-round" style="--k:5">
+        <div class="pv-vis"><img src="../media/shots/parent-pairing.png" width="535" height="1200" alt="Connecting a child's phone with a six-digit code that is valid for five minutes." loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
+      </figure>
+      </div>
     </div>
     <div class="takeover-fill" aria-hidden="true"></div>
     <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to look up.</p>
+    <p class="takeover-line" data-i18n="v.tk2">Every time they look up, | their buddy grows a little.</p>
   </div>
   <div class="takeover-run" aria-hidden="true"></div>
 </section>
@@ -731,17 +958,35 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
 </section>
 
 <!-- ═══ GET JOANX ═════════════════════════════════════════════════════════ -->
-<section class="section" id="get">
-  <div class="wrap get-in">
-    <div>
-      <h2 data-i18n="cta.h">Get JoanX</h2>
+<section class="cast" id="get">
+  <div class="cast-stage">
+    <div class="cast-copy">
+      <p class="cast-label" data-i18n="cta.h">Get JoanX</p>
+      <h2 data-i18n="cast.h">Heads up, <em>every walk home.</em></h2>
       <p class="lede" data-i18n="cta.p">Free to try for seven days when it lands. One install on your child's phone, one on yours, and about three minutes to pair them.</p>
+      <div class="hero-get">
+        <a class="hero-dl" href="#get" aria-expanded="false" aria-controls="cast-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"></rect><path d="M11 18h2"></path></svg><span data-i18n="h.dl">Download JoanX</span></a>
+        <div class="hero-qr" id="cast-qr" role="dialog" aria-label="Scan to download">
+          <svg class="hero-qr-code" viewBox="0 0 10 10" aria-hidden="true"></svg>
+          <p data-i18n="h.qr">Scan the QR to get the app on your phone</p>
+        </div>
+      </div>
     </div>
-    <div>
-      <span class="btn store"><small data-i18n="h.store2s">Get it on</small>Google Play</span>
-      <p class="note" data-i18n="cta.s">Coming soon to Google Play.</p>
+    <!-- the cast: they start huddled over the copy and step aside as you scroll -->
+    <!-- each side is a layered group: back to front in source order -->
+    <div class="cast-group cast-l" aria-hidden="true" style="--s:-1">
+      <img class="ch ch-sprout" src="../media/art/cast/sprout.webp" alt="">
+      <img class="ch ch-cubix"  src="../media/art/cast/cubix.webp"  alt="">
+      <img class="ch ch-chick"  src="../media/art/cast/chick.webp"  alt="">
+    </div>
+    <!-- the villains they walk away from -->
+    <div class="cast-group cast-r" aria-hidden="true" style="--s:1">
+      <img class="ch ch-goblin" src="../media/art/cast/goblin.webp"        alt="">
+      <img class="ch ch-time"   src="../media/art/cast/time-eater.webp"    alt="">
+      <img class="ch ch-thief"  src="../media/art/cast/emotion-thief.webp" alt="">
     </div>
   </div>
+  <div class="cast-run" aria-hidden="true"></div>
 </section>
 
 <!-- ═══ FOOTER ════════════════════════════════════════════════════════════ -->
@@ -779,6 +1024,9 @@ footer { padding-block: 44px 32px; border-top: 1px solid var(--line); font-size:
   </div>
 </footer>
 
+<!-- back to top: shows once the hero is behind you -->
+<a class="to-top" href="#top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+
 <script>
 /* ── Korean copy — same keys as the AI-generated page, so both stay in step ── */
 var KO = {
@@ -810,6 +1058,7 @@ var KO = {
   'sc.1': '조안X',
   'sc.2': '들여다보기',
   'v.tk': '아이의 폰을 잠그는 대신, 고개를 들 이유를 만들어요.',
+  'v.tk2': '고개를 들 때마다, | 버디가 조금씩 자라요.',
   'q.faq': '더 궁금한 점이 있나요?',
   'v.hl': '조안X는 아이 휴대폰에 설치하는 앱이에요. 아이가 걸으면서 화면을 보면 진동 한 번으로 먼저 알려요 — 폰을 잠그지는 않아요. 고개를 들면 아이가 아끼는 게임의 포인트가 쌓여요.',
   'v.sh': '먼저 진동 한 번. 계속 볼 때만 메시지가 떠요.',
@@ -844,7 +1093,16 @@ var KO = {
   'n.how': '작동 방식', 'n.safety': '안전 순간', 'n.game': '게임', 'n.parents': '보호자용',
   'n.privacy': '개인정보', 'n.faq': '자주 묻는 질문', 'n.cta': '다운로드',
 
-  'h.badge': '보호자 그룹 — QR이나 코드로 초대하기',
+  'h.badge': '보호자 그룹 — QR이나 코드로 초대하기', 'h.dl': '조안X 다운로드',
+  'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '부화하는 날',
+  'rs.h': '안전하게 걸으면 포인트, 포인트로 새 친구가 태어나요.', 'rs.big': '부화!',
+  'cast.h': '고개 들고, <em>매일 걷는 길을 안전하게.</em>',
+  'pv.c1h': '주간 리포트', 'pv.c1s': '안전하게 걸은 시간, 멈춘 경고, 연속 일수',
+  'pv.c2h': '아이별로 한눈에', 'pv.c2s': '보호 켜짐 여부, 배터리, 권한',
+  'pv.c3h': '함께 동의한 것', 'pv.c3s': '설정할 때 수락한 모든 권한',
+  'pv.c4h': '누가 함께 보는지', 'pv.c4s': '그룹의 보호자를 이름으로 모두 보여줘요',
+  'pv.c5h': '마음대로 들어올 수 없어요', 'pv.c5s': '모든 요청은 관리자가 수락하거나 거절해요',
+  'pv.c6h': '코드 하나로 연결', 'pv.c6s': '아이 폰에 입력, 5분 동안만 유효해요', 'h.qr': 'QR을 스캔해 휴대폰에서 앱을 받으세요',
   'h.h1': '학교 가는 길 내내,<br><em class="hl">고개는 앞으로.</em>',
   'h.lede': '조안X는 아이가 걸으면서 화면을 보고 있을 때를 알아채고, 화면을 잠그는 대신 진동 한 번으로 알려줘요. 고개를 들면 포인트가 쌓이고, 버디가 자라고, 빌런을 물리칠 수 있어요 — 멈추는 것이 이기는 방법이에요.',
   'h.store1s': 'App Store에서', 'h.store2s': 'Google Play에서',
@@ -1017,6 +1275,17 @@ var MN = {
  "h.h1": "Сургууль хүртэл <em class=\"hl\">толгойгоо өндийлгөөрэй.</em>",
  "v.hl": "JoanX бол таны хүүхдийн утсанд суулгадаг апп. Хүүхэд алхаж явахдаа дэлгэц рүү харвал эхлээд ганц чичиргээгээр сануулна — утсыг хэзээ ч түгжихгүй. Дээш харвал хүүхдийн дуртай тоглоомд оноо цуглуулна.",
  "h.badge": "Асран хамгаалагчийн бүлэг — QR эсвэл кодоор урих",
+ "h.dl": "JoanX татах",
+ "rs.tease": "Аюулгүй алхам бүр нэмэгдсээр.", "rs.l": "Өндөг хагарах өдөр",
+ "rs.h": "Аюулгүй алхвал оноо, оноогоор шинэ найз гарна.", "rs.big": "Хагарлаа!",
+ "cast.h": "Толгойгоо өргө, <em>гэр хүртэлх зам бүрт.</em>",
+ "pv.c1h": "Долоо хоногийн тайлан", "pv.c1s": "Аюулгүй алхсан минут, зогссон сануулга, цуврал",
+ "pv.c2h": "Хүүхэд бүрийг нэг дороос", "pv.c2s": "Хамгаалалт асаалттай эсэх, батерей, зөвшөөрөл",
+ "pv.c3h": "Хамтдаа зөвшөөрсөн зүйлс", "pv.c3s": "Тохиргооны үед зөвшөөрсөн бүх эрх",
+ "pv.c4h": "Өөр хэн харж болох вэ", "pv.c4s": "Бүлгийн асран хамгаалагч бүрийг нэрээр нь",
+ "pv.c5h": "Хэн ч өөрөө нэгдэж чадахгүй", "pv.c5s": "Хүсэлт бүрийг админ зөвшөөрөх эсвэл татгалзана",
+ "pv.c6h": "Нэг кодоор холбоно", "pv.c6s": "Хүүхдийн утсанд оруулна, 5 минут хүчинтэй",
+ "h.qr": "Утсаараа QR-ийг уншуулж аппыг татаарай",
  "h.store2s": "Татаж авах",
  "h.t1": "Дэлгэцийг түгжихгүй",
  "h.t2": "Байршил хянахгүй",
@@ -1096,6 +1365,7 @@ var MN = {
  "pv.n4": "Ямар апп ашигладаг",
  "pv.n4n": "хэзээ ч харуулахгүй",
  "v.tk": "Хүүхдийн утсыг түгжих биш — дээш харах шалтгаан өгнө.",
+ "v.tk2": "Дээш харах бүрд | найз нь бага багаар өсдөг.",
  "q.promise": "Юунд найдаж болох вэ?",
  "pr.h": "JoanX-ийн үргэлж сахидаг зургаан зүйл",
  "pr.l": "JoanX-ийн баримталдаг зарчмууд нэг дор.",
@@ -1174,11 +1444,14 @@ var MN = {
   langBtn.addEventListener('click', function () { openMenu(langMenu.hidden); });
   document.addEventListener('click', function (e) { if (!e.target.closest('.lang')) openMenu(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !langMenu.hidden) { openMenu(false); langBtn.focus(); } });
-  /* takeover line: one span per word, so each can reveal on its own */
-  var tkLine = document.querySelector('.takeover-line');
+  /* takeover lines: one span per word, so each can reveal on its own */
+  var tkLines = [].slice.call(document.querySelectorAll('.takeover-line'));
   function splitWords() {
-    var words = tkLine.textContent.trim().split(/\s+/);
-    tkLine.innerHTML = words.map(function (w) { return '<span class="w">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
+    tkLines.forEach(function (line) {
+      // a lone "|" in the copy marks where the line breaks, so a short line still sits on two lines
+      var words = line.textContent.trim().split(/\s+/);
+      line.innerHTML = words.map(function (w) { return w === '|' ? '<br>' : '<span class="w">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
+    });
   }
 
   function setLang(lang) {
@@ -1206,6 +1479,8 @@ var MN = {
   var tk = document.querySelector('.takeover');
   var tkStage = tk.querySelector('.takeover-stage');
   var tkFill = tk.querySelector('.takeover-fill');
+  var pvTrack = tk.querySelector('.pv-track');
+  var pvCards = [].slice.call(tk.querySelectorAll('.pv-card'));
   function clamp01(x) { return Math.min(1, Math.max(0, x)); }
   function ease(x) { return 1 - Math.pow(1 - x, 3); }
   function takeover() {
@@ -1218,7 +1493,15 @@ var MN = {
     var p = clamp01((stickTop - tk.getBoundingClientRect().top) / range);
     var sr = tkStage.getBoundingClientRect();
     var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
-    var c = clamp01(p / 0.4); c = c * c * (3 - 2 * c);   // sweep: 0 → 40% of the pin
+    // the row slides left for the first half of the pin, bringing the cards in from the right
+    var vw0 = window.innerWidth, h = clamp01(p / 0.5); h = h * h * (3 - 2 * h);
+    var trackEnd = pvTrack.scrollWidth - pvTrack.parentNode.clientWidth + 20;
+    pvTrack.style.setProperty('--x', (-Math.max(0, trackEnd) * h).toFixed(1) + 'px');
+    pvCards.forEach(function (card) {
+      var left = card.offsetLeft - Math.max(0, trackEnd) * h + pvTrack.parentNode.getBoundingClientRect().left;
+      card.style.setProperty('--e', ease(clamp01((vw0 - left) / (vw0 * 0.45))).toFixed(3));
+    });
+    var c = clamp01((p - 0.5) / 0.14); c = c * c * (3 - 2 * c);   // sweep: 50% → 64% of the pin
     // one very large circle, centred far off to the right: its edge is a gentle arc across the
     // whole height from the first moment, and it slides left step by step until the screen is covered
     var vw = window.innerWidth, R = Math.max(vw, vh) * 1.15;
@@ -1231,10 +1514,18 @@ var MN = {
     var navH = document.querySelector('.nav').offsetHeight, navY0 = -sr.top, navY1 = navY0 + navH;
     var nx = Math.min(Math.max(cx, 0), vw), ny = Math.min(Math.max(vy, navY0), navY1);
     tkStage.style.zIndex = c > 0 && Math.hypot(cx - nx, vy - ny) < R ? 45 : '';
-    tkLine.style.top = vy.toFixed(1) + 'px';
-    tkLine.style.visibility = c > 0.6 ? 'visible' : 'hidden';
-    var ws = tkLine.querySelectorAll('.w'), q = clamp01((p - 0.4) / 0.45) * ws.length;   // words: 40% → 85%
-    ws.forEach(function (w, i) { w.style.setProperty('--w', ease(clamp01(q - i)).toFixed(3)); });
+    // two lines, one after the other in the same place: the first reveals word by word (66% → 76%),
+    // lifts away (80% → 85%), then the second reveals the same way (85% → 97%)
+    var out = ease(clamp01((p - 0.8) / 0.05));
+    tkLines.forEach(function (line, k) {
+      var from = k === 0 ? 0.66 : 0.85, span = k === 0 ? 0.1 : 0.12;
+      line.style.top = vy.toFixed(1) + 'px';
+      var shown = k === 0 ? c > 0.6 && out < 1 : p > 0.84;
+      line.style.visibility = shown ? 'visible' : 'hidden';
+      if (k === 0) { line.style.opacity = (1 - out).toFixed(3); line.style.translate = '0 ' + (-out * 60).toFixed(1) + 'px'; }
+      var ws = line.querySelectorAll('.w'), q = clamp01((p - from) / span) * ws.length;
+      ws.forEach(function (w, i) { w.style.setProperty('--w', ease(clamp01(q - i)).toFixed(3)); });
+    });
   }
   window.__tk = takeover;
 
@@ -1269,6 +1560,32 @@ var MN = {
     scStage.style.zIndex = r.top <= 0 && r.bottom >= vh ? 45 : '';
   }
 
+  /* hatch: the columns rise as the pinned stage is scrolled through */
+  var riseEl = document.querySelector('.rise'), riseStage = riseEl && riseEl.querySelector('.rise-stage');
+  function rise() {
+    if (!riseEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var run = riseEl.offsetHeight - riseStage.offsetHeight;
+    var p = Math.min(1, Math.max(0, -riseEl.getBoundingClientRect().top / run));
+    riseStage.style.setProperty('--p', p.toFixed(3));
+  }
+
+  /* the cast steps aside as you scroll into Get JoanX */
+  var castEl = document.querySelector('.cast'), castStage = castEl && castEl.querySelector('.cast-stage');
+  function cast() {
+    if (!castEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var vh = window.innerHeight, top = castEl.getBoundingClientRect().top;
+    var run = castEl.offsetHeight - castStage.offsetHeight;
+    // starts once the section almost fills the screen, done a little before the pin ends
+    var p = Math.min(1, Math.max(0, (vh * 0.15 - top) / (vh * 0.15 + run * 0.9)));
+    castStage.style.setProperty('--p', (1 - Math.pow(1 - p, 2)).toFixed(3));
+  }
+
+  /* back to top: on once the first screen has scrolled away */
+  var toTop = document.querySelector('.to-top');
+  function topBtn() { toTop.classList.toggle('is-on', window.scrollY > window.innerHeight * 0.9); }
+  window.addEventListener('scroll', topBtn, { passive: true });
+  topBtn();
+
   /* the dome under the hero follows the scroll */
   var edge = document.querySelector('.hero-edge');
   var still = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -1282,10 +1599,10 @@ var MN = {
   window.addEventListener('scroll', function () {
     if (curving) return;
     curving = true;
-    requestAnimationFrame(function () { curve(); takeover(); stack(); showcase(); curving = false; });
+    requestAnimationFrame(function () { curve(); takeover(); stack(); showcase(); cast(); rise(); curving = false; });
   }, { passive: true });
-  window.addEventListener('resize', function () { curve(); takeover(); stack(); showcase(); });
-  curve(); takeover(); stack(); showcase();
+  window.addEventListener('resize', function () { curve(); takeover(); stack(); showcase(); cast(); rise(); });
+  curve(); takeover(); stack(); showcase(); cast(); rise();
 
   /* full-screen menu */
   var burger = document.querySelector('.burger'), siteMenu = document.getElementById('siteMenu');
@@ -1324,6 +1641,59 @@ var MN = {
     }, { rootMargin: '-45% 0px -50% 0px' });
     document.querySelectorAll('section[id], header[id]').forEach(function (el) { spy.observe(el); });
   }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+/* Download → QR card (the hero's, and the one in Get JoanX). There is no store listing yet, so the code points at this page;
+   swap QR_URL for the Google Play link once it exists. */
+(function () {
+  var QR_URL = location.origin + location.pathname;
+  var phone = window.matchMedia('(hover: none) and (pointer: coarse)');
+  [].forEach.call(document.querySelectorAll('.hero-get'), function (box) {
+  var btn = box.querySelector('.hero-dl'), svg = box.querySelector('.hero-qr-code');
+  var drawn = false;
+
+  function draw() {
+    if (drawn || typeof qrcode !== 'function') return;
+    var qr = qrcode(0, 'H'); qr.addData(QR_URL); qr.make();
+    var n = qr.getModuleCount(), ink = '#1F3A23', out = [];
+    var inFinder = function (r, c) { return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7); };
+    var mid = n / 2, hole = n * 0.13;   /* a clear square in the middle for the JoanX mark */
+    var inHole = function (r, c) { return Math.abs(r + .5 - mid) < hole && Math.abs(c + .5 - mid) < hole; };
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+      if (!qr.isDark(r, c) || inFinder(r, c) || inHole(r, c)) continue;
+      out.push('<circle cx="' + (c + .5) + '" cy="' + (r + .5) + '" r=".4"/>');
+    }
+    var finder = function (x, y) {
+      return '<rect x="' + (x + .5) + '" y="' + (y + .5) + '" width="6" height="6" rx="1.8" fill="none" stroke="' + ink + '" stroke-width="1"/>' +
+             '<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="3" height="3" rx=".9" fill="' + ink + '"/>';
+    };
+    var m = n * .11, k = m / 48;   /* the nav's JoanX mark, scaled into the hole */
+    svg.setAttribute('viewBox', '0 0 ' + n + ' ' + n);
+    svg.innerHTML = '<g fill="' + ink + '">' + out.join('') + '</g>' +
+      finder(0, 0) + finder(n - 7, 0) + finder(0, n - 7) +
+      '<g transform="translate(' + (mid - m) + ' ' + (mid - m) + ') scale(' + k + ')">' +
+        '<circle cx="48" cy="48" r="48" fill="#4B814F"/>' +
+        '<path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"/></g>';
+    drawn = true;
+  }
+  function set(open) {
+    if (open) {   /* open toward the side with more room, so the card is never cut off */
+      var b = btn.getBoundingClientRect(), need = 310;
+      box.classList.toggle('up', window.innerHeight - b.bottom < need && b.top > window.innerHeight - b.bottom);
+    }
+    box.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  btn.addEventListener('click', function (e) {
+    if (phone.matches) return;            /* on a phone, just follow the link */
+    e.preventDefault(); draw();
+    set(!box.classList.contains('is-open'));
+  });
+  document.addEventListener('click', function (e) { if (!box.contains(e.target)) set(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+  });
 })();
 </script>
 <script type="module" src="../shots.js"></script>

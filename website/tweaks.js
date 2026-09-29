@@ -8,8 +8,8 @@
    and list it in VERSIONS and in vite.config.js.                          */
 
 const VERSIONS = [
-  { id: 'v1', label: 'AI generated', note: 'The AI-generated page', href: '/website/' },
-  { id: 'v2', label: 'Human + AI', note: 'Made by a human, with AI', href: '/website/v2/' },
+  { id: 'v1', label: 'V1', note: 'The first draft', href: '/website/' },
+  { id: 'v2', label: 'V2', note: 'The current page', href: '/website/v2/' },
 ];
 
 const path = location.pathname;
