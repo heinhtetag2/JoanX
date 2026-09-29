@@ -13,7 +13,11 @@ import { shade } from './characters.jsx';   // room themes tint their walls from
 // screen straight back; a modal is a second interruption tacked onto the one we just resolved,
 // and it pays the child for a moment that ought to be its own reward. The toast itself is kept
 // (RewardToast in WarningOverlay) — parked, not deleted — so flipping this back on restores it.
-const FEATURES = { dangerZones: false, rewardToast: false };
+// epicEggBuyable — PROTOTYPE PREVIEW ONLY. The spec keeps the Epic Egg reward-only (streaks,
+// level 10, the final villain…), and the landing page says so. ON puts it in the shop for
+// EPIC_PREVIEW_PRICE points so the buy + hatch UI can be seen; set false before any release.
+const FEATURES = { dangerZones: false, rewardToast: false, epicEggBuyable: true };
+const EPIC_PREVIEW_PRICE = 3000;
 
 // ── A-8.1 · Battle rewards & the daily limit ─────────────────────────
 // Every win pays the BASIC reward. A first win pays that basic reward PLUS a first-clear
@@ -1397,7 +1401,7 @@ const EGGS = [
   { id: 'rare',   rarity: 'rare',   name: 'Rare Egg',   set: 'mvp', enabled: true,
     price: 1500, minLevel: 5, odds: { common: 3, rare: 6, epic: 0 } },
   { id: 'epic',   rarity: 'epic',   name: 'Epic Egg',   set: 'mvp', enabled: true,
-    price: null, minLevel: 0, odds: { common: 0, rare: 4, epic: 6 } },
+    price: FEATURES.epicEggBuyable ? EPIC_PREVIEW_PRICE : null, minLevel: 0, odds: { common: 0, rare: 4, epic: 6 } },
 ];
 
 const eggById = (id) => EGGS.find(e => e.id === id) || null;
