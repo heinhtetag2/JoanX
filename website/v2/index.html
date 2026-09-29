@@ -423,7 +423,15 @@ td.us { color: var(--ink); font-weight: 600; }
   margin: 0 auto; max-width: 17em; text-align: center; color: #fff; visibility: hidden;
   font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance;   /* h1 step */
 }
-.takeover-line .w { display: inline-block; opacity: calc(.12 + var(--w, 0) * .88); transform: translateY(calc((1 - var(--w, 0)) * .35em)); }
+/* each word: faint and a little low → full and in place. --w is registered as a number so it
+   can transition, which smooths the steps between scroll updates */
+@property --w { syntax: '<number>'; inherits: false; initial-value: 0; }
+.takeover-line .w {
+  display: inline-block; opacity: calc(.14 + var(--w, 0) * .86);
+  transform: translateY(calc((1 - var(--w, 0)) * .3em));
+  transition: --w .35s cubic-bezier(.2, .7, .2, 1); will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) { .takeover-line .w { transition: none; } }
 .takeover + .section { border-top: 0; }
 /* while the privacy stage is pinned, the row slides left and three cards come in from the right
    (--x set by the script); each card grows in as it enters (--e). Then the green circle sweeps. */
@@ -1577,8 +1585,12 @@ var MN = {
       var shown = k === 0 ? c > 0.6 && out < 1 : p > 0.735;
       line.style.visibility = shown ? 'visible' : 'hidden';
       if (k === 0) { line.style.opacity = (1 - out).toFixed(3); line.style.translate = '0 ' + (-out * 60).toFixed(1) + 'px'; }
-      var ws = line.querySelectorAll('.w'), q = clamp01((p - from) / span) * ws.length;
-      ws.forEach(function (w, i) { w.style.setProperty('--w', ease(clamp01(q - i)).toFixed(3)); });
+      // words overlap: each starts while the one before is still arriving, like a wave across the line
+      var ws = line.querySelectorAll('.w'), r = clamp01((p - from) / span), n = ws.length;
+      ws.forEach(function (w, i) {
+        var t = clamp01((r - (n > 1 ? i / (n - 1) : 0) * 0.62) / 0.38);
+        w.style.setProperty('--w', (t * t * (3 - 2 * t)).toFixed(3));
+      });
     });
   }
   window.__tk = takeover;
