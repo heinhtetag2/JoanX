@@ -121,8 +121,11 @@ section[id], header[id] { scroll-margin-top: 72px; }
   --ctl-h: 42px;   /* Download and the language pill share one height */
   position: sticky; top: 0; z-index: 40;
   background: transparent; border-bottom: 1px solid transparent;
-  transition: background .22s ease, border-color .22s ease;
+  transition: background .22s ease, border-color .22s ease, transform .35s cubic-bezier(.2, .7, .2, 1);
 }
+/* scrolling down slides the bar away; any scroll up brings it straight back */
+.nav.is-hidden { transform: translateY(-100%); }
+@media (prefers-reduced-motion: reduce) { .nav.is-hidden { transform: none; } }
 .nav.is-stuck {
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -393,6 +396,18 @@ td.us { color: var(--ink); font-weight: 600; }
    --qw (the closed card's width) is measured by the script below. */
 #faq .sec-head { margin-inline: auto; justify-items: center; text-align: center; }
 #faq .sec-label { justify-content: center; }
+/* questions on the right; the heading and King Cubix — thinking, one hand held out toward the
+   list — on the left, staying put while the answers scroll */
+.faq-side { display: grid; justify-items: center; }
+.faq-cubix { display: block; width: clamp(150px, 22vw, 300px); height: auto; margin-top: clamp(8px, 2vw, 28px); }
+@media (min-width: 1000px) {
+  .faq-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: clamp(40px, 5vw, 88px); align-items: start; }
+  .faq-side { position: sticky; top: calc(var(--nav-h) + 32px); justify-items: start; }
+  #faq .faq-side .sec-head { margin-inline: 0; justify-items: start; text-align: left; }
+  #faq .faq-side .sec-label { justify-content: flex-start; }
+  .faq-layout .faq { max-width: none; margin-inline: 0; }
+}
+@media (max-width: 999px) { .faq-cubix { width: clamp(130px, 34vw, 200px); margin-bottom: 8px; } }
 .faq { max-width: 960px; margin-inline: auto; display: grid; gap: 12px; }
 .faq details { position: relative; padding-right: 68px; }
 .faq details::before {
@@ -438,6 +453,39 @@ td.us { color: var(--ink); font-weight: 600; }
    it from the right until it fills the whole screen (above the nav), then one line reveals
    word by word. .takeover-run below the stage is the scroll distance the pin lasts. Circle size,
    its centre and the line's position are set by the script from scroll progress. */
+/* 01 · manifesto: a big green headline that rises in, then large statements that light up
+   line by line (pale → ink) as they scroll past; --w per word is set by the script */
+.mf { position: relative; padding: 0; }
+.mf-move { position: relative; overflow: hidden; padding-block: clamp(96px, 13vw, 200px); }
+/* slow scroll (.mf-slow, set by the script): the section pins and its content travels at about
+   half the scroll speed, so each statement stays on screen longer while it lights up */
+.mf-slow .mf-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.mf-slow .mf-move { will-change: transform; }
+/* the phone-with-buzz art sits behind the headline, top right; multiply melts its white into the page */
+.mf-move::before {
+  content: ""; position: absolute; z-index: 0; top: clamp(0px, 2vw, 40px); right: 0;
+  width: min(52vw, 780px); aspect-ratio: 1078 / 1460; pointer-events: none;
+  background: url("../media/brand/bgph.webp") right top / contain no-repeat; mix-blend-mode: multiply;
+  /* fade the art's own left and bottom edges out, so its grid never ends in a hard line */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 34%), linear-gradient(to bottom, #000 72%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 34%), linear-gradient(to bottom, #000 72%, transparent);
+  mask-composite: intersect;
+}
+.mf-move > .wrap { position: relative; z-index: 1; }
+@media (max-width: 720px) { .mf-move::before { width: 78vw; top: 0; opacity: .7; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-move::before { display: none; } }
+.mf-h { color: #4B814F; font-size: clamp(36px, 5vw, 80px); font-weight: 800; line-height: 1.12; letter-spacing: -.03em; max-width: none; }
+.mf-h .ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.mf-h .ln > span { display: inline-block; }
+.mf-wait .mf-h .ln > span { transform: translateY(105%); }
+.mf-go .mf-h .ln > span { animation: heroRise .9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * .14s); }
+.mf-body { --mf-dim: #D3D7CF; margin-top: clamp(64px, 9vw, 136px); display: grid; gap: clamp(36px, 5vw, 72px); }
+.mf-body p { max-width: 24em; font-size: clamp(24px, 3.1vw, 48px); font-weight: 700; line-height: 1.4; letter-spacing: -.02em; color: var(--ink); text-wrap: pretty; }
+.mf-body .w { color: color-mix(in srgb, var(--ink) calc(var(--w, 0) * 100%), var(--mf-dim)); transition: --w .6s ease; }
+.mf-body .w.hl { color: color-mix(in srgb, #4B814F calc(var(--w, 0) * 100%), var(--mf-dim)); }
+.mf-body em { font-style: normal; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-body { --mf-dim: #3A3E39; } }
+@media (prefers-reduced-motion: reduce) { .mf-body .w { --w: 1 !important; transition: none; } .mf-h .ln > span { transform: none !important; animation: none !important; } }
 .takeover { position: relative; }
 .takeover-run { height: 900vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
 .takeover-stage {
@@ -512,6 +560,11 @@ td.us { color: var(--ink); font-weight: 600; }
 /* stacked cards (section 03) — each card pins a little lower than the one before, so the
    earlier cards stay visible as tabs; the script shrinks a card slightly as the next one covers it */
 .stack { display: grid; gap: 14vh; padding-bottom: 6vh; }
+/* sticky cards only stay pinned inside the stack's content box (padding doesn't count), so this
+   spacer lets the last card land and hold with all three edges showing before the stack moves on */
+#parents .stack::after { content: ""; height: 50vh; }
+/* earlier cards release a little sooner, so the three keep their stepped edges as the stack leaves */
+#parents .scard { margin-bottom: calc((2 - var(--i)) * 24px); }
 .scard {
   position: sticky; top: calc(var(--nav-h) + 20px + var(--i) * 24px);
   min-height: min(620px, calc(100vh - var(--nav-h) - 110px));
@@ -618,13 +671,16 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
    ones first, the middle last), fill the screen, then wash out to a pale ground where the copy
    and the egg come up. --p (0 → 1) is set by the script from scroll progress. */
 .rise { position: relative; }
-.rise-run { height: 310vh; }
-.rise-stage { --p: 0; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #17211A; display: grid; place-items: center; }
+.rise-run { height: 600vh; }
+.rise-stage { --p: 0; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--paper); display: grid; place-items: center; transition: background-color .5s ease; }
+/* it arrives white, carrying on from the section above; once pinned it flips to the night green (.is-dark) */
+.rise-stage.is-dark { background: #17211A; }
+.rise-stage.is-dark .rise-tease { color: #fff; }
 .rise-tease {
   position: absolute; left: 20px; right: 20px; top: 50%; margin: 0 auto; max-width: 17em; text-align: center;
   translate: 0 -50%;
   /* a full-screen statement, so the h1 step — same as the takeover line and the Get JoanX headline */
-  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; color: #fff;
+  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; color: #4B814F; transition: color .5s ease;
   opacity: clamp(0, calc(1 - var(--p) * 3.2), 1);
 }
 .rise-bars { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1.2fr 1.2fr 2.3fr 1.2fr 1.2fr 1fr; }
@@ -649,12 +705,15 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 .rise-copy h2 { margin: 0; max-width: 22em; font-size: var(--fs-h2); line-height: 1.3; color: #1A201C; text-wrap: balance; }
 /* three steps, read left to right: a number, a short title, one plain sentence */
 .rise-steps { list-style: none; margin: clamp(20px, 3vw, 40px) 0 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); text-align: left; }
-.rise-steps li { display: grid; gap: 6px; align-content: start; padding-top: 18px; border-top: 2px solid rgba(26,32,28,.14); }
+.rise-steps li { position: relative; display: grid; gap: 6px; align-content: start; padding-top: 18px;
+  /* all three are on screen from the start, faint; each turns fully clear on its own stretch of
+     scroll (--e 0 → 1, set by the script), one after another */
+  border-top: 2px solid rgba(26,32,28,.14); opacity: calc(.22 + var(--e, 1) * .78); }
 .rise-steps .rs-n { font-size: 14px; font-weight: 700; color: #4B814F; font-variant-numeric: tabular-nums; }
 .rise-steps b { font-size: clamp(19px, 1.7vw, 23px); font-weight: 700; color: #1A201C; letter-spacing: -.01em; }
 .rise-steps li > span:last-child { font-size: clamp(15px, 1.2vw, 17px); line-height: 1.6; color: #52594F; }
 @media (max-width: 720px) { .rise-steps { grid-template-columns: 1fr; gap: 14px; } .rise-steps li { padding-top: 12px; } }
-.rise-big { margin: 0; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
+.rise-big { margin: 0 0 .14em; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .rise-wash { background: var(--paper-2); }
   :root:not([data-theme="light"]) .rise-copy h2, :root:not([data-theme="light"]) .rise-big, :root:not([data-theme="light"]) .rise-steps b { color: var(--ink); }
@@ -778,7 +837,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
   <div class="wrap menu-body">
     <ul class="menu-links">
       <li style="--k:0"><a href="#safety" data-i18n="n.safety">Safety moment</a></li>
-      <li style="--k:1"><a href="#hatch" data-i18n="n.game">The game</a></li>
+      <li style="--k:1"><a href="#hatch" data-i18n="n.game">Why it works</a></li>
       <li style="--k:2"><a href="#privacy" data-i18n="n.privacy">Privacy</a></li>
       <li style="--k:3"><a href="#parents" data-i18n="n.parents">For parents</a></li>
       <li style="--k:4"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
@@ -804,19 +863,18 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 <div class="hero-edge" aria-hidden="true"><div class="hero-curve"></div></div>
 
 <!-- ═══ 01 · WHAT HAPPENS — THE SAFETY MOMENT ═════════════════════════════ -->
-<section class="section" id="safety">
+<section class="section mf" id="safety">
+  <div class="mf-stage"><div class="mf-move">
   <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">01</span><span data-i18n="q.safety">What happens when they look down while walking?</span></p>
-        <h2 data-i18n="v.sh">A buzz first. A message only if they keep going.</h2>
-        <p class="lede" data-i18n="v.sl">JoanX never blocks the screen. Each step only happens if the one before didn’t work.</p>
-      </header>
-    <ul class="points cols">
-          <li><h4 data-i18n="v.s1h">Stopping early pays the most</h4><p data-i18n="v.s1p">Look up within two seconds of the buzz and no warning appears — and that pays the most points.</p></li>
-          <li><h4 data-i18n="v.s2h">Calls and texts always work</h4><p data-i18n="v.s2p">The phone is never taken away, so your child can always reach you.</p></li>
-          <li><h4 data-i18n="v.s3h">Ignoring it is noted</h4><p data-i18n="v.s3p">If they keep walking head-down, the message comes back firmer and shows up in your report.</p></li>
-    </ul>
+    <h2 class="mf-h" data-i18n="mf.h">A buzz first.<br>A message only<br>if they keep going.</h2>
+    <div class="mf-body">
+      <p data-i18n="mf.p1">When your child walks while looking at their phone, JoanX notices.</p>
+      <p data-i18n="mf.p2">First, just one buzz. Look up within two seconds and nothing else happens — and that earns the most points.</p>
+      <p data-i18n="mf.p3">Keep looking down, and a message appears. Keep walking, and it comes back firmer and <em>shows up in your report.</em></p>
+      <p data-i18n="mf.p4">It never locks the phone. Calls and texts always work.</p>
+    </div>
   </div>
+  </div></div>
 </section>
 
 <!-- ═══ HATCH — the rising columns ══════════════════════════════════════════ -->
@@ -828,13 +886,13 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
     </div>
     <div class="rise-wash" aria-hidden="true"></div>
     <div class="rise-copy">
-      <p class="rise-label" data-i18n="rs.l">Hatch day</p>
-      <p class="rise-big" data-i18n="rs.big">Hatch!</p>
-      <h2 data-i18n="rs.h">Safe walks earn points. Points hatch a new buddy.</h2>
+      <p class="rise-label" data-i18n="rs.l">Why it works</p>
+      <p class="rise-big" data-i18n="rs.big">No nagging.</p>
+      <h2 data-i18n="rs.h">Safe walks earn points in a game your child cares about — so looking up becomes their own idea.</h2>
       <ol class="rise-steps">
-        <li><span class="rs-n">01</span><b data-i18n="rs.s1h">Walk safely</b><span data-i18n="rs.s1p">10 points for every safe minute, 50 for stopping at the buzz.</span></li>
-        <li><span class="rs-n">02</span><b data-i18n="rs.s2h">Save up</b><span data-i18n="rs.s2p">A Common egg costs 500 points, a Rare egg 1,500.</span></li>
-        <li><span class="rs-n">03</span><b data-i18n="rs.s3h">Hatch</b><span data-i18n="rs.s3p">A new buddy joins the collection. The rarest ones can only be earned.</span></li>
+        <li><span class="rs-n">01</span><b data-i18n="rs.s1h">They look up on their own</b><span data-i18n="rs.s1p">Stopping at the buzz earns more than anything else in the game.</span></li>
+        <li><span class="rs-n">02</span><b data-i18n="rs.s2h">No money, ever</b><span data-i18n="rs.s2p">Points only come from walking safely. Nothing in the app can be bought.</span></li>
+        <li><span class="rs-n">03</span><b data-i18n="rs.s3h">You see it working</b><span data-i18n="rs.s3p">Your weekly report shows how often they stopped, and how that changes week to week.</span></li>
       </ol>
     </div>
   </div>
@@ -854,27 +912,27 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       </header>
       </div>
       <figure class="pv-card pv-sq" style="--k:0">
-        <div class="pv-vis"><img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The guardian's weekly report: safe-walking minutes, warnings stopped, and the streak." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:1">
-        <div class="pv-vis"><img src="../media/shots/parent-children.png" width="535" height="1200" alt="Each child on one screen: whether protection is on, battery, and permissions." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:2">
-        <div class="pv-vis"><img src="../media/shots/parent-rules.png" width="535" height="1200" alt="The setup agreement: every permission the child accepted, listed one by one." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:3">
-        <div class="pv-vis"><img src="../media/shots/parent-groups.png" width="535" height="1200" alt="The groups screen: every guardian who shares a child's reports, listed by group." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:4">
-        <div class="pv-vis"><img src="../media/shots/parent-group-detail.png" width="535" height="1200" alt="A group's page with a join request waiting for the admin to accept or reject it." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:5">
-        <div class="pv-vis"><img src="../media/shots/parent-pairing.png" width="535" height="1200" alt="Connecting a child's phone with a six-digit code that is valid for five minutes." loading="lazy"></div>
+        <div class="pv-vis" aria-hidden="true"></div>
         <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
       </figure>
       </div>
@@ -952,11 +1010,14 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 
 <!-- ═══ 05 · FAQ (shown as 04 while promises is hidden) ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
-  <div class="wrap">
+  <div class="wrap faq-layout">
+    <div class="faq-side">
       <header class="sec-head">
         <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.faq">Anything else?</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
+      <img class="faq-cubix" src="../media/brand/maf.webp" width="700" height="828" alt="" loading="lazy">
+    </div>
     <div class="faq">
       <details open>
         <summary><span class="q" data-i18n="f.q3">How does it know they are walking and using the phone?</span><span class="pm" aria-hidden="true"></span></summary>
@@ -1062,7 +1123,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
         <h5 data-i18n="ft.h1">Product</h5>
         <ul>
           <li><a href="#safety" data-i18n="n.safety">Safety moment</a></li>
-          <li><a href="#hatch" data-i18n="n.game">The game</a></li>
+          <li><a href="#hatch" data-i18n="n.game">Why it works</a></li>
           <li><a href="#parents" data-i18n="n.parents">For parents</a></li>
         </ul>
       </div>
@@ -1094,6 +1155,11 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 /* ── Korean copy — same keys as the AI-generated page, so both stay in step ── */
 var KO = {
   'q.safety': '걸으면서 폰을 보면 어떻게 되나요?',
+  'mf.h': '먼저 진동 한 번.<br>계속 볼 때만<br>메시지가 떠요.',
+  'mf.p1': '아이가 걸으면서 폰을 보면, 조안X가 알아채요.',
+  'mf.p2': '먼저 진동 한 번. 2초 안에 고개를 들면 더는 아무 일도 없고, 포인트도 가장 많이 받아요.',
+  'mf.p3': '계속 화면을 보면 메시지가 떠요. 그래도 걸으면 더 단호하게 다시 뜨고, <em>보호자 리포트에 남아요.</em>',
+  'mf.p4': '폰을 잠그지 않아요. 전화와 문자는 언제나 돼요.',
   'q.child': '아이에게는 무엇이 좋은가요?',
   'q.you': '보호자는 무엇을 받나요?',
   'q.privacy': '보호자는 무엇을 볼 수 있나요?',
@@ -1153,15 +1219,15 @@ var KO = {
   'sec.why': '왜 조안X인가요', 'sec.how': '작동 방식', 'sec.safety': '안전 순간', 'sec.game': '게임',
   'sec.parents': '보호자용', 'sec.diff': '무엇이 다른가요', 'sec.privacy': '개인정보', 'sec.faq': '자주 묻는 질문',
 
-  'n.how': '작동 방식', 'n.safety': '안전 순간', 'n.game': '게임', 'n.parents': '보호자용',
+  'n.how': '작동 방식', 'n.safety': '안전 순간', 'n.game': '효과', 'n.parents': '보호자용',
   'n.privacy': '개인정보', 'n.faq': '자주 묻는 질문', 'n.cta': '다운로드',
 
   'h.badge': '보호자 그룹 — QR이나 코드로 초대하기', 'h.dl': '조안X 다운로드',
-  'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '부화하는 날',
-  'rs.h': '안전하게 걸으면 포인트, 포인트로 새 친구가 태어나요.', 'rs.big': '부화!',
-  'rs.s1h': '안전하게 걷기', 'rs.s1p': '안전하게 걸은 1분마다 10포인트, 진동에 바로 멈추면 50포인트예요.',
-  'rs.s2h': '포인트 모으기', 'rs.s2p': '일반 알은 500포인트, 레어 알은 1,500포인트예요.',
-  'rs.s3h': '부화', 'rs.s3p': '새 버디가 컬렉션에 들어와요. 가장 희귀한 버디는 모아서만 얻을 수 있어요.',
+  'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '효과가 있는 이유',
+  'rs.h': '안전하게 걸으면 아이가 좋아하는 게임의 포인트가 쌓여요. 그래서 고개를 드는 게 아이 스스로의 선택이 돼요.', 'rs.big': '잔소리 없이.',
+  'rs.s1h': '스스로 고개를 들어요', 'rs.s1p': '진동에 멈추는 게 게임에서 가장 큰 보상이에요.',
+  'rs.s2h': '결제는 없어요', 'rs.s2p': '포인트는 안전하게 걸어야만 쌓여요. 앱 안에서 돈으로 살 수 있는 건 없어요.',
+  'rs.s3h': '효과가 보여요', 'rs.s3p': '주간 리포트에서 얼마나 자주 멈췄는지, 주마다 어떻게 달라지는지 볼 수 있어요.',
   'cast.h': '고개 들고, <em>매일 걷는 길을 안전하게.</em>',
   'pv.c1h': '주간 리포트', 'pv.c1s': '안전하게 걸은 시간, 멈춘 경고, 연속 일수',
   'pv.c2h': '아이별로 한눈에', 'pv.c2s': '보호 켜짐 여부, 배터리, 권한',
@@ -1332,7 +1398,7 @@ var KO = {
 /* ── Mongolian copy — the app itself has no Mongolian yet, so screenshots stay in English ── */
 var MN = {
  "n.safety": "Аюулгүй мөч",
- "n.game": "Тоглоом",
+
  "n.parents": "Эцэг эхэд",
  "n.privacy": "Нууцлал",
  "n.start": "Эхлэх",
@@ -1342,11 +1408,11 @@ var MN = {
  "v.hl": "Толгойгоо өндийлгөн алхвал оноо цугларч, өндөг дэгдээхэйтэй болно. Доош харвал ганц удаа чичирнэ.",
  "h.badge": "Асран хамгаалагчийн бүлэг — QR эсвэл кодоор урих",
  "h.dl": "JoanX татах",
- "rs.tease": "Аюулгүй алхам бүр нэмэгдсээр.", "rs.l": "Өндөг хагарах өдөр",
- "rs.h": "Аюулгүй алхвал оноо, оноогоор шинэ найз гарна.", "rs.big": "Хагарлаа!",
- "rs.s1h": "Аюулгүй алх", "rs.s1p": "Аюулгүй алхсан минут бүрт 10 оноо, чичиргээнд зогсвол 50 оноо.",
- "rs.s2h": "Оноо цуглуул", "rs.s2p": "Энгийн өндөг 500 оноо, ховор өндөг 1,500 оноо.",
- "rs.s3h": "Хагалах", "rs.s3p": "Шинэ найз цуглуулгад нэмэгдэнэ. Хамгийн ховорыг нь зөвхөн хичээж олно.",
+ "rs.tease": "Аюулгүй алхам бүр нэмэгдсээр.",
+
+
+
+
  "cast.h": "Толгойгоо өргө, <em>гэр хүртэлх зам бүрт.</em>",
  "pv.c1h": "Долоо хоногийн тайлан", "pv.c1s": "Аюулгүй алхсан минут, зогссон сануулга, цуврал",
  "pv.c2h": "Хүүхэд бүрийг нэг дороос", "pv.c2s": "Хамгаалалт асаалттай эсэх, батерей, зөвшөөрөл",
@@ -1534,6 +1600,30 @@ var MN = {
     }).join('');
   }
 
+  /* 01 manifesto: headline split into masked lines; statements split into words (an <em> keeps its highlight) */
+  var mfSec = document.querySelector('.mf');
+  function splitMf() {
+    if (!mfSec) return;
+    var h = mfSec.querySelector('.mf-h');
+    h.innerHTML = h.innerHTML.split(/<br\s*\/?>/i).map(function (part, i) {
+      return '<span class="ln" style="--i:' + i + '"><span>' + part.trim() + '</span></span>';
+    }).join('');
+    [].forEach.call(mfSec.querySelectorAll('.mf-body p'), function (p) {
+      var out = [];
+      [].forEach.call(p.childNodes, function (n) {
+        var hl = n.nodeType === 1, txt = n.textContent;
+        txt.split(/(\s+)/).forEach(function (w) {
+          if (!w) return;
+          if (/^\s+$/.test(w)) { out.push(' '); return; }
+          out.push('<span class="w' + (hl ? ' hl' : '') + '">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>');
+        });
+      });
+      p.innerHTML = out.join('');
+    });
+    if (window.__mfSize) window.__mfSize();
+    if (window.__mf) window.__mf();
+  }
+
   function setLang(lang) {
     var dict = DICT[lang] || null;
     document.documentElement.lang = dict ? lang : 'en';
@@ -1545,7 +1635,7 @@ var MN = {
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
     document.querySelector('.lang-cur').textContent = NAMES[lang][0];
     document.querySelector('.lang-cur-abbr').textContent = NAMES[lang][1];
-    splitHero(); splitWords(); if (window.__tk) window.__tk();
+    splitHero(); splitMf(); splitWords(); if (window.__tk) window.__tk();
     try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window */ }
   }
   buttons.forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); openMenu(false); }); });
@@ -1554,6 +1644,7 @@ var MN = {
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
   else splitHero();
+  if (!(saved === 'ko' || saved === 'mn')) splitMf();
   (function () {
     var hero = document.querySelector('.hero');
     if (!hero) return;
@@ -1641,6 +1732,44 @@ var MN = {
   }
   window.__tk = takeover;
 
+  /* 01 manifesto: each word lights up slowly as its line rises from ~86% to ~46% of the screen, so
+     whole lines turn from pale to ink together; the headline rises in once, when it first shows */
+  var mfStill = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var mfMove = mfSec && mfSec.querySelector('.mf-move'), MF_SLOW = 2;
+  function mfSize() {
+    if (!mfSec || mfStill.matches) return;
+    mfSec.classList.add('mf-slow');
+    var travel = Math.max(0, mfMove.offsetHeight - window.innerHeight);
+    mfSec.style.height = (window.innerHeight + travel * MF_SLOW) + 'px';
+    mfSec.dataset.travel = travel;
+  }
+  function mf() {
+    if (!mfSec) return;
+    var vh = window.innerHeight;
+    if (mfSec.classList.contains('mf-slow')) {
+      var travel = +mfSec.dataset.travel || 0;
+      var q = travel ? clamp01(-mfSec.getBoundingClientRect().top / (travel * MF_SLOW)) : 0;
+      mfMove.style.transform = 'translateY(' + (-q * travel).toFixed(1) + 'px)';
+    }
+    [].forEach.call(mfSec.querySelectorAll('.mf-body .w'), function (w) {
+      var t = mfStill.matches ? 1 : clamp01((vh * 0.86 - w.getBoundingClientRect().top) / (vh * 0.4));
+      w.style.setProperty('--w', t.toFixed(3));
+    });
+  }
+  window.__mf = mf; window.__mfSize = mfSize;
+  if (mfSec && !mfStill.matches && 'IntersectionObserver' in window) {
+    mfSec.classList.add('mf-wait');
+    var mfIo = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      mfSec.classList.remove('mf-wait'); mfSec.classList.add('mf-go'); mfIo.disconnect();
+    }, { rootMargin: '0px 0px -20% 0px' });
+    mfIo.observe(mfSec.querySelector('.mf-h'));
+  }
+  window.addEventListener('scroll', mf, { passive: true });
+  window.addEventListener('resize', function () { mfSize(); mf(); });
+  mfSize(); mf();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { mfSize(); mf(); });
+
   /* stacked cards: a card shrinks a little as each later card slides over it */
   var scards = [].slice.call(document.querySelectorAll('.scard'));
   function stack() {
@@ -1682,13 +1811,20 @@ var MN = {
 
   /* hatch: the columns rise as the pinned stage is scrolled through */
   var riseEl = document.querySelector('.rise'), riseStage = riseEl && riseEl.querySelector('.rise-stage');
+  var riseSteps = riseEl ? [].slice.call(riseEl.querySelectorAll('.rise-steps li')) : [];
   function rise() {
     if (!riseEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var run = riseEl.offsetHeight - riseStage.offsetHeight;
     var raw = Math.min(1, Math.max(0, -riseEl.getBoundingClientRect().top / run));
-    // hold the opening line on its own for the first 16% of the pin, then run the columns
-    var p = Math.min(1, Math.max(0, (raw - 0.16) / 0.84));
+    // pinned: it flips from white to the night green at 5%, holds the opening line to 30%, runs the
+    // columns and settles the copy by 72%, then brings the three points in one by one (74% → 98%)
+    riseStage.classList.toggle('is-dark', raw > 0.05);
+    var p = Math.min(1, Math.max(0, (raw - 0.30) / 0.42));
     riseStage.style.setProperty('--p', p.toFixed(3));
+    riseSteps.forEach(function (li, k) {
+      var e = Math.min(1, Math.max(0, (raw - (0.74 + k * 0.08)) / 0.07));
+      li.style.setProperty('--e', (1 - Math.pow(1 - e, 3)).toFixed(3));
+    });
   }
 
   /* the cast steps aside as you scroll into Get JoanX */
@@ -1795,7 +1931,18 @@ var MN = {
   /* the nav takes a surface only once the page has moved under it */
   var nav = document.querySelector('.nav');
   var ticking = false;
-  function chrome() { nav.classList.toggle('is-stuck', window.scrollY > 24); }
+  var lastY = window.scrollY;
+  function chrome() {
+    var y = window.scrollY, d = y - lastY;
+    nav.classList.toggle('is-stuck', y > 24);
+    // hide going down (past the first screen's top), show going up; ignore tiny jitters, and
+    // never hide while the language menu or the download QR card is open
+    var busy = !document.querySelector('.lang-menu').hidden || document.querySelector('.hero-get.is-open');
+    if (y < 120 || busy) nav.classList.remove('is-hidden');
+    else if (d > 6) nav.classList.add('is-hidden');
+    else if (d < -6) nav.classList.remove('is-hidden');
+    if (Math.abs(d) > 6 || y < 120) lastY = y;
+  }
   window.addEventListener('scroll', function () {
     if (ticking) return;
     ticking = true;
