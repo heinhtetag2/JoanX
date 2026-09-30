@@ -285,6 +285,22 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .hero h1 { font-size: clamp(34px, 4.8vw, 72px); font-weight: 800; line-height: 1.14; letter-spacing: -.02em; text-wrap: balance; }
 .hero .hero-text .lede { font-size: clamp(14.5px, 1.25vw, 16.5px); max-width: 34ch; font-weight: 500; text-wrap: balance; color: #fff; }
 .hero .checks { justify-content: center; }
+/* page-open intro, once: the banner settles from a slight zoom, the headline lines rise
+   out from under their own edge one after the other, then the line below arrives.
+   It waits (.hero-wait) for the web font so lines don't jump when it swaps in; .hero-go runs it. */
+.hero::before { transform-origin: 50% 60%; }
+.hero h1 .ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.hero h1 .ln > span { display: inline-block; }
+.hero-wait::before { transform: scale(1.07); }
+.hero-wait h1 .ln > span { transform: translateY(105%); }
+.hero-wait .hero-text .lede { opacity: 0; }
+.hero-go::before { animation: heroSettle 1.8s cubic-bezier(.2, .7, .2, 1) both; }
+.hero-go h1 .ln > span { animation: heroRise .9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(.15s + var(--i) * .16s); }
+.hero-go .hero-text .lede { animation: heroLede .8s cubic-bezier(.2, .8, .2, 1) .65s both; }
+@keyframes heroSettle { from { transform: scale(1.07); } to { transform: none; } }
+@keyframes heroRise { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes heroLede { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hero::before, .hero h1 .ln > span, .hero .hero-text .lede { animation: none !important; transform: none !important; opacity: 1 !important; } }
 @media (max-width: 820px) {
   .hero::before { background:
     linear-gradient(180deg, rgba(38,20,88,.7) 0%, rgba(38,20,88,.55) 60%, rgba(38,20,88,.25) 100%),
@@ -453,22 +469,29 @@ td.us { color: var(--ink); font-weight: 600; }
 .takeover + .section { border-top: 0; }
 /* while the privacy stage is pinned, the row slides left and three cards come in from the right
    (--x set by the script); each card grows in as it enters (--e). Then the green circle sweeps. */
-.pv-track { display: flex; align-items: center; gap: clamp(28px, 5vw, 72px); width: max-content; transform: translateX(var(--x, 0px)); will-change: transform; }
-.pv-panel { flex: 0 0 auto; width: calc(min(var(--max), 100vw) - 2 * var(--gutter)); }
-.pv-card { --s: clamp(220px, min(44vh, 30vw), 400px); position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
+.pv-track { --s: clamp(240px, min(56vh, 34vw), 540px); --gap: clamp(28px, 5vw, 72px); display: flex; align-items: center; gap: var(--gap); width: max-content; transform: translateX(var(--x, 0px)); will-change: transform; }
+.pv-panel { flex: 0 0 auto; width: calc(min(var(--max), 100vw) - 2 * var(--gutter) - var(--s) - var(--gap)); }
+.pv-panel .sec-label { display: none; }
+.pv-panel h2 { font-size: clamp(34px, 4.2vw, 64px); line-height: 1.22; letter-spacing: -.02em; max-width: 12em; }
+.pv-panel h2 em { display: block; }
+.pv-panel .lede { margin-top: clamp(20px, 2.4vw, 36px); max-width: 40ch; }
+/* the row opens like a split screen: the heading on the left, the first card waiting on the right */
+.pv-panel .sec-head { margin-bottom: 0; }
+@media (max-width: 720px) { .pv-panel { width: calc(100vw - 2 * var(--gutter)); } }
+.pv-card { position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
   opacity: calc(.2 + var(--e, 1) * .8); transform: translateY(calc((1 - var(--e, 1)) * 60px)) scale(calc(.88 + var(--e, 1) * .12)); }
 /* a zigzag: squares ride low, circles ride high */
 .pv-sq { top: calc(var(--s) * .2); }
 .pv-round { top: calc(var(--s) * -.2); }
 .pv-vis { position: relative; width: var(--s); height: var(--s); display: grid; place-items: center; overflow: hidden; background: #E4EEE1; border-radius: clamp(18px, 2vw, 28px); }
 .pv-round .pv-vis { border-radius: 50%; background: #4B814F; }
-.pv-vis img { width: 46%; height: 78%; object-fit: cover; object-position: top; border-radius: clamp(12px, 1.4vw, 20px); border: 1px solid rgba(26,32,28,.1); background: #fff; }
+.pv-vis img { width: 40%; height: 70%; object-fit: cover; object-position: top; border-radius: clamp(12px, 1.4vw, 20px); border: 1px solid rgba(26,32,28,.1); background: #fff; }
 .pv-round .pv-vis img { border-color: rgba(255,255,255,.3); }
 .pv-card figcaption { display: grid; gap: 4px; margin-top: clamp(14px, 1.8vw, 22px); }
 .pv-card figcaption span { font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
 .pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pv-sq .pv-vis { background: #22301F; } :root:not([data-theme="light"]) .pv-round .pv-vis { background: #2B4F30; } }
-@media (max-width: 720px) { .pv-card { --s: min(66vw, 38vh); } }
+@media (max-width: 720px) { .pv-track { --s: min(66vw, 38vh); } }
 @media (prefers-reduced-motion: reduce) {
   .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
   .pv-card { opacity: 1; transform: none; }
@@ -820,28 +843,8 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <header class="sec-head">
         <p class="sec-label"><span class="sec-num">02</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
         <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
-        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on this list. Everything else stays with your child.</p>
+        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on the screens here. Everything else stays with your child.</p>
       </header>
-    <div class="privacy">
-      <div>
-        <h3 data-i18n="pv.y">What you can see</h3>
-        <ul>
-          <li><span data-i18n="pv.y1">How long they walked safely</span><span data-i18n="pv.y1n">minutes</span></li>
-          <li><span data-i18n="pv.y2">Warnings, and how each one ended</span><span data-i18n="pv.y2n">stopped or not</span></li>
-          <li><span data-i18n="pv.y3">Their points and streak</span><span data-i18n="pv.y3n">the game layer</span></li>
-          <li><span data-i18n="pv.y4">Whether protection is on</span><span data-i18n="pv.y4n">device &amp; permissions</span></li>
-        </ul>
-      </div>
-      <div>
-        <h3 data-i18n="pv.n">What nobody sees</h3>
-        <ul>
-          <li><span data-i18n="pv.n1">Where they are</span><span data-i18n="pv.n1n">no map</span></li>
-          <li><span data-i18n="pv.n2">Their messages and guestbook</span><span data-i18n="pv.n2n">never read</span></li>
-          <li><span data-i18n="pv.n3">Their photos</span><span data-i18n="pv.n3n">never read</span></li>
-          <li><span data-i18n="pv.n4">Which apps they use</span><span data-i18n="pv.n4n">never shown</span></li>
-        </ul>
-      </div>
-    </div>
       </div>
       <figure class="pv-card pv-sq" style="--k:0">
         <div class="pv-vis"><img src="../media/shots/parent-reports.png" width="535" height="1200" alt="The guardian's weekly report: safe-walking minutes, warnings stopped, and the streak." loading="lazy"></div>
@@ -1282,7 +1285,7 @@ var KO = {
   'c.r6': '추가 기기', 'c.r6a': '워치나 태그가 필요할 때가 많아요', 'c.r6b': '쓰던 휴대폰 하나면 돼요',
 
   'pv.k': '개인정보', 'pv.h': '보호자가 보는 것, <em class="hl">그리고 절대 보지 않는 것</em>',
-  'pv.l': '보호자가 볼 수 있는 것은 이 목록이 전부예요. 나머지는 모두 아이의 것으로 남아요.',
+  'pv.l': '보호자가 볼 수 있는 건 여기 있는 화면이 전부예요. 나머지는 모두 아이의 것으로 남아요.',
   'pv.y': '보호자가 볼 수 있는 것',
   'pv.y1': '안전하게 걸은 시간', 'pv.y1n': '분 단위',
   'pv.y2': '경고와 그 결과', 'pv.y2n': '멈췄는지 여부',
@@ -1520,6 +1523,15 @@ var MN = {
     });
   }
 
+  /* hero headline: one masked span per line (split on <br>) so each line can rise in on its own */
+  function splitHero() {
+    var h = document.querySelector('.hero h1');
+    if (!h) return;
+    h.innerHTML = h.innerHTML.split(/<br\s*\/?>/i).map(function (part, i) {
+      return '<span class="ln" style="--i:' + i + '"><span>' + part.trim() + '</span></span>';
+    }).join('');
+  }
+
   function setLang(lang) {
     var dict = DICT[lang] || null;
     document.documentElement.lang = dict ? lang : 'en';
@@ -1531,7 +1543,7 @@ var MN = {
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
     document.querySelector('.lang-cur').textContent = NAMES[lang][0];
     document.querySelector('.lang-cur-abbr').textContent = NAMES[lang][1];
-    splitWords(); if (window.__tk) window.__tk();
+    splitHero(); splitWords(); if (window.__tk) window.__tk();
     try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window */ }
   }
   buttons.forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); openMenu(false); }); });
@@ -1539,6 +1551,26 @@ var MN = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
+  else splitHero();
+  (function () {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    hero.classList.add('hero-wait');
+    var started = false;
+    function go() {
+      if (started) return; started = true;
+      hero.classList.remove('hero-wait'); hero.classList.add('hero-go');
+      setTimeout(function () { hero.classList.remove('hero-go'); }, 2000);   // done: a language switch won't replay it
+    }
+    var h1 = hero.querySelector('h1'), lede = hero.querySelector('.lede');
+    if (document.fonts && document.fonts.load && h1) {
+      Promise.all([
+        document.fonts.load(getComputedStyle(h1).font, h1.textContent),
+        lede ? document.fonts.load(getComputedStyle(lede).font, lede.textContent) : null
+      ]).then(go, go);
+    }
+    setTimeout(go, 800);
+  })();
 
   /* takeover: pin the privacy stage, sweep the circle in over it, then reveal the words */
   splitWords();
