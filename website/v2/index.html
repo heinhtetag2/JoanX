@@ -576,9 +576,6 @@ td.us { color: var(--ink); font-weight: 600; }
 @media (max-width: 720px) { .pv-panel { width: calc(100vw - 2 * var(--gutter)); } }
 .pv-card { position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
   opacity: calc(.2 + var(--e, 1) * .8); transform: translateY(calc((1 - var(--e, 1)) * 60px)) scale(calc(.88 + var(--e, 1) * .12)); }
-/* a zigzag: squares ride low, circles ride high */
-.pv-sq { top: calc(var(--s) * .2); }
-.pv-round { top: calc(var(--s) * -.2); }
 /* each card is a square illustration: a cropped piece of the real parent app on a green ground */
 .pv-vis { position: relative; width: var(--s); height: var(--s); overflow: hidden; border-radius: clamp(18px, 2vw, 28px); }
 .pv-vis img { display: block; width: 100%; height: 100%; object-fit: cover; }
