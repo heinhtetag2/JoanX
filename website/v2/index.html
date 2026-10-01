@@ -310,24 +310,32 @@ section[id], header[id] { scroll-margin-top: 72px; }
     linear-gradient(180deg, rgba(38,20,88,.7) 0%, rgba(38,20,88,.55) 60%, rgba(38,20,88,.25) 100%),
     url("../media/brand/banner.webp") 50% bottom / cover no-repeat; }
 }
-/* tall phones: cover would crop the wide banner down to its empty middle and lose both kids.
-   Instead the art sits at the bottom at twice the screen width (kids at the edges, the magic
-   circle centred), and its own night sky carries on above it, where the copy sits. */
 @media (max-aspect-ratio: 4/5) {
-  /* --hw: the art's width — twice the screen, but no wider than the screen is tall, so on
-     tablets it stays below the copy; --hh is its height (the banner is 2200 × 1279) */
-  /* the hero is as tall as the copy plus the art below it, not the whole screen: on tall phones
-     a full-height hero left a band of flat sky between the button and the art */
+  /* tall phones: the whole scene stays sharp along the bottom, with its own sky continued above
+     it for the copy. banner-phone is the high-res master (4336 × 2520, more open sky above the cast).
+     The scene (--sh tall) grows into the room under the copy (--copy-h is measured by the script
+     below) from 1.65× to 2.3× the screen wide — any wider and the kids leave the frame. Whatever
+     room is still left is split above the headline and below the button, never one big gap. */
   .hero {
-    --hw: min(200vw, 100svh); --hh: calc(var(--hw) * .5814);
-    min-height: 0; align-items: flex-start;
-    padding-top: calc(var(--nav-h) + clamp(28px, 5svh, 56px)); padding-bottom: calc(var(--hh) * .8);
+    --free: calc(100svh - var(--nav-h) - var(--copy-h, 300px) - 40px);
+    --sh: min(max(calc(165vw * .5812), calc(var(--free) - 12svh)), calc(230vw * .5812));
+    /* + a little extra, so the copy sits lower under the nav, closer to the scene */
+    align-items: flex-start; padding-top: calc(var(--nav-h) + max(20px, (var(--free) - var(--sh)) / 2) + clamp(16px, 5svh, 48px));
   }
-  .hero::before { background:
-    linear-gradient(180deg, rgba(20,16,70,.45) 0%, rgba(20,16,70,.3) 55%, rgba(20,16,70,0) 80%),
-    linear-gradient(180deg, #022C8F 0, #022C8F calc(100% - var(--hh)), rgba(2,44,143,0) calc(100% - var(--hh) + var(--hh) * .25)),
-    url("../media/brand/banner.webp") 50% 100% / var(--hw) auto no-repeat,
-    #022C8F; }
+  /* above the scene, its own sky carries on: banner-phone-sky is built from the art's top edge,
+     each column starting at the exact colour of the scene below it and deepening into night toward
+     the top. It is drawn at the scene's width and centring, and runs down under the scene's faded
+     top edge, so the two line up column for column. */
+  .hero::before {
+    background: url("../media/brand/banner-phone-sky.webp") 50% 0 / calc(var(--sh) / .5812) calc(100% - var(--sh) * .78) no-repeat, #071A5E;
+  }
+  .hero::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none;
+    height: var(--sh);
+    background: url("../media/brand/banner-phone.webp") 50% 100% / auto 100% no-repeat;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 22%);
+  }
 }
 .hero h1 { color: #fff; }
 .hero h1 em { color: #fff; }
@@ -577,7 +585,17 @@ td.us { color: var(--ink); font-weight: 600; }
 .pv-card figcaption { display: grid; gap: 4px; margin-top: clamp(14px, 1.8vw, 22px); }
 .pv-card figcaption span { font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
 .pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
-@media (max-width: 720px) { .pv-track { --s: min(66vw, 38vh); } }
+/* phones: no sideways row — the heading, then each card full width, one under the other, read
+   by scrolling down like the rest of the page. The stage is then taller than the screen; the script
+   lets it scroll until its end, pins it there and goes straight to the green sweep, so the pin
+   only needs the sweep's share of the run. */
+@media (max-width: 720px) {
+  .pv-track { flex-direction: column; align-items: stretch; width: auto; gap: clamp(48px, 12vw, 72px); transform: none; }
+  .pv-panel { width: auto; }
+  .pv-card { width: auto; top: 0; }
+  .pv-vis { width: 100%; height: auto; aspect-ratio: 1; }
+  .takeover-run { height: 500vh; }
+}
 @media (prefers-reduced-motion: reduce) {
   .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
   .pv-card { opacity: 1; transform: none; }
@@ -1754,11 +1772,16 @@ var MN = {
     // the first 10% of the pin is a hold: heading and first card sit still so they can be read
     // before anything moves; every phase below runs on what is left (p: 0 → 1 after the hold)
     var HOLD = 0.1, p = clamp01((raw - HOLD) / (1 - HOLD));
+    // phones stack the cards in a column (read by scrolling down before the pin), so there is no
+    // hold and no sideways slide: the whole pin is the sweep and the words
+    var vertical = getComputedStyle(pvTrack).flexDirection === 'column';
+    if (vertical) p = 0.44 + 0.56 * raw;
     var sr = tkStage.getBoundingClientRect();
     var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
     // the row slides left for the first 44% of the pin, bringing the cards in from the right
     var vw0 = window.innerWidth, h = clamp01(p / 0.44); h = h * h * (3 - 2 * h);
     var trackEnd = pvTrack.scrollWidth - pvTrack.parentNode.clientWidth + 20;
+    if (vertical) trackEnd = 0;
     pvTrack.style.setProperty('--x', (-Math.max(0, trackEnd) * h).toFixed(1) + 'px');
     pvCards.forEach(function (card) {
       var left = card.offsetLeft - Math.max(0, trackEnd) * h + pvTrack.parentNode.getBoundingClientRect().left;
@@ -1967,6 +1990,12 @@ var MN = {
 
   /* the dome under the hero follows the scroll */
   var edge = document.querySelector('.hero-edge');
+  /* tall phones: tell the hero how tall its copy is, so the scene below can fill the rest */
+  var heroEl = document.querySelector('.hero'), heroIn = heroEl && heroEl.querySelector('.hero-in');
+  function heroFit() { if (heroIn) heroEl.style.setProperty('--copy-h', heroIn.offsetHeight + 'px'); }
+  heroFit();
+  // re-measure when the copy changes height: web font arriving, language switch, resize
+  if (heroIn && window.ResizeObserver) new ResizeObserver(heroFit).observe(heroIn);
   var still = window.matchMedia('(prefers-reduced-motion: reduce)');
   function curve() {
     // 0 at the top of the page so the banner shows in full; the dome rises over its bottom edge as you scroll
