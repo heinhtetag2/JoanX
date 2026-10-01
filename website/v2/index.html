@@ -514,7 +514,10 @@ td.us { color: var(--ink); font-weight: 600; }
 }
 .mf-move > .wrap { position: relative; z-index: 1; }
 @media (max-width: 720px) { .mf-move::before { width: 78vw; top: 0; opacity: .7; } }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-move::before { display: none; } }
+/* dark mode: the art is a white phone on white, made to melt into a light page. Flipped light-for-dark
+   (hue turned back so the buzz stays green) and screened, its white ground drops away and the phone
+   reads as a dark glass shape with green waves */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-move::before { mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg) brightness(1.6) contrast(1.15); } }
 .mf-h { color: #4B814F; font-size: clamp(36px, 5vw, 80px); font-weight: 800; line-height: 1.12; letter-spacing: -.03em; max-width: none; }
 .mf-h .ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
 .mf-h .ln > span { display: inline-block; }
