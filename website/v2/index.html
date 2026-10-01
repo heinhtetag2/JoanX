@@ -296,14 +296,15 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .hero h1 .ln > span { display: inline-block; }
 .hero-wait::before { transform: scale(1.07); }
 .hero-wait h1 .ln > span { transform: translateY(105%); }
-.hero-wait .hero-text .lede { opacity: 0; }
+.hero-wait .hero-text .lede, .hero-wait .hero-text > .hero-get { opacity: 0; }
 .hero-go::before { animation: heroSettle 1.8s cubic-bezier(.2, .7, .2, 1) both; }
 .hero-go h1 .ln > span { animation: heroRise .9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(.15s + var(--i) * .16s); }
 .hero-go .hero-text .lede { animation: heroLede .8s cubic-bezier(.2, .8, .2, 1) .65s both; }
+.hero-go .hero-text > .hero-get { animation: heroLede .8s cubic-bezier(.2, .8, .2, 1) .85s both; }
 @keyframes heroSettle { from { transform: scale(1.07); } to { transform: none; } }
 @keyframes heroRise { from { transform: translateY(105%); } to { transform: none; } }
 @keyframes heroLede { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .hero::before, .hero h1 .ln > span, .hero .hero-text .lede { animation: none !important; transform: none !important; opacity: 1 !important; } }
+@media (prefers-reduced-motion: reduce) { .hero::before, .hero h1 .ln > span, .hero .hero-text .lede, .hero .hero-text > .hero-get { animation: none !important; transform: none !important; opacity: 1 !important; } }
 @media (max-width: 820px) {
   .hero::before { background:
     linear-gradient(180deg, rgba(38,20,88,.7) 0%, rgba(38,20,88,.55) 60%, rgba(38,20,88,.25) 100%),
@@ -340,6 +341,10 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .hero-dl:focus-visible { outline: 3px solid #CFE6CF; outline-offset: 3px; }
 @media (max-width: 520px) { .hero-dl { height: 56px; padding: 0 26px 0 22px; font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { .hero-dl { transition: none; } .hero-dl:hover { transform: none; } }
+/* same green Download pill as the footer's "Get JoanX" section */
+.hero .hero-text > .hero-get .hero-dl { background: #4B814F; color: #fff; }
+.hero .hero-text > .hero-get .hero-dl:hover { background: #3E6E42; }
+.hero .hero-text > .hero-get.is-open .hero-dl { background: #3E6E42; }
 /* click Download on a computer → a QR card drops under the button to scan with your phone.
    On a phone there is nothing to scan with, so the button just goes to #get. */
 .hero-get { position: relative; display: inline-block; }
@@ -538,14 +543,12 @@ td.us { color: var(--ink); font-weight: 600; }
 /* a zigzag: squares ride low, circles ride high */
 .pv-sq { top: calc(var(--s) * .2); }
 .pv-round { top: calc(var(--s) * -.2); }
-.pv-vis { position: relative; width: var(--s); height: var(--s); display: grid; place-items: center; overflow: hidden; background: #E4EEE1; border-radius: clamp(18px, 2vw, 28px); }
-.pv-round .pv-vis { border-radius: 50%; background: #4B814F; }
-.pv-vis img { width: 40%; height: 70%; object-fit: cover; object-position: top; border-radius: clamp(12px, 1.4vw, 20px); border: 1px solid rgba(26,32,28,.1); background: #fff; }
-.pv-round .pv-vis img { border-color: rgba(255,255,255,.3); }
+/* each card is a square illustration: a cropped piece of the real parent app on a green ground */
+.pv-vis { position: relative; width: var(--s); height: var(--s); overflow: hidden; border-radius: clamp(18px, 2vw, 28px); }
+.pv-vis img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .pv-card figcaption { display: grid; gap: 4px; margin-top: clamp(14px, 1.8vw, 22px); }
 .pv-card figcaption span { font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
 .pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pv-sq .pv-vis { background: #22301F; } :root:not([data-theme="light"]) .pv-round .pv-vis { background: #2B4F30; } }
 @media (max-width: 720px) { .pv-track { --s: min(66vw, 38vh); } }
 @media (prefers-reduced-motion: reduce) {
   .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
@@ -857,6 +860,13 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
     <div class="hero-text">
       <h1 data-i18n="h.h1">Look up,<br><em class="hl">and the adventure begins.</em></h1>
       <p class="lede" data-i18n="v.hl">Walk with your head up to earn points and hatch buddies. Look down, and it’s just one gentle buzz.</p>
+      <div class="hero-get">
+        <a class="hero-dl" href="#get" aria-expanded="false" aria-controls="hero-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"></rect><path d="M11 18h2"></path></svg><span data-i18n="h.dl">Download JoanX</span></a>
+        <div class="hero-qr" id="hero-qr" role="dialog" aria-label="Scan to download">
+          <svg class="hero-qr-code" viewBox="0 0 10 10" aria-hidden="true"></svg>
+          <p data-i18n="h.qr">Scan the QR to get the app on your phone</p>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -901,6 +911,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 
 <!-- ═══ 02 · PRIVACY — then the takeover ══════════════════════════════════ -->
 <section class="takeover" id="privacy">
+
   <div class="takeover-stage section alt">
     <div class="wrap">
       <div class="pv-track">
@@ -912,27 +923,27 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       </header>
       </div>
       <figure class="pv-card pv-sq" style="--k:0">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:1">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-1.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:2">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-2.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:3">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-3.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:4">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-4.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:5">
-        <div class="pv-vis" aria-hidden="true"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-5.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
       </figure>
       </div>

@@ -79,7 +79,7 @@ function Portal({ onEnterApp }) {
           title="The website"
           sub="The public landing page: what JoanX is, how the safety moment works, and what it never does."
           meta="Open the site"
-          href="website/index.html"
+          href="website/v2/"
         />
       </div>
 

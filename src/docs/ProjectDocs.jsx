@@ -626,7 +626,7 @@ function ProjectDocs() {
             </a>
             {/* The public landing page — served by this same build from website/, so the link
                 stays inside the project instead of pointing at an external copy. */}
-            <a className="doc-file live" href="/website/">
+            <a className="doc-file live" href="/website/v2/">
               <Icon name="globe" size={13} color="#35603a" stroke={2.2} />
               Landing page — the public marketing site
             </a>
