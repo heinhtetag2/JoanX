@@ -310,6 +310,25 @@ section[id], header[id] { scroll-margin-top: 72px; }
     linear-gradient(180deg, rgba(38,20,88,.7) 0%, rgba(38,20,88,.55) 60%, rgba(38,20,88,.25) 100%),
     url("../media/brand/banner.webp") 50% bottom / cover no-repeat; }
 }
+/* tall phones: cover would crop the wide banner down to its empty middle and lose both kids.
+   Instead the art sits at the bottom at twice the screen width (kids at the edges, the magic
+   circle centred), and its own night sky carries on above it, where the copy sits. */
+@media (max-aspect-ratio: 4/5) {
+  /* --hw: the art's width — twice the screen, but no wider than the screen is tall, so on
+     tablets it stays below the copy; --hh is its height (the banner is 2200 × 1279) */
+  /* the hero is as tall as the copy plus the art below it, not the whole screen: on tall phones
+     a full-height hero left a band of flat sky between the button and the art */
+  .hero {
+    --hw: min(200vw, 100svh); --hh: calc(var(--hw) * .5814);
+    min-height: 0; align-items: flex-start;
+    padding-top: calc(var(--nav-h) + clamp(28px, 5svh, 56px)); padding-bottom: calc(var(--hh) * .8);
+  }
+  .hero::before { background:
+    linear-gradient(180deg, rgba(20,16,70,.45) 0%, rgba(20,16,70,.3) 55%, rgba(20,16,70,0) 80%),
+    linear-gradient(180deg, #022C8F 0, #022C8F calc(100% - var(--hh)), rgba(2,44,143,0) calc(100% - var(--hh) + var(--hh) * .25)),
+    url("../media/brand/banner.webp") 50% 100% / var(--hw) auto no-repeat,
+    #022C8F; }
+}
 .hero h1 { color: #fff; }
 .hero h1 em { color: #fff; }
 .hero .lede { color: rgba(255,255,255,.86); }
@@ -451,7 +470,16 @@ td.us { color: var(--ink); font-weight: 600; }
 .faq p { position: relative; z-index: 1; padding: 0 24px 22px; color: var(--ink-2); font-size: 16px; max-width: 70ch; }
 .faq details[open] p { animation: faq-in .35s cubic-bezier(.2, .7, .2, 1); }
 @keyframes faq-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-@media (max-width: 700px) { .faq details { padding-right: 60px; } .faq details::before, .faq details:hover::before { width: calc(100% - 60px); } .faq .pm { right: -60px; width: 50px; } .faq summary { font-size: 16px; padding: 18px 18px; } .faq p { padding: 0 18px 20px; } }
+/* phones: a separate button column would squeeze the answers, so the card spans the full width
+   and the +/− button tucks inside its top-right corner */
+@media (max-width: 700px) {
+  .faq details { padding-right: 0; }
+  .faq details::before, .faq details:hover::before, .faq details[open]::before { width: 100%; }
+  .faq .pm { right: 10px; top: 10px; width: 40px; height: 40px; min-height: 0; border-radius: 12px; background: var(--paper-2, #EEF3EC); }
+  .faq .pm::before, .faq .pm::after { width: 14px; margin-left: -7px; }
+  .faq summary { font-size: 16px; padding: 18px 62px 18px 18px; min-height: 60px; }
+  .faq p { padding: 0 18px 20px; }
+}
 @media (prefers-reduced-motion: reduce) { .faq details::before, .faq .pm, .faq .pm::before, .faq .pm::after { transition: none; } .faq details[open] p { animation: none; } }
 
 /* takeover — the privacy section pins while you keep scrolling; a green circle sweeps in over
@@ -586,6 +614,15 @@ td.us { color: var(--ink); font-weight: 600; }
 /* the right side of each card: a flat graphic, not a phone screen */
 .scard-vis { --vs: clamp(230px, 27vw, 380px); width: var(--vs); justify-self: center; }
 @media (max-width: 899px) { .scard-vis { --vs: min(76vw, 300px); } }
+/* short screens: a card taller than the screen can't pin without hiding its own bottom, so the
+   cards scroll as a plain list, text and graphic side by side */
+@media (max-height: 640px) and (orientation: landscape) {
+  .scard { position: relative; top: auto; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; padding: 28px 32px; }
+  #parents .scard { margin-bottom: 0; }
+  #parents .stack { gap: 20px; }
+  #parents .stack::after { display: none; }
+  .scard-vis { --vs: min(38vw, 64vh, 300px); }
+}
 /* the week: four white tiles, the report's own icons, each number with its change */
 .vis-week { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .vw { background: #fff; border-radius: 20px; padding: clamp(14px, 1.5vw, 20px); display: grid; gap: 5px; justify-items: start; color: #1A201C; }
@@ -716,6 +753,17 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 .rise-steps b { font-size: clamp(19px, 1.7vw, 23px); font-weight: 700; color: #1A201C; letter-spacing: -.01em; }
 .rise-steps li > span:last-child { font-size: clamp(15px, 1.2vw, 17px); line-height: 1.6; color: #52594F; }
 @media (max-width: 720px) { .rise-steps { grid-template-columns: 1fr; gap: 14px; } .rise-steps li { padding-top: 12px; } }
+/* short screens (phones on their side, small laptop windows): the pinned stage is only as tall
+   as the screen, so the copy shrinks to the height instead of the width and the steps stay in a row */
+@media (max-height: 640px) and (orientation: landscape) {
+  .rise-copy { gap: 6px; padding-top: var(--nav-h); }
+  .rise-big { font-size: clamp(36px, 13vh, 96px); }
+  .rise-copy h2 { font-size: clamp(16px, 4.6vh, 26px); line-height: 1.25; }
+  .rise-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 2vh; }
+  .rise-steps li { padding-top: 8px; gap: 2px; }
+  .rise-steps b { font-size: clamp(14px, 3.6vh, 19px); }
+  .rise-steps li > span:last-child { font-size: clamp(12px, 3vh, 15px); line-height: 1.4; }
+}
 .rise-big { margin: 0 0 .14em; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .rise-wash { background: var(--paper-2); }
@@ -777,11 +825,18 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 /* mid-size screens: a narrower column of copy leaves the groups room */
 @media (min-width: 901px) and (max-width: 1200px) { .cast-stage { --off: 225px; } .cast-copy { max-width: 400px; } }
 /* phones and small tablets: copy on top, the two groups in the bottom corners, rising in */
+/* phones and small tablets: the copy with the two groups standing right under it, as one block
+   centred on the screen (pinned to the bottom corners they drifted far from the copy on tall phones) */
 @media (max-width: 900px) {
-  .cast-stage { --u: min(.95vw, .42vh); --tx: 0px; --ty: 30vh; --cy: 0px; place-items: start center; padding-top: calc(var(--nav-h) + 28px); }
-  .cast-group { top: auto; bottom: 2%; }
-  .cast-l { right: auto; left: 2%; }
-  .cast-r { left: auto; right: 2%; }
+  .cast-stage {
+    --u: min(.95vw, .4svh); --tx: 0px; --ty: 30vh; --cy: 0px;
+    grid-template-columns: 1fr 1fr; align-content: center; place-items: initial; row-gap: clamp(16px, 4svh, 48px);
+    padding: var(--nav-h) 2% 0;
+  }
+  .cast-copy { grid-column: 1 / -1; justify-self: center; }
+  .cast-group { position: relative; top: auto; left: auto; right: auto; }
+  .cast-l { justify-self: start; }
+  .cast-r { justify-self: end; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cast-run { display: none; }
@@ -792,6 +847,9 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 /* footer — near-black, on the same .wrap grid as every section above it */
 footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp(56px, 7vw, 88px) 32px; font-size: var(--fs-small); }
 .foot { display: grid; gap: 36px; }
+/* link groups sit side by side once there is room, under the brand block */
+@media (min-width: 360px) and (max-width: 819px) { .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 24px; } .foot-brand { grid-column: 1 / -1; } }
+@media (min-width: 560px) and (max-width: 819px) { .foot { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 820px) { .foot { grid-template-columns: 1.6fr repeat(3, .8fr); gap: 32px; } }
 .foot-brand { display: grid; gap: 16px; align-content: start; max-width: 34ch; }
 .foot-brand img { width: 128px; height: auto; display: block; }
