@@ -576,6 +576,9 @@ td.us { color: var(--ink); font-weight: 600; }
 @media (max-width: 720px) { .pv-panel { width: calc(100vw - 2 * var(--gutter)); } }
 .pv-card { position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
   opacity: calc(.2 + var(--e, 1) * .8); transform: translateY(calc((1 - var(--e, 1)) * 60px)) scale(calc(.88 + var(--e, 1) * .12)); }
+/* a zigzag: squares ride low, circles ride high */
+.pv-sq { top: calc(var(--s) * .2); }
+.pv-round { top: calc(var(--s) * -.2); }
 /* each card is a square illustration: a cropped piece of the real parent app on a green ground */
 .pv-vis { position: relative; width: var(--s); height: var(--s); overflow: hidden; border-radius: clamp(18px, 2vw, 28px); }
 .pv-vis img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -996,27 +999,27 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       </header>
       </div>
       <figure class="pv-card pv-sq" style="--k:0">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-5.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:1">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-1.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-4.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:2">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-2.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-3.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:3">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-3.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-2.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
       </figure>
       <figure class="pv-card pv-sq" style="--k:4">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-4.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-1.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
       </figure>
       <figure class="pv-card pv-round" style="--k:5">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-5.png" alt="" width="640" height="640"></div>
+        <div class="pv-vis"><img src="../media/featureillstrations/Container.png" alt="" width="640" height="640"></div>
         <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
       </figure>
       </div>
