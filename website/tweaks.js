@@ -21,16 +21,16 @@ if (/^\/website(\/|$)/.test(path)) {
 
   const css = `
   .sitetw { position: fixed; right: 16px; bottom: 16px; z-index: 90; font-family: "Noto Sans KR", -apple-system, sans-serif; }
-  .sitetw-panel { width: 236px; background: var(--surface, #fff); color: var(--ink, #1A201C); border: 1px solid var(--line-2, #CFD8CA); border-radius: 16px; padding: 12px; }
+  .sitetw-panel { width: 236px; background: var(--surface, var(--paper, #fff)); color: var(--ink, #1A201C); border: 1px solid var(--line-2, #CFD8CA); border-radius: 16px; padding: 12px; }
   .sitetw-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .sitetw-head b { font-size: 13px; font-weight: 700; }
   .sitetw-x { border: 0; background: none; cursor: pointer; color: var(--ink-soft, #868D82); font-size: 18px; line-height: 1; padding: 2px 4px; }
   .sitetw-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft, #868D82); margin-bottom: 6px; }
   .sitetw-seg { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--switch-track, rgba(26,32,28,.11)); }
   .sitetw-seg a { flex: 1; text-align: center; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 0; border-radius: 999px; color: var(--ink-2, #52594F); }
-  .sitetw-seg a[aria-current="page"] { background: var(--ink, #1A201C); color: var(--ground, #fff); }
+  .sitetw-seg a[aria-current="page"] { background: var(--ink, #1A201C); color: var(--ground, var(--paper, #fff)); }
   .sitetw-note { font-size: 12px; color: var(--ink-2, #52594F); margin-top: 8px; }
-  .sitetw-open { border: 1px solid var(--line-2, #CFD8CA); background: var(--surface, #fff); color: var(--ink, #1A201C); border-radius: 999px; padding: 9px 14px; font: 700 13px/1 inherit; cursor: pointer; }
+  .sitetw-open { border: 1px solid var(--line-2, #CFD8CA); background: var(--surface, var(--paper, #fff)); color: var(--ink, #1A201C); border-radius: 999px; padding: 9px 14px; font: 700 13px/1 inherit; cursor: pointer; }
   @media (max-width: 520px) { .sitetw { right: 10px; bottom: 10px; } .sitetw-panel { width: 210px; } }
   @media print { .sitetw { display: none; } }`;
   const style = document.createElement('style');
