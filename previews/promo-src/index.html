@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>JoanX promo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap">
+<style>
+  :root { --g: #4B814F; --gd: #2B4F30; --night: #17211A; --paper: #F4F7F2; --ink: #1A201C; --ink2: #5A6157; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; font-family: "Noto Sans KR", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .scene { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
+  .abs { position: absolute; }
+  .ln { display: block; overflow: hidden; padding-bottom: .1em; margin-bottom: -.1em; }
+  .ln > span { display: inline-block; will-change: transform; }
+
+  /* phone: flat bezel, island, the recorded screen inside */
+  .phone { position: absolute; width: 380px; height: 830px; border-radius: 58px; background: #0b0b10; padding: 12px; }
+  .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 47px; display: block; background: #fff; }
+  .phone::after { content: ""; position: absolute; top: 24px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; }
+
+  /* 1 · hook */
+  #s1 { background: var(--night); }
+  #s1 .art { position: absolute; inset: -40px; background: url("file:///Users/heinhtet/Documents/JoanX/website/media/art/story/cut-02.webp") center 38% / cover; }
+  #s1 .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(23,33,26,.92) 0%, rgba(23,33,26,.72) 45%, rgba(23,33,26,.2) 100%); }
+  #s1 h1 { left: 140px; top: 360px; color: #fff; font-size: 104px; font-weight: 800; line-height: 1.16; letter-spacing: -.03em; }
+  #s1 .sub { left: 144px; top: 640px; color: rgba(255,255,255,.8); font-size: 30px; font-weight: 500; }
+
+  /* 2 · logo */
+  #s2 { background: var(--g); display: grid; place-items: center; }
+  #s2 .mark { width: 760px; filter: brightness(0) invert(1); }
+  #s2 .tag { left: 0; right: 0; top: 640px; text-align: center; color: #fff; font-size: 46px; font-weight: 700; letter-spacing: -.02em; }
+
+  /* 3 · the safety moment */
+  #s3 { background: var(--paper); }
+  #s3 .eyebrow, #s4 .eyebrow, #s5 .eyebrow, #s6 .eyebrow { font-size: 26px; font-weight: 700; color: var(--g); }
+  #s3 .eyebrow { left: 150px; top: 190px; }
+  #s3 h2 { left: 150px; top: 240px; color: var(--ink); font-size: 84px; font-weight: 800; line-height: 1.15; letter-spacing: -.03em; }
+  #s3 .steps { left: 150px; top: 520px; width: 900px; display: grid; gap: 26px; list-style: none; }
+  #s3 .steps li { display: grid; grid-template-columns: 70px 1fr; align-items: baseline; font-size: 36px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+  #s3 .steps .n { font-size: 24px; color: var(--g); font-variant-numeric: tabular-nums; }
+  #s3 .phone { left: 1270px; top: 125px; }
+
+  /* 4 · the game */
+  #s4 { background: var(--g); }
+  #s4 .eyebrow { color: #CFE6CF; left: 120px; top: 150px; }
+  #s4 h2 { left: 120px; top: 200px; color: #fff; font-size: 76px; font-weight: 800; line-height: 1.16; letter-spacing: -.03em; }
+  #s4 .cap { left: 120px; top: 440px; color: rgba(255,255,255,.88); font-size: 32px; font-weight: 500; line-height: 1.5; width: 620px; }
+  #s4 .pill { left: 120px; top: 900px; height: 64px; padding: 0 30px; border-radius: 999px; background: #fff; color: var(--gd); font-size: 28px; font-weight: 700; display: flex; align-items: center; }
+  #s4 .phone { top: 150px; }
+
+  /* 5 · parents */
+  #s5 { background: var(--paper); }
+  #s5 .eyebrow { left: 0; right: 0; text-align: center; top: 80px; }
+  #s5 h2 { left: 0; right: 0; text-align: center; top: 124px; color: var(--ink); font-size: 66px; font-weight: 800; letter-spacing: -.03em; }
+  #s5 .phone { top: 250px; transform-origin: 50% 0; }
+  #s5 .chips { left: 0; right: 0; top: 980px; display: flex; justify-content: center; gap: 18px; }
+  #s5 .chip { height: 58px; padding: 0 28px; border-radius: 999px; background: #fff; border: 2px solid #DCE7D8; color: var(--gd); font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  #s5 .chip b { width: 26px; height: 26px; border-radius: 50%; background: var(--g); display: grid; place-items: center; color: #fff; font-size: 17px; }
+
+  /* 6 · the website */
+  #s6 { background: var(--night); }
+  #s6 .eyebrow { color: #9CC79A; left: 0; right: 0; text-align: center; top: 58px; }
+  #s6 h2 { left: 0; right: 0; text-align: center; top: 100px; color: #fff; font-size: 56px; font-weight: 800; letter-spacing: -.03em; }
+  #s6 .win { left: 290px; top: 200px; width: 1340px; height: 860px; border-radius: 18px; overflow: hidden; background: #fff; }
+  #s6 .bar { height: 44px; background: #EDEFEA; display: flex; align-items: center; gap: 9px; padding: 0 18px; }
+  #s6 .bar i { width: 13px; height: 13px; border-radius: 50%; background: #D1D5CE; }
+  #s6 .bar span { margin-left: 18px; height: 26px; flex: 0 0 420px; border-radius: 8px; background: #fff; color: #7C8077; font-size: 15px; display: flex; align-items: center; padding-left: 14px; }
+  #s6 .win img { display: block; width: 1340px; height: 816px; object-fit: cover; object-position: top; }
+
+  /* 7 · outro */
+  #s7 { background: var(--g); }
+  #s7 .mark { left: 0; right: 0; margin: 0 auto; top: 250px; width: 560px; filter: brightness(0) invert(1); }
+  #s7 .tag { left: 0; right: 0; text-align: center; top: 400px; color: #fff; font-size: 64px; font-weight: 800; line-height: 1.25; letter-spacing: -.03em; }
+  #s7 .dl { left: 0; right: 0; margin: 0 auto; top: 600px; width: 330px; height: 84px; border-radius: 999px; background: #fff; color: var(--gd); font-size: 32px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  #s7 .cubix { left: 150px; bottom: -30px; width: 390px; }
+  #s7 .lumi { right: 120px; bottom: -60px; width: 470px; }
+</style>
+</head>
+<body>
+
+<section class="scene" id="s1">
+  <div class="art"></div><div class="shade"></div>
+  <h1 class="abs"><span class="ln"><span>아이들은 걸으면서도</span></span><span class="ln"><span>화면을 봐요.</span></span></h1>
+  <p class="abs sub">등굣길, 하굣길, 매일 걷는 그 길에서.</p>
+</section>
+
+<section class="scene" id="s2">
+  <img class="mark" src="file:///Users/heinhtet/Documents/JoanX/website/media/brand/logo-wordmark.svg" alt="">
+  <p class="abs tag">고개를 들면, 모험이 시작돼요.</p>
+</section>
+
+<section class="scene" id="s3">
+  <p class="abs eyebrow">안전 순간</p>
+  <h2 class="abs"><span class="ln"><span>폰을 잠그지 않아요.</span></span><span class="ln"><span>먼저 진동 한 번.</span></span></h2>
+  <ol class="abs steps">
+    <li><span class="n">01</span>걸으면서 화면을 보면 알아채요</li>
+    <li><span class="n">02</span>먼저 진동 한 번</li>
+    <li><span class="n">03</span>계속 보면 버디가 말을 걸어요</li>
+    <li><span class="n">04</span>그래도 걸으면 리포트에 남아요</li>
+  </ol>
+  <div class="phone"><img data-clip="warning"></div>
+</section>
+
+<section class="scene" id="s4">
+  <p class="abs eyebrow">아이를 위한 게임</p>
+  <h2 class="abs"><span class="ln"><span>안전하게 걸으면,</span></span><span class="ln"><span>버디가 자라요.</span></span></h2>
+  <p class="abs cap" id="s4cap"></p>
+  <div class="abs pill">결제 없음 · 포인트는 걸어서만</div>
+  <div class="phone" id="p4l"><img></div>
+  <div class="phone" id="p4c"><img></div>
+  <div class="phone" id="p4r"><img></div>
+</section>
+
+<section class="scene" id="s5">
+  <p class="abs eyebrow">보호자 앱</p>
+  <h2 class="abs">보호자는 꼭 필요한 것만 봐요</h2>
+  <div class="phone" id="p5l"><img></div>
+  <div class="phone" id="p5c"><img></div>
+  <div class="phone" id="p5r"><img></div>
+  <div class="abs chips">
+    <span class="chip"><b>✓</b>위치 추적 없음</span>
+    <span class="chip"><b>✓</b>메시지·사진 안 봐요</span>
+    <span class="chip"><b>✓</b>주간 리포트</span>
+  </div>
+</section>
+
+<section class="scene" id="s6">
+  <p class="abs eyebrow">웹사이트</p>
+  <h2 class="abs">부모님이 처음 만나는 조안X</h2>
+  <div class="abs win"><div class="bar"><i></i><i></i><i></i><span>joanx · 조안X</span></div><img id="web"></div>
+</section>
+
+<section class="scene" id="s7">
+  <img class="abs cubix" src="file:///Users/heinhtet/Documents/JoanX/website/media/brand/maf.webp" alt="">
+  <img class="abs lumi" src="file:///Users/heinhtet/Documents/JoanX/public/assets/characters/client/lumi-s2/lumi.webp" alt="">
+  <img class="abs mark" src="file:///Users/heinhtet/Documents/JoanX/website/media/brand/logo-wordmark.svg" alt="">
+  <p class="abs tag">고개 들고,<br>매일 걷는 길을 안전하게.</p>
+  <div class="abs dl">조안X 다운로드</div>
+</section>
+
+<script>
+const FPS = 30;
+const CLIP = { home: 96, warning: 375, versus: 126, result: 108, road: 96, house: 102, collection: 90, reports: 138, alerts: 90, children: 90 };
+const clipSrc = (name, i) => '../clips/' + name + '/f' + String(Math.max(0, Math.min(CLIP[name] - 1, Math.floor(i)))).padStart(4, '0') + '.jpg';
+const webSrc = i => '../frames/f' + String(Math.max(0, Math.min(1994, Math.floor(i)))).padStart(5, '0') + '.jpg';
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lin = (t, a, b) => clamp((t - a) / (b - a));
+const eo = x => 1 - Math.pow(1 - x, 3);                      // ease out
+const eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+// scene windows (seconds): each new scene sweeps in over the last with the site's circle, from the right
+const S = [
+  { id: 's1', a: 0,    b: 4.8 },
+  { id: 's2', a: 4.0,  b: 8.4 },
+  { id: 's3', a: 7.6,  b: 21.4 },
+  { id: 's4', a: 20.6, b: 35.8 },
+  { id: 's5', a: 35.0, b: 47.8 },
+  { id: 's6', a: 47.0, b: 59.8 },
+  { id: 's7', a: 59.0, b: 66.0 },
+];
+const SWEEP = 0.7;
+window.DURATION = 66;
+
+function lines(el, t, t0, gap = .14, dur = .75) {
+  el.querySelectorAll('.ln > span').forEach((s, k) => {
+    const e = eo(lin(t, t0 + k * gap, t0 + k * gap + dur));
+    s.style.transform = `translateY(${((1 - e) * 110).toFixed(2)}%)`;
+  });
+}
+const fade = (el, t, t0, dur = .6, dy = 26) => { const e = eo(lin(t, t0, t0 + dur)); el.style.opacity = e; el.style.transform = `translateY(${((1 - e) * dy).toFixed(1)}px)`; };
+function setImg(img, src) { if (img.getAttribute('src') !== src) img.setAttribute('src', src); }
+
+const pending = [];
+function need(img) { if (!img.complete || !img.naturalWidth) pending.push(img.decode().catch(() => {})); }
+
+window.render = async function (t) {
+  pending.length = 0;
+  S.forEach((sc, k) => {
+    const el = document.getElementById(sc.id);
+    const on = t >= sc.a && t < sc.b;
+    el.style.visibility = on ? 'visible' : 'hidden';
+    el.style.zIndex = k;
+    if (k === 0) { el.style.clipPath = 'none'; return; }
+    const R = 2300, c = eio(lin(t, sc.a, sc.a + SWEEP));
+    el.style.clipPath = c >= 1 ? 'none' : `circle(${(R * c).toFixed(1)}px at ${(1920 + 200 - 400 * c).toFixed(0)}px 540px)`;
+  });
+  const lt = id => t - S.find(s => s.id === id).a;
+
+  // 1 · hook — slow push-in on the story art, the line rises in two parts
+  { const u = lt('s1'); $('#s1 .art').style.transform = `scale(${(1.1 - .08 * eo(lin(u, 0, 4.3))).toFixed(4)})`;
+    lines($('#s1 h1'), u, .35, .45, .9); fade($('#s1 .sub'), u, 1.7, .8); }
+
+  // 2 · logo — the wordmark lifts and settles, the promise follows
+  { const u = lt('s2'); const e = eo(lin(u, .45, 1.25));
+    $('#s2 .mark').style.opacity = e; $('#s2 .mark').style.transform = `translateY(${((1 - e) * 40).toFixed(1)}px) scale(${(.94 + .06 * e).toFixed(3)})`;
+    fade($('#s2 .tag'), u, 1.1, .7); }
+
+  // 3 · safety — the recorded warning plays; each step lights up with its stage
+  { const u = lt('s3'); lines($('#s3 h2'), u, .5, .16, .8); fade($('#s3 .eyebrow'), u, .4);
+    const cu = u - 0.5, marks = [0, 2.2, 3.4, 8.8];
+    $$('#s3 .steps li').forEach((li, k) => {
+      const shown = eo(lin(u, 1.1 + k * .12, 1.7 + k * .12));
+      const act = cu >= marks[k] && (k === 3 || cu < marks[k + 1]);
+      li.style.opacity = (shown * (act ? 1 : .28)).toFixed(3);
+      li.style.transform = `translateY(${((1 - shown) * 22).toFixed(1)}px)`;
+    });
+    const ph = $('#s3 .phone'), pe = eo(lin(u, .3, 1.2));
+    ph.style.transform = `translateY(${((1 - pe) * 120).toFixed(1)}px)`; ph.style.opacity = pe;
+    const img = ph.querySelector('img'); setImg(img, clipSrc('warning', Math.max(0, cu) * FPS)); need(img); }
+
+  // 4 · game — three phones; the middle one runs home → versus → win → road, captions follow
+  { const u = lt('s4'); lines($('#s4 h2'), u, .5, .16, .8); fade($('#s4 .eyebrow'), u, .4); fade($('#s4 .pill'), u, 1.4);
+    const seq = [['home', 3.2, '버디와 함께 걷고,'], ['versus', 4.2, '빌런과 겨루고,'], ['result', 3.4, '이기면 포인트가 쌓여요.'], ['road', 3.2, '다음 빌런은 로드맵에서.']];
+    let c0 = u - 1.0, pick = seq[seq.length - 1], local = 0;
+    for (const s of seq) { if (c0 < s[1]) { pick = s; local = Math.max(0, c0); break; } c0 -= s[1]; local = c0; }
+    const cap = $('#s4cap'); if (cap.textContent !== pick[2]) cap.textContent = pick[2]; fade(cap, u, 1.2);
+    const pos = [['#p4l', 960, .86, 'collection'], ['#p4c', 1340, 1, null], ['#p4r', 1720, .86, 'house']];
+    pos.forEach(([sel, x, s, clip], k) => {
+      const ph = $(sel), e = eo(lin(u, .4 + k * .15, 1.3 + k * .15));
+      ph.style.left = (x - 190) + 'px';
+      ph.style.transform = `translateY(${((1 - e) * 160 + (s < 1 ? 60 : 0)).toFixed(1)}px) scale(${s})`;
+      ph.style.opacity = e * (s < 1 ? .9 : 1); ph.style.zIndex = s < 1 ? 1 : 2;
+      const img = ph.querySelector('img');
+      setImg(img, clip ? clipSrc(clip, Math.max(0, u - 1) * FPS % CLIP[clip]) : clipSrc(pick[0], local * FPS)); need(img);
+    }); }
+
+  // 5 · parents — reports in the middle scrolling, alerts and children either side, then the promises
+  { const u = lt('s5'); fade($('#s5 .eyebrow'), u, .4); fade($('#s5 h2'), u, .5, .7);
+    [['#p5l', 560, .8, 'children', 1.4], ['#p5c', 960, .86, 'reports', .9], ['#p5r', 1360, .8, 'alerts', 2.0]].forEach(([sel, x, s, clip, d], k) => {
+      const ph = $(sel), e = eo(lin(u, .5 + k * .15, 1.4 + k * .15));
+      ph.style.left = (x - 190) + 'px'; ph.style.zIndex = k === 1 ? 2 : 1;
+      ph.style.transform = `translateY(${((1 - e) * 140).toFixed(1)}px) scale(${s})`; ph.style.opacity = e;
+      const img = ph.querySelector('img'); setImg(img, clipSrc(clip, Math.max(0, u - d) * FPS)); need(img);
+    });
+    $$('#s5 .chip').forEach((c, k) => fade(c, u, 4.2 + k * .35, .5, 18)); }
+
+  // 6 · website — the site in a browser window, three passages of the real scroll-through
+  { const u = lt('s6'); fade($('#s6 .eyebrow'), u, .4); fade($('#s6 h2'), u, .5, .7);
+    const w = $('#s6 .win'), e = eo(lin(u, .3, 1.2)); w.style.opacity = e; w.style.transform = `translateY(${((1 - e) * 80).toFixed(1)}px)`;
+    const seg = [[0, 280, 4.0], [330, 620, 3.6], [1540, 1860, 4.3]];   // source frames and seconds each
+    let v = Math.max(0, u - .6), f = seg[seg.length - 1][1];
+    for (const [a, b, d] of seg) { if (v < d) { f = a + (b - a) * (v / d); break; } v -= d; }
+    const img = $('#web'); setImg(img, webSrc(f)); need(img); }
+
+  // 7 · outro — the two characters rise from the bottom, the wordmark and promise settle
+  { const u = lt('s7');
+    const ce = eo(lin(u, .5, 1.5)), le = eo(lin(u, .7, 1.7));
+    $('#s7 .cubix').style.transform = `translateY(${((1 - ce) * 420).toFixed(1)}px) rotate(-4deg)`;
+    $('#s7 .lumi').style.transform = `translateY(${((1 - le) * 420).toFixed(1)}px) rotate(4deg)`;
+    fade($('#s7 .mark'), u, .4, .7); fade($('#s7 .tag'), u, .75, .8); fade($('#s7 .dl'), u, 1.3, .6); }
+
+  await Promise.all(pending);
+  await document.fonts.ready;
+};
+</script>
+</body>
+</html>
