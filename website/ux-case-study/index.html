@@ -490,7 +490,7 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
       <li><a href="#validation"><span class="n">9</span>Outcomes</a></li>
       <li><a href="#reflection"><span class="n">10</span>Reflection</a></li>
     </ol>
-    <p class="note">Every claim is labelled. Green means confirmed in the repo, amber is my interpretation, red is a gap I still need to fill.</p>
+    <p class="note">Every claim is labelled. Green means confirmed in the repo, amber is my interpretation, red marks something missing or conflicting in the sources.</p>
   </nav>
 
   <main id="content">
@@ -533,10 +533,9 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
           <div><dt>Timeline</dt><dd>June – October 2026 · 329 prototype commits</dd></div>
           <div><dt>Languages</dt><dd>English and Korean in the apps · plus Mongolian on the website</dd></div>
         </dl>
-        <p class="todo"><span class="tag gap">Still to confirm</span> role wording · launch date and store link · child age range (the docs say 6–13 and 7–12)</p>
         <div class="legend" aria-label="Label legend">
           <span><span class="tag ok">Confirmed</span> in the repo, spec or build</span>
-          <span><span class="tag interp">Interpretation</span> my reading, to confirm</span>
+          <span><span class="tag interp">Interpretation</span> my reading of the evidence</span>
           <span><span class="tag gap">Gap</span> missing or conflicting</span>
         </div>
       </section>
@@ -563,7 +562,7 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
         </table></div>
 
         <h3 id="pr-success">How success was defined</h3>
-        <p>The spec sets the measures the guardian is meant to care about: a <b>reduction rate</b> in risky moments against the child's own earlier behaviour, how often warnings are accepted, and growth in safe walking time (<code>F-20</code>). Detection accuracy has a target of 90% or more during a tuning period (<code>F-30</code>). The materials I have contain no post-launch figures for these yet. <span class="tag gap">Add launch data if available</span></p>
+        <p>The spec sets the measures the guardian is meant to care about: a <b>reduction rate</b> in risky moments against the child's own earlier behaviour, how often warnings are accepted, and growth in safe walking time (<code>F-20</code>). Detection accuracy has a target of 90% or more during a tuning period (<code>F-30</code>). The materials I have contain no post-launch figures for these yet.</p>
       </section>
       <section class="ch" id="system" aria-labelledby="h-system">
         <div class="eyebrow">Chapter 3 · Context</div>
@@ -821,7 +820,7 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
           <li><b>Dismiss looked like the safe action.</b> The dismiss pill was the same colour as its backdrop and read as bare text, and it should not look equal to stopping: <i>"it acknowledges the warning, it does not end the risk"</i> (<code>2aa2e6e</code>).</li>
           <li><b>The reward was a second interruption.</b> A celebration pop-up after the child stopped was removed: <i>"The modal was a second interruption tacked onto the one we had just resolved."</i> Points still bank silently (<code>35b6881</code>).</li>
           <li><b>The words were ambiguous.</b> "I looked up" also means looking something up in a list, so the copy moved away from it (<code>46c123f</code>). The Korean side got the opposite fix: adult words like <span class="ko">방명록</span> and <span class="ko">반영됐어요</span> were replaced with words an 11-year-old uses.</li>
-          <li><b>The scolding voice.</b> In September the warnings switched from the child's own buddy to King Cubix, a narrator character with a pose for each tone (<code>0c7ebf5</code>). Permission requests followed because <i>"permissions are the app's safety voice, not the pet's"</i> (<code>5a2799e</code>). <span class="tag interp">Interpretation</span> For the warnings, no reason is recorded. My reading is the same one: the buddy stays a friend and never scolds. This conflicts with spec <code>F-08.5</code>, which expects the child's character to speak, and needs your confirmation.</li>
+          <li><b>The scolding voice.</b> In September the warnings switched from the child's own buddy to King Cubix, a narrator character with a pose for each tone (<code>0c7ebf5</code>). Permission requests followed because <i>"permissions are the app's safety voice, not the pet's"</i> (<code>5a2799e</code>). <span class="tag interp">Interpretation</span> For the warnings, no reason is recorded. My reading is the same one: the buddy stays a friend and never scolds. This conflicts with spec <code>F-08.5</code>, which expects the child's character to speak.</li>
         </ul>
         <div class="shots" role="group" aria-label="The three steps of the safety moment">
           <figure class="shot"><img src="img/stage-buzz.webp" alt="One buzz: a vibration icon over the home screen" width="480" height="1076" loading="lazy"><figcaption><b>1 · Buzz.</b> One vibration. The screen stays usable, so a false alarm costs almost nothing.</figcaption></figure>
@@ -920,7 +919,6 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
           <figure class="shot"><img src="img/parent-groups.webp" alt="Groups list: Our home, Grandma Tuesdays, Football club" width="480" height="1076" loading="lazy"><figcaption><b>Groups, not one family.</b> "Grandma Tuesdays" is the case the old model couldn't express.</figcaption></figure>
           <figure class="shot"><img src="img/parent-reports.webp" alt="Weekly report: safe stops, ignored warnings, safe walking time and streak" width="480" height="1076" loading="lazy"><figcaption><b>Behaviour, not place.</b> The report counts stops and ignored warnings against last week.</figcaption></figure>
         </div>
-        <div class="ph"><b>Asset needed:</b> a screenshot of the alerts feed before 21 September, if you kept one. Without it, this stays a described change, not a before/after.</div>
 
         <!-- Story D -->
         <h3 id="d-honesty">D. Saying only what the product does</h3>
@@ -1137,7 +1135,7 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
             <li><b>The eggs</b> sit in the bottom corners, the first thing the game gives a child</li>
             <li><b>The magic circle</b> stays at the centre as the ground the download button sits on</li>
         </ul>
-        <p class="fig-note"><span class="tag gap">Add if available</span> the ChatGPT prompts and any earlier generations. They aren&#39;t in the repository, so this section compares the board with the final result only.</p>
+        <p class="fig-note">The comparison is between the board and the final banner; the intermediate generations aren&#39;t shown.</p>
 
         <h3 id="ws-mobile">Making the hero work on a phone</h3>
         <p>The banner is wide; most guardians open the page on a tall phone. Every simple crop failed, so the fix was found by trying and rejecting, live.</p>
@@ -1391,7 +1389,6 @@ ol.glance li, ul.oc-tiles li, ul.bt-grid li, ol.flow-grid li, .rf-grid li, .tr-l
             <tr><td><b>Expected, unproven</b></td><td>Fewer risky moments over weeks; children accepting warnings more often; parents trusting the narrow report</td><td><span class="tag interp">Hypothesis</span></td></tr>
           </tbody>
         </table></div>
-        <div class="ph"><b>Your input needed:</b> if a child, parent or the client tried the prototype and reacted, even informally, that belongs here, labelled as informal. Nothing in the repo records it.</div>
       </section>
       <section class="ch" id="reflection" aria-labelledby="h-reflection">
         <div class="eyebrow">Chapter 10 · Results</div>
