@@ -855,13 +855,13 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 /* get JoanX — the cast. The stage pins; the characters start huddled over the middle and step
    out to both sides as you scroll (--p, 0 → 1, set by the script), uncovering the copy. */
 /* a pale-sage ground of its own, so it reads as a new section after the green showcase */
-.cast { position: relative; --cast-bg: #EAF2E6; }
+.cast { position: relative; z-index: 2; --cast-bg: #EAF2E6; }   /* above the footer, so the QR card can hang over it */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cast { --cast-bg: var(--paper-2); } }
 :root[data-theme="dark"] .cast { --cast-bg: var(--paper-2); }
 .cast-run { height: 150vh; }
 .cast-stage {
   --p: 0; --u: min(1vh, .62vw);   /* character sizes follow the shorter side of the screen */
-  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+  position: sticky; top: 0; height: 100vh; height: 100svh; overflow-x: clip; overflow-y: visible;   /* sideways stays clipped; the QR may spill down over the footer */
   display: grid; place-items: center; background: var(--cast-bg); color: var(--ink);
 }
 .cast-copy {
