@@ -489,6 +489,33 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 .ctl-list span { color: var(--fg-2); line-height: 1.45; }
 @media (max-width: 860px) { .shots.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shots.two { grid-template-columns: repeat(2, minmax(0, 1fr)); } ul.ctl-list { grid-template-columns: minmax(0, 1fr); } }
 
+
+/* progressive disclosure: deep detail a recruiter can skip */
+details.more { margin: 18px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+details.more > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 15px; color: var(--fg); list-style-position: inside; }
+details.more > summary:hover { color: var(--accent); }
+details.more[open] > summary { border-bottom: 1px solid var(--line); }
+details.more > .more-in { padding: 4px 16px 6px; }
+details.more > .fig, details.more > .more-in > .fig { margin: 14px 16px; }
+details.more > p, details.more > ul, details.more > .shots, details.more > .tbl-wrap, details.more > ul.mo-list { margin-left: 16px; margin-right: 16px; }
+
+
+
+
+/* process: the home screen across five builds; scrolls sideways on phones */
+ol.evo-strip { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; max-width: none; }
+.evo-step { min-width: 0; max-width: none; }
+.evo-step img { display: block; width: 100%; height: auto; aspect-ratio: 480 / 989; object-fit: cover; object-position: top; border-radius: 12px; border: 1px solid var(--line); }
+.evo-step .fs-a { font-size: 12.5px; }
+@media (max-width: 860px) {
+  ol.evo-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding-bottom: 8px; }
+  .evo-step { flex: 0 0 62%; scroll-snap-align: start; }
+}
+
+/* hero: links to the live prototype and website */
+.hero-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: -12px 0 26px; }
+.hero-links .visit { margin-top: 0; }
+
 /* responsive */
 @media (max-width: 1180px) {
   .shell { grid-template-columns: 232px minmax(0, 1fr); gap: 32px; }
@@ -523,7 +550,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 <header class="top">
   <div class="top-in">
     <a class="brand" href="#overview">JoanX <span>case study</span></a>
-    <div class="top-meta">Product design · Launched 2026</div>
+    <div class="top-meta">Product and UX design · 2026</div>
     <button class="chap-btn" id="chapBtn" aria-expanded="false" aria-controls="side">Chapters</button>
   </div>
 </header>
@@ -538,25 +565,26 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
       <li><a href="#system"><span class="n">3</span>How JoanX works</a></li>
       <li class="part">The product</li>
       <li><a href="#decisions"><span class="n">4</span>Five key decisions</a></li>
-      <li><a href="#experience"><span class="n">5</span>The full journey</a></li>
+      <li><a href="#experience"><span class="n">5</span>Set-up, rewards and rooms</a></li>
       <li><a href="#website"><span class="n">6</span>The website</a></li>
       <li class="part">How it was made</li>
       <li><a href="#iteration"><span class="n">7</span>Process and iteration</a></li>
       <li><a href="#system-ai"><span class="n">8</span>Design system and AI</a></li>
       <li class="part">Results</li>
-      <li><a href="#validation"><span class="n">9</span>Outcomes</a></li>
-      <li><a href="#reflection"><span class="n">10</span>Reflection</a></li>
+      <li><a href="#validation"><span class="n">9</span>Results and evidence</a></li>
+      <li><a href="#reflection"><span class="n">10</span>Reflection and next steps</a></li>
     </ol>
-    <p class="note">Every claim is labelled. Green means confirmed in the repo, amber is my interpretation, red marks something missing or conflicting in the sources.</p>
+    <p class="note">Statements about the product were checked against the prototype&#39;s code and spec. Labels mark the exceptions: <b>Interpretation</b> for my reading, <b>Gap</b> for something missing, untested or conflicting.</p>
   </nav>
 
   <main id="content">
     <div class="doc">
 
       <section class="ch" id="overview" aria-labelledby="h-overview">
-        <div class="hero-meta"><span>Child app + guardian app</span><span>Product design</span><span>Launched</span></div>
-        <h1 id="h-overview">JoanX: a phone-safety app children don't fight</h1>
-        <p class="dek">A walking-safety game for children and a calm weekly report for the adults who look after them. This is how the main decisions were made, and what is still unproven.</p>
+        <div class="hero-meta"><span>Child app + guardian app + website</span><span>Product and UX design</span><span>2026</span></div>
+        <h1 id="h-overview">JoanX: rewarding children for putting the phone away while they walk</h1>
+        <p class="dek">A walking-safety game for children and a deliberately narrow weekly report for the adults who look after them. How I designed it, the decisions that shaped it, and what is still untested.</p>
+        <div class="hero-links"><a class="visit" href="/" target="_blank" rel="noopener">Try the prototype<svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg><span class="sr-only"> (opens in a new tab)</span></a></div>
         <div class="hero-strip" aria-label="Five screens from the prototype">
           <img src="img/child-home.webp" alt="Child app home: Lumi the buddy, points and the protected status card" width="480" height="1076">
           <img src="img/stage-buzz.webp" alt="Safety moment step one: a single gentle buzz" width="480" height="1076">
@@ -564,43 +592,43 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <img src="img/parent-reports.webp" alt="Parent weekly report with stops, ignored warnings and safe walking time" width="480" height="1076">
           <img src="img/parent-alerts.webp" alt="Parent alerts feed with an urgent possible-fall row at the top" width="480" height="1076">
         </div>
-        <p class="hero-cap">Screens captured from the running prototype. All numbers on them are sample data.</p>
+        <p class="hero-cap">Left to right: the child&#39;s home, the safety moment&#39;s first and last steps, the guardian&#39;s weekly report and alerts. Captured from my design prototype; every number on them is sample data.</p>
 
         <h3 id="ov-summary">In one paragraph</h3>
-        <p>Children in Korea walk to school looking at their phones. The usual fixes are to lock the phone, schedule it off, or track the child, and children learn to work around all three. JoanX tries the opposite. The phone notices when a child is walking and using the screen at the same time, gives one gentle buzz, and only steps in further if the child keeps going. Walking with the phone put away earns points, eggs, a growing buddy and villain battles. Parents get a weekly picture of whether the habit is improving, plus an alert if a fall is detected. They never see location, messages, photos or which apps the child uses.</p>
-
-        <h3 id="ov-glance">At a glance: problems and how I solved them</h3>
-        <div class="glance-head" aria-hidden="true"><span></span><span>Problem</span><span>What I did</span><span>Outcome</span></div>
-        <ol class="glance">
-          <li><a href="#d-moment"><span class="g-k">A</span><span class="g-p">Interrupting a child gets dismissed or resented</span><span class="g-s">One buzz first; a card only if the risk continues; a firmer message each round; never a lock</span><span class="g-o">Calm, readable steps a child can act on</span></a></li>
-          <li><a href="#d-rewards"><span class="g-k">B</span><span class="g-p">Points could be farmed with a tap</span><span class="g-s">Pay only when four signals prove the child stopped; more for stopping early; cooldown and daily cap</span><span class="g-o">The reward measures behaviour, not button presses</span></a></li>
-          <li><a href="#d-parents"><span class="g-k">C</span><span class="g-p">Parents need confidence without surveillance</span><span class="g-s">A fixed list of what parents see; urgent alerts that stand apart; groups for everyone who shares the school run</span><span class="g-o">Trust without tracking</span></a></li>
-          <li><a href="#d-honesty"><span class="g-k">D</span><span class="g-p">Copy promised more than the app does</span><span class="g-s">Audited the website and app copy against the build</span><span class="g-o">Seven kinds of untrue claim rewritten</span></a></li>
-          <li><a href="#d-world"><span class="g-k">E</span><span class="g-p">A game could pull the child back to the screen</span><span class="g-s">Villains are phone habits; battles close while walking; the fight shows safe walking paying off</span><span class="g-o">The game works for the safety goal</span></a></li>
-        </ol>
-        <p class="fig-note">Each row opens the full decision in chapter 4. Outcomes describe what the design now does; the impact on children&#39;s behaviour still needs measuring (chapter 9).</p>
+        <p>Korean media call children who walk with their eyes on a phone <span class="ko">스몸비</span> (&#8220;smombies&#8221;). The tools parents have mostly treat it as a control problem: lock the phone, schedule it off, or track the child. The project&#39;s design documents argue that children learn to work around those tools and that tracking costs trust. JoanX tries a different bet. The phone notices when a child keeps using the screen while walking and gives one gentle buzz. It steps in further only if the child carries on, and it never locks the screen. Walking with the phone put away earns points that grow a buddy character, hatch eggs and power battles against villains. Guardians get a weekly picture of whether the habit is improving, and an urgent alert if a possible fall goes unanswered. They never see location, messages, photos or which apps the child uses.</p>
 
         <dl class="facts2">
-          <div><dt>Product</dt><dd>A walking-safety game for children and a guardian app, from one codebase</dd></div>
-          <div><dt>Status</dt><dd>Launched. Built by the development team from this design</dd></div>
-          <div><dt>My role</dt><dd>Product and UX design of both apps, the design system, and the working prototype used as the design source</dd></div>
-          <div><dt>Client</dt><dd>Joan Company, owner of the characters and the functional spec</dd></div>
-          <div><dt>Audience</dt><dd>Primary-school children and the parents or guardians who install it</dd></div>
-          <div><dt>Team</dt><dd>Me, with an AI pair programmer (Claude) · the development team · Myt H Mon, onboarding story art</dd></div>
-          <div><dt>Timeline</dt><dd>June – October 2026 · 329 prototype commits</dd></div>
-          <div><dt>Languages</dt><dd>English and Korean in the apps · plus Mongolian on the website</dd></div>
+          <div><dt>Product</dt><dd>A child app and a guardian app from one codebase, plus a marketing website</dd></div>
+          <div><dt>Users</dt><dd>Children aged roughly 6 to 13, and the parents or guardians who install it</dd></div>
+          <div><dt>My role</dt><dd>Product and UX design of both apps: structure, every screen, the warning and reward rules, the design system, and the working prototype the product was built from. Direction and design of website V2.</dd></div>
+          <div><dt>Others</dt><dd>Joan Company, the client: the functional spec, the characters and their approval. The development team: the production apps. Myt H Mon: the 17 onboarding story illustrations. Claude, as AI pair programmer: most of the prototype&#39;s code, under my direction.</dd></div>
+          <div><dt>Timeline</dt><dd>5 June to 2 October 2026, 332 commits in the prototype</dd></div>
+          <div><dt>Status</dt><dd>The development team has launched the product, built from this design. This page has no launch date, store data or usage figures, so it makes no claims about results.</dd></div>
         </dl>
-        <div class="legend" aria-label="Label legend">
-          <span><span class="tag ok">Confirmed</span> in the repo, spec or build</span>
-          <span><span class="tag interp">Interpretation</span> my reading of the evidence</span>
-          <span><span class="tag gap">Gap</span> missing or conflicting</span>
+
+        <h3 id="ov-glance">The five decisions, at a glance</h3>
+        <div class="glance-head" aria-hidden="true"><span></span><span>Problem</span><span>Decision</span><span>What the design now does</span></div>
+        <ol class="glance">
+          <li><a href="#d-moment"><span class="g-k">A</span><span class="g-p">Interrupting a child mid-walk gets dismissed or resented, and detection can be wrong</span><span class="g-s">One buzz first, then a card and a firmer message only if the risk continues. Never a lock.</span><span class="g-o">A false alarm costs one vibration</span></a></li>
+          <li><a href="#d-rewards"><span class="g-k">B</span><span class="g-p">The first reward paid for a button tap</span><span class="g-s">Pay only when four signals show the child stopped; pay more for stopping before a warning; add a cooldown and a daily cap.</span><span class="g-o">Points follow the behaviour, not the tap</span></a></li>
+          <li><a href="#d-parents"><span class="g-k">C</span><span class="g-p">Guardians need confidence without surveillance</span><span class="g-s">A fixed list of what guardians see; urgent alerts that stand apart; groups for everyone on the school run.</span><span class="g-o">The report counts behaviour, never place or content</span></a></li>
+          <li><a href="#d-honesty"><span class="g-k">D</span><span class="g-p">Website copy promised more than the app does</span><span class="g-s">Audited every promise against the build and rewrote the ones it didn&#39;t keep.</span><span class="g-o">Seven kinds of untrue claim removed</span></a></li>
+          <li><a href="#d-world"><span class="g-k">E</span><span class="g-p">A battle game could pull the child back to the screen</span><span class="g-s">Villains stand for phone habits; battles close while walking; the fight shows safe walking paying off.</span><span class="g-o">The game can&#39;t open mid-walk</span></a></li>
+        </ol>
+        <p class="fig-note">Each row opens the full decision in chapter 4. The right-hand column describes what the design does, not its effect on children, which hasn&#39;t been measured (chapter 9).</p>
+
+        <div class="legend" aria-label="How evidence is labelled">
+          <span>Statements about the product are checked against the prototype&#39;s code, the spec and the git history. Labels mark the exceptions:</span>
+          <span><span class="tag interp">Interpretation</span> my reading where no reason is recorded</span>
+          <span><span class="tag gap">Gap</span> untested, missing or conflicting between sources</span>
         </div>
       </section>
       <section class="ch" id="problem" aria-labelledby="h-problem">
         <div class="eyebrow">Chapter 2 · Context</div>
         <h2 id="h-problem">The problem</h2>
         <h3 id="pr-friction">Why the usual answers fail</h3>
-        <p>The project documents frame the problem as <span class="ko">스몸비</span> ("smombie"): children using a phone while walking near roads. Existing tools treat it as a control problem. They block the screen, lock it on a schedule, or track where the child is. The design docs argue that these approaches are punitive, that children defeat them, and that tracking costs trust between parent and child. <span class="tag interp">Reasoned, not researched</span> These are design risks taken from the brief and the docs, not observed findings. No interviews or field study exist in the materials.</p>
+        <p>The project documents frame the problem as <span class="ko">스몸비</span> (&#8220;smombie&#8221;): children using a phone while walking near roads. Existing tools treat it as a control problem. They block the screen, lock it on a schedule, or track where the child is. The design docs argue that these approaches feel like punishment, that children find ways round them, and that tracking costs trust between parent and child.</p>
+        <p><span class="tag gap">Gap</span> These are risks reasoned from the brief and the docs, not findings. No interviews, surveys or field observation exist in the materials, so the whole design rests on reasoning, the spec and building the rules. The design doc says so itself: <i>&#8220;Every UX claim here is reasoned, none is tested.&#8221;</i></p>
 
         <h3 id="pr-bet">The product bet</h3>
         <p class="lead">Make walking with the phone put away the thing that wins the game.</p>
@@ -610,21 +638,29 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         <div class="tbl-wrap"><table>
           <thead><tr><th>Constraint</th><th>Source</th><th>What it forced</th></tr></thead>
           <tbody>
-            <tr><td>Never lock the screen</td><td><code>F-10</code> excluded; <code>data.jsx</code> comment</td><td>Every intervention has to persuade. None of them can block.</td></tr>
-            <tr><td>Calls and texts always work</td><td><code>F-27</code></td><td>Safety tools can never cut the child off from their family.</td></tr>
+            <tr><td>Never lock the screen</td><td><code>F-10</code> excluded</td><td>Every intervention has to persuade. None of them can block, so calls and texts are never cut off.</td></tr>
             <tr><td>Detection is a guess</td><td><code>F-03</code>, <code>F-04</code>, <code>F-30</code> (90% accuracy is a <i>target</i>)</td><td>A false alarm must cost the child very little, so the first signal is one buzz.</td></tr>
-            <tr><td>No location, no message reading</td><td><code>F-05/F-06</code> excluded; <code>PARENT_SEES</code></td><td>The parent report can only describe behaviour, never place or content.</td></tr>
-            <tr><td>Android first, client-owned characters</td><td>Spec; client approval of IP</td><td>Character art and names change at the client's pace; the UI had to survive art swaps.</td></tr>
+            <tr><td>No location, no message reading</td><td><code>F-05</code>, <code>F-06</code> excluded</td><td>The guardian report can only describe behaviour, never place or content.</td></tr>
+            <tr><td>Client-owned characters</td><td>Joan Company approves names, stories and art</td><td>Art and names change at the client&#39;s pace, so the UI had to survive art swaps.</td></tr>
           </tbody>
         </table></div>
 
         <h3 id="pr-success">How success was defined</h3>
-        <p>The spec sets the measures the guardian is meant to care about: a <b>reduction rate</b> in risky moments against the child's own earlier behaviour, how often warnings are accepted, and growth in safe walking time (<code>F-20</code>). Detection accuracy has a target of 90% or more during a tuning period (<code>F-30</code>). The materials I have contain no post-launch figures for these yet.</p>
+        <p>The spec defines success through the guardian&#39;s eyes: a <b>reduction rate</b> in risky moments against the child's own earlier behaviour, how often warnings are accepted, and growth in safe walking time (<code>F-20</code>). Detection accuracy has a target of 90% or more during a tuning period (<code>F-30</code>). No figures for any of these exist in the materials, so this case study can describe what the design does, but not whether it works.</p>
       </section>
       <section class="ch" id="system" aria-labelledby="h-system">
         <div class="eyebrow">Chapter 3 · Context</div>
         <h2 id="h-system">How JoanX works</h2>
-        <p>There was no user research to start from, so understanding came from the spec and from building it. I turned 40-odd numbered requirements into rules in code, and those rules are where most of the design problems surfaced. This chapter maps the structure those decisions sit in.</p>
+        <p>Before the decisions, the product itself: what a family does with it, how the two apps are organised, the one sequence everything hangs off, and the line the guardian app never crosses.</p>
+
+        <h3 id="sy-walk">One walk to school</h3>
+        <ol class="plain">
+          <li><b>The guardian sets up.</b> Only the guardian has an account. They add the child and get a six-digit code that works for five minutes.</li>
+          <li><b>The child joins.</b> The child watches a short illustrated story, types the code, hatches a starter egg (their first buddy, Lumi), and grants four phone permissions one at a time. A refused permission limits protection instead of stopping it.</li>
+          <li><b>The walk.</b> Home says &#8220;You&#39;re protected&#8221;. If the child keeps using the screen while walking, the <b>safety moment</b> runs: one buzz first, more only if they carry on. Stopping earns points. Ignoring is recorded. The phone is never locked.</li>
+          <li><b>After school.</b> Points buy XP for the buddy, eggs and outfits. Battles against villains open once the child has stopped walking.</li>
+          <li><b>That week, the guardian.</b> The report shows how often the child stopped when warned, how often they ignored it, and safe walking time against last week. A possible fall that the child doesn&#39;t answer within 20 seconds alerts the guardian at once.</li>
+        </ol>
 
         <h3 id="sy-ia">Two apps, one product</h3>
         <div class="ia" role="group" aria-label="Information architecture of both apps">
@@ -752,21 +788,122 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 </div>
 <figcaption>Spec timings from <code>INTERVENTION</code> and <code>WarningOverlay.jsx</code>: 10 s grace, then per round one buzz, a 2 s hold, a 5 s card and 13 s of messages, with 5 quiet seconds between rounds. The prototype shortens the grace to 2.6 s for demos.</figcaption>
 </figure>
-        <h3 id="sy-economy">What a safe walk is worth</h3>
+        <h3 id="sy-boundary">The parent's view has a hard edge</h3>
+        <figure class="fig">
+<div class="scroll">
+<svg viewBox="0 0 980 330" role="img" aria-labelledby="dbT dbD">
+<title id="dbT">What leaves the child's phone</title>
+<desc id="dbD">Four things are shared with the guardian app: safe walking time, warnings, points and streak, and whether protection is on. Four things never leave the phone: location, messages and guestbook notes, photos, and which apps the child uses.</desc>
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow good" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="node" x="10" y="10" width="420" height="310" rx="14"/>
+<text x="30" y="40" font-size="14" font-weight="700">On the child's phone</text>
+<text x="30" y="70" font-size="12" class="muted">SHARED</text>
+<rect class="row-ok" x="30" y="84" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="96" r="4"/><text x="58" y="100" font-size="13">How long you walked safely</text>
+<rect class="row-ok" x="30" y="114" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="126" r="4"/><text x="58" y="130" font-size="13">Warnings you got while walking</text>
+<rect class="row-ok" x="30" y="144" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="156" r="4"/><text x="58" y="160" font-size="13">Your points and streak</text>
+<rect class="row-ok" x="30" y="174" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="186" r="4"/><text x="58" y="190" font-size="13">Whether protection is on</text>
+<text x="30" y="216" font-size="12" class="muted">NEVER LEAVES THE PHONE</text>
+<text x="30" y="242" font-size="13" class="muted">✕  Where you are</text>
+<text x="30" y="264" font-size="13" class="muted">✕  Your messages and guestbook</text>
+<text x="30" y="286" font-size="13" class="muted">✕  Your photos</text>
+<text x="30" y="308" font-size="13" class="muted">✕  Which apps you use</text>
+<rect class="node key" x="600" y="70" width="370" height="150" rx="14"/>
+<text x="620" y="100" font-size="14" font-weight="700">In the guardian app</text>
+<text x="620" y="128" font-size="13">How long you walked safely</text>
+<text x="620" y="150" font-size="13">Warnings you got while walking</text>
+<text x="620" y="172" font-size="13">Your points and streak</text>
+<text x="620" y="194" font-size="13">Whether protection is on</text>
+<path class="edge good" d="M412,140 C500,140 510,145 596,145" marker-end="url(#ar2)"/>
+<text x="470" y="128" font-size="12" class="muted">weekly report</text>
+<text x="600" y="258" font-size="12.5" class="muted">One list in the code, meant to be shown to both</text>
+<text x="600" y="278" font-size="12.5" class="muted">the guardian and the child it protects.</text>
+</svg>
+</div>
+<figcaption>Rendered from <code>PARENT_SEES</code> in <code>data.jsx</code>, the single list both apps read. Its last change (18 Sep) swapped a row that was never true, "Which app types are blocked", for "Whether protection is on".</figcaption>
+</figure>
+        <p>The list is a single data structure (<code>PARENT_SEES</code>), so there is one place to change a promise. A code comment states the rule: <i>&#8220;breaking one means editing this list, in the open.&#8221;</i> The website&#39;s privacy section shows it to guardians. <span class="tag gap">Gap</span> The intent is for the child to see the same list on their own phone, but the prototype only renders it in an alternative child profile layout that isn&#39;t the default, and the guardian app doesn&#39;t render it yet.</p>
+      </section>
+      <section class="ch" id="decisions" aria-labelledby="h-decisions">
+        <div class="eyebrow">Chapter 4 · The product</div>
+        <h2 id="h-decisions">Five key decisions</h2>
+        <p>Five decisions carried the most weight. Each follows the same shape: what the person was trying to do, what made it hard, what evidence pointed at the problem, and what changed.</p>
+
+        <!-- Story A -->
+        <h3 id="d-moment">A. Interrupting a child without punishing them</h3>
+        <div class="story">
+          <div class="anat">
+            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Problem</span></div><div class="v"><p>The app has to interrupt a child in the middle of a walk, and its detection is a guess. A loud or blocking interruption gets dismissed or resented, and a false alarm teaches the child to ignore the app.</p></div>
+            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraints</span></div><div class="v"><p>The screen is never locked (<code>F-10</code> excluded), so the child can always call or text. The spec asks for a message covering about 20% of the screen (<code>F-09</code>).</p></div>
+            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>A ladder in which each step costs the child a little more attention, and only if the risk continues: one buzz, a two-second wait, a card with one action, then a character message that grows firmer over up to three rounds.</p></div>
+            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Why</span></div><div class="v"><p>A false alarm at the first step costs one vibration. A child who reacts to the buzz never sees a card, and earns more for it (decision B).</p></div>
+            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence and limits</span></div><div class="v"><p>The ladder comes from the spec (<code>F-08</code>, <code>F-09</code>). Its readability problems were found by running it in the prototype and are recorded in commits (below). <span class="tag gap">Gap</span> No test with children is recorded.</p></div>
+          </div>
+        </div>
+        <p>Choosing the ladder was the easy part. Most of the work was making each step readable and fair, and five problems only showed up once it ran:</p>
+        <ul class="plain">
+          <li><b>The message vanished before it could be read.</b> <i>"It faded the whole sheet — mascot, copy and both buttons — on the message cycle, so a line was gone in 1.5s and the safety CTA went with it."</i> The sheet now holds while the risk lasts and only the words cross-fade (<code>791ef69</code>). The hold was later lengthened to 4 seconds. <span class="tag gap">Gap</span> That differs from the spec&#39;s 1.5 s, and no client approval is recorded.</li>
+          <li><b>Dismiss looked like the safe action.</b> The dismiss pill was the same colour as its backdrop and read as bare text, and it should not look equal to stopping: <i>"it acknowledges the warning, it does not end the risk"</i> (<code>2aa2e6e</code>).</li>
+          <li><b>The reward was a second interruption.</b> A celebration pop-up after the child stopped was removed: <i>"The modal was a second interruption tacked onto the one we had just resolved."</i> Points still bank silently (<code>35b6881</code>).</li>
+          <li><b>The words were ambiguous.</b> "I looked up" also means looking something up in a list, so the copy moved away from it (<code>46c123f</code>). The Korean side got the opposite fix: adult words like <span class="ko">방명록</span> and <span class="ko">반영됐어요</span> were replaced with words an 11-year-old uses.</li>
+          <li><b>The scolding voice.</b> In September the warnings switched from the child's own buddy to King Cubix, a narrator character with a pose for each tone (<code>0c7ebf5</code>). Permission requests followed because <i>"permissions are the app's safety voice, not the pet's"</i> (<code>5a2799e</code>). <span class="tag interp">Interpretation</span> For the warnings, no reason is recorded. My reading is the same one: the buddy stays a friend and never scolds. This conflicts with spec <code>F-08.5</code>, which expects the child's character to speak.</li>
+        </ul>
+        <div class="shots" role="group" aria-label="The three steps of the safety moment">
+          <figure class="shot"><img src="img/stage-buzz.webp" alt="One buzz: a vibration icon over the home screen" width="480" height="1076" loading="lazy"><figcaption><b>1 · Buzz.</b> One vibration. The screen stays usable, so a false alarm costs almost nothing.</figcaption></figure>
+          <figure class="shot"><img src="img/stage-card.webp" alt="Warning card: King Cubix and 'Hey, you should look ahead' with an Okay button" width="480" height="1076" loading="lazy"><figcaption><b>2 · Card.</b> Only if the risk is still there two seconds later. One action, no competing button.</figcaption></figure>
+          <figure class="shot"><img src="img/stage-message.webp" alt="Character message: 'You're looking again. Now really look ahead.'" width="480" height="1076" loading="lazy"><figcaption><b>3 · Message.</b> The character speaks. Each ignored round makes the tone firmer. The app stays usable underneath.</figcaption></figure>
+        </div>
+        <h4>Alternatives, still switchable in the prototype</h4>
+        <p>I built seven warning layouts (Spotlight, Card, Frame, Signal, Strip, Sheet and Banner) and two narrators so they could be compared live on a phone. Spotlight with King Cubix is the default.</p>
+        <div class="shots" role="group" aria-label="Alternatives explored for the warning">
+          <figure class="shot"><img src="img/warn-buddy.webp" alt="The same warning card narrated by Lumi, the child's buddy" width="480" height="1074" loading="lazy"><figcaption><b>Narrator: buddy.</b> The child's own Lumi delivers the warning. Kept as an option.</figcaption></figure>
+          <figure class="shot"><img src="img/stage-card.webp" alt="The warning card narrated by King Cubix" width="480" height="1076" loading="lazy"><figcaption><b>Narrator: King Cubix.</b> The default since 2 September.</figcaption></figure>
+          <figure class="shot"><img src="img/warn-banner.webp" alt="Banner layout: a small top banner over the home screen" width="480" height="1074" loading="lazy"><figcaption><b>Layout: Banner.</b> The lightest of the seven layouts. It leaves the screen almost untouched.</figcaption></figure>
+        </div>
+        <p><b>Still unproven.</b> Whether a child reads and acts on the card inside two seconds, whether three rounds is too many, and how often the buzz fires falsely. These need the field tuning period the spec plans (<code>F-30</code>) and a test with children.</p>
+
+        <!-- Story B -->
+        <h3 id="d-rewards">B. Paying for safety, not for taps</h3>
+        <div class="story">
+          <div class="anat">
+            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Problem</span></div><div class="v"><p>In the first build the stop bonus landed the moment the child pressed the warning&#39;s button. A child could learn &#8220;trigger, tap, earn&#8221;, and the guardian&#39;s &#8220;stopped when warned&#8221; number would be counting button presses.</p></div>
+            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraints</span></div><div class="v"><p>Points are the only currency. The phone can only sense walking, screen state and phone use, so &#8220;stopped&#8221; has to be defined from those.</p></div>
+            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>Pay only when four signals hold, and pay more for stopping before any card appears (+50) than after one (+20). Add a 60-second cooldown and a 300-point daily cap (<code>69504ff</code>, 20 July).</p></div>
+            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Why</span></div><div class="v"><p>Paying &#8220;warning, then stop&#8221; as much as never needing a warning would teach a child to earn a warning.</p></div>
+            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence and limits</span></div><div class="v"><p>Found while building the rule engine; the design doc names it: <i>&#8220;The product was paying for a tap, and calling it safety.&#8221;</i> <span class="tag gap">Gap</span> The spec&#39;s flat +20 bonus and the built 50/20 tiers both still appear in the documents.</p></div>
+          </div>
+        </div>
+        <figure class="paygate" aria-label="When a stop pays">
+          <div class="pg-col">
+            <div class="pg-h">All four must hold</div>
+            <ol class="pg-checks"><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Warning shown</b><span>an intervention was actually on screen</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Phone put away</b><span>phone use while walking stopped</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Screen off</b><span>the screen was turned off</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Walking safely</b><span>safe walking continued afterwards</span></li></ol>
+          </div>
+          <div class="pg-arrow" aria-hidden="true">→</div>
+          <div class="pg-col">
+            <div class="pg-h">Then the stop is worth</div>
+            <ul class="pg-pay">
+              <li class="hi"><b>+50</b><span>stopped at the buzz, before the card appeared</span></li>
+              <li class="lo"><b>+20</b><span>stopped after the card or message</span></li>
+              <li class="zero"><b>0</b><span>within 60 s of the last paid stop, or past 300 a day. Still logged for the report.</span></li>
+            </ul>
+          </div>
+          <figcaption>From <code>SAFE_CONDITIONS</code> in <code>WarningOverlay.jsx</code> and <code>evaluateSafeStop</code> in <code>data.jsx</code>. In the rule engine a bare &#8220;Okay, got it&#8221; sets none of the four, so it pays nothing. The prototype has no real sensors, so it simulates the four signals after that tap; the production app reads them from the phone.</figcaption>
+        </figure>
+        <p>The tiering is the subtle part. Paying the "warning, then stop" loop as much as never needing a warning would teach a child to earn a warning. The code comment states it plainly: <i>"Never reward the warning→stop loop as much as never needing the warning."</i></p>
+        <h4 id="d-economy">The whole economy, in one table</h4>
         <div class="tbl-wrap"><table>
           <thead><tr><th>Behaviour</th><th>Reward</th><th>Rule</th></tr></thead>
           <tbody>
             <tr><td>Each full minute of phone-down walking</td><td class="num">10 pt</td><td>Under one minute earns nothing</td></tr>
             <tr><td>Stopping before any warning appears</td><td class="num">+50 pt</td><td>Verified by four signals</td></tr>
             <tr><td>Stopping after the warning</td><td class="num">+20 pt</td><td>Same verification, lower tier</td></tr>
-            <tr><td>A day with no ignored warnings</td><td class="num">+100 pt</td><td>Streaks add +300 at 7 days, +700 at 14, an Epic egg at 30</td></tr>
+            <tr><td>An accident-free day</td><td class="num">+100 pt</td><td>Streaks add +300 at 7 days, +700 at 14, an Epic egg at 30</td></tr>
             <tr><td>Spend: eggs, XP, outfits</td><td class="num">500 / 1,500 pt</td><td>Common and Rare eggs; 5 points buy 1 XP</td></tr>
           </tbody>
         </table></div>
-        <p>Points are the only currency. Five battles a day against a ladder of ten villains turn the buddy's growth into something the child can use. <span class="tag gap">Sources disagree</span> One checklist says one battle a day; the spec and the code say five.</p>
+        <p>Points pay for everything. XP makes the buddy stronger, and battles (decision E) are where that strength gets used. <span class="tag gap">Gap</span> One version of the requirements checklist says one battle a day; the spec and the code say five.</p>
 
-        <h4>XP to the next level, as built and as specified</h4>
-        <p>Points turn into XP for the buddy. The built curve is gentler than the spec's formula in the middle levels, so a child reaches the next stage sooner. <span class="tag gap">Sources disagree</span> This difference is documented but not signed off.</p>
+        <details class="more"><summary>XP to the next level, as built and as specified</summary>
+        <p>Points turn into XP for the buddy. The built curve is gentler than the spec's formula in the middle levels, so a child reaches the next stage sooner. <span class="tag gap">Gap</span> This difference from the spec is documented but not signed off.</p>
         <figure class="fig">
 <div class="scroll">
 <div class="vlegend"><span><i class="k1"></i>Built (<code>XP_CURVE</code>)</span><span><i class="k2"></i>Spec formula 100 + (n−1)×50</span></div><svg viewBox="0 0 980 240" role="img" aria-labelledby="xpT xpD">
@@ -820,119 +957,23 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 </div>
 <figcaption>Built steps from <code>XP_CURVE_DEFAULTS</code> in <code>data.jsx</code>; spec formula from appendix <code>A-3.1</code>. Maximum level is 10 in both.</figcaption>
 </figure>
-        <h3 id="sy-boundary">The parent's view has a hard edge</h3>
-        <figure class="fig">
-<div class="scroll">
-<svg viewBox="0 0 980 330" role="img" aria-labelledby="dbT dbD">
-<title id="dbT">What leaves the child's phone</title>
-<desc id="dbD">Four things are shared with the guardian app: safe walking time, warnings, points and streak, and whether protection is on. Four things never leave the phone: location, messages and guestbook notes, photos, and which apps the child uses.</desc>
-<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow good" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<rect class="node" x="10" y="10" width="420" height="310" rx="14"/>
-<text x="30" y="40" font-size="14" font-weight="700">On the child's phone</text>
-<text x="30" y="70" font-size="12" class="muted">SHARED</text>
-<rect class="row-ok" x="30" y="84" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="96" r="4"/><text x="58" y="100" font-size="13">How long you walked safely</text>
-<rect class="row-ok" x="30" y="114" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="126" r="4"/><text x="58" y="130" font-size="13">Warnings you got while walking</text>
-<rect class="row-ok" x="30" y="144" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="156" r="4"/><text x="58" y="160" font-size="13">Your points and streak</text>
-<rect class="row-ok" x="30" y="174" width="380" height="24" rx="6"/><circle class="dot-ok" cx="44" cy="186" r="4"/><text x="58" y="190" font-size="13">Whether protection is on</text>
-<text x="30" y="216" font-size="12" class="muted">NEVER LEAVES THE PHONE</text>
-<text x="30" y="242" font-size="13" class="muted">✕  Where you are</text>
-<text x="30" y="264" font-size="13" class="muted">✕  Your messages and guestbook</text>
-<text x="30" y="286" font-size="13" class="muted">✕  Your photos</text>
-<text x="30" y="308" font-size="13" class="muted">✕  Which apps you use</text>
-<rect class="node key" x="600" y="70" width="370" height="150" rx="14"/>
-<text x="620" y="100" font-size="14" font-weight="700">In the guardian app</text>
-<text x="620" y="128" font-size="13">How long you walked safely</text>
-<text x="620" y="150" font-size="13">Warnings you got while walking</text>
-<text x="620" y="172" font-size="13">Your points and streak</text>
-<text x="620" y="194" font-size="13">Whether protection is on</text>
-<path class="edge good" d="M412,140 C500,140 510,145 596,145" marker-end="url(#ar2)"/>
-<text x="470" y="128" font-size="12" class="muted">weekly report</text>
-<text x="600" y="258" font-size="12.5" class="muted">The child sees this same list on their own phone,</text>
-<text x="600" y="278" font-size="12.5" class="muted">so the promise is visible to the person it protects.</text>
-</svg>
-</div>
-<figcaption>Rendered from <code>PARENT_SEES</code> in <code>data.jsx</code>, the single list both apps read. Its last change (18 Sep) swapped a row that was never true, "Which app types are blocked", for "Whether protection is on".</figcaption>
-</figure>
-        <p>This list is a single data structure (<code>PARENT_SEES</code>) that both apps render. The child sees the same list on their own phone, so the promise is visible to the person it protects. A code comment states the rule: <i>"breaking one means editing this list, in the open."</i></p>
-      </section>
-      <section class="ch" id="decisions" aria-labelledby="h-decisions">
-        <div class="eyebrow">Chapter 4 · The product</div>
-        <h2 id="h-decisions">Five key decisions</h2>
-        <p>Five decisions carried the most weight. Each follows the same shape: what the person was trying to do, what made it hard, what evidence pointed at the problem, and what changed.</p>
-
-        <!-- Story A -->
-        <h3 id="d-moment">A. Interrupting a child without punishing them</h3>
-        <div class="story">
-          <div class="anat">
-            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Goal</span></div><div class="v"><p>The child wants to keep walking and doing whatever they were doing. The product wants them to put the phone away, and to choose it.</p></div>
-            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Risk</span></div><div class="v"><p>A hard interruption gets dismissed or resented, and detection can be wrong. A loud alarm for a false positive teaches the child to ignore the app.</p></div>
-            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence</span></div><div class="v"><p>The spec's ladder (<code>F-08</code>, <code>F-09</code>) and a series of fixes found by building and running it. Five problems are recorded in commits (below). No usability test with children is recorded.</p></div>
-            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraint</span></div><div class="v"><p>No screen lock (<code>F-10</code>). The message must fill about 20% of the screen (<code>F-09</code>). Calls and texts are never blocked.</p></div>
-            <div class="k k-alternatives"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg><span>Alternatives</span></div><div class="v"><p>Seven warning layouts (Spotlight, Card, Frame, Signal, Strip, Sheet, Banner) and two narrators. All are still switchable in the prototype. Spotlight and King Cubix are the defaults.</p></div>
-          </div>
-        </div>
-        <p>The escalation runs in steps that each cost the child a little more attention: one buzz, a two-second wait, a card, then a message whose tone grows firmer. Most of the design work was making each step readable and fair:</p>
-        <ul class="plain">
-          <li><b>The message vanished before it could be read.</b> <i>"It faded the whole sheet — mascot, copy and both buttons — on the message cycle, so a line was gone in 1.5s and the safety CTA went with it."</i> The sheet now holds while the risk lasts and only the words cross-fade (<code>791ef69</code>). The hold was later lengthened to 4 seconds. <span class="tag gap">Not signed off</span> That differs from the spec's 1.5 s, and no client approval is recorded.</li>
-          <li><b>Dismiss looked like the safe action.</b> The dismiss pill was the same colour as its backdrop and read as bare text, and it should not look equal to stopping: <i>"it acknowledges the warning, it does not end the risk"</i> (<code>2aa2e6e</code>).</li>
-          <li><b>The reward was a second interruption.</b> A celebration pop-up after the child stopped was removed: <i>"The modal was a second interruption tacked onto the one we had just resolved."</i> Points still bank silently (<code>35b6881</code>).</li>
-          <li><b>The words were ambiguous.</b> "I looked up" also means looking something up in a list, so the copy moved away from it (<code>46c123f</code>). The Korean side got the opposite fix: adult words like <span class="ko">방명록</span> and <span class="ko">반영됐어요</span> were replaced with words an 11-year-old uses.</li>
-          <li><b>The scolding voice.</b> In September the warnings switched from the child's own buddy to King Cubix, a narrator character with a pose for each tone (<code>0c7ebf5</code>). Permission requests followed because <i>"permissions are the app's safety voice, not the pet's"</i> (<code>5a2799e</code>). <span class="tag interp">Interpretation</span> For the warnings, no reason is recorded. My reading is the same one: the buddy stays a friend and never scolds. This conflicts with spec <code>F-08.5</code>, which expects the child's character to speak.</li>
-        </ul>
-        <div class="shots" role="group" aria-label="The three steps of the safety moment">
-          <figure class="shot"><img src="img/stage-buzz.webp" alt="One buzz: a vibration icon over the home screen" width="480" height="1076" loading="lazy"><figcaption><b>1 · Buzz.</b> One vibration. The screen stays usable, so a false alarm costs almost nothing.</figcaption></figure>
-          <figure class="shot"><img src="img/stage-card.webp" alt="Warning card: King Cubix and 'Hey, you should look ahead' with an Okay button" width="480" height="1076" loading="lazy"><figcaption><b>2 · Card.</b> Only if the risk is still there two seconds later. One action, no competing button.</figcaption></figure>
-          <figure class="shot"><img src="img/stage-message.webp" alt="Character message: 'You're looking again. Now really look ahead.'" width="480" height="1076" loading="lazy"><figcaption><b>3 · Message.</b> The character speaks. Each ignored round makes the tone firmer. The app stays usable underneath.</figcaption></figure>
-        </div>
-        <h4>Real alternatives, still in the build</h4>
-        <div class="shots" role="group" aria-label="Alternatives explored for the warning">
-          <figure class="shot"><img src="img/warn-buddy.webp" alt="The same warning card narrated by Lumi, the child's buddy" width="480" height="1074" loading="lazy"><figcaption><b>Narrator: buddy.</b> The child's own Lumi delivers the warning. Kept as an option.</figcaption></figure>
-          <figure class="shot"><img src="img/stage-card.webp" alt="The warning card narrated by King Cubix" width="480" height="1076" loading="lazy"><figcaption><b>Narrator: King Cubix.</b> The default since 2 September.</figcaption></figure>
-          <figure class="shot"><img src="img/warn-banner.webp" alt="Banner layout: a small top banner over the home screen" width="480" height="1074" loading="lazy"><figcaption><b>Layout: Banner.</b> The lightest of the seven layouts. It leaves the screen almost untouched.</figcaption></figure>
-        </div>
-        <p><b>What remains uncertain.</b> Whether a child reads and acts on the card inside two seconds, whether three rounds is too many, and how often the buzz fires falsely. These need the field tuning period the spec plans (<code>F-30</code>) and a test with children.</p>
-
-        <!-- Story B -->
-        <h3 id="d-rewards">B. Paying for safety, not for taps</h3>
-        <div class="story">
-          <div class="anat">
-            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Goal</span></div><div class="v"><p>The child wants points to grow their buddy. The guardian is paying for a real change in behaviour.</p></div>
-            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Risk</span></div><div class="v"><p>If points land when a button is pressed, the child can learn the loop "trigger, tap, earn" and farm it. The parent's acceptance number would then measure button presses.</p></div>
-            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence</span></div><div class="v"><p>Found while building the rule engine: the bonus landed the moment the child pressed the button. The design doc names it directly: <i>"The product was paying for a tap, and calling it safety."</i></p></div>
-            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>Pay only when four signals hold, and pay more for stopping before any warning (+50) than after one (+20). Add a 60-second cooldown and a 300-point daily cap (<code>69504ff</code>, 20 July).</p></div>
-          </div>
-        </div>
-        <figure class="paygate" aria-label="When a stop pays">
-          <div class="pg-col">
-            <div class="pg-h">All four must hold</div>
-            <ol class="pg-checks"><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Warning shown</b><span>an intervention was actually on screen</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Phone put away</b><span>phone use while walking stopped</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Screen off</b><span>the screen was turned off</span></li><li><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Walking safely</b><span>safe walking continued afterwards</span></li></ol>
-          </div>
-          <div class="pg-arrow" aria-hidden="true">→</div>
-          <div class="pg-col">
-            <div class="pg-h">Then the stop is worth</div>
-            <ul class="pg-pay">
-              <li class="hi"><b>+50</b><span>stopped at the buzz, before the card appeared</span></li>
-              <li class="lo"><b>+20</b><span>stopped after the card or message</span></li>
-              <li class="zero"><b>0</b><span>within 60 s of the last paid stop, or past 300 a day. Still logged for the report.</span></li>
-            </ul>
-          </div>
-          <figcaption>From <code>SAFE_CONDITIONS</code> in <code>WarningOverlay.jsx</code> and <code>evaluateSafeStop</code> in <code>data.jsx</code>. A bare "Okay, got it" sets none of the four, so it pays nothing.</figcaption>
-        </figure>
-        <p>The tiering is the subtle part. Paying the "warning, then stop" loop as much as never needing a warning would teach a child to earn a warning. The code comment states it plainly: <i>"Never reward the warning→stop loop as much as never needing the warning."</i></p>
+        </details>
         <p>Two earlier changes kept the economy legible. A second invented currency ("coins") was folded into points to match the spec (<code>a06fc2c</code>, 30 June). And gold was reserved for points and XP alone. On 1 September the buddy's Add-XP button went through thirteen versions in one day, from solid gold to outline to no colour, and ended as a green fill, because <i>"the buddy's individual color (e.g. Munch's orange) could clash"</i> (<code>ef32279</code>).</p>
         <div class="shots" role="group" aria-label="Rewards in the child app">
           <figure class="shot"><img src="img/char-detail.webp" alt="Buddy detail: gold XP bar, green Add 10 XP button costing 50 points" width="480" height="1074" loading="lazy"><figcaption><b>Gold means points.</b> Gold appears only on the XP bar and the cost. The action is green.</figcaption></figure>
           <figure class="shot"><img src="img/battle-result.webp" alt="Battle result: Victory, +120 points and +60 XP" width="480" height="1076" loading="lazy"><figcaption><b>What points are for.</b> A first win against a villain pays 120 points and 60 XP.</figcaption></figure>
         </div>
-        <p><b>What remains uncertain.</b> The point values are guesses that the code makes server-configurable on purpose. Whether children notice the 50/20 difference, and whether it changes behaviour, needs data. <span class="tag gap">Sources disagree</span> The spec's flat +20 bonus and the built 50/20 tiers are both in the documents.</p>
+        <p><b>Still unproven.</b> The point values are guesses that the code makes server-configurable on purpose. Whether children notice the 50/20 difference, and whether it changes behaviour, needs data.</p>
 
         <!-- Story C -->
         <h3 id="d-parents">C. Giving parents confidence without surveillance</h3>
         <div class="story">
           <div class="anat">
-            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Goal</span></div><div class="v"><p>A guardian wants to know if their child is safer, and to hear at once if something serious happens.</p></div>
-            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Risk</span></div><div class="v"><p>A report that shows too much becomes tracking. A feed where every row looks the same can bury the one alert that matters.</p></div>
-            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence</span></div><div class="v"><p>Three problems recorded in commits, each found by running the prototype's own flows: the alerts feed, the family model, and a privacy row that wasn't true.</p></div>
+            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Problem</span></div><div class="v"><p>A guardian wants to know whether their child is getting safer, and to hear at once if something serious happens. A report that shows too much becomes tracking, a feed where every row looks alike buries the alert that matters, and the first family model could not hold the adults who actually share a school run.</p></div>
+            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraints</span></div><div class="v"><p>No location tracking and no reading of messages (<code>F-05</code>, <code>F-06</code> excluded). Fall detection, like walking detection, can be wrong.</p></div>
+            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>A fixed, short list of what guardians see, kept in one place in the code and published on the website. Urgent alerts styled apart from every other row. The child answers a possible fall before anyone is told. Guardian groups instead of a two-parent family.</p></div>
+            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Why</span></div><div class="v"><p>A narrow report that guardians can read in full is easier to trust than a dashboard, and an urgent alert only works if it survives a glance.</p></div>
+            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence and limits</span></div><div class="v"><p>Three problems, each found by running the prototype&#39;s own flows and recorded in commits (below). <span class="tag gap">Gap</span> No guardian has used the report or the alerts in a test.</p></div>
           </div>
         </div>
         <ul class="plain">
@@ -977,29 +1018,34 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <figure class="shot"><img src="img/parent-reports.webp" alt="Weekly report: safe stops, ignored warnings, safe walking time and streak" width="480" height="1076" loading="lazy"><figcaption><b>Behaviour, not place.</b> The report counts stops and ignored warnings against last week.</figcaption></figure>
         </div>
 
+        <p><b>Still unproven.</b> Whether guardians find a behaviour-only report enough, whether they trust a list they can&#39;t verify, and how often fall detection fires falsely. None of it has been put in front of a guardian.</p>
+
         <!-- Story D -->
         <h3 id="d-honesty">D. Saying only what the product does</h3>
         <div class="story">
           <div class="anat">
-            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Goal</span></div><div class="v"><p>A parent deciding whether to install the app needs to believe what it promises about privacy and behaviour.</p></div>
-            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Risk</span></div><div class="v"><p>Marketing copy drifts ahead of the product. For a safety app, one false promise undoes the trust the privacy list is meant to build.</p></div>
-            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence</span></div><div class="v"><p>An audit of the website and store copy against the running prototype (25 September), a correction to the privacy list (18 September), and a copy pass on "look up" (1 October).</p></div>
+            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Problem</span></div><div class="v"><p>The website and store copy had drifted ahead of the product. For a safety app, one false promise undoes the trust the privacy list is meant to build.</p></div>
+            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraints</span></div><div class="v"><p>The copy exists in English, Korean and, on the website, Mongolian. What the product does is set by the spec and the code, not by the copy.</p></div>
+            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>Audit every promise on the website and store listing against the running prototype, and rewrite anything the build doesn&#39;t do.</p></div>
+            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Why</span></div><div class="v"><p>A guardian deciding whether to install a safety app is mostly deciding whether to believe it.</p></div>
+            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence and limits</span></div><div class="v"><p>The audit (25 September), a correction to the privacy list (18 September) and a copy pass on &#8220;look up&#8221; (1 October), all in commits. <span class="tag gap">Gap</span> Some help text inside the app still contradicts the build (below).</p></div>
           </div>
         </div>
         <p>The audit found seven kinds of false promise: <i>"no location data at all, a single buzz that never repeats, pairing by scanning a code, groups with no codes, points that unlock villains, reports measured against the child's first week, and a privacy list shown on the child's profile."</i> Each line was rewritten to match the build in English and Korean (<code>e4e1db6</code>).</p>
         <p>The privacy list itself had a row that was never true: <i>"The 'Which app types are blocked' row was never true of the shipped app: blocking only exists in Lite mode."</i> It became "Whether protection is on", and "Which apps you use" moved to the list nobody sees (<code>9671f64</code>). Finally, the website said "look up" throughout, which implies the phone can tell where a child is looking. It can't; it senses walking and screen use. The copy now says "put the phone away" (<code>1a29014</code>).</p>
         <div class="callout">
-          <p><b>Still inconsistent in the prototype.</b> The child's help screen still answers "Why did my screen lock?" with "JoanX locks the screen…", and some help text mentions location in Smart mode. I'm presenting these as open work, not hiding them.</p>
+          <p><b>Still inconsistent in the prototype.</b> The audit covered the website and store copy, not every screen in the app. Three contradictions remain inside the app: the child&#39;s help screen still answers &#8220;Why did my screen lock?&#8221; with &#8220;JoanX locks the screen&#8230;&#8221;; a guardian FAQ says location is used in Smart mode; and Lite mode, which the spec excludes, can still be chosen in settings and does show a full-screen block. The default mode, Smart, never locks. These are open work, listed in chapter 10.</p>
         </div>
 
         <!-- Story E -->
         <h3 id="d-world">E. A game world built from the phone's own habits</h3>
         <div class="story">
           <div class="anat">
-            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Goal</span></div><div class="v"><p>The child wants something worth spending points on. The product needs the game to pull them away from the phone, not deeper into it.</p></div>
-            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Risk</span></div><div class="v"><p>A battle game is the most absorbing screen in the app. Built carelessly, the reward for looking away from the phone becomes the next reason to stare at it, possibly mid-stride.</p></div>
-            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence</span></div><div class="v"><p>Spec appendix <code>A-8</code> (five PvE battles a day against a villain ladder) and <code>F-19</code>. The rule and its reason are written into the code; the battle sequence was reworked across six commits in late July and August.</p></div>
-            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraint</span></div><div class="v"><p>The client owns the characters and approves villain names, stories and art. No PvP, no chat, no paid items (<code>A-11</code>).</p></div>
+            <div class="k k-risk"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>Problem</span></div><div class="v"><p>The child needs something worth spending points on, but a battle game is the most absorbing screen in the app. Built carelessly, the reward for looking away from the phone becomes the next reason to stare at it, possibly mid-stride.</p></div>
+            <div class="k k-constraint"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Constraints</span></div><div class="v"><p>The spec sets five battles a day against a ladder of villains (<code>A-8</code>). The client owns the characters and approves villain names, stories and art. No PvP, no chat, no paid items (<code>A-11</code>).</p></div>
+            <div class="k k-decision"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Decision</span></div><div class="v v-decision"><p>Make each villain one of the phone&#39;s own habits, close battles while the child is walking, and show inside the fight that safe walking is what wins.</p></div>
+            <div class="k k-goal"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Why</span></div><div class="v"><p>The game should repeat the product&#39;s message, not compete with it.</p></div>
+            <div class="k k-evidence"><svg class="ki" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Evidence and limits</span></div><div class="v"><p>The walking rule and its reason are written into the code (<code>canChallenge</code>); the battle sequence was reworked across six commits in July and August. <span class="tag gap">Gap</span> Whether children read the villains as habits is untested.</p></div>
           </div>
         </div>
         <p>Three choices keep the game on the product's side:</p>
@@ -1022,7 +1068,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <li class="vil"><div class="vil-art"><img src="img/villain-10.webp" alt="Vilord, villain level 10" loading="lazy"></div><div class="vil-meta">Lv 10 · final boss</div><div class="vil-name">Vilord</div><p class="vil-risk"><b>Total domination</b> — the moment the phone stops being a tool and starts being in charge</p></li>
         </ul>
         <p class="fig-note">Art and descriptions from the build (<code>public/assets/villains/</code>, <code>VILLAINS</code> in <code>data.jsx</code>). Villain names and art go through the client for approval.</p>
-        <h4>How hard each villain is</h4>
+        <details class="more"><summary>How hard each villain is, and why safe walking is what moves a child up the road</summary>
         <p>Villain power climbs 15 points a level, then jumps for the two bosses. The buddy's power comes from its stats, which grow with XP bought with safe-walking points, and a battle adds a safe-walking bonus to the odds (<code>BATTLE_ODDS</code>). Walking safely is what moves a child up the road.</p>
         <figure class="fig">
 <div class="scroll">
@@ -1085,6 +1131,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 </div>
 <figcaption>Power from <code>VILLAINS</code> in <code>data.jsx</code>. Lumi's 206 is the prototype's sample buddy at level 5. Win chance is a roll against the shown odds, between 5% and 95%.</figcaption>
 </figure>
+        </details>
         <p>Smaller decisions support these. The villain map uses sticker-style markers, and state is shown by a pulse ring on the current challenger, <i>"never by recolouring the outline"</i> (<code>c985a37</code>). Each villain card shows the tries left today, so the daily limit is visible before the fight, not enforced as a surprise after tapping Start (<code>29a1497</code>). Villains unlock strictly in order, and no villain starts defeated: a new player meets Ping first (<code>9671f64</code>).</p>
         <div class="shots" role="group" aria-label="Villain road, battle and the walking rule">
           <figure class="shot"><img src="img/villain-road.webp" alt="Villain road map with Ping's card: notifications, power 145, reward 120 points, 5 of 5 tries left" width="480" height="1074" loading="lazy"><figcaption><b>The villain road.</b> Ping's card names the habit it stands for, the reward and the tries left today.</figcaption></figure>
@@ -1093,37 +1140,18 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </div>
 
         <h4>The fight, and what a loss still gives</h4>
-        <p>Once the child has stopped walking, a battle is three short steps: pick a fighter, watch the clash, read the result. The result shows the battle math (the stats behind Power, and the win chance), so a loss reads as a close roll and not as unfair. Losing still pays 10 points for trying.</p>
-        <div class="shots" role="group" aria-label="A battle: choose a fighter, the fight, the result">
-          <figure class="shot"><img src="img/battle-pick.webp" alt="Choose your fighter: Ping opponent card at the top, Lumi with Power 206, Start battle 5/5" width="480" height="1075" loading="lazy"><figcaption><b>Pick.</b> The opponent&#39;s power and your buddy&#39;s power, side by side, before you commit a try.</figcaption></figure>
-          <figure class="shot"><img src="img/battle-fight.webp" alt="The fight: Ping and Lumi in the arena with health bars and damage numbers" width="480" height="1075" loading="lazy"><figcaption><b>Fight.</b> Hits land as numbers on health bars. It plays itself in seconds, and five tries a day cap it.</figcaption></figure>
-          <figure class="shot"><img src="img/battle-loss.webp" alt="Result: So close! Still earned +10 points for trying, with battle math showing Power 206 and win chance 91%" width="480" height="1075" loading="lazy"><figcaption><b>Result.</b> A loss at 91% shows its math and still pays +10. The win screen is in decision B.</figcaption></figure>
+        <p>Once the child has stopped walking, a battle is three short steps: pick a fighter, watch the clash, read the result. The result shows the battle math (the stats behind the buddy&#39;s power and the win chance), so a loss reads as a close roll rather than an unfair one. Losing still pays 10 points for trying.</p>
+        <div class="shots" role="group" aria-label="A battle: the fight and a loss">
+          <figure class="shot"><img src="img/battle-fight.webp" alt="The fight: Ping and Lumi in the arena with health bars and damage numbers" width="480" height="1075" loading="lazy"><figcaption><b>Fight.</b> It plays itself in a few seconds; five tries a day cap it.</figcaption></figure>
+          <figure class="shot"><img src="img/battle-loss.webp" alt="Result: So close! Still earned +10 points for trying, with battle math showing Power 206 and win chance 91%" width="480" height="1075" loading="lazy"><figcaption><b>Loss.</b> Even at a 91% win chance it can go wrong, so the math is shown and the try still pays +10.</figcaption></figure>
         </div>
 
-        <h4>The story around it</h4>
-        <p>The onboarding story sets up the same world before the child sees a single game screen. In the first cuts the villains are winning: children walk with their eyes on their phones while the creatures gather around them. At night the boss reveal shows what the villains want, a city of phones. At cut 7 the story turns, the buddies appear, and it ends on the child's first egg. Each villain also carries its own written story, look and personality, which appear on its card and in the villain book.</p>
-        <div class="shots two" role="group" aria-label="Story cuts: the villain reveal">
-          <figure class="shot"><img src="img/story-5.webp" alt="Story cut 5: dark villains with glowing spiral eyes looming over a street" width="520" height="923" loading="lazy"><figcaption><b>Cut 5.</b> The minions arrive, each holding a phone.</figcaption></figure>
-          <figure class="shot"><img src="img/story-6.webp" alt="Story cut 6: the boss tower with phones streaming purple light" width="520" height="923" loading="lazy"><figcaption><b>Cut 6.</b> The boss reveal: phones feeding the tower.</figcaption></figure>
-        </div>
-        <p><b>What remains uncertain.</b> Whether children read the villains as phone habits or only as monsters, whether the night-time villain art is too dark for the youngest children, and whether five battles of about six seconds each pulls attention back toward the screen. <span class="tag gap">Sources disagree</span> The villain roster exists in three versions across the spec, the checklist and the build; this page uses the build's names.</p>
+        <p><b>Still unproven.</b> Whether children read the villains as phone habits or only as monsters, whether the night-time villain art is too dark for the youngest children, and whether five battles of about six seconds each pulls attention back toward the screen. <span class="tag gap">Gap</span> The villain roster exists in three versions across the spec, the checklist and the build; this page uses the build's names.</p>
       </section>
       <section class="ch" id="experience" aria-labelledby="h-experience">
         <div class="eyebrow">Chapter 5 · The product</div>
-        <h2 id="h-experience">The full journey</h2>
-        <p>One walk to school, as the prototype plays it today.</p>
-        <ol class="plain">
-          <li><b>Set-up, parent.</b> The parent signs up, adds the child, and gets a six-digit code that is valid for five minutes.</li>
-          <li><b>Set-up, child.</b> The child watches the story, types the code, hatches a starter egg, and King Cubix asks for four permissions one at a time. A refused permission says what the child loses, and protection runs limited instead of failing.</li>
-          <li><b>The walk.</b> Home shows "You're protected". If the child walks and uses the screen for ten seconds, the safety moment runs. Stopping pays; ignoring is logged; the phone is never locked.</li>
-          <li><b>After school.</b> Points buy XP, eggs and outfits. Battles open once the child stops walking.</li>
-          <li><b>That week, parent.</b> The report shows stops, ignored warnings and safe walking time against last week. If a fall is detected and the child doesn't answer in 20 seconds, the parent's phone shows a full-screen alert.</li>
-        </ol>
-        <div class="shots" role="group" aria-label="The journey in five screens">
-          <figure class="shot"><img src="img/parent-pairing.webp" alt="Parent pairing screen with code 482 193" width="480" height="1076" loading="lazy"><figcaption><b>Pair.</b> A short-lived code; the child has no account of their own.</figcaption></figure>
-          <figure class="shot"><img src="img/child-home.webp" alt="Child home with protection status and today's tasks" width="480" height="1076" loading="lazy"><figcaption><b>Walk.</b> Protection status sits on Home, with the reason if it's limited.</figcaption></figure>
-          <figure class="shot"><img src="img/parent-children.webp" alt="Children list with device status and permissions per child" width="480" height="1076" loading="lazy"><figcaption><b>Oversee.</b> Each child's device and missing permissions, in words.</figcaption></figure>
-        </div>
+        <h2 id="h-experience">Set-up, rewards and rooms</h2>
+        <p>The decisions above cover the safety moment, rewards, the guardian&#39;s view and the game. This chapter covers the rest of the product: how a family gets set up, and what a child spends points on. These screens carried less risk than the safety moment, but most of a child&#39;s time in the app is spent in them.</p>
         <h3 id="ex-signin">Set-up, guardian: signing in</h3>
         <p>Only the guardian has an account. The first screen offers three doors, so nobody has to guess which one is theirs: a new account, logging back in, or joining a group someone else already runs. Consent comes before the account, because the guardian agrees on the child&#39;s behalf.</p>
         <div class="shots three" role="group" aria-label="Guardian sign-in: welcome, consent, account">
@@ -1172,7 +1200,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <li><b>Device</b><span>Reconnect after a new phone, by scanning a new QR.</span></li>
           <li><b>Remove child</b><span>At the bottom, in red, away from everything else.</span></li>
         </ul>
-        <p class="fig-note"><span class="tag gap">Sources disagree</span> Lite blocks apps while walking, but the website and the safety moment promise that JoanX never locks the phone. The prototype&#39;s code marks Lite as excluded from this revision, yet the settings screen still offers it. Either hide it until it ships, or give it a name and description that don&#39;t contradict the promise. The &#8220;At home&#8221; rule is also described as geofenced, a location claim the product otherwise avoids.</p>
+        <p class="fig-note"><span class="tag gap">Gap</span> Lite blocks apps while walking, but the website and the safety moment promise that JoanX never locks the phone. The prototype&#39;s code marks Lite as excluded from this revision, yet the settings screen still offers it. Either hide it until it ships, or give it a name and description that don&#39;t contradict the promise. The &#8220;At home&#8221; rule is also described as geofenced, a location claim the product otherwise avoids.</p>
 
         <h3 id="ex-eggs">After school: eggs and the shop</h3>
         <p>Eggs are how a child gets a new buddy. Most are earned by walking safely: clearing every daily mission gives a Common Egg, every weekly mission a Rare Egg, and walking milestones such as 10 km add more. The shop sells the same eggs for points, and an egg already earned shows its price beside it, so a child can see what it was worth.</p>
@@ -1189,8 +1217,17 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </ul>
         <p class="fig-note">Odds from <code>EGGS</code> in the prototype&#39;s data file. A pricier egg shifts the odds rather than guaranteeing a rarer buddy, and only the Epic Egg can hatch an Epic, which keeps the two hidden characters rare. Prices and odds are meant to come from server settings.</p>
 
-        <h3 id="ex-outfit-art">Before the screen: drawing the outfits</h3>
-        <p>Before any outfit screen existed, I made the clothes themselves. Lumi isn&#39;t built from layers. Each outfit combination is its own complete picture, which I generated with AI and laid out on a Figma board, then the app swaps to the matching picture. An animated, rigged character wasn&#39;t in the budget. Whole pictures were, and they look finished on day one.</p>
+        <h3 id="ex-outfits">Dressing the buddy</h3>
+        <p>Outfits are the most personal thing points can buy, so dressing Lumi got its own screen. Tapping an item puts it on straight away as a try-on. A bar at the bottom names the item and offers Buy or &#215;, so nothing is paid for by accident (<code>17f290e</code>).</p>
+        <div class="shots of-shots" role="group" aria-label="Decorating Lumi: worn look, then trying on a hood, a cape and spectacles">
+          <figure class="shot"><img src="img/outfit-worn.webp" alt="Decorate Lumi screen: Lumi in the wizard hat and star cape, Hat tab open" width="480" height="1075" loading="lazy"><figcaption><b>Worn.</b> The default look for stage 2; owned items show 0.</figcaption></figure>
+          <figure class="shot"><img src="img/outfit-hood.webp" alt="Lumi trying on the wizard hood, with a Buy 280 bar" width="480" height="1075" loading="lazy"><figcaption><b>Hat.</b> The hood goes on before anything is paid.</figcaption></figure>
+          <figure class="shot"><img src="img/outfit-cape.webp" alt="Lumi trying on the tattered cape, with a Buy 240 bar" width="480" height="1075" loading="lazy"><figcaption><b>Coat.</b> The dashed outline marks a try-on, not a purchase.</figcaption></figure>
+          <figure class="shot"><img src="img/outfit-specs.webp" alt="Lumi trying on oval spectacles, with a Buy 200 bar" width="480" height="1075" loading="lazy"><figcaption><b>Glasses.</b> The third slot added at stage 2.</figcaption></figure>
+        </div>
+
+        <h4 id="ex-outfit-art">How the outfit pictures were made</h4>
+        <p>Before the screen existed, I made the clothes themselves. Lumi isn&#39;t built from layers. Each outfit combination is its own complete picture, which I generated with AI and laid out on a Figma board, then the app swaps to the matching picture. An animated, rigged character wasn&#39;t in the budget. Whole pictures were, and they look finished on day one.</p>
         <figure class="bn-fig of-board"><img src="img/outfit-board.webp" alt="Figma board of Lumi&#39;s stage-2 wardrobe: columns Base, Hat, Coat, Whole Fit, Hat and Coat Swap; rows with glasses, without glasses, glasses swap; two sets of the same grid" width="1194" height="1442" loading="lazy"><figcaption>My board for Lumi&#39;s stage-2 wardrobe. Each column is a hat-and-coat combination, each row a glasses option, and every cell is a separate generated picture.</figcaption></figure>
         <ul class="of-stats">
           <li><b>41</b><span>whole pictures in the app: 16 for stage 1, 25 for stage 2</span></li>
@@ -1206,15 +1243,6 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <p class="bt-note">The picture count grows with every item: adding one more hat to stage 2 means up to nine new renders (three coat choices times three glasses choices). A rigged character in Rive (or a similar tool) would turn that into one new layer, and add the life a still picture can&#39;t: idle breathing, a reaction to a new outfit, a cheer after a safe walk.</p>
         </div>
 
-        <h3 id="ex-outfits">The result: dressing the buddy in the app</h3>
-        <p>With the pictures done, the screen could be simple. Points spent on outfits are where a lot of children actually spend their time, so dressing Lumi got its own screen. Tapping an item puts it on straight away as a try-on. A bar at the bottom names the item and offers Buy or &#215;, so nothing is paid for by accident (<code>17f290e</code>).</p>
-        <div class="shots of-shots" role="group" aria-label="Decorating Lumi: worn look, then trying on a hood, a cape and spectacles">
-          <figure class="shot"><img src="img/outfit-worn.webp" alt="Decorate Lumi screen: Lumi in the wizard hat and star cape, Hat tab open" width="480" height="1075" loading="lazy"><figcaption><b>Worn.</b> The default look for stage 2; owned items show 0.</figcaption></figure>
-          <figure class="shot"><img src="img/outfit-hood.webp" alt="Lumi trying on the wizard hood, with a Buy 280 bar" width="480" height="1075" loading="lazy"><figcaption><b>Hat.</b> The hood goes on before anything is paid.</figcaption></figure>
-          <figure class="shot"><img src="img/outfit-cape.webp" alt="Lumi trying on the tattered cape, with a Buy 240 bar" width="480" height="1075" loading="lazy"><figcaption><b>Coat.</b> The dashed outline marks a try-on, not a purchase.</figcaption></figure>
-          <figure class="shot"><img src="img/outfit-specs.webp" alt="Lumi trying on oval spectacles, with a Buy 200 bar" width="480" height="1075" loading="lazy"><figcaption><b>Glasses.</b> The third slot added at stage 2.</figcaption></figure>
-        </div>
-
         <h3 id="ex-rooms">Designing the Dream Room</h3>
         <p>Buddies live in rooms, and the profile friends visit opens on the Dream Room. I designed it in Figma in three steps: an empty room as the base, decorated previews to find where pieces belong, then the pieces themselves as separate cut-out items the child places.</p>
         <figure class="bn-fig"><img src="img/room-board.webp" alt="Figma board: the original empty Dream Room, three previews of the room with decor (one marked 1 to 4 where pieces go), and the room decor items: three rugs, three armchairs, three hanging ornaments, three cabinets" width="1790" height="862" loading="lazy"><figcaption>My Figma board. Left, the empty room. Middle, three decorated previews; the first is marked 1&#8211;4 for the four spots a piece can fill. Right, the candidate items, three per spot.</figcaption></figure>
@@ -1228,15 +1256,15 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <figure class="shot"><img src="img/room-final.webp" alt="Finished Dream Room on the profile: moon ornament, cabinet, armchair and flower rug placed around Lumi" width="480" height="1075" loading="lazy"><figcaption><b>Show.</b> The finished room is the profile friends visit; the book below it is the guestbook.</figcaption></figure>
           <figure class="shot"><img src="img/room-guestbook.webp" alt="The guestbook open over the Dream Room: a framed book page listing friends&#39; notes such as Your room is awesome! and Nice streak!" width="480" height="1075" loading="lazy"><figcaption><b>Read.</b> Tapping the book opens it: notes friends left on a visit, checked by a moderation filter before they appear.</figcaption></figure>
         </div>
-        <p class="fig-note"><span class="tag interp">To improve</span> Pieces don&#39;t layer around the buddy yet: dropped at its default spot, the armchair or rug covers Lumi, so these were dragged clear by hand. Depth sorting by floor position would fix it.</p>
+        <p class="fig-note"><span class="tag gap">Gap</span> Pieces don&#39;t layer around the buddy yet: dropped at its default spot, the armchair or rug covers Lumi, so these were dragged clear by hand. Depth sorting by floor position would fix it.</p>
       </section>
       <section class="ch" id="website" aria-labelledby="h-website">
         <div class="eyebrow">Chapter 6 · The product</div>
         <h2 id="h-website">The website</h2>
         <p>JoanX is two things a family meets: the apps, and the website that decides whether the apps get installed at all. The website had its own brief and its own design problem.</p>
 
-        <h3 id="ws-job">One reader, ninety seconds</h3>
-        <p>The brief (16 September) names one primary reader: a guardian of a primary-school child, on a phone, deciding in about ninety seconds whether JoanX is worth installing. They arrive suspicious of two things: that it is another blocker their child will defeat, and that it will spy. The page has one job, to move that guardian from <i>&#8220;another parental-control app&#8221;</i> to <i>&#8220;this is a game my child would keep, and it doesn&#39;t watch them.&#8221;</i></p>
+        <h3 id="ws-job">A guardian, a phone, ninety seconds</h3>
+        <p>The brief (16 September) names the primary reader: a guardian of a 6 to 13-year-old, on a phone, deciding in about ninety seconds whether JoanX is worth installing. They arrive suspicious of two things: that it is another blocker their child will defeat, and that it will spy. (The client, partners and pilot schools are secondary readers.) The page has one job: to move that guardian from <i>&#8220;another parental-control app&#8221;</i> to <i>&#8220;this is a game my child would keep, and it doesn&#39;t watch them.&#8221;</i></p>
 
         <h3 id="ws-versions">From a one-day AI draft to a designed page</h3>
         <p><b>V1</b> was generated by AI in one day from prompts (16 September), and it is kept as a baseline. <b>V2</b> is my design: I stripped the page back to a plain base on 25 September and rebuilt it section by section over the following week, using AI to build what I directed. Both are still live: open either below, or use the switch on the site to move between them. Shown here in Korean, the main market; each site has its own language switch.</p>
@@ -1296,7 +1324,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <figure class="mo-f"><img src="img/motion-64.webp" alt="Privacy takeover at 64% of the scroll: Words arrive" width="960" height="600" loading="lazy"><figcaption><b>Words arrive.</b> Each word starts before the last has landed, like a wave.</figcaption></figure>
           <figure class="mo-f"><img src="img/motion-95.webp" alt="Privacy takeover at 95% of the scroll: Hands over" width="960" height="600" loading="lazy"><figcaption><b>Hands over.</b> Green turns to paper with green words, so the next section follows with no colour break.</figcaption></figure>
         </div>
-        <h4>Every moving moment on the page</h4>
+        <details class="more"><summary>Every moving moment on the page, and the rules they share</summary>
         <ul class="mo-list">
           <li><b>Hero</b><span>The banner stays still; a rounded dome of the next section rises over its bottom edge as you scroll.</span><code>cd28c41</code></li>
           <li><b>Safety moment</b><span>A slow section whose lines reveal one at a time, so the buzz-then-message sequence is read in order.</span><code>1bd9229</code></li>
@@ -1306,6 +1334,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <li><b>Nav</b><span>Hides when you scroll down, comes back when you scroll up; never while a menu or the QR card is open.</span><code>1bd9229</code></li>
         </ul>
         <p class="fig-note">Rules that applied to all of them: phones get a simpler version (the privacy cards stack and skip the sideways slide), sections re-measure when the font loads or the language changes, and with <i>reduce motion</i> turned on in the device settings the pins and reveals switch off and everything is simply shown.</p>
+        </details>
 
         <h3 id="ws-banner">Directing the banner art with AI</h3>
         <p>The hero picture wasn&#39;t drawn by hand or bought as stock. I collected the product&#39;s own art onto one board, arranged it the way I wanted the scene to read, and used ChatGPT&#39;s image generation to turn it into a single wide banner, refining the scene with prompts until it matched the board. The banner went into the site on 30 September (<code>0170333</code>).</p>
@@ -1354,16 +1383,15 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           </ol>
           <figure class="tr-phone"><img src="img/site-phone.webp" alt="The website hero on a phone, in Korean, with the scene below the headline and its sky above" width="480" height="1038" loading="lazy"><figcaption>As shipped, in Korean.</figcaption></figure>
         </div>
-        <p class="fig-note"><span class="tag interp">From my design notes</span> The rejected versions were reviewed live and recorded in my session notes, not as commits.</p>
+        <p class="fig-note">The rejected versions were reviewed live and recorded in my session notes, not in commits, so they aren&#39;t shown here.</p>
 
-        <h3 id="ws-honest">Saying only what the app does</h3>
-        <p>The website is where the copy audit from decision D happened: seven kinds of promise the app didn&#39;t keep were rewritten, the privacy list was corrected, and &#8220;look up&#8221; became &#8220;put the phone away&#8221; across all three languages. For a product whose pitch is trust, the website&#39;s honesty is part of the brand.</p>
-        <p><b>Still open.</b> The website and the apps use different typefaces, and the website footer still says JoanX hasn&#39;t launched. Both are on the list in Reflection.</p>
+        <h3 id="ws-honest">What&#39;s still open on the site</h3>
+        <p>The copy audit in decision D happened on this site, so its promises now match the app in all three languages. Two things are still out of line: the website and the apps use different typefaces, and the footer still says JoanX hasn&#39;t launched.</p>
       </section>
       <section class="ch" id="iteration" aria-labelledby="h-iteration">
         <div class="eyebrow">Chapter 7 · How it was made</div>
         <h2 id="h-iteration">Process and iteration</h2>
-        <p>The real process was not linear. It moved in bursts, and most iteration happened by building alternatives side by side and switching between them live in the prototype's Tweaks panel. The panel holds 53 groups of switches, most of them design alternatives. Some sets were later cut back; the battle layouts, for example, were pruned to one.</p>
+        <p>The real process was not linear. It moved in bursts, and most iteration happened by building alternatives side by side and switching between them live in the prototype&#39;s Tweaks panel, a hidden settings drawer that swaps one design for another on the running phone. The panel holds 53 groups of switches, most of them design alternatives. Some sets were later cut back; the battle layouts, for example, were pruned to one.</p>
 <figure class="fig">
 <div class="scroll">
 <svg viewBox="0 0 980 314" role="img" aria-labelledby="alT alD">
@@ -1410,8 +1438,44 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 <text x="396.8" y="269.0" font-size="12" font-weight="600" class="tnum">7</text>
 </svg>
 </div>
-<figcaption>Options per area still switchable in the prototype's Tweaks panel today, counted from <code>App.jsx</code> and the variant files.</figcaption>
+<figcaption>Options per area still switchable in the prototype today, counted from <code>App.jsx</code> and the variant files. All but the child home are in the Tweaks panel; home layouts are chosen by a URL setting.</figcaption>
 </figure>
+
+        <h3 id="it-home">One screen, start to finish: the child&#39;s home</h3>
+        <p>The child&#39;s home is the screen a child sees most, so it shows the whole process in one place. The first version was generated with AI on day one; over four months I rebuilt nearly every part of it.</p>
+        <h4>Five builds, first draft to final</h4>
+        <ol class="evo-strip" aria-label="The child home at five points in the git history">
+          <li class="evo-step"><img src="img/home-v1.webp" alt="First AI draft of the child home with Pip, a Lite mode banner, 38 coins and a blue goal bar" width="480" height="1002" loading="lazy"><div class="fs-n">5 June</div><div class="fs-q">The AI draft</div><div class="fs-a">Three colours, a screen lock, two currencies.</div></li>
+          <li class="evo-step"><img src="img/home-v2.webp" alt="The 8 June child home: Ember the crocodile, a Lite mode banner, and an orange safe-walk goal bar matching the buddy" width="480" height="989" loading="lazy"><div class="fs-n">8 June</div><div class="fs-q">Colour and type</div><div class="fs-a">Ocean-blue actions; the goal card tinted to the buddy.</div></li>
+          <li class="evo-step"><img src="img/home-v3.webp" alt="The 30 June child home: Mochi the fox, one star points pill, You&#39;re protected, Safe walking today with 10 points per safe minute, and an orange battle button" width="480" height="989" loading="lazy"><div class="fs-n">30 June</div><div class="fs-q">Matched to the spec</div><div class="fs-a">One currency, no lock, battle in the centre.</div></li>
+          <li class="evo-step"><img src="img/home-v4.webp" alt="The 21 July child home: green background, Hammy in an XP ring, You&#39;re protected, today&#39;s tasks, and a green battle button" width="480" height="989" loading="lazy"><div class="fs-n">21 July</div><div class="fs-q">One green</div><div class="fs-a">Brand green, an XP ring, today&#39;s tasks.</div></li>
+          <li class="evo-step"><img src="img/child-home.webp" alt="The final child home with Lumi in an XP ring on brand green" width="480" height="1076" loading="lazy"><div class="fs-n">October</div><div class="fs-q">Final</div><div class="fs-a">Finished icons and the client&#39;s Lumi.</div></li>
+        </ol>
+        <p class="fig-note">The middle three are real builds from git history, run and captured. Each had its own default buddy.</p>
+        <p><b>Teaching the colours.</b> Most of the colour work wasn&#39;t one fix. It was the same correction made until it stuck. Each time a generated screen got colour wrong, I wrote the fix down as a rule the AI reads before it builds anything (chapter 8): green is the brand, never the character; gold only for points and XP; no glows. Later screens started from those rules instead of repeating the first draft&#39;s mistakes.</p>
+        <p class="fig-note">Dates from the git history of the home screen files. Numbers on every screen are sample data.</p>
+
+        <h3 id="it-villains">The villain map, from nothing to a road</h3>
+        <p>The battle screen changed even more than the home. It went from fighting other players to a road of villains, each one a phone habit (decision E).</p>
+        <ol class="evo-strip" aria-label="The villain screen at five points in the git history">
+          <li class="evo-step"><img src="img/vmap-v1.webp" alt="The 5 June battle screen: choose a buddy and a Find a match button, with no villains" width="480" height="989" loading="lazy"><div class="fs-n">5 June</div><div class="fs-q">No villains</div><div class="fs-a">Just &#8220;Find a match&#8221;: fights against other players, which the spec rules out.</div></li>
+          <li class="evo-step"><img src="img/vmap-v2.webp" alt="The 8 July Villain Dex: a list of villains such as Smombie Rookie and Dark Walker with Defeated and Now tags" width="480" height="989" loading="lazy"><div class="fs-n">8 July</div><div class="fs-q">A list</div><div class="fs-a">The spec&#39;s ten villains in a plain list, drawn with reused buddy art.</div></li>
+          <li class="evo-step"><img src="img/vmap-v3.webp" alt="The 22 July villain road: white discs on a plain path and a card for Noct, a darkness villain" width="480" height="989" loading="lazy"><div class="fs-n">22 July</div><div class="fs-q">A road</div><div class="fs-a">The first road map. Villains still stood for road dangers.</div></li>
+          <li class="evo-step"><img src="img/vmap-v4.webp" alt="The 28 August villain map: a painted night world, villain stickers and a card for Moody with 5 of 5 tries left" width="480" height="989" loading="lazy"><div class="fs-n">28 August</div><div class="fs-q">A world</div><div class="fs-a">Painted map, villain art, phone habits, tries left.</div></li>
+          <li class="evo-step"><img src="img/villain-road.webp" alt="The final villain road: a sunny painted map, locked villains as shadows with question marks, and a card for Ping" width="480" height="1074" loading="lazy"><div class="fs-n">18 September</div><div class="fs-q">Final</div><div class="fs-a">Everyone starts at Ping; the rest wait as shadows.</div></li>
+        </ol>
+        <p class="fig-note">The first four are real builds from git history, run and captured.</p>
+
+        <h3 id="it-room">The room, from a price tag to a place</h3>
+        <p>The room friends visit started as a line in the shop. It became the child&#39;s own space to decorate (chapter 5).</p>
+        <ol class="evo-strip" aria-label="The room screen at five points in the git history">
+          <li class="evo-step"><img src="img/room-v1.webp" alt="The 5 June shop: Unlock rooms rows for Star Studio and Garden, each a house icon and a price" width="480" height="989" loading="lazy"><div class="fs-n">5 June</div><div class="fs-q">A price tag</div><div class="fs-a">Rooms were rows in the shop: a house icon and a price.</div></li>
+          <li class="evo-step"><img src="img/room-v2.webp" alt="The 8 July profile: Hammy on a pale card, Sky, Sunset and Mint background swatches, and a My rooms list" width="480" height="989" loading="lazy"><div class="fs-n">8 July</div><div class="fs-q">A card</div><div class="fs-a">The buddy on a gradient card; backgrounds picked from swatches.</div></li>
+          <li class="evo-step"><img src="img/room-v3.webp" alt="The 17 July profile: a full-screen illustrated green room with round tap spots for shelf, seat and buddy" width="480" height="989" loading="lazy"><div class="fs-n">17 July</div><div class="fs-q">A real room</div><div class="fs-a">Illustrated rooms with tap spots for decor.</div></li>
+          <li class="evo-step"><img src="img/room-v4.webp" alt="The 11 August profile: the Dream Room art with Shelf, Furniture and Buddies labels, a level pill and a guestbook book" width="480" height="989" loading="lazy"><div class="fs-n">11 August</div><div class="fs-q">Dream Room</div><div class="fs-a">Labelled spots, a guestbook, and art drawn already decorated.</div></li>
+          <li class="evo-step"><img src="img/room-final.webp" alt="The final Dream Room: Lumi on a flower rug with a moon, cabinet and armchair placed by the child, and decorate buttons on the right" width="480" height="1075" loading="lazy"><div class="fs-n">September</div><div class="fs-q">Final</div><div class="fs-a">An empty room the child fills, piece by piece.</div></li>
+        </ol>
+        <p class="fig-note">The first four are real builds from git history, run and captured.</p>
 
         <h3 id="it-timeline">What actually happened, by date</h3>
 <figure class="fig">
@@ -1453,10 +1517,10 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
 <path class="bar1" d="M871.3,190 V84.7 Q871.3,80.7 875.3,80.7 H891.3 Q895.3,80.7 895.3,84.7 V190 Z"><title>Week of 21 Sep: 45 commits</title></path>
 <text x="883.3" y="72.7" text-anchor="middle" font-size="12" font-weight="600" class="tnum">45</text>
 <text x="883.3" y="210" text-anchor="middle" font-size="12" class="muted">21 Sep</text>
-<path class="bar1" d="M922.4,190 V116.3 Q922.4,112.3 926.4,112.3 H942.4 Q946.4,112.3 946.4,116.3 V190 Z"><title>Week of 28 Sep: 32 commits</title></path>
-</svg><details class="tblv"><summary>Show commits per week as a table</summary><div class="tbl-wrap"><table><thead><tr><th>Week of</th><th>Commits</th></tr></thead><tbody><tr><td>1 Jun</td><td>4</td></tr><tr><td>8 Jun</td><td>60</td></tr><tr><td>15 Jun</td><td>0</td></tr><tr><td>22 Jun</td><td>0</td></tr><tr><td>29 Jun</td><td>7</td></tr><tr><td>6 Jul</td><td>26</td></tr><tr><td>13 Jul</td><td>21</td></tr><tr><td>20 Jul</td><td>37</td></tr><tr><td>27 Jul</td><td>18</td></tr><tr><td>3 Aug</td><td>13</td></tr><tr><td>10 Aug</td><td>3</td></tr><tr><td>17 Aug</td><td>9</td></tr><tr><td>24 Aug</td><td>13</td></tr><tr><td>31 Aug</td><td>21</td></tr><tr><td>7 Sep</td><td>6</td></tr><tr><td>14 Sep</td><td>14</td></tr><tr><td>21 Sep</td><td>45</td></tr><tr><td>28 Sep</td><td>32</td></tr></tbody></table></div></details>
+<path class="bar1" d="M922.4,190 V109.0 Q922.4,105.0 926.4,105.0 H942.4 Q946.4,105.0 946.4,109.0 V190 Z"><title>Week of 28 Sep: 35 commits</title></path>
+</svg><details class="tblv"><summary>Show commits per week as a table</summary><div class="tbl-wrap"><table><thead><tr><th>Week of</th><th>Commits</th></tr></thead><tbody><tr><td>1 Jun</td><td>4</td></tr><tr><td>8 Jun</td><td>60</td></tr><tr><td>15 Jun</td><td>0</td></tr><tr><td>22 Jun</td><td>0</td></tr><tr><td>29 Jun</td><td>7</td></tr><tr><td>6 Jul</td><td>26</td></tr><tr><td>13 Jul</td><td>21</td></tr><tr><td>20 Jul</td><td>37</td></tr><tr><td>27 Jul</td><td>18</td></tr><tr><td>3 Aug</td><td>13</td></tr><tr><td>10 Aug</td><td>3</td></tr><tr><td>17 Aug</td><td>9</td></tr><tr><td>24 Aug</td><td>13</td></tr><tr><td>31 Aug</td><td>21</td></tr><tr><td>7 Sep</td><td>6</td></tr><tr><td>14 Sep</td><td>14</td></tr><tr><td>21 Sep</td><td>45</td></tr><tr><td>28 Sep</td><td>35</td></tr></tbody></table></div></details>
 </div>
-<figcaption>From the git history: 329 commits between 5 June and 2 October 2026. The two empty weeks are the gap of 10–28 June.</figcaption>
+<figcaption>From the git history: 332 commits between 5 June and 2 October 2026. The two empty weeks are the gap of 10–28 June.</figcaption>
 </figure>
         <div class="tbl-wrap"><table>
           <thead><tr><th>Dates (2026)</th><th>Commits</th><th>Focus</th></tr></thead>
@@ -1471,7 +1535,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
             <tr><td class="num">1–8 Sep</td><td class="num">25</td><td>Add-XP button, King Cubix narrator, room decorating, 17-cut onboarding story</td></tr>
             <tr><td class="num">15–21 Sep</td><td class="num">16</td><td>Guardian groups, store listing, privacy list fix, urgent alerts</td></tr>
             <tr><td class="num">25 Sep</td><td class="num">43</td><td>Website: copy audit, rebuilt around parents' questions</td></tr>
-            <tr><td class="num">28 Sep–2 Oct</td><td class="num">31</td><td>Case study, responsive website, copy honesty pass, design system sync</td></tr>
+            <tr><td class="num">28 Sep–2 Oct</td><td class="num">35</td><td>Case study, responsive website, copy honesty pass, design system sync</td></tr>
           </tbody>
         </table></div>
 
@@ -1484,23 +1548,25 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </ul>
 
         <figure class="fig"><div class="scroll"><ol class="brandline" aria-label="Brand colour over time"><li><span class="sw" style="background:#447aaf"></span><span class="bd">8 Jun</span><span class="bt">Ocean CTA</span><code>1fcaa66</code></li><li><span class="sw" style="background:#E00477"></span><span class="bd">7 Jul</span><span class="bt">Pink parent brand</span><code>baa526c</code></li><li><span class="sw" style="background:#4B814F"></span><span class="bd">13 Jul</span><span class="bt">Green onboarding</span><code>676ef3e</code></li><li><span class="sw" style="background:#4B814F"></span><span class="bd">21 Jul</span><span class="bt">Whole app locked to green</span><code>38d7c4e</code></li><li><span class="sw" style="background:#4B814F"></span><span class="bd">2 Oct</span><span class="bt">One brand green in the design system</span><code>66708c6</code></li></ol></div><figcaption>The brand colour, from the git history. Swatches show the actual hex values used at each step.</figcaption></figure>
-        <h3 id="it-interaction">Interaction details that protect a child's work</h3>
-        <p>Pickers and forms use one field family with floating labels, and choices open in bottom sheets instead of native controls (15 July). In September, sheets got drag-to-dismiss. Three days later it was removed, so a sheet closes only from its X: <i>"a child mid-edit … can brush either without warning, and losing the sheet over an accidental touch reads as the app eating their work"</i> (<code>d4e88e8</code>). Room decorating got the same care. Decor can be dragged anywhere on the visible floor, and a confirm bubble survives the sheet closing, because closing means "done choosing", not "undo".</p>
-        <div class="shots" role="group" aria-label="Decorating and collection">
-          <figure class="shot"><img src="img/child-house.webp" alt="The child's own room with Lumi, a level badge and a guestbook" width="480" height="1076" loading="lazy"><figcaption><b>My room.</b> The level reads as a rank beside the name, not as another stat.</figcaption></figure>
-          <figure class="shot"><img src="img/child-collection.webp" alt="Collection: Lumi owned, other buddies locked with question marks" width="480" height="1076" loading="lazy"><figcaption><b>One buddy, for now.</b> Since 29 September only Lumi is playable; the rest show as locked.</figcaption></figure>
-        </div>
+        <h3 id="it-interaction">Small rules that protect a child&#39;s choices</h3>
+        <p>A child should never lose a choice, or spend points, by accident.</p>
+        <ol class="evo-strip" aria-label="Three interaction rules">
+          <li class="evo-step"><img src="img/outfit-hood.webp" alt="Lumi trying on a wizard hood, with a Buy 280 bar at the bottom" width="480" height="1075" loading="lazy"><div class="fs-n">24 August</div><div class="fs-q">Try before you buy</div><div class="fs-a">Tapping an outfit tries it on; Buy is a separate step.</div></li>
+          <li class="evo-step"><img src="img/sheet-close.webp" alt="The Dream Room with the Armchair sheet open and a close button" width="480" height="989" loading="lazy"><div class="fs-n">7 September</div><div class="fs-q">Closes only from X</div><div class="fs-a">No swipe-to-close, so a stray touch can&#39;t lose a choice.</div></li>
+          <li class="evo-step"><img src="img/room-placing.webp" alt="An armchair just placed in the room with a keep or remove bubble" width="480" height="1075" loading="lazy"><div class="fs-n">7 September</div><div class="fs-q">The bubble stays</div><div class="fs-a">Keep or remove survives the sheet closing; closing isn&#39;t undo.</div></li>
+        </ol>
 
         <h3 id="it-story">Onboarding as a story</h3>
-        <p>The first onboarding was one story cut and two value slides sharing a placeholder image. Myt H Mon rebuilt it as 17 illustrated cuts (4 September). Earlier passes put text over the picture and <i>"both covered the part of the frame the cut was about,"</i> so the words moved below the art. An eleven-segment progress bar became one fill because the segments <i>"read as a row of dashes."</i></p>
-        <div class="shots" role="group" aria-label="Onboarding story cuts">
+        <p>The onboarding story sets up the game&#39;s world before the child sees a single screen of it. In the first cuts the villains are winning: children walk with their eyes on their phones while the creatures gather. At cut 7 the story turns, the buddies appear, and it ends on the child&#39;s first egg. The first version was one story cut and two value slides sharing a placeholder image; Myt H Mon illustrated the 17 cuts that replaced it (4 September). Earlier passes put text over the picture and <i>"both covered the part of the frame the cut was about,"</i> so the words moved below the art. An eleven-segment progress bar became one fill because the segments <i>"read as a row of dashes."</i></p>
+        <div class="shots of-shots" role="group" aria-label="Onboarding story cuts">
           <figure class="shot"><img src="img/story-1.webp" alt="Story cut 1: children walking while staring at phones" width="520" height="923" loading="lazy"><figcaption><b>Cut 1.</b> The problem, shown from the child's world.</figcaption></figure>
+          <figure class="shot"><img src="img/story-5.webp" alt="Story cut 5: dark villains with glowing spiral eyes looming over a street" width="520" height="923" loading="lazy"><figcaption><b>Cut 5.</b> The villains gather, each holding a phone.</figcaption></figure>
           <figure class="shot"><img src="img/story-7.webp" alt="Story cut 7: the turn where the buddies appear" width="520" height="812" loading="lazy"><figcaption><b>Cut 7.</b> The tone turns from villains winning to the buddies helping.</figcaption></figure>
           <figure class="shot"><img src="img/story-16.webp" alt="Story cut 16: the starter egg" width="520" height="923" loading="lazy"><figcaption><b>Cut 16.</b> The story ends on the child's first egg.</figcaption></figure>
         </div>
 
         <h3 id="it-access">Accessibility and language</h3>
-        <p>Every screen ships in English and Korean through one translation helper. All animation respects reduced-motion settings. The warning copy was rewritten for a child's reading level in both languages (see decision A). <span class="tag gap">Not audited</span> No contrast audit or screen-reader test is recorded. A child accessibility settings section was explored and is hidden until its direction is decided.</p>
+        <p>Every screen is in English and Korean, mostly through one translation helper. The stylesheet switches animations off when the device asks for reduced motion. The warning copy was rewritten for a child's reading level in both languages (see decision A). <span class="tag gap">Gap</span> No contrast audit or screen-reader test is recorded. A child accessibility settings section was explored and is hidden until its direction is decided.</p>
       </section>
       <section class="ch" id="system-ai" aria-labelledby="h-system-ai">
         <div class="eyebrow">Chapter 8 · How it was made</div>
@@ -1508,7 +1574,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         <p>Two apps, one designer and an AI pair programmer make a fast team, and a risky one. The AI writes the code it&#39;s asked for quickly, but left alone it drifts toward a generic look: glows, sparkles, pills on everything. Keeping the product consistent meant treating the design system as two things. It is a set of tokens and components the code is built from, and a set of written rules the AI reads before it builds anything.</p>
 
         <h3 id="sa-tiers">Three tiers, one source</h3>
-        <p>Every value flows through three tiers, and a token&#39;s name says which tier it is. Product code only uses the semantic or component tier, never a raw colour. That rule is what let the brand move from ocean to pink to green without touching hundreds of screens.</p>
+        <p>Every value flows through three tiers, and a token&#39;s name says which tier it is. Product code only uses the semantic or component tier, never a raw colour. That rule is why the brand could move from ocean to pink to green without editing screen by screen.</p>
         <figure class="fig"><div class="scroll"><div class="tiers" role="group" aria-label="The three token tiers, with one colour traced through them">
   <div class="tier"><div class="tier-h">Primitive</div><code>--color-base-ocean-50</code><span class="tier-v"><i style="background:#447aaf"></i>#447aaf</span><p>Raw paint. Never used in product code.</p></div>
   <div class="tier-arrow" aria-hidden="true">&#8594;</div>
@@ -1562,16 +1628,17 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <li>It counted the tab bars wrong and claimed the translation helper could fill in numbers, which it can&#39;t.</li>
           <li>It had no section at all for fields and bottom sheets, the narrator, the villains or sound.</li>
         </ul>
-        <p>Everything was corrected in one pass, and the missing sections were added (<code>66708c6</code>). The audit also turned up things in the app itself to fix later, such as an icon whose image file is missing. <span class="tag interp">Lesson</span> Docs drift as fast as the product moves. The rules the AI follows are only as good as the reference they point to.</p>
+        <p>Everything was corrected in one pass, and the missing sections were added (<code>66708c6</code>). The audit also turned up things in the app itself to fix later, such as an icon whose image file is missing. <b>The lesson:</b> docs drift as fast as the product moves. The rules the AI follows are only as good as the reference they point to.</p>
       </section>
       <section class="ch" id="validation" aria-labelledby="h-validation">
         <div class="eyebrow">Chapter 9 · Results</div>
-        <h2 id="h-validation">Outcomes</h2>
-        <h3 id="va-changed">What changed because of the design</h3>
+        <h2 id="h-validation">Results and evidence</h2>
+        <p>Two kinds of result are easy to blur here: what the design changed in the product, and what the product changes for children. This chapter keeps them apart. The first is documented in the code and the commits. The second hasn&#39;t been measured.</p>
+        <h3 id="va-changed">What the design changed in the product</h3>
         <ul class="oc-tiles">
-          <li class="oc-t"><div class="oc-l">Launched</div><div class="oc-ba"><span class="oc-b">Design and prototype</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Shipped apps</span></div><p>The development team built and launched the product from this design and prototype.</p></li>
+          <li class="oc-t"><div class="oc-l">Handed over</div><div class="oc-ba"><span class="oc-b">Design and prototype</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Production apps</span></div><p>The development team built and launched the product using this design and the working prototype as its reference. The prototype&#39;s rules, screens and copy are the design&#39;s specification; how closely production follows them isn&#39;t documented in these materials.</p></li>
           <li class="oc-t"><div class="oc-l">Warning message</div><div class="oc-ba"><span class="oc-b">Gone in 1.5 s</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Holds while the risk lasts</span></div><p>A child can read it at a walking glance; the safe action never disappears (decision A).</p></li>
-          <li class="oc-t"><div class="oc-l">Stop reward</div><div class="oc-ba"><span class="oc-b">Paid on any tap</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">4 signals verified</span></div><p>Plus a 60 s cooldown and a 300-point daily cap, so it can&#39;t be farmed (decision B).</p></li>
+          <li class="oc-t"><div class="oc-l">Stop reward</div><div class="oc-ba"><span class="oc-b">Paid on any tap</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">4 signals required</span></div><p>Plus a 60 s cooldown and a 300-point daily cap on stop bonuses, which closes the obvious farming loop (decision B). Whether children find another is untested.</p></li>
           <li class="oc-t"><div class="oc-l">Fall alert</div><div class="oc-ba"><span class="oc-b">Same as every row</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Red row + call button</span></div><p>The one alert that matters survives a glance (decision C).</p></li>
           <li class="oc-t"><div class="oc-l">Who can help</div><div class="oc-ba"><span class="oc-b">2 parents max</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Groups</span></div><p>A guardian can belong to up to 5 groups, so grandparents and neighbours can join; the child&#39;s phone is never touched (decision C).</p></li>
           <li class="oc-t"><div class="oc-l">Website promises</div><div class="oc-ba"><span class="oc-b">7 kinds of untrue claim</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">Rewritten</span></div><p>Each now matches the app, in English and Korean. One line is still to fix: the footer says JoanX hasn&#39;t launched (decision D).</p></li>
@@ -1579,12 +1646,12 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
           <li class="oc-t"><div class="oc-l">Design reference</div><div class="oc-ba"><span class="oc-b">175 commits behind</span><span class="oc-ar" aria-hidden="true">&#8594;</span><span class="oc-a">In sync</span></div><p>The design system page matches the shipped components again (chapter 8).</p></li>
         </ul>
         <h3 id="va-proven">What is proven, and what isn&#39;t yet</h3>
-        <p>Launching shows the design could be built and shipped. It does not show by itself that children behave differently. I've kept those apart.</p>
+        <p>Launching shows the design could be built and shipped. It doesn&#39;t show that children behave differently, that guardians trust the report, or that the warnings are safe to rely on.</p>
         <div class="tbl-wrap"><table>
           <thead><tr><th>Category</th><th>What exists</th><th>Status</th></tr></thead>
           <tbody>
-            <tr><td><b>Designed</b></td><td>Both apps (66 screen files in the prototype), the rule engine for warnings and rewards, a design system page, English and Korean, a marketing site</td><td><span class="tag ok">Confirmed</span></td></tr>
-            <tr><td><b>Built and launched</b></td><td>The production apps, built by the development team from this design</td><td><span class="tag ok">Launched</span></td></tr>
+            <tr><td><b>Designed</b></td><td>Both apps (about 50 screens, plus their layout variants), the rule engine for warnings and rewards, a design system page, English and Korean, a marketing site</td><td><span class="tag ok">Confirmed</span></td></tr>
+            <tr><td><b>Built and launched</b></td><td>The production apps, built by the development team from this design. No launch date, store listing or usage data is in these materials, and the website footer still says &#8220;not launched&#8221;.</td><td><span class="tag interp">Reported</span></td></tr>
             <tr><td><b>Checked against the spec</b></td><td>A requirement-by-requirement checklist. The documents claim every in-scope item is built, but the two versions of the checklist disagree on three items.</td><td><span class="tag gap">Conflicting</span></td></tr>
             <tr><td><b>Checked against the build</b></td><td>Website and store copy audited against the prototype; the privacy list corrected</td><td><span class="tag ok">Confirmed</span></td></tr>
             <tr><td><b>Tested with people</b></td><td>None recorded. No usability sessions, interviews or observations exist in the materials.</td><td><span class="tag gap">Not done</span></td></tr>
@@ -1595,7 +1662,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
       </section>
       <section class="ch" id="reflection" aria-labelledby="h-reflection">
         <div class="eyebrow">Chapter 10 · Results</div>
-        <h2 id="h-reflection">Reflection</h2>
+        <h2 id="h-reflection">Reflection and next steps</h2>
         <h3 id="rf-learned">What I'd keep</h3>
         <ul class="plain">
           <li><b>Rules before screens.</b> The hardest problems (paying for taps, the vanishing message) only appeared once the spec ran as real logic.</li>
@@ -1605,7 +1672,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </ul>
         <h3 id="rf-differently">What I'd do differently</h3>
         <ul class="plain">
-          <li><b>Fewer variants, decided sooner.</b> Some screens have 10 to 35 alternatives. That helped the client choose live, but it also left old options in the code.</li>
+          <li><b>Fewer variants, decided sooner.</b> Some areas still have 10 to 24 alternatives. That helped the client choose live, but it also left old options in the code.</li>
           <li><b>Put children in front of it earlier.</b> Every UX claim here is reasoned; none is tested.</li>
           <li><b>One source of truth for docs.</b> Several documents now disagree with the build: villain names, battles per day, bonus values, guardian sign-in and child age.</li>
         </ul>
@@ -1638,7 +1705,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </div>
         <div class="oc-grid">
           <div class="oc"><div class="oc-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>Give the game its own voice</div><ul><li>Today&#39;s sound is a first phase: synthesised cues and one onboarding song, kept on purpose so the prototype needed no audio files</li><li>Next: a sound identity that matches the art, and voices for King Cubix and the buddies</li><li>Keep the rule: sound is feedback, never the safety signal</li></ul></div>
-          <div class="oc"><div class="oc-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Say only what it does</div><ul><li>Help screen still mentions a screen lock</li><li>Help text still mentions location</li><li>Website footer says &#8220;not launched&#8221;</li></ul></div>
+          <div class="oc"><div class="oc-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Say only what it does</div><ul><li>Help screen still says JoanX locks the screen</li><li>Some help and FAQ text still says location is used</li><li>Lite mode, excluded from scope, is still selectable and can block the screen</li><li>Website footer says &#8220;not launched&#8221;</li></ul></div>
           <div class="oc"><div class="oc-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Clean the prototype</div><ul><li>Retire decided alternatives (24 + 23 styles)</li><li>Remove an ignored <code>icon</code> prop</li><li>One set of shadow values</li></ul></div>
           <div class="oc"><div class="oc-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>One source of truth</div><ul><li>Reconcile spec, checklist and build</li><li>Generate docs from the tokens</li><li>A one-page brand guide for app, web and AI</li></ul></div>
         </div>
@@ -1652,7 +1719,7 @@ ul.ctl-list { list-style: none; margin: 14px 0 8px; padding: 0; display: grid; g
         </ol>
       </section>
 
-      <footer class="end">Prepared from the JoanX repository on 2 October 2026. Screens are from the running prototype; all figures on them are sample data. Labels in amber and red mark text that needs the designer's confirmation before publishing.</footer>
+      <footer class="end">Written from the JoanX prototype repository, its functional spec, my design files and the git history, October 2026. Screens are from my design prototype, and every number on them is sample data. The production apps were built separately by the development team and may differ in detail.</footer>
 
     </div>
   </main>
