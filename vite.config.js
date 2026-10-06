@@ -20,6 +20,7 @@ export default defineConfig({
         store: resolve(__dirname, 'website/store.html'),
         caseStudy: resolve(__dirname, 'website/case-study.html'),
         uxCaseStudy: resolve(__dirname, 'website/ux-case-study/index.html'),
+        uxCaseStudyFull: resolve(__dirname, 'website/ux-case-study/full.html'),
       },
     },
   },
