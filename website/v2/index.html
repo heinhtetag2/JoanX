@@ -561,7 +561,7 @@ td.us { color: var(--ink); font-weight: 600; }
 :root[data-theme="dark"] .mf-body { --mf-dim: #3A3E39; }
 @media (prefers-reduced-motion: reduce) { .mf-body .w { --w: 1 !important; transition: none; } .mf-h .ln > span { transform: none !important; animation: none !important; } }
 .takeover { position: relative; }
-.takeover-run { height: 900vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
+.takeover-run { height: 700vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
 .takeover-stage {
   position: sticky; top: 0; overflow: hidden;
   /* at least a full screen, content centred, so when it pins it IS the page */
@@ -628,7 +628,7 @@ td.us { color: var(--ink); font-weight: 600; }
   .pv-panel { width: auto; }
   .pv-card { width: auto; top: 0; }
   .pv-vis { width: 100%; height: auto; aspect-ratio: 1; }
-  .takeover-run { height: 500vh; }
+  .takeover-run { height: 430vh; }
 }
 @media (prefers-reduced-motion: reduce) {
   .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
@@ -699,6 +699,7 @@ td.us { color: var(--ink); font-weight: 600; }
 /* showcase — a pinned dark stage (night green) with a huge title; two offset columns of app
    screens scroll up over it; then the stage shrinks to a circle around the title and a link,
    revealing brand green. Positions are set by the script from scroll progress. */
+.showcase[hidden] { display: none; }
 .showcase { position: relative; height: 640vh; background: #4B814F; }   /* longer: seven cards a column */
 .sc-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #4B814F; color: #fff; display: grid; place-items: center; }
 /* a looping film fills the stage behind everything; the dark layer shrinks to a circle over it */
@@ -786,7 +787,7 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
    ones first, the middle last), fill the screen, then wash out to a pale ground where the copy
    and the egg come up. --p (0 → 1) is set by the script from scroll progress. */
 .rise { position: relative; }
-.rise-run { height: 600vh; }
+.rise-run { height: 500vh; }
 .rise-stage { --p: 0; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--paper); display: grid; place-items: center; transition: background-color .5s ease; }
 /* it arrives white, carrying on from the section above; once pinned it flips to the night green (.is-dark) */
 .rise-stage.is-dark { background: #17211A; }
@@ -859,7 +860,7 @@ body:has(.sitetw-panel) .to-top { bottom: 184px; }
 .cast { position: relative; z-index: 2; --cast-bg: #EAF2E6; }   /* above the footer, so the QR card can hang over it */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cast { --cast-bg: var(--paper-2); } }
 :root[data-theme="dark"] .cast { --cast-bg: var(--paper-2); }
-.cast-run { height: 150vh; }
+.cast-run { height: 135vh; }
 .cast-stage {
   --p: 0; --u: min(1vh, .62vw);   /* character sizes follow the shorter side of the screen */
   position: sticky; top: 0; height: 100vh; height: 100svh; overflow-x: clip; overflow-y: visible;   /* sideways stays clipped; the QR may spill down over the footer */
@@ -992,8 +993,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <li style="--k:2"><a href="#privacy" data-i18n="n.privacy">Privacy</a></li>
       <li style="--k:3"><a href="#parents" data-i18n="n.parents">For parents</a></li>
       <li style="--k:4"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
-      <li style="--k:5"><a href="#story" data-i18n="n.story">The story</a></li>
-      <li style="--k:6"><a href="#get" data-i18n="cta.h">Get JoanX</a></li>
+      <li style="--k:5"><a href="#get" data-i18n="cta.h">Get JoanX</a></li>
     </ul>
     <dl class="menu-info">
       <div><dt data-i18n="m.app">Get the app</dt><dd><a href="#get" data-i18n="cta.s">Coming soon to Google Play.</a></dd></div>
@@ -1205,7 +1205,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 </section>
 
 <!-- ═══ SHOWCASE — THE STORY OF JOANX ═══════════════════════════════════════════ -->
-<section class="showcase" id="story" aria-label="The story of JoanX">
+<section class="showcase" id="story" aria-label="The story of JoanX" hidden>   <!-- hidden for now; remove the attribute (and re-add the menu link) to bring it back -->
   <div class="sc-stage">
     <!-- background film: shows around the dark circle once it shrinks; muted, looping, inline -->
     <video class="sc-video" muted loop playsinline preload="metadata" poster="../media/Video/showcase-poster.jpg" aria-hidden="true">
@@ -1902,7 +1902,7 @@ var MN = {
   /* 01 manifesto: each word lights up slowly as its line rises from ~86% to ~46% of the screen, so
      whole lines turn from pale to ink together; the headline rises in once, when it first shows */
   var mfStill = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var mfMove = mfSec && mfSec.querySelector('.mf-move'), MF_SLOW = 2;
+  var mfMove = mfSec && mfSec.querySelector('.mf-move'), MF_SLOW = 1.7;
   function mfSize() {
     if (!mfSec || mfStill.matches) return;
     mfSec.classList.add('mf-slow');
