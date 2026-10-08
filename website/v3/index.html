@@ -11,27 +11,27 @@
 </script>
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
-   JoanX — landing page, Human + AI version · FOUNDATION
+   JoanX — landing page, V3 · STATIC
 
-   This is the skeleton to design on top of: every section, every line of
-   copy (English + Korean) and every screenshot is in place, and the styling
-   is deliberately plain — type, spacing and one accent colour. No gradients,
-   shadows, glows, icon tiles, pills, tilted phones or mascots.
+   V2's design with the long scroll animations taken out. The hero and Get
+   JoanX are V2's; every other section is laid out once and simply scrolls
+   past — nothing pins, scrubs or reveals as you scroll.
 
    How it is organised
      1. Tokens      colour, type, space — change these first
      2. Base        elements
-     3. Layout      .wrap, .section, .sec-head, .visuals (three screens)
-     4. Pieces      nav, buttons, lists, table, faq, footer
+     3. Layout      .wrap, .section, .sec-head
+     4. Pieces      nav, buttons, faq, footer, then the V3 sections
 
    Page map (each section is marked in the HTML with a ═══ banner)
      Nav · Hero (what JoanX is) ·
-     01 What happens when they look down while walking?   — the safety moment
-     Hatch                                                  — the game, told as rising columns
-     02 What can I see — and what can't I?                  — privacy, then the green takeover
-     03 What do I get as a parent?                          — report, alerts, groups (stacked cards)
-     04 What can I count on?                                — promises
-     05 Anything else?                                      — FAQ (only what 01–04 don't answer)
+     01 What happens when they look down while walking?   — three steps, side by side
+     02 Why it works                                        — the claim, three reasons, the buddies
+     03 What does my child get out of it?                   — the child app's screens on a rail, three points
+     04 What can I see — and what can't I?                  — six cards on a rail, then one line on green
+     05 What do I get as a parent?                          — report, alerts, groups (three cards)
+     06 Anything else?                                      — FAQ
+     07 How do I start?                                     — three set-up steps
      Get JoanX · Footer
 
    The order follows the questions a parent asks, in the order they ask them. Each
@@ -79,7 +79,7 @@
 /* ── 2. Base ─────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+body { margin: 0; overflow-x: clip; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.65; -webkit-font-smoothing: antialiased; }
 :root:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
 h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
 h1, h2, h3, h4 { font-weight: 700; letter-spacing: -.02em; line-height: 1.2; text-wrap: balance; }
@@ -169,17 +169,25 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .lang-btn[aria-expanded="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .lang-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .lang-menu {
-  position: absolute; top: calc(100% + 8px); right: 0; min-width: 100%;
-  margin: 0; padding: 0; list-style: none;   /* no panel: the options are plain words under the pill */
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 41; min-width: max(100%, 184px);
+  margin: 0; padding: 6px; list-style: none;
+  /* a flat panel of its own, so the options read over any section — hairline, no shadow */
+  background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
 }
 .lang-menu[hidden] { display: none; }
 .lang-menu button {
-  display: block; width: 100%; padding: 8px 12px; border: 0;
-  background: none; cursor: pointer; text-align: center;
-  font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ink-2);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px;
+  background: none; cursor: pointer; text-align: left;
+  font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ink-2);
 }
-.lang-menu button:hover, .lang-menu button:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; }
-.lang-menu li:has(button[aria-pressed="true"]) { display: none; }   /* the current language is on the pill */
+.lang-menu button:hover, .lang-menu button:focus-visible { background: var(--paper-2); color: var(--ink); outline: none; }
+/* the language you are on stays in the list, bold, with a check */
+.lang-menu button[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
+.lang-menu button[aria-pressed="true"]::after {
+  content: ""; width: 10px; height: 5px; margin: -4px 2px 0 0; flex-shrink: 0;
+  border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg);
+}
 .lng-abbr { display: none; }
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
@@ -197,6 +205,13 @@ section[id], header[id] { scroll-margin-top: 72px; }
   .logo .mark { display: none; } .logo .mark-sm { display: block; }
 }
 @media (prefers-reduced-motion: reduce) { .nav, .nav-cta, .lang-btn, .lang-btn .chev { transition: none; } .nav-cta:hover { transform: none; } }
+/* the smallest phones (under 375px): the language pill shrinks to its globe so the menu button stays on screen */
+@media (max-width: 374px) {
+  .nav-in { gap: 8px; }
+  .nav-cta { padding: 0 14px; }
+  .lang-btn { width: var(--ctl-h); padding: 0; justify-content: center; }
+  .lang-btn .lng-abbr, .lang-btn .chev { display: none; }
+}
 
 /* nav while it sits on the green hero — light on green; the stuck bar goes back to normal */
 /* the wordmark's A and X are brand green, which vanishes on the green hero — go all-white there */
@@ -208,8 +223,6 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav:not(.is-stuck) .lang-btn { color: #fff; border-color: rgba(255,255,255,.55); }
 .nav:not(.is-stuck) .lang-btn:hover { border-color: #fff; }
 .nav:not(.is-stuck) .lang-btn[aria-expanded="true"] { background: #fff; color: #0B2A8A; border-color: #fff; }
-.nav:not(.is-stuck) .lang-menu button { color: rgba(255,255,255,.85); }
-.nav:not(.is-stuck) .lang-menu button:hover, .nav:not(.is-stuck) .lang-menu button:focus-visible { color: #fff; }
 .nav:not(.is-stuck) .nav-cta { background: #fff; color: #0B2A8A; }   /* the banner's night-sky navy, not green */
 .nav:not(.is-stuck) .nav-cta:hover { background: #E9EDFB; }
 @media (max-width: 520px) { .nav .logo .mark.mark-dark, .nav .logo .mark.mark-light { display: none; } }   /* phones show only the round mark */
@@ -287,22 +300,6 @@ section[id], header[id] { scroll-margin-top: 72px; }
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { --hero-bg: #2B4F30; } }
 :root[data-theme="dark"] .hero { --hero-bg: #2B4F30; }
-/* below the hero, a strip of the same green where the next section begins: the page's own
-   ground rises into it as a dome while you scroll. The hero itself is never covered.
-   --p (0 → 1) is how far the strip has come into view, set by the script below. */
-.hero, .hero-edge { --hero-bg: #4B814F; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero-edge { --hero-bg: #2B4F30; } }
-:root[data-theme="dark"] .hero-edge { --hero-bg: #2B4F30; }
-.hero-edge { position: relative; z-index: 2; overflow: hidden; height: clamp(120px, 17vw, 260px); margin-top: calc(-1 * clamp(120px, 17vw, 260px)); background: transparent; pointer-events: none; }
-.hero-curve {
-  position: absolute; left: -25%; right: -25%; bottom: -1px; height: 100%;
-  /* rises as a dome, then flattens: full curve for the first 80% of the rise, straight only at the very top */
-  --r: clamp(0, calc((1 - var(--p, 0)) * 5), 1);
-  background: var(--paper); border-radius: 50% 50% 0 0 / calc(var(--r) * 100%) calc(var(--r) * 100%) 0 0;
-  transform: scaleY(var(--p, 0)); transform-origin: 50% 100%;
-  pointer-events: none; will-change: transform;
-}
-.hero-edge + .section { border-top: 0; }
 /* full-bleed brand banner; the copy is centred in the open sky between the two kids */
 .hero { position: relative; overflow: hidden; justify-content: center; text-align: center; }
 .hero::before {
@@ -459,7 +456,7 @@ td.us { color: var(--ink); font-weight: 600; }
 /* questions on the right; the heading and King Cubix — thinking, one hand held out toward the
    list — on the left, staying put while the answers scroll */
 .faq-side { display: grid; justify-items: center; }
-.faq-cubix { display: block; width: clamp(150px, 22vw, 300px); height: auto; margin-top: clamp(8px, 2vw, 28px); }
+.faq-cubix { display: block; width: clamp(130px, 17vw, 230px); height: auto; margin-top: clamp(8px, 2vw, 28px); }
 @media (min-width: 1000px) {
   .faq-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: clamp(40px, 5vw, 88px); align-items: start; }
   .faq-side { position: sticky; top: calc(var(--nav-h) + 32px); justify-items: start; }
@@ -518,163 +515,7 @@ td.us { color: var(--ink); font-weight: 600; }
 }
 @media (prefers-reduced-motion: reduce) { .faq details::before, .faq .pm, .faq .pm::before, .faq .pm::after { transition: none; } .faq details[open] p { animation: none; } }
 
-/* takeover — the privacy section pins while you keep scrolling; a green circle sweeps in over
-   it from the right until it fills the whole screen (above the nav), then one line reveals
-   word by word. .takeover-run below the stage is the scroll distance the pin lasts. Circle size,
-   its centre and the line's position are set by the script from scroll progress. */
-/* 01 · manifesto: a big green headline that rises in, then large statements that light up
-   line by line (pale → ink) as they scroll past; --w per word is set by the script */
-.mf { position: relative; padding: 0; }
-.mf-move { position: relative; overflow: hidden; padding-block: clamp(96px, 13vw, 200px); }
-/* slow scroll (.mf-slow, set by the script): the section pins and its content travels at about
-   half the scroll speed, so each statement stays on screen longer while it lights up */
-.mf-slow .mf-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.mf-slow .mf-move { will-change: transform; }
-/* the phone-with-buzz art sits behind the headline, top right; multiply melts its white into the page */
-.mf-move::before {
-  content: ""; position: absolute; z-index: 0; top: clamp(0px, 2vw, 40px); right: 0;
-  width: min(52vw, 780px); aspect-ratio: 1078 / 1460; pointer-events: none;
-  background: url("../media/brand/bgph.webp") right top / contain no-repeat; mix-blend-mode: multiply;
-  /* fade the art's own left and bottom edges out, so its grid never ends in a hard line */
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 34%), linear-gradient(to bottom, #000 72%, transparent);
-  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 34%), linear-gradient(to bottom, #000 72%, transparent);
-  mask-composite: intersect;
-}
-.mf-move > .wrap { position: relative; z-index: 1; }
-@media (max-width: 720px) { .mf-move::before { width: 78vw; top: 0; opacity: .7; } }
-/* dark mode: the art is a white phone on white, made to melt into a light page. Flipped light-for-dark
-   (hue turned back so the buzz stays green) and screened, its white ground drops away and the phone
-   reads as a dark glass shape with green waves */
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-move::before { mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg) brightness(1.6) contrast(1.15); } }
-:root[data-theme="dark"] .mf-move::before { mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg) brightness(1.6) contrast(1.15); }
-.mf-h { color: #4B814F; font-size: clamp(36px, 5vw, 80px); font-weight: 800; line-height: 1.12; letter-spacing: -.03em; max-width: none; }
-.mf-h .ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
-.mf-h .ln > span { display: inline-block; }
-.mf-wait .mf-h .ln > span { transform: translateY(105%); }
-.mf-go .mf-h .ln > span { animation: heroRise .9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * .14s); }
-.mf-body { --mf-dim: #D3D7CF; margin-top: clamp(64px, 9vw, 136px); display: grid; gap: clamp(36px, 5vw, 72px); }
-.mf-body p { max-width: 24em; font-size: clamp(24px, 3.1vw, 48px); font-weight: 700; line-height: 1.4; letter-spacing: -.02em; color: var(--ink); text-wrap: pretty; }
-.mf-body .w { color: color-mix(in srgb, var(--ink) calc(var(--w, 0) * 100%), var(--mf-dim)); transition: --w .6s ease; }
-.mf-body .w.hl { color: color-mix(in srgb, #4B814F calc(var(--w, 0) * 100%), var(--mf-dim)); }
-.mf-body em { font-style: normal; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mf-body { --mf-dim: #3A3E39; } }
-:root[data-theme="dark"] .mf-body { --mf-dim: #3A3E39; }
-@media (prefers-reduced-motion: reduce) { .mf-body .w { --w: 1 !important; transition: none; } .mf-h .ln > span { transform: none !important; animation: none !important; } }
-.takeover { position: relative; }
-.takeover-run { height: 700vh; }   /* the scroll distance the pin lasts (sticky can't travel into padding) */
-.takeover-stage {
-  position: sticky; top: 0; overflow: hidden;
-  /* at least a full screen, content centred, so when it pins it IS the page */
-  min-height: 100vh; min-height: 100svh; display: flex; align-items: center;
-  padding-top: calc(var(--nav-h) + clamp(24px, 4vw, 56px)); padding-bottom: clamp(24px, 4vw, 56px);
-}
-.takeover-stage > .wrap { width: 100%; }
-.takeover-fill {
-  --tk-green: #4B814F; --tk-ink: #4B814F;
-  position: absolute; inset: 0; z-index: 50;
-  /* at the end of the hold it flips to the page's own paper (.is-light, set by the script) —
-     a quick timed switch, not scroll-scrubbed, so the words never sit pale-on-pale mid-way */
-  background: var(--tk-green); transition: background-color .5s ease;
-  clip-path: circle(0 at 100% 50%); pointer-events: none;
-}
-.takeover-stage { --tk-ink: #4B814F; }
-.takeover-stage.is-light .takeover-fill { background-color: var(--paper); }
-.takeover-stage.is-light .takeover-line { color: var(--tk-ink); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .takeover-fill { --tk-green: #2B4F30; } :root:not([data-theme="light"]) .takeover-stage { --tk-ink: #8CC592; } }
-:root[data-theme="dark"] .takeover-fill { --tk-green: #2B4F30; } :root[data-theme="dark"] .takeover-stage { --tk-ink: #8CC592; }
-.takeover-line {
-  position: absolute; z-index: 51; left: 20px; right: 20px; top: 50%; transform: translateY(-50%);
-  margin: 0 auto; max-width: 17em; text-align: center; color: #fff; transition: color .5s ease; visibility: hidden;
-  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance;   /* h1 step */
-}
-/* each word: faint and a little low → full and in place. --w is registered as a number so it
-   can transition, which smooths the steps between scroll updates */
-@property --w { syntax: '<number>'; inherits: false; initial-value: 0; }
-.takeover-line .w {
-  display: inline-block; opacity: calc(.14 + var(--w, 0) * .86);
-  transform: translateY(calc((1 - var(--w, 0)) * .3em));
-  transition: --w .35s cubic-bezier(.2, .7, .2, 1); will-change: opacity, transform;
-}
-@media (prefers-reduced-motion: reduce) { .takeover-line .w { transition: none; } }
-.takeover + .section { border-top: 0; padding-top: clamp(8px, 1.5vw, 20px); }
-/* while the privacy stage is pinned, the row slides left and three cards come in from the right
-   (--x set by the script); each card grows in as it enters (--e). Then the green circle sweeps. */
-.pv-track { --s: clamp(240px, min(56vh, 34vw), 540px); --gap: clamp(28px, 5vw, 72px); display: flex; align-items: center; gap: var(--gap); width: max-content; transform: translateX(var(--x, 0px)); will-change: transform; }
-.pv-panel { flex: 0 0 auto; width: calc(min(var(--max), 100vw) - 2 * var(--gutter) - var(--s) - var(--gap)); }
-.pv-panel .sec-label { display: none; }
-.pv-panel h2 { font-size: clamp(34px, 4.2vw, 64px); line-height: 1.22; letter-spacing: -.02em; max-width: 12em; }
-.pv-panel h2 em { display: block; }
-.pv-panel .lede { margin-top: clamp(20px, 2.4vw, 36px); max-width: 40ch; }
-/* the row opens like a split screen: the heading on the left, the first card waiting on the right */
-.pv-panel .sec-head { margin-bottom: 0; }
-@media (max-width: 720px) { .pv-panel { width: calc(100vw - 2 * var(--gutter)); } }
-.pv-card { position: relative; flex: 0 0 auto; width: var(--s); margin: 0;
-  opacity: calc(.2 + var(--e, 1) * .8); transform: translateY(calc((1 - var(--e, 1)) * 60px)) scale(calc(.88 + var(--e, 1) * .12)); }
-/* a zigzag: squares ride low, circles ride high */
-.pv-sq { top: calc(var(--s) * .2); }
-.pv-round { top: calc(var(--s) * -.2); }
-/* each card is a square illustration: a cropped piece of the real parent app on a green ground */
-.pv-vis { position: relative; width: var(--s); height: var(--s); overflow: hidden; border-radius: clamp(18px, 2vw, 28px); }
-.pv-vis img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.pv-card figcaption { display: grid; gap: 4px; margin-top: clamp(14px, 1.8vw, 22px); }
-.pv-card figcaption span { font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
-.pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
-/* phones: no sideways row — the heading, then each card full width, one under the other, read
-   by scrolling down like the rest of the page. The stage is then taller than the screen; the script
-   lets it scroll until its end, pins it there and goes straight to the green sweep, so the pin
-   only needs the sweep's share of the run. */
-@media (max-width: 720px) {
-  .pv-track { flex-direction: column; align-items: stretch; width: auto; gap: clamp(48px, 12vw, 72px); transform: none; }
-  .pv-panel { width: auto; }
-  .pv-card { width: auto; top: 0; }
-  .pv-vis { width: 100%; height: auto; aspect-ratio: 1; }
-  .takeover-run { height: 430vh; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pv-track { transform: none; width: auto; overflow-x: auto; padding-bottom: 12px; }
-  .pv-card { opacity: 1; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .takeover-run { display: none; }
-  .takeover-stage { position: relative; }
-  .takeover-fill, .takeover-line { display: none; }
-}
 
-/* stacked cards (section 03) — each card pins a little lower than the one before, so the
-   earlier cards stay visible as tabs; the script shrinks a card slightly as the next one covers it */
-.stack { display: grid; gap: 14vh; padding-bottom: 6vh; }
-/* sticky cards only stay pinned inside the stack's content box (padding doesn't count), so this
-   spacer lets the last card land and hold with all three edges showing before the stack moves on */
-#parents .stack::after { content: ""; height: 50vh; }
-/* earlier cards release a little sooner, so the three keep their stepped edges as the stack leaves */
-#parents .scard { margin-bottom: calc((2 - var(--i)) * 24px); }
-.scard {
-  position: sticky; top: calc(var(--nav-h) + 20px + var(--i) * 24px);
-  min-height: min(620px, calc(100vh - var(--nav-h) - 110px));
-  display: grid; align-items: center; gap: clamp(20px, 4vw, 56px);
-  padding: clamp(28px, 5vw, 72px); border-radius: 28px; color: #fff;
-  transform-origin: 50% 0; will-change: transform;
-}
-.scard:nth-child(1) { background: #4B814F; }   /* brand green */
-.scard:nth-child(2) { background: #447AAF; }   /* the app's ocean */
-.scard:nth-child(3) { background: #2B4F30; }   /* deep green */
-@media (min-width: 900px) { .scard { grid-template-columns: minmax(0, 1fr) auto; } }
-.scard-text { display: grid; gap: 14px; max-width: 34em; }
-.scard-eyebrow { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.72); }
-.scard h3 { font-size: clamp(24px, 3vw, 38px); line-height: 1.2; color: #fff; }
-.scard-text > p:last-child { color: rgba(255,255,255,.86); font-size: 17px; }
-/* the right side of each card: a flat graphic, not a phone screen */
-.scard-vis { --vs: clamp(230px, 27vw, 380px); width: var(--vs); justify-self: center; }
-@media (max-width: 899px) { .scard-vis { --vs: min(76vw, 300px); } }
-/* short screens: a card taller than the screen can't pin without hiding its own bottom, so the
-   cards scroll as a plain list, text and graphic side by side */
-@media (max-height: 640px) and (orientation: landscape) {
-  .scard { position: relative; top: auto; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; padding: 28px 32px; }
-  #parents .scard { margin-bottom: 0; }
-  #parents .stack { gap: 20px; }
-  #parents .stack::after { display: none; }
-  .scard-vis { --vs: min(38vw, 64vh, 300px); }
-}
 /* the week: four white tiles, the report's own icons, each number with its change */
 .vis-week { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 899px) { .scard-vis.vis-week { width: 100%; } }   /* stacked under the text: the four tiles fill the card */
@@ -697,75 +538,6 @@ td.us { color: var(--ink); font-weight: 600; }
 .vg-add { width: 30%; aspect-ratio: 1; left: 34%; bottom: 0; border: 3px dashed rgba(255,255,255,.6); color: #fff; display: grid; place-items: center; }
 .vg-add svg { width: 40%; height: 40%; }
 
-/* showcase — a pinned dark stage (night green) with a huge title; two offset columns of app
-   screens scroll up over it; then the stage shrinks to a circle around the title and a link,
-   revealing brand green. Positions are set by the script from scroll progress. */
-.showcase[hidden] { display: none; }
-.showcase { position: relative; height: 640vh; background: #4B814F; }   /* longer: seven cards a column */
-.sc-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #4B814F; color: #fff; display: grid; place-items: center; }
-/* a looping film fills the stage behind everything; the dark layer shrinks to a circle over it */
-.sc-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-/* the dark layer is what shrinks to a circle; the stage itself stays solid and full-screen */
-.sc-dark { position: absolute; inset: 0; background: #16261A; }
-.sc-center { position: relative; z-index: 1; display: grid; justify-items: center; gap: clamp(18px, 2.4vw, 32px); transform-origin: 50% 50%; }
-.sc-title { margin: 0; display: grid; justify-items: center; line-height: 1.1; text-align: center; letter-spacing: -.03em; }
-/* a display step above h1 (h1 is 36–56px); still fits between the card columns */
-/* line 1 is a smaller lead-in ("The story of"), line 2 the big name — also keeps the wider
-   English line inside the gap between the two image columns */
-.sc-l1 { font-size: calc(var(--fs-display) * .6); font-weight: 400; letter-spacing: -.01em; }
-.sc-l2 { font-size: var(--fs-display); font-weight: 800; }
-:lang(en) .sc-title { text-transform: uppercase; }
-.sc-cta { transform: translateY(10px); opacity: 0; color: #fff; font-weight: 700; font-size: var(--fs-body); text-decoration: none; white-space: nowrap; }
-.sc-cta:hover { text-decoration: underline; text-underline-offset: 6px; }
-.sc-cols { position: absolute; z-index: 2; inset: 0 0 auto 0; display: flex; justify-content: center; gap: clamp(20px, 30vw, 520px); padding-inline: 12px; will-change: transform; }   /* columns frame the title, not the screen edges */
-/* align-self: start stops the flex row stretching the shorter column (which spread its
-   cards further apart than the other's); both columns now share one gap */
-.sc-col { display: grid; gap: 26vh; align-self: start; align-content: start; width: clamp(150px, 22vw, 300px); }
-.sc-col:nth-child(2) { padding-top: 34vh; }
-/* every card the same size and shape: one 9:16 frame, square corners; each picture fills it
-   (app screens keep their top, story art stays centred) */
-.sc-card { margin: 0; border-radius: 0; overflow: hidden; aspect-ratio: 9 / 16; }
-.sc-card img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-.sc-art img { object-position: center; }
-/* phones: one big card at a time instead of two thin columns — a single column of the story in
-   order (the two columns interleave: 1, 2, 3 …), each card three-quarters of the screen wide,
-   alternating left and right, with room between them for the big title to show. The run grows so the cards still pass at about scroll speed: the
-   script moves the column by its own height plus a screen over the first 72% of the run. */
-@media (max-width: 720px) {
-  .showcase { height: calc(100svh + (100svh + 14 * (74vw * 5 / 4 + clamp(200px, 24svh, 260px))) / .72); }
-  .sc-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(200px, 24svh, 260px) 0; padding-inline: var(--gutter);   /* just room for the title between two cards */ }
-  /* the title is the big thing on screen between cards: line 2 sized to the screen width (the
-     longest, English "JOANX", still fits), line 1 a smaller lead-in that also fits in English */
-  .sc-l2 { font-size: min(25vw, 128px); }
-  .sc-l1 { font-size: min(10.5vw, 54px); }
-  .sc-col { display: contents; }
-  .sc-card { width: 74vw; aspect-ratio: 4 / 5; }   /* shorter than the 9:16 frame, so a whole card and the title both fit on screen */
-  .sc-col:nth-child(1) .sc-card { justify-self: start; }
-  .sc-col:nth-child(2) .sc-card { justify-self: end; }
-  .sc-col:nth-child(1) .sc-card:nth-child(1) { order: 1; } .sc-col:nth-child(2) .sc-card:nth-child(1) { order: 2; }
-  .sc-col:nth-child(1) .sc-card:nth-child(2) { order: 3; } .sc-col:nth-child(2) .sc-card:nth-child(2) { order: 4; }
-  .sc-col:nth-child(1) .sc-card:nth-child(3) { order: 5; } .sc-col:nth-child(2) .sc-card:nth-child(3) { order: 6; }
-  .sc-col:nth-child(1) .sc-card:nth-child(4) { order: 7; } .sc-col:nth-child(2) .sc-card:nth-child(4) { order: 8; }
-  .sc-col:nth-child(1) .sc-card:nth-child(5) { order: 9; } .sc-col:nth-child(2) .sc-card:nth-child(5) { order: 10; }
-  .sc-col:nth-child(1) .sc-card:nth-child(6) { order: 11; } .sc-col:nth-child(2) .sc-card:nth-child(6) { order: 12; }
-  .sc-col:nth-child(1) .sc-card:nth-child(7) { order: 13; } .sc-col:nth-child(2) .sc-card:nth-child(7) { order: 14; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .showcase { height: auto; }
-  .sc-stage { position: relative; height: auto; padding-block: 12vh; gap: 8vh; background: #16261A; }
-  .sc-cols { position: static; }
-  .sc-cta { opacity: 1; transform: none; }
-}
-
-/* promises — a big title over a grid of cards: icon, title, one line */
-/* four promises: one row on wide screens, 2 × 2 on tablets, one column on phones — never a lone card */
-.pr-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 1.6vw, 24px); grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 1100px) { .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .pr-grid { grid-template-columns: 1fr; } }
-.pr-card { display: grid; align-content: start; gap: 14px; padding: clamp(28px, 3.4vw, 48px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
-.pr-card img { width: 64px; height: 64px; margin-bottom: clamp(20px, 3vw, 44px); }
-.pr-card h3 { font-size: var(--fs-h3); }
-.pr-card p { color: var(--ink-2); }
 
 /* get + footer */
 /* back to top — a white rounded square with a black arrow, bottom right; flat, a hairline so it
@@ -784,76 +556,6 @@ body:has(.sitetw-open) .to-top { bottom: 72px; }
 body:has(.sitetw-panel) .to-top { bottom: 184px; }
 @media (prefers-reduced-motion: reduce) { .to-top, .to-top.is-on { transition: none; } }
 
-/* hatch — the stage pins on a dark ground; seven green columns rise from the bottom (the outer
-   ones first, the middle last), fill the screen, then wash out to a pale ground where the copy
-   and the egg come up. --p (0 → 1) is set by the script from scroll progress. */
-.rise { position: relative; }
-.rise-run { height: 500vh; }
-.rise-stage { --p: 0; position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--paper); display: grid; place-items: center; transition: background-color .5s ease; }
-/* it arrives white, carrying on from the section above; once pinned it flips to the night green (.is-dark) */
-.rise-stage.is-dark { background: #17211A; }
-.rise-stage.is-dark .rise-tease { color: #fff; }
-.rise-tease {
-  position: absolute; left: 20px; right: 20px; top: 50%; margin: 0 auto; max-width: 17em; text-align: center;
-  translate: 0 -50%;
-  /* a full-screen statement, so the h1 step — same as the takeover line and the Get JoanX headline */
-  font-size: var(--fs-h1); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; color: #4B814F; transition: color .5s ease;
-  opacity: clamp(0, calc(1 - var(--p) * 3.2), 1);
-}
-.rise-bars { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1.2fr 1.2fr 2.3fr 1.2fr 1.2fr 1fr; }
-.rise-bars span {
-  /* each column: a soft top edge, brand green, easing to the pale ground at the bottom */
-  --b: clamp(0, calc((var(--p) - var(--k) * .07) / .34), 1);
-  align-self: end; height: calc(100% + 90px);
-  margin-right: -1px;   /* overlap the next column by a pixel, so no dark seam shows between them */
-  background: linear-gradient(to bottom, rgba(75,129,79,0) 0, #4B814F 90px, #5E9461 38%, #A9CBA6 72%, #EEF5EC 100%);
-  transform: translateY(calc((1 - var(--b)) * 100%));
-  will-change: transform;
-}
-.rise-wash { position: absolute; inset: 0; background: #F4F8F2; opacity: clamp(0, calc((var(--p) - .55) / .3), 1); }
-.rise-copy {
-  position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: 14px; padding: 0 20px; width: 100%; max-width: 1040px;
-  /* already solid, just still below the screen: it scrolls up through the pale lower part of the
-     columns and settles in the middle as the ground turns pale */
-  --c: clamp(0, calc((var(--p) - .3) / .6), 1);
-  transform: translateY(calc((1 - var(--c)) * 85vh));
-}
-.rise-label { margin: 0; font-size: var(--fs-small); font-weight: 700; color: #4B814F; }
-.rise-copy h2 { margin: 0; max-width: 22em; font-size: var(--fs-h2); line-height: 1.3; color: #1A201C; text-wrap: balance; }
-/* three steps, read left to right: a number, a short title, one plain sentence */
-.rise-steps { list-style: none; margin: clamp(20px, 3vw, 40px) 0 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); text-align: left; }
-.rise-steps li { position: relative; display: grid; gap: 6px; align-content: start; padding-top: 18px;
-  /* all three are on screen from the start, faint; each turns fully clear on its own stretch of
-     scroll (--e 0 → 1, set by the script), one after another */
-  border-top: 2px solid rgba(26,32,28,.14); opacity: calc(.22 + var(--e, 1) * .78); }
-.rise-steps .rs-n { font-size: 14px; font-weight: 700; color: #4B814F; font-variant-numeric: tabular-nums; }
-.rise-steps b { font-size: clamp(19px, 1.7vw, 23px); font-weight: 700; color: #1A201C; letter-spacing: -.01em; }
-.rise-steps li > span:last-child { font-size: clamp(15px, 1.2vw, 17px); line-height: 1.6; color: #52594F; }
-@media (max-width: 720px) { .rise-steps { grid-template-columns: 1fr; gap: 14px; } .rise-steps li { padding-top: 12px; } }
-/* short screens (phones on their side, small laptop windows): the pinned stage is only as tall
-   as the screen, so the copy shrinks to the height instead of the width and the steps stay in a row */
-@media (max-height: 640px) and (orientation: landscape) {
-  .rise-copy { gap: 6px; padding-top: var(--nav-h); }
-  .rise-big { font-size: clamp(36px, 13vh, 96px); }
-  .rise-copy h2 { font-size: clamp(16px, 4.6vh, 26px); line-height: 1.25; }
-  .rise-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 2vh; }
-  .rise-steps li { padding-top: 8px; gap: 2px; }
-  .rise-steps b { font-size: clamp(14px, 3.6vh, 19px); }
-  .rise-steps li > span:last-child { font-size: clamp(12px, 3vh, 15px); line-height: 1.4; }
-}
-.rise-big { margin: 0 0 .14em; max-width: 100%; overflow-wrap: anywhere; font-size: clamp(48px, 8.5vw, 128px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #1A201C; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .rise-wash { background: var(--paper-2); }
-  :root:not([data-theme="light"]) .rise-copy h2, :root:not([data-theme="light"]) .rise-big, :root:not([data-theme="light"]) .rise-steps b { color: var(--ink); }
-  :root:not([data-theme="light"]) .rise-steps li > span:last-child { color: var(--ink-2); }
-}
-:root[data-theme="dark"] .rise-wash { background: var(--paper-2); }
-:root[data-theme="dark"] .rise-copy h2, :root[data-theme="dark"] .rise-big, :root[data-theme="dark"] .rise-steps b { color: var(--ink); }
-:root[data-theme="dark"] .rise-steps li > span:last-child { color: var(--ink-2); }
-@media (prefers-reduced-motion: reduce) {
-  .rise-run { display: none; }
-  .rise-stage { --p: 1; position: relative; }
-}
 
 /* get JoanX — the cast. The stage pins; the characters start huddled over the middle and step
    out to both sides as you scroll (--p, 0 → 1, set by the script), uncovering the copy. */
@@ -942,6 +644,267 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 .foot a:focus-visible { outline: 2px solid #CFE6CF; outline-offset: 3px; border-radius: 2px; }
 .legal { margin-top: clamp(40px, 5vw, 64px); padding-top: 20px; border-top: 1px solid rgba(255,255,255,.12); display: flex; flex-wrap: wrap; gap: 8px 24px; color: rgba(255,255,255,.45); font-size: 12.5px; }
 
+/* ═══ V3 · the static sections ═══════════════════════════════════════════
+   V3 is V2 with every scroll-driven piece taken out: no pinned stages, no
+   scrubbed reveals, no stacked cards. The hero (its one-time intro on page
+   open included) and Get JoanX are kept; Get JoanX simply shows its finished
+   view, the cast already standing either side of the copy. Each section below
+   is laid out once and reads as you scroll past it at normal speed. */
+
+/* 01 · the safety moment — three steps in a row: a picture, a step name, one line */
+.steps3 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); }
+.st { display: grid; gap: 4px; align-content: start; }
+.st-vis { aspect-ratio: 4 / 5; margin-bottom: 14px; overflow: hidden; border-radius: clamp(18px, 2vw, 26px); background: var(--paper-2); }
+.st-vis img { width: 100%; height: 100%; object-fit: cover; }
+.st-h { font-size: var(--fs-h3); font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
+.st-p { color: var(--ink-2); }
+/* the two things a parent should remember, under the steps */
+.st-notes { margin-top: var(--space-block); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); }
+.st-notes p { padding-top: 16px; border-top: 2px solid var(--ink); font-size: clamp(17px, 1.5vw, 20px); font-weight: 500; line-height: 1.55; max-width: 34em; }
+.st-notes em { font-style: normal; color: var(--accent); }
+@media (max-width: 720px) {
+  .steps3 { grid-template-columns: 1fr; gap: 36px; }
+  .st-vis { aspect-ratio: 4 / 3; }
+  .st-notes { grid-template-columns: 1fr; }
+}
+
+/* 02 · why it works — a pale-sage band: the claim and its three reasons left, the buddies right */
+.why { --why-bg: #EAF2E6; background: var(--why-bg); border-top: 0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .why { --why-bg: var(--paper-2); } }
+:root[data-theme="dark"] .why { --why-bg: var(--paper-2); }
+.why-in { display: grid; gap: var(--space-block); align-items: center; }
+@media (min-width: 960px) { .why-in { grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr); gap: clamp(40px, 5vw, 88px); } }
+.why-copy { display: grid; gap: 16px; }
+.why-big { margin: 4px 0 0; font-size: clamp(40px, 4.8vw, 72px); font-weight: 800; line-height: 1; letter-spacing: -.04em; color: var(--accent); }
+.why-copy h2 { max-width: 26em; font-size: clamp(19px, 1.7vw, 24px); line-height: 1.45; }
+.why-steps { list-style: none; margin: clamp(16px, 2.4vw, 32px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: clamp(16px, 2.2vw, 28px); }
+.why-steps li { display: grid; gap: 6px; align-content: start; padding-top: 16px; border-top: 2px solid color-mix(in srgb, var(--ink) 18%, transparent); }
+.why-steps .rs-n { font-size: 14px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.why-steps b { font-size: clamp(18px, 1.6vw, 22px); letter-spacing: -.01em; line-height: 1.3; }
+.why-steps li > span:last-child { color: var(--ink-2); font-size: 15.5px; line-height: 1.6; }
+.why-art { margin: 0; }
+.why-art img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: clamp(18px, 2vw, 26px); }
+/* tablets and phones: the art goes under the copy, full width and landscape, so no half-empty row */
+@media (max-width: 959px) { .why-art img { aspect-ratio: 16 / 9; object-position: 50% 40%; } }
+@media (max-width: 560px) { .why-art img { aspect-ratio: 4 / 3; } }
+
+/* sideways rails (the child's screens, and privacy) — one row you swipe or scroll sideways.
+   The row starts in line with the heading and runs off the right edge of the screen, so the
+   next card peeks in; the arrows beside the heading move it one card at a time. */
+.has-rail { overflow-x: clip; }   /* a row's entrance offset must never widen the page */
+.has-rail .wrap { position: relative; }
+.has-rail .sec-head { padding-right: 120px; }
+.rail-nav { position: absolute; right: var(--gutter); bottom: var(--space-block); display: flex; gap: 10px; margin-bottom: 4px; }
+.rail-arrow {
+  width: 48px; height: 48px; display: grid; place-items: center; padding: 0; border-radius: 999px; cursor: pointer;
+  background: transparent; color: var(--ink); border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  transition: border-color .14s ease, opacity .14s ease;
+}
+.rail-arrow:hover:not(:disabled) { border-color: var(--ink); }
+.rail-arrow:disabled { opacity: .3; cursor: default; }
+.rail-arrow svg { width: 20px; height: 20px; }
+.rail {
+  --rail-in: max(var(--gutter), (100% - var(--max)) / 2 + var(--gutter));   /* where .wrap's content starts (100% = the section, scrollbar excluded) */
+  list-style: none; margin: 0; padding: 0 var(--rail-in) 8px; display: flex; gap: clamp(16px, 2.4vw, 32px);
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rail-in);
+  overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.rail > li { scroll-snap-align: start; }
+.pv-grid > li { flex: 0 0 clamp(260px, 30vw, 420px); }
+@media (max-width: 720px) {
+  .has-rail .sec-head { padding-right: 0; }
+  .rail-nav { display: none; }   /* phones swipe */
+  .pv-grid > li { flex-basis: 78vw; }
+}
+@media (prefers-reduced-motion: reduce) { .rail-arrow { transition: none; } }
+.pv-card { margin: 0; }
+.pv-vis { aspect-ratio: 1; overflow: hidden; border-radius: clamp(18px, 2vw, 26px); }
+.pv-vis img { width: 100%; height: 100%; object-fit: cover; }
+.pv-card figcaption { display: grid; gap: 4px; margin-top: 16px; }
+.pv-card figcaption span { font-size: clamp(19px, 1.7vw, 23px); font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+.pv-card figcaption small { font-size: var(--fs-small); color: var(--ink-3); }
+
+/* the line V2 revealed word by word, now simply set on brand green, Cubix holding up a hand */
+.tk-band { --tk-bg: #4B814F; background: var(--tk-bg); color: #fff; overflow: hidden; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tk-band { --tk-bg: #2B4F30; } }
+:root[data-theme="dark"] .tk-band { --tk-bg: #2B4F30; }
+.tk-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: clamp(20px, 4vw, 64px); padding-top: clamp(56px, 7vw, 96px); }
+.tk-in > div { padding-bottom: clamp(56px, 7vw, 96px); }
+.tk-a { font-size: var(--fs-h1); font-weight: 700; line-height: 1.18; letter-spacing: -.02em; max-width: 16em; text-wrap: balance; }
+.tk-b { margin-top: 20px; font-size: clamp(17px, 1.6vw, 21px); color: rgba(255,255,255,.84); max-width: 40ch; }
+.tk-art { width: clamp(150px, 20vw, 290px); height: auto; margin-bottom: clamp(28px, 4vw, 56px); }   /* lifted off the band's bottom edge */
+@media (max-width: 640px) {
+  .tk-in { grid-template-columns: 1fr; }
+  .tk-in > div { padding-bottom: 0; }
+  .tk-art { width: 170px; justify-self: end; margin-right: -8px; margin-bottom: 28px; }
+}
+
+/* 04 · for parents — three coloured cards side by side: the words on top, a flat graphic below */
+.pa-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 24px); }
+.scard { display: grid; grid-template-rows: auto 1fr; gap: clamp(24px, 3vw, 40px); padding: clamp(24px, 2.6vw, 40px); border-radius: 28px; color: #fff; }
+.scard:nth-child(1) { background: #4B814F; }   /* brand green */
+.scard:nth-child(2) { background: #447AAF; }   /* the app's ocean */
+.scard:nth-child(3) { background: #2B4F30; }   /* deep green */
+.scard-text { display: grid; gap: 12px; align-content: start; }
+.scard-eyebrow { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.72); }
+.scard h3 { font-size: clamp(22px, 2vw, 28px); line-height: 1.25; color: #fff; }
+.scard-text > p:last-child { color: rgba(255,255,255,.86); font-size: 16px; }
+.scard-vis { width: min(100%, 280px); justify-self: center; align-self: end; }
+@media (max-width: 1100px) {
+  .pa-grid { grid-template-columns: 1fr; }
+  .scard { grid-template-rows: none; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .scard-vis { width: clamp(180px, 28vw, 260px); align-self: center; }
+}
+@media (max-width: 600px) {
+  .scard { grid-template-columns: 1fr; }
+  .scard-vis { width: min(76vw, 280px); }
+}
+
+/* 03 · what your child plays — the child app's own screens, captured from the prototype,
+   side by side on a rail; then the three things a parent should know about the game */
+.cp-grid > li { flex: 0 0 clamp(200px, 19vw, 260px); }
+.cp-shot { margin: 0; }
+.cp-shot img { width: 100%; aspect-ratio: 535 / 1200; object-fit: cover; border-radius: clamp(18px, 2vw, 26px); border: 1px solid var(--line); background: var(--paper-2); }
+.cp-shot figcaption { display: grid; gap: 2px; margin-top: 14px; }
+.cp-shot figcaption span { font-size: clamp(17px, 1.4vw, 19px); font-weight: 700; letter-spacing: -.01em; }
+.cp-shot figcaption small { font-size: var(--fs-small); color: var(--ink-3); line-height: 1.45; }
+@media (max-width: 720px) { .cp-grid > li { flex-basis: 56vw; } }
+.cp-points { list-style: none; margin: var(--space-block) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); }
+.cp-points li { display: grid; gap: 6px; align-content: start; padding-top: 16px; border-top: 2px solid var(--ink); }
+.cp-points b { font-size: var(--fs-h3); letter-spacing: -.01em; line-height: 1.3; }
+.cp-points span { color: var(--ink-2); }
+@media (max-width: 720px) { .cp-points { grid-template-columns: 1fr; gap: 24px; } }
+
+/* 07 · set up — three steps in a row, each with the real screen it happens on */
+.su-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 32px); }
+.su-step { display: grid; gap: 6px; align-content: start; }
+.su-vis { aspect-ratio: 4 / 3; margin-bottom: 14px; overflow: hidden; border-radius: clamp(18px, 2vw, 26px); background: #EAF2E6; display: grid; place-items: end center; padding-top: clamp(20px, 3vw, 36px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .su-vis { background: var(--paper-2); } }
+:root[data-theme="dark"] .su-vis { background: var(--paper-2); }
+/* the top of each phone screen rises out of the tile's bottom edge */
+.su-vis img { width: 58%; height: 100%; object-fit: cover; object-position: top; border-radius: 18px 18px 0 0; border: 1px solid var(--line); border-bottom: 0; }
+.su-n { font-size: var(--fs-small); font-weight: 700; color: var(--accent); }
+.su-step h3 { font-size: var(--fs-h3); line-height: 1.3; }
+.su-step p { color: var(--ink-2); }
+@media (max-width: 720px) { .su-steps { grid-template-columns: 1fr; gap: 36px; } }
+
+/* every card's graphic runs the full width of its card, so the three line up at one size:
+   the week's tiles, the alert ring and the group share one width, a little inside the card's text */
+.scard .scard-vis { width: 86%; justify-self: center; }
+@media (min-width: 601px) and (max-width: 1100px) { .scard .scard-vis { width: clamp(240px, 36vw, 340px); } }
+
+/* the group graphic fills the same room as the alert ring beside it: a square, the two faces larger */
+.scard-vis.vis-group { aspect-ratio: 1; }
+.vis-group .vg-p { width: 62%; left: 0; top: 6%; }
+.vis-group .vg-c { width: 50%; right: 0; top: 30%; }
+.vis-group .vg-add { width: 32%; left: 32%; bottom: 2%; }
+
+/* entrances — each section arrives in a way that fits how it is built. Each plays once,
+   when its block first comes into view; time-based, never tied to scroll position, nothing pins.
+   The script sets .rv-on on <html> (not with reduced motion), --i on items in a row for the
+   stagger, and .rv-in on a block when it arrives. Without the script, everything simply shows. */
+.rv-now, .rv-now * { transition: none !important; }   /* already on screen at load: just show it */
+:root { --rv-ease: cubic-bezier(.2, .7, .2, 1); --rv-pop: cubic-bezier(.34, 1.45, .64, 1); }
+
+/* every heading: label, heading, intro, one after another */
+.rv-on .sec-head > * { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .7s var(--rv-ease); transition-delay: calc(var(--i, 0) * .1s); }
+.rv-on .sec-head.rv-in > * { opacity: 1; transform: none; }
+
+/* safety — the three pictures unroll upward in order, like a sequence; the captions follow */
+.rv-on .steps3 .st-vis { clip-path: inset(100% 0 0 0); transition: clip-path 1s cubic-bezier(.65, 0, .35, 1) calc(var(--i, 0) * .18s); }
+.rv-on .steps3 .st-vis img { transform: scale(1.12); transition: transform 1.4s var(--rv-ease) calc(var(--i, 0) * .18s); }
+.rv-on .steps3 .st-h, .rv-on .steps3 .st-p { opacity: 0; transition: opacity .6s ease calc(.45s + var(--i, 0) * .18s); }
+.rv-on .steps3.rv-in .st-vis { clip-path: inset(0 0 0 0); }
+.rv-on .steps3.rv-in .st-vis img { transform: none; }
+.rv-on .steps3.rv-in .st-h, .rv-on .steps3.rv-in .st-p { opacity: 1; }
+/* the two notes: their rule draws across, then the words */
+.rv-on .st-notes p { border-top-color: transparent; background: linear-gradient(var(--ink), var(--ink)) 0 0 / 0 2px no-repeat; transition: background-size .9s var(--rv-ease) calc(var(--i, 0) * .12s); }
+.rv-on .st-notes.rv-in p { background-size: 100% 2px; }
+
+/* why it works — the big claim rises from behind its own baseline (it moves up by its own height
+   while the clip's bottom edge moves with it, so the edge stays put), the art settles from a slight zoom */
+.rv-on .why-big { clip-path: inset(-20% -5% 100% -5%); transform: translateY(100%); transition: clip-path .9s var(--rv-ease), transform .9s var(--rv-ease); }
+.rv-on .why-copy > .sec-label, .rv-on .why-copy > h2 { opacity: 0; transform: translateY(12px); transition: opacity .6s ease .25s, transform .7s var(--rv-ease) .25s; }
+.rv-on .why-copy > .sec-label { transition-delay: 0s; }
+.rv-on .why-steps li { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .7s var(--rv-ease); transition-delay: calc(.5s + var(--i, 0) * .12s); }
+.rv-on .why-art { overflow: hidden; border-radius: clamp(18px, 2vw, 26px); opacity: 0; transition: opacity .8s ease .15s; }
+.rv-on .why-art img { transform: scale(1.1); transition: transform 1.6s var(--rv-ease) .15s; }
+.rv-on .why-in.rv-in .why-big { clip-path: inset(-20% -5% -20% -5%); transform: none; }
+.rv-on .why-in.rv-in .why-copy > *, .rv-on .why-in.rv-in .why-steps li { opacity: 1; transform: none; }
+.rv-on .why-in.rv-in .why-art { opacity: 1; }
+.rv-on .why-in.rv-in .why-art img { transform: none; }
+
+/* the child's screens — slide in from the right, the way the row scrolls */
+/* (the row moves as one — moving each card would widen the row's scroll area mid-animation
+   and throw off its scroll position and arrows; the cards only fade, one after another) */
+.rv-on .cp-grid { transform: translateX(72px); transition: transform 1.1s var(--rv-ease); }
+.rv-on .cp-grid > li { opacity: 0; transition: opacity .7s ease calc(var(--i, 0) * .08s); }
+.rv-on .cp-grid.rv-in { transform: none; }
+.rv-on .cp-grid.rv-in > li { opacity: 1; }
+.rv-on .cp-points > li { border-top-color: transparent; background: linear-gradient(var(--ink), var(--ink)) 0 0 / 0 2px no-repeat; transition: background-size .8s var(--rv-ease) calc(var(--i, 0) * .12s); }
+.rv-on .cp-points > li > * { opacity: 0; transition: opacity .6s ease calc(.3s + var(--i, 0) * .12s); }
+.rv-on .cp-points.rv-in > li { background-size: 100% 2px; }
+.rv-on .cp-points.rv-in > li > * { opacity: 1; }
+
+/* privacy — the row rises as one (so every card keeps its exact place in line with the heading),
+   and the cards fade in one after another */
+.rv-on .pv-grid { transform: translateY(40px); transition: transform 1s var(--rv-ease); }
+.rv-on .pv-grid > li { opacity: 0; transition: opacity .7s ease calc(var(--i, 0) * .1s); }
+.rv-on .pv-grid.rv-in { transform: none; }
+.rv-on .pv-grid.rv-in > li { opacity: 1; }
+
+/* the green line rises out of its baseline; Cubix rises gently into place after it */
+.rv-on .tk-a { clip-path: inset(-20% -5% 100% -5%); transform: translateY(100%); transition: clip-path .9s var(--rv-ease), transform .9s var(--rv-ease); }
+.rv-on .tk-b { opacity: 0; transition: opacity .7s ease .45s; }
+.rv-on .tk-art { opacity: 0; transform: translateY(36px); transition: opacity .9s ease .35s, transform 1.1s var(--rv-ease) .35s; }
+.rv-on .tk-in.rv-in .tk-a { clip-path: inset(-20% -5% -20% -5%); transform: none; }
+.rv-on .tk-in.rv-in .tk-b, .rv-on .tk-in.rv-in .tk-art { opacity: 1; }
+.rv-on .tk-in.rv-in .tk-art { transform: none; }
+
+/* parents — the cards rise, then each graphic comes to life: tiles pop, the ring draws, faces arrive */
+.rv-on .pa-grid > .scard { opacity: 0; transform: translateY(48px); transition: opacity .6s ease, transform .8s var(--rv-ease); transition-delay: calc(var(--i, 0) * .12s); }
+.rv-on .pa-grid.rv-in > .scard { opacity: 1; transform: none; }
+.rv-on .vis-week .vw { opacity: 0; transform: scale(.82); transition: opacity .4s ease, transform .6s var(--rv-pop); transition-delay: calc(.5s + var(--i, 0) * .09s); }
+.rv-on .pa-grid.rv-in .vis-week .vw { opacity: 1; transform: none; }
+.rv-on .vis-alert > svg circle:nth-of-type(2) { stroke-dashoffset: 370; transition: stroke-dashoffset 1.3s cubic-bezier(.65, 0, .35, 1) .65s; }
+.rv-on .pa-grid.rv-in .vis-alert > svg circle:nth-of-type(2) { stroke-dashoffset: 0; }
+.rv-on .va-call { transform: scale(0); transition: transform .5s var(--rv-pop) 1.6s; }
+.rv-on .pa-grid.rv-in .va-call { transform: none; }
+.rv-on .vis-group .vg { opacity: 0; transform: scale(.6); transition: opacity .4s ease, transform .6s var(--rv-pop); transition-delay: calc(.75s + var(--i, 0) * .18s); }
+.rv-on .pa-grid.rv-in .vis-group .vg { opacity: 1; transform: none; }
+
+/* faq — Cubix steps in from the left; the questions follow down the list */
+.rv-on .faq-cubix { opacity: 0; transform: translateX(-40px); transition: opacity .6s ease .2s, transform .9s var(--rv-ease) .2s; }
+.rv-on .faq > details { opacity: 0; transform: translateX(28px); transition: opacity .5s ease, transform .7s var(--rv-ease); transition-delay: calc(.15s + var(--i, 0) * .08s); }
+.rv-on .faq-layout.rv-in .faq-cubix, .rv-on .faq-layout.rv-in .faq > details { opacity: 1; transform: none; }
+
+/* set up — each phone screen rises out of its tile, step after step; the words follow */
+.rv-on .su-vis img { transform: translateY(70%); transition: transform 1s var(--rv-ease) calc(var(--i, 0) * .16s); }
+.rv-on .su-step > :not(.su-vis) { opacity: 0; transition: opacity .6s ease calc(.4s + var(--i, 0) * .16s); }
+.rv-on .su-steps.rv-in .su-vis img { transform: none; }
+.rv-on .su-steps.rv-in .su-step > :not(.su-vis) { opacity: 1; }
+
+/* Get JoanX — V2's cast moment, played once instead of scrubbed by scroll: nothing pins.
+   When the section comes into view the characters, huddled over the middle, step out to
+   either side and the copy rises in (--p 0 → 1, eased in time by the transition below).
+   Without the script, or with reduced motion, it simply shows the finished view. */
+@property --p { syntax: '<number>'; inherits: true; initial-value: 1; }
+.cast-run { display: none; }
+.cast-stage { --p: 1; position: relative; transition: --p 1.6s cubic-bezier(.3, .7, .2, 1); }
+.cast-stage.cast-wait { --p: 0; transition: none; }
+/* tablets: the two groups stand closer in under the copy, a size up, instead of off in the corners */
+@media (min-width: 601px) and (max-width: 900px) {
+  .cast-stage { --u: min(.9vw, .5svh); column-gap: 8vw; }
+  .cast-l { justify-self: end; }
+  .cast-r { justify-self: start; }
+}
+/* phones: the groups rise in from below the copy, so they fade in as they rise and never sit
+   over the footer while they wait */
+@media (max-width: 900px) { .cast-group { opacity: clamp(0, calc(var(--p) * 2.5), 1); } }
+@media (prefers-reduced-motion: reduce) { .cast-stage, .cast-stage.cast-wait { --p: 1; transition: none; } }
+
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 
@@ -994,7 +957,8 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <li style="--k:2"><a href="#privacy" data-i18n="n.privacy">Privacy</a></li>
       <li style="--k:3"><a href="#parents" data-i18n="n.parents">For parents</a></li>
       <li style="--k:4"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
-      <li style="--k:5"><a href="#get" data-i18n="cta.h">Get JoanX</a></li>
+      <li style="--k:5"><a href="#start" data-i18n="n.start">Getting started</a></li>
+      <li style="--k:6"><a href="#get" data-i18n="cta.h">Get JoanX</a></li>
     </ul>
     <dl class="menu-info">
       <div><dt data-i18n="m.app">Get the app</dt><dd><a href="#get" data-i18n="cta.s">Coming soon to Google Play.</a></dd></div>
@@ -1021,96 +985,172 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
     </div>
   </div>
 </header>
-<div class="hero-edge" aria-hidden="true"><div class="hero-curve"></div></div>
 
 <!-- ═══ 01 · WHAT HAPPENS — THE SAFETY MOMENT ═════════════════════════════ -->
-<section class="section mf" id="safety">
-  <div class="mf-stage"><div class="mf-move">
+<!-- three steps side by side, each a picture and a short caption; nothing moves -->
+<section class="section" id="safety">
   <div class="wrap">
-    <h2 class="mf-h" data-i18n="mf.h">A buzz first.<br>A message only<br>if they keep going.</h2>
-    <div class="mf-body">
-      <p data-i18n="mf.p1">When your child walks while looking at their phone, JoanX notices.</p>
+    <header class="sec-head">
+      <p class="sec-label"><span data-i18n="q.safety">What happens when they look down while walking?</span></p>
+      <h2 data-i18n="v.sh">A buzz first. A message only if they keep going.</h2>
+      <p class="lede" data-i18n="v.sl">JoanX never blocks the screen. Each step only happens if the one before didn’t work.</p>
+    </header>
+    <ol class="steps3">
+      <li class="st">
+        <div class="st-vis"><img src="../media/art/story/cut-01.webp" alt="" width="640" height="1137" loading="lazy"></div>
+        <p class="st-h" data-i18n="v.st1">1 · A buzz</p>
+        <p class="st-p" data-i18n="v.st1s">One vibration, no screen yet</p>
+      </li>
+      <li class="st">
+        <div class="st-vis"><img src="../media/art/story/phone-cubix.webp" alt="" width="640" height="1137" loading="lazy"></div>
+        <p class="st-h" data-i18n="v.st2">2 · A card</p>
+        <p class="st-p" data-i18n="v.st2s">One line, one button</p>
+      </li>
+      <li class="st">
+        <div class="st-vis"><img src="../media/art/story/villain-attack.webp" alt="" width="640" height="960" loading="lazy"></div>
+        <p class="st-h" data-i18n="v.st3">3 · A firmer message</p>
+        <p class="st-p" data-i18n="v.st3s">If they keep walking head-down</p>
+      </li>
+    </ol>
+    <div class="st-notes">
       <p data-i18n="mf.p2">First, just one buzz. Put the phone away or stop within two seconds and nothing else happens — and that earns the most points.</p>
-      <p data-i18n="mf.p3">Keep using it while walking, and a message appears. Carry on, and it comes back firmer and <em>shows up in your report.</em></p>
       <p data-i18n="mf.p4">It never locks the phone. Calls and texts always work.</p>
     </div>
   </div>
-  </div></div>
 </section>
 
-<!-- ═══ HATCH — the rising columns ══════════════════════════════════════════ -->
-<section class="rise" id="hatch">
-  <div class="rise-stage">
-    <p class="rise-tease" data-i18n="rs.tease">Every safe walk adds up.</p>
-    <div class="rise-bars" aria-hidden="true">
-      <span style="--k:0"></span><span style="--k:1"></span><span style="--k:2"></span><span style="--k:3"></span><span style="--k:2"></span><span style="--k:1"></span><span style="--k:0"></span>
-    </div>
-    <div class="rise-wash" aria-hidden="true"></div>
-    <div class="rise-copy">
-      <p class="rise-label" data-i18n="rs.l">Why it works</p>
-      <p class="rise-big" data-i18n="rs.big">No nagging.</p>
+<!-- ═══ 02 · WHY IT WORKS ═════════════════════════════════════════════════ -->
+<section class="section why" id="hatch">
+  <div class="wrap why-in">
+    <div class="why-copy">
+      <p class="sec-label"><span data-i18n="rs.l">Why it works</span></p>
+      <p class="why-big" data-i18n="rs.big">No nagging.</p>
       <h2 data-i18n="rs.h">Safe walks earn points in a game your child cares about — so putting the phone away becomes their own idea.</h2>
-      <ol class="rise-steps">
+      <ol class="why-steps">
         <li><span class="rs-n">01</span><b data-i18n="rs.s1h">They put it away on their own</b><span data-i18n="rs.s1p">Stopping at the buzz earns more than anything else in the game.</span></li>
         <li><span class="rs-n">02</span><b data-i18n="rs.s2h">No money, ever</b><span data-i18n="rs.s2p">Points only come from walking safely. Nothing in the app can be bought.</span></li>
         <li><span class="rs-n">03</span><b data-i18n="rs.s3h">You see it working</b><span data-i18n="rs.s3p">Your weekly report shows how often they stopped, and how that changes week to week.</span></li>
       </ol>
     </div>
+    <figure class="why-art"><img src="../media/art/story/heads-up.webp" alt="" width="640" height="1138" loading="lazy"></figure>
   </div>
-  <div class="rise-run" aria-hidden="true"></div>
 </section>
 
-<!-- ═══ 02 · PRIVACY — then the takeover ══════════════════════════════════ -->
-<section class="takeover" id="privacy">
-
-  <div class="takeover-stage section alt">
-    <div class="wrap">
-      <div class="pv-track">
-      <div class="pv-panel">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">02</span><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
-        <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
-        <p class="lede" data-i18n="pv.l">Everything a guardian can see is on the screens here. Everything else stays with your child.</p>
-      </header>
-      </div>
-      <figure class="pv-card pv-sq" style="--k:0">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-5.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
-      </figure>
-      <figure class="pv-card pv-round" style="--k:1">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-4.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
-      </figure>
-      <figure class="pv-card pv-sq" style="--k:2">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-3.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
-      </figure>
-      <figure class="pv-card pv-round" style="--k:3">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-2.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
-      </figure>
-      <figure class="pv-card pv-sq" style="--k:4">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container-1.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
-      </figure>
-      <figure class="pv-card pv-round" style="--k:5">
-        <div class="pv-vis"><img src="../media/featureillstrations/Container.png" alt="" width="640" height="640"></div>
-        <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
-      </figure>
-      </div>
+<!-- ═══ 03 · WHAT YOUR CHILD PLAYS ═════════════════════════════════════════ -->
+<!-- the child app's real screens on a sideways rail, then three points about the game -->
+<section class="section has-rail" id="child">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-label"><span data-i18n="q.child">What does my child get out of it?</span></p>
+      <h2 data-i18n="v.ch">Looking up earns points in a game they care about</h2>
+      <p class="lede" data-i18n="v.cl">Safe walking earns points. Points grow their buddy, and a stronger buddy beats villains.</p>
+    </header>
+    <div class="rail-nav">
+      <button type="button" class="rail-arrow" data-dir="-1" aria-label="Previous" aria-controls="cpRow" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <button type="button" class="rail-arrow" data-dir="1" aria-label="Next" aria-controls="cpRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
     </div>
-    <div class="takeover-fill" aria-hidden="true"></div>
-    <p class="takeover-line" data-i18n="v.tk">Not a lock on your child’s phone — a reason to put it away.</p>
-    <p class="takeover-line" data-i18n="v.tk2">Every walk with the phone away, | their buddy grows a little.</p>
   </div>
-  <div class="takeover-run" aria-hidden="true"></div>
+  <ul class="rail cp-grid" id="cpRow" tabindex="0" aria-label="The child app">
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-home.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="cp.home">Their buddy</span><small data-i18n="cp.homes">Points, streak and today’s tasks</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-villain-road.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s1">The road</span><small data-i18n="g.s1s">Ten opponents, unlocked in order</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-villain-card.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s2">The villain</span><small data-i18n="g.s2s">What it is, and what beating it pays</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-battle-versus.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s3">The face-off</span><small data-i18n="g.s3s">Their buddy against it</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-battle-result.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s4">The result</span><small data-i18n="g.s4s">Points and XP for the win</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-collection.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s5">The collection</span><small data-i18n="g.s5s">Earned buddies, and the ones still out there</small></figcaption>
+    </figure></li>
+    <li><figure class="cp-shot">
+      <img src="../media/shots/child-decorate.png" alt="" width="535" height="1200" loading="lazy">
+      <figcaption><span data-i18n="g.s6">The wardrobe</span><small data-i18n="g.s6s">Hats and coats, priced in points</small></figcaption>
+    </figure></li>
+  </ul>
+  <div class="wrap">
+    <ul class="cp-points">
+      <li><b data-i18n="v.c1h">10 points a minute</b><span data-i18n="v.c1p">Every minute walking with the phone down pays 10 points. Stopping before a warning pays 50.</span></li>
+      <li><b data-i18n="v.c2h">A buddy that grows</b><span data-i18n="v.c2p">Ten levels and three stages — and ten villains, unlocked one win at a time.</span></li>
+      <li><b data-i18n="v.c3h">No chat, nothing to buy</b><span data-i18n="v.c3p">Friends can visit each other’s rooms and leave a screened one-line note. Nothing is bought with real money.</span></li>
+    </ul>
+  </div>
 </section>
 
-<!-- ═══ 03 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
+<!-- ═══ 04 · PRIVACY ══════════════════════════════════════════════════════ -->
+<section class="section alt has-rail" id="privacy">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-label"><span data-i18n="q.privacy">What can I see — and what can’t I?</span></p>
+      <h2 data-i18n="pv.h">What you see, <em class="hl">and what you never will</em></h2>
+      <p class="lede" data-i18n="pv.l">Everything a guardian can see is on the screens here. Everything else stays with your child.</p>
+    </header>
+    <div class="rail-nav">
+      <button type="button" class="rail-arrow" data-dir="-1" aria-label="Previous" aria-controls="pvRow" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <button type="button" class="rail-arrow" data-dir="1" aria-label="Next" aria-controls="pvRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+    </div>
+  </div>
+  <ul class="rail pv-grid" id="pvRow" tabindex="0" aria-label="What a guardian can see">
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-5.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c1h">The weekly report</span><small data-i18n="pv.c1s">Safe minutes, warnings stopped, the streak</small></figcaption>
+      </figure></li>
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-4.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c2h">Each child, at a glance</span><small data-i18n="pv.c2s">Protection on or off, battery, permissions</small></figcaption>
+      </figure></li>
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-3.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c3h">What you agreed to together</span><small data-i18n="pv.c3s">Every permission, accepted at setup</small></figcaption>
+      </figure></li>
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-2.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c4h">Who else can see</span><small data-i18n="pv.c4s">Every guardian in a group, by name</small></figcaption>
+      </figure></li>
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container-1.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c5h">Nobody joins on their own</span><small data-i18n="pv.c5s">An admin accepts or rejects every request</small></figcaption>
+      </figure></li>
+      <li><figure class="pv-card">
+        <div class="pv-vis"><img src="../media/featureillstrations/Container.png" alt="" width="640" height="640" loading="lazy"></div>
+        <figcaption><span data-i18n="pv.c6h">One code to connect</span><small data-i18n="pv.c6s">Typed on their phone, valid for five minutes</small></figcaption>
+      </figure></li>
+  </ul>
+</section>
+
+<!-- the one line V2 revealed in its green takeover, now simply set on the green -->
+<section class="tk-band" aria-label="JoanX">
+  <div class="wrap tk-in">
+    <div>
+      <p class="tk-a" data-i18n="v.tk">Not a lock on your child’s phone — a reason to put it away.</p>
+      <p class="tk-b" data-i18n="v.tk2" data-pipe>Every walk with the phone away, | their buddy grows a little.</p>
+    </div>
+    <img class="tk-art" src="../media/art/mascot-halt.png" alt="" width="590" height="700" loading="lazy">
+  </div>
+</section>
+
+<!-- ═══ 05 · FOR YOU — THE PARENT APP ═════════════════════════════════════ -->
+<!-- the three cards sit side by side; on narrow screens they stack, one after the other -->
 <section class="section" id="parents">
   <div class="wrap">
-    <!-- stacked cards: each pins below the nav and the next slides up over it -->
-    <div class="stack">
+    <header class="sec-head">
+      <p class="sec-label"><span data-i18n="q.you">What do I get as a parent?</span></p>
+      <h2 data-i18n="v.yh">A weekly report that shows whether it is working</h2>
+      <p class="lede" data-i18n="v.yl">And an alert only when something needs you now.</p>
+    </header>
+    <div class="pa-grid">
       <article class="scard" style="--i:0">
         <div class="scard-text">
           <p class="scard-eyebrow" data-i18n="pa.1">This week</p>
@@ -1147,35 +1187,16 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
           <span class="vg vg-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
         </div>
       </article>
-
     </div>
   </div>
 </section>
 
-<!-- ═══ 04 · PROMISES ═════════════════════════════════════════════════════ -->
-<!-- hidden for now; remove `hidden` (and renumber the FAQ back to 05) to bring it back -->
-<section class="section promises" id="promises" hidden>
-  <div class="wrap">
-      <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.promise">What can I count on?</span></p>
-        <h2 data-i18n="pr.h">Four things JoanX always keeps</h2>
-        <p class="lede" data-i18n="pr.l">The rules JoanX works by, in one place.</p>
-      </header>
-    <ul class="pr-grid">
-      <li class="pr-card"><img src="../media/icons/icon-stopped.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.1h">Never locks the phone</h3><p data-i18n="pr.1p">One buzz first, a message only if they keep going. The screen is never blocked.</p></li>
-      <li class="pr-card"><img src="../media/icons/icon-call.svg" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.2h">Calls and texts always work</h3><p data-i18n="pr.2p">Whatever is on the screen, your child can always reach you.</p></li>
-      <li class="pr-card"><img src="../media/icons/icon-walking.png" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.3h">Only while walking</h3><p data-i18n="pr.3p">It watches one thing: walking and phone use at the same time. The rest of the day, it does nothing.</p></li>
-      <li class="pr-card"><img src="../media/icons/icon-no-map.svg" width="72" height="72" alt="" loading="lazy"><h3 data-i18n="pr.4h">No map, no location trail</h3><p data-i18n="pr.4p">You see how safely they walked — never where they are.</p></li>
-    </ul>
-  </div>
-</section>
-
-<!-- ═══ 05 · FAQ (shown as 04 while promises is hidden) ══════════════════════════════════════════════════════════ -->
+<!-- ═══ 06 · FAQ ══════════════════════════════════════════════════════════ -->
 <section class="section alt" id="faq">
   <div class="wrap faq-layout">
     <div class="faq-side">
       <header class="sec-head">
-        <p class="sec-label"><span class="sec-num">04</span><span data-i18n="q.faq">Anything else?</span></p>
+        <p class="sec-label"><span data-i18n="q.faq">Anything else?</span></p>
         <h2 data-i18n="f.h">Questions parents ask <em class="hl">first</em></h2>
       </header>
       <img class="faq-cubix" src="../media/brand/maf.webp" width="700" height="828" alt="" loading="lazy">
@@ -1205,39 +1226,33 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
   </div>
 </section>
 
-<!-- ═══ SHOWCASE — THE STORY OF JOANX ═══════════════════════════════════════════ -->
-<section class="showcase" id="story" aria-label="The story of JoanX" hidden>   <!-- hidden for now; remove the attribute (and re-add the menu link) to bring it back -->
-  <div class="sc-stage">
-    <!-- background film: shows around the dark circle once it shrinks; muted, looping, inline -->
-    <video class="sc-video" muted loop playsinline preload="metadata" poster="../media/Video/showcase-poster.jpg" aria-hidden="true">
-      <source src="../media/Video/showcase.mp4" type="video/mp4">
-    </video>
-    <div class="sc-dark" aria-hidden="true"></div>
-    <div class="sc-center">
-      <h2 class="sc-title"><span class="sc-l1" data-i18n="sc.1">The story of</span><span class="sc-l2" data-i18n="sc.2">JoanX</span></h2>
-      <a class="sc-cta" href="#get"><span data-i18n="cta.h">Get JoanX</span> →</a>
-    </div>
-    <div class="sc-cols">
-      <!-- the onboarding story, in order, zig-zagging left → right → left down the columns -->
-      <div class="sc-col">
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-01.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-03.webp" width="640" height="960" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-05.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-08.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-10.webp" width="640" height="1138" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-12.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-14.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-      </div>
-      <div class="sc-col">
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-02.webp" width="640" height="1057" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-04.webp" width="640" height="960" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-07.webp" width="640" height="1000" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-09.webp" width="640" height="1000" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-11.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-13.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-          <figure class="sc-card sc-art"><img src="../media/art/story/cut-16.webp" width="640" height="1137" alt="" loading="lazy"></figure>
-      </div>
-    </div>
+<!-- ═══ 07 · SET UP ═══════════════════════════════════════════════════════ -->
+<section class="section" id="start">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-label"><span data-i18n="q.start">How do I start?</span></p>
+      <h2 data-i18n="hw.h">Set up in about <em class="hl">three minutes</em></h2>
+    </header>
+    <ol class="su-steps">
+      <li class="su-step">
+        <div class="su-vis"><img src="../media/shots/parent-pairing.png" alt="" width="535" height="1200" loading="lazy"></div>
+        <span class="su-n" data-i18n="hw.n1">STEP 1</span>
+        <h3 data-i18n="hw.h1">Pair their phone</h3>
+        <p data-i18n="hw.p1">Install JoanX on your child's phone and type in the code your app shows — or scan the QR on their screen. No wearable, no new hardware, nothing to buy.</p>
+      </li>
+      <li class="su-step">
+        <div class="su-vis"><img src="../media/shots/child-home.png" alt="" width="535" height="1200" loading="lazy"></div>
+        <span class="su-n" data-i18n="hw.n2">STEP 2</span>
+        <h3 data-i18n="hw.h2">They walk, it watches one thing</h3>
+        <p data-i18n="hw.p2">Only while walking, and only for walking plus phone use at the same time. The rest of the day, JoanX does nothing at all.</p>
+      </li>
+      <li class="su-step">
+        <div class="su-vis"><img src="../media/shots/parent-reports.png" alt="" width="535" height="1200" loading="lazy"></div>
+        <span class="su-n" data-i18n="hw.n3">STEP 3</span>
+        <h3 data-i18n="hw.h3">You read the week</h3>
+        <p data-i18n="hw.p3">How often they stopped when warned, how often they didn't, and whether it is happening less as the week goes on.</p>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -1292,6 +1307,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <div>
         <h5 data-i18n="ft.h2">Explore</h5>
         <ul>
+          <li><a href="#start" data-i18n="n.start">Getting started</a></li>
           <li><a href="#faq" data-i18n="n.faq">FAQ</a></li>
           <li class="in-prototype" hidden><a href="../store.html" data-i18n="ft.store">Store assets</a></li>
           <li class="in-prototype" hidden><a href="../../" data-i18n="ft.back">← Back to the chooser</a></li>
@@ -1386,6 +1402,8 @@ var KO = {
 
   'h.badge': '보호자 그룹 — QR이나 코드로 초대하기', 'h.dl': '조안X 다운로드',
   'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '효과가 있는 이유',
+  'cp.home': '내 버디', 'cp.homes': '포인트, 연속 일수, 오늘의 미션',
+  'rs.big': '잔소리 없이.',
   'rs.h': '안전하게 걸으면 아이가 좋아하는 게임의 포인트가 쌓여요. 그래서 폰을 내려놓는 게 아이 스스로의 선택이 돼요.', 'rs.big': '잔소리 없이.',
   'rs.s1h': '스스로 폰을 내려놓아요', 'rs.s1p': '진동에 멈추는 게 게임에서 가장 큰 보상이에요.',
   'rs.s2h': '결제는 없어요', 'rs.s2p': '포인트는 안전하게 걸어야만 쌓여요. 앱 안에서 돈으로 살 수 있는 건 없어요.',
@@ -1724,7 +1742,7 @@ var MN = {
 
 (function () {
   /* the way back to the chooser — only inside the prototype build */
-  if (/\/website\/v2\/?($|index\.html)/.test(location.pathname)) {
+  if (/\/website\/v3\/?($|index\.html)/.test(location.pathname)) {
     document.querySelectorAll('.in-prototype').forEach(function (el) { el.hidden = false; });
   }
 
@@ -1742,18 +1760,6 @@ var MN = {
   langBtn.addEventListener('click', function () { openMenu(langMenu.hidden); });
   document.addEventListener('click', function (e) { if (!e.target.closest('.lang')) openMenu(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !langMenu.hidden) { openMenu(false); langBtn.focus(); } });
-  /* takeover lines: one span per word, so each can reveal on its own */
-  var tkLines = [].slice.call(document.querySelectorAll('.takeover-line'));
-  function splitWords() {
-    tkLines.forEach(function (line) {
-      // a lone "|" in the copy marks where the line breaks, so a short line still sits on two lines
-      // keep the source text, so splitting again (on load and on a language switch) never loses the "|" break
-      if (!line.querySelector('.w')) line.dataset.raw = line.textContent.trim();
-      var words = (line.dataset.raw || '').split(/\s+/);
-      line.innerHTML = words.map(function (w) { return w === '|' ? '<br>' : '<span class="w">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
-    });
-  }
-
   /* hero headline: one masked span per line (split on <br>) so each line can rise in on its own */
   function splitHero() {
     var h = document.querySelector('.hero h1');
@@ -1763,28 +1769,9 @@ var MN = {
     }).join('');
   }
 
-  /* 01 manifesto: headline split into masked lines; statements split into words (an <em> keeps its highlight) */
-  var mfSec = document.querySelector('.mf');
-  function splitMf() {
-    if (!mfSec) return;
-    var h = mfSec.querySelector('.mf-h');
-    h.innerHTML = h.innerHTML.split(/<br\s*\/?>/i).map(function (part, i) {
-      return '<span class="ln" style="--i:' + i + '"><span>' + part.trim() + '</span></span>';
-    }).join('');
-    [].forEach.call(mfSec.querySelectorAll('.mf-body p'), function (p) {
-      var out = [];
-      [].forEach.call(p.childNodes, function (n) {
-        var hl = n.nodeType === 1, txt = n.textContent;
-        txt.split(/(\s+)/).forEach(function (w) {
-          if (!w) return;
-          if (/^\s+$/.test(w)) { out.push(' '); return; }
-          out.push('<span class="w' + (hl ? ' hl' : '') + '">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>');
-        });
-      });
-      p.innerHTML = out.join('');
-    });
-    if (window.__mfSize) window.__mfSize();
-    if (window.__mf) window.__mf();
+  /* a lone "|" in a line of copy marks where it breaks onto a second line */
+  function pipes() {
+    document.querySelectorAll('[data-pipe]').forEach(function (el) { el.innerHTML = el.innerHTML.replace(/\s*\|\s*/g, '<br>'); });
   }
 
   function setLang(lang) {
@@ -1798,7 +1785,7 @@ var MN = {
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
     document.querySelector('.lang-cur').textContent = NAMES[lang][0];
     document.querySelector('.lang-cur-abbr').textContent = NAMES[lang][1];
-    splitHero(); splitMf(); splitWords(); if (window.__tk) window.__tk();
+    splitHero(); pipes();
     try { localStorage.setItem('joanx.lang', lang); } catch (e) { /* private window */ }
   }
   buttons.forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); openMenu(false); }); });
@@ -1806,8 +1793,7 @@ var MN = {
   try { saved = localStorage.getItem('joanx.lang'); } catch (e) { /* ignore */ }
   if (!saved && (navigator.language || '').toLowerCase().indexOf('ko') === 0) saved = 'ko';
   if (saved === 'ko' || saved === 'mn') setLang(saved);
-  else splitHero();
-  if (!(saved === 'ko' || saved === 'mn')) splitMf();
+  else { splitHero(); pipes(); }
   (function () {
     var hero = document.querySelector('.hero');
     if (!hero) return;
@@ -1828,200 +1814,76 @@ var MN = {
     setTimeout(go, 800);
   })();
 
-  /* takeover: pin the privacy stage, sweep the circle in over it, then reveal the words */
-  splitWords();
-  var tk = document.querySelector('.takeover');
-  var tkStage = tk.querySelector('.takeover-stage');
-  var tkFill = tk.querySelector('.takeover-fill');
-  var pvTrack = tk.querySelector('.pv-track');
-  var pvCards = [].slice.call(tk.querySelectorAll('.pv-card'));
-  function clamp01(x) { return Math.min(1, Math.max(0, x)); }
-  function ease(x) { return 1 - Math.pow(1 - x, 3); }
-  function takeover() {
-    if (still.matches) return;
-    var vh = window.innerHeight;
-    // a stage taller than the screen pins once its bottom reaches the bottom of the screen
-    var stickTop = Math.min(0, vh - tkStage.offsetHeight);
-    tkStage.style.top = stickTop + 'px';
-    var range = tk.offsetHeight - tkStage.offsetHeight;
-    var raw = clamp01((stickTop - tk.getBoundingClientRect().top) / range);
-    // the first 10% of the pin is a hold: heading and first card sit still so they can be read
-    // before anything moves; every phase below runs on what is left (p: 0 → 1 after the hold)
-    var HOLD = 0.1, p = clamp01((raw - HOLD) / (1 - HOLD));
-    // phones stack the cards in a column (read by scrolling down before the pin), so there is no
-    // hold and no sideways slide: the whole pin is the sweep and the words
-    var vertical = getComputedStyle(pvTrack).flexDirection === 'column';
-    if (vertical) p = 0.44 + 0.56 * raw;
-    var sr = tkStage.getBoundingClientRect();
-    var vy = vh / 2 - sr.top;                       // the screen's middle, in stage coordinates
-    // the row slides left for the first 44% of the pin, bringing the cards in from the right
-    var vw0 = window.innerWidth, h = clamp01(p / 0.44); h = h * h * (3 - 2 * h);
-    var trackEnd = pvTrack.scrollWidth - pvTrack.parentNode.clientWidth + 20;
-    if (vertical) trackEnd = 0;
-    pvTrack.style.setProperty('--x', (-Math.max(0, trackEnd) * h).toFixed(1) + 'px');
-    pvCards.forEach(function (card) {
-      var left = card.offsetLeft - Math.max(0, trackEnd) * h + pvTrack.parentNode.getBoundingClientRect().left;
-      card.style.setProperty('--e', ease(clamp01((vw0 - left) / (vw0 * 0.45))).toFixed(3));
-    });
-    var c = clamp01((p - 0.44) / 0.12); c = c * c * (3 - 2 * c);   // sweep: 44% → 56% of the pin
-    // one very large circle, centred far off to the right: its edge is a gentle arc across the
-    // whole height from the first moment, and it slides left step by step until the screen is covered
-    var vw = window.innerWidth, R = Math.max(vw, vh) * 1.15;
-    var cxStart = vw + R + 2;                                    // edge just outside the right side
-    var cxEnd = Math.sqrt(R * R - (vh / 2 + 40) * (vh / 2 + 40)) - 40;   // every corner covered
-    var cx = cxStart + (cxEnd - cxStart) * c;
-    tkFill.style.clipPath = 'circle(' + R.toFixed(1) + 'px at ' + cx.toFixed(1) + 'px ' + vy.toFixed(1) + 'px)';
-    // a sticky stage paints in its own layer: lift it above the nav only once the arc reaches the
-    // nav bar, so the nav stays while you read the lists
-    var navH = document.querySelector('.nav').offsetHeight, navY0 = -sr.top, navY1 = navY0 + navH;
-    var nx = Math.min(Math.max(cx, 0), vw), ny = Math.min(Math.max(vy, navY0), navY1);
-    // near the end of the hold (90%) the green flips to the page's paper and the words turn green,
-    // so the next section follows on without a colour break; the nav comes back once it is light
-    var light = p > 0.9;
-    tkStage.classList.toggle('is-light', light);
-    tkStage.style.zIndex = c > 0 && !light && Math.hypot(cx - nx, vy - ny) < R ? 45 : '';
-    // two statements, one after the other in the same place: the first reveals word by word
-    // (58% → 67%), lifts away (70% → 74.5%), the second reveals (74.5% → 85%), then it holds
-    // on screen for the last 15% of the pin before the next section comes up
-    var out = ease(clamp01((p - 0.7) / 0.045));
-    tkLines.forEach(function (line, k) {
-      var from = k === 0 ? 0.58 : 0.745, span = k === 0 ? 0.09 : 0.105;
-      line.style.top = (vh / 2 - stickTop).toFixed(1) + 'px';   // the pinned middle: once the pin ends the words leave with the stage, not clipped by it
-      var shown = k === 0 ? c > 0.6 && out < 1 : p > 0.735;
-      line.style.visibility = shown ? 'visible' : 'hidden';
-      if (k === 0) { line.style.opacity = (1 - out).toFixed(3); line.style.translate = '0 ' + (-out * 60).toFixed(1) + 'px'; }
-      // words overlap: each starts while the one before is still arriving, like a wave across the line
-      var ws = line.querySelectorAll('.w'), r = clamp01((p - from) / span), n = ws.length;
-      ws.forEach(function (w, i) {
-        var t = clamp01((r - (n > 1 ? i / (n - 1) : 0) * 0.62) / 0.38);
-        w.style.setProperty('--w', (t * t * (3 - 2 * t)).toFixed(3));
+  /* sideways rails: the arrows move a row one card at a time and dim at either end */
+  [].forEach.call(document.querySelectorAll('.rail'), function (row) {
+    var arrows = [].slice.call(document.querySelectorAll('.rail-arrow[aria-controls="' + row.id + '"]'));
+    if (arrows.length < 2) return;
+    var cards = [].slice.call(row.children);
+    var max = function () { return row.scrollWidth - row.clientWidth; };
+    var pos = function (k) { return Math.min(max(), cards[k].offsetLeft - cards[0].offsetLeft); };
+    var ends = function () {
+      arrows[0].disabled = row.scrollLeft <= 8;
+      arrows[1].disabled = row.scrollLeft >= max() - 8;
+    };
+    arrows.forEach(function (b) {
+      b.addEventListener('click', function () {
+        // from the card nearest the left edge, go to the next or previous one
+        var dir = Number(b.dataset.dir), near = 0;
+        cards.forEach(function (c, k) { if (Math.abs(pos(k) - row.scrollLeft) < Math.abs(pos(near) - row.scrollLeft)) near = k; });
+        var k = Math.max(0, Math.min(cards.length - 1, near + dir));
+        while (dir > 0 && pos(k) <= row.scrollLeft + 8 && k < cards.length - 1) k++;
+        var smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        row.scrollTo({ left: pos(k), behavior: smooth ? 'smooth' : 'auto' });
+        setTimeout(ends, smooth ? 450 : 0);   // in case the browser sends no scroll event
       });
     });
-  }
-  window.__tk = takeover;
+    row.addEventListener('scroll', ends, { passive: true });
+    row.addEventListener('scrollend', ends);
+    window.addEventListener('resize', ends);
+    ends();
+  });
 
-  /* 01 manifesto: each word lights up slowly as its line rises from ~86% to ~46% of the screen, so
-     whole lines turn from pale to ink together; the headline rises in once, when it first shows */
-  var mfStill = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var mfMove = mfSec && mfSec.querySelector('.mf-move'), MF_SLOW = 1.7;
-  function mfSize() {
-    if (!mfSec || mfStill.matches) return;
-    mfSec.classList.add('mf-slow');
-    var travel = Math.max(0, mfMove.offsetHeight - window.innerHeight);
-    mfSec.style.height = (window.innerHeight + travel * MF_SLOW) + 'px';
-    mfSec.dataset.travel = travel;
+  /* entrances: number the items in each row (for the stagger), then reveal each block once */
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    ['.sec-head', '.steps3', '.st-notes', '.why-steps', '.cp-grid', '.cp-points', '.pv-grid', '.pa-grid', '.vis-week', '.vis-group', '.faq', '.su-steps']
+      .forEach(function (q) {
+        [].forEach.call(document.querySelectorAll(q), function (list) {
+          [].forEach.call(list.children, function (el, i) { el.style.setProperty('--i', i); });
+        });
+      });
+    document.documentElement.classList.add('rv-on');
+    var rvIo = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('rv-in');
+        rvIo.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+    [].forEach.call(document.querySelectorAll('.section .sec-head, .steps3, .st-notes, .why-in, .cp-grid, .cp-points, .pv-grid, .tk-in, .pa-grid, .faq-layout, .su-steps'), function (el) {
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.9) {
+        // already on screen when the page opens: show it as it is, no entrance
+        el.classList.add('rv-now', 'rv-in');
+        requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.remove('rv-now'); }); });
+        return;
+      }
+      rvIo.observe(el);
+    });
   }
-  function mf() {
-    if (!mfSec) return;
-    var vh = window.innerHeight;
-    if (mfSec.classList.contains('mf-slow')) {
-      var travel = +mfSec.dataset.travel || 0;
-      var q = travel ? clamp01(-mfSec.getBoundingClientRect().top / (travel * MF_SLOW)) : 0;
-      mfMove.style.transform = 'translateY(' + (-q * travel).toFixed(1) + 'px)';
+
+  /* Get JoanX: the cast parts once, the first time the section is well into view */
+  var castStage = document.querySelector('.cast-stage');
+  if (castStage && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var castR = castStage.getBoundingClientRect();
+    if (castR.top > window.innerHeight * 0.6 || castR.bottom < 0) {   // not already on screen at load
+      castStage.classList.add('cast-wait');
+      var castIo = new IntersectionObserver(function (es) {
+        if (!es[0].isIntersecting) return;
+        castIo.disconnect();
+        // one frame in the held pose, then let the transition run
+        requestAnimationFrame(function () { requestAnimationFrame(function () { castStage.classList.remove('cast-wait'); }); });
+      }, { threshold: 0.45 });
+      castIo.observe(castStage);
     }
-    [].forEach.call(mfSec.querySelectorAll('.mf-body .w'), function (w) {
-      var t = mfStill.matches ? 1 : clamp01((vh * 0.86 - w.getBoundingClientRect().top) / (vh * 0.4));
-      w.style.setProperty('--w', t.toFixed(3));
-    });
-  }
-  window.__mf = mf; window.__mfSize = mfSize;
-  if (mfSec && !mfStill.matches && 'IntersectionObserver' in window) {
-    mfSec.classList.add('mf-wait');
-    var mfIo = new IntersectionObserver(function (es) {
-      if (!es[0].isIntersecting) return;
-      mfSec.classList.remove('mf-wait'); mfSec.classList.add('mf-go'); mfIo.disconnect();
-    }, { rootMargin: '0px 0px -20% 0px' });
-    mfIo.observe(mfSec.querySelector('.mf-h'));
-  }
-  window.addEventListener('scroll', mf, { passive: true });
-  window.addEventListener('resize', function () { mfSize(); mf(); });
-  mfSize(); mf();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { mfSize(); mf(); });
-
-  /* stacked cards: a card shrinks a little as each later card slides over it */
-  var scards = [].slice.call(document.querySelectorAll('.scard'));
-  function stack() {
-    if (still.matches) return;
-    var rects = scards.map(function (c) { return c.getBoundingClientRect(); });
-    scards.forEach(function (c, i) {
-      var k = 0;
-      for (var j = i + 1; j < scards.length; j++) k += clamp01(1 - (rects[j].top - rects[i].top) / rects[i].height);
-      c.style.transform = k ? 'scale(' + (1 - k * 0.035).toFixed(4) + ')' : '';
-    });
-  }
-
-  /* showcase: cards scroll up over the pinned title, then the stage shrinks to a circle */
-  var sc = document.querySelector('.showcase'), scStage = sc.querySelector('.sc-stage');
-  var scDark = sc.querySelector('.sc-dark'), scCols = sc.querySelector('.sc-cols'), scTitle = sc.querySelector('.sc-center'), scCta = sc.querySelector('.sc-cta');
-  /* the film only plays while the showcase is on screen, and never for reduced motion */
-  var scVideo = sc.querySelector('.sc-video');
-  if (scVideo && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) {
-      var on = entries[0].isIntersecting && !still.matches;
-      if (on) { var pr = scVideo.play(); if (pr && pr.catch) pr.catch(function () {}); } else scVideo.pause();
-    }, { rootMargin: '200px 0px' }).observe(sc);
-  }
-  function showcase() {
-    if (still.matches) return;
-    var vw = window.innerWidth, vh = window.innerHeight, r = sc.getBoundingClientRect();
-    var p = clamp01(-r.top / (r.height - vh));
-    var a = clamp01(p / 0.72);                                          // cards: 0 → 72%
-    scCols.style.transform = 'translateY(' + (vh - a * (vh + scCols.offsetHeight)).toFixed(1) + 'px)';
-    var b = clamp01((p - 0.74) / 0.22); b = b * b * (3 - 2 * b);         // circle: 74% → 96%
-    var maxR = Math.hypot(vw, vh) / 2 + 4, minR = Math.min(vw * 0.46, vh * 0.36);
-    scDark.style.clipPath = b ? 'circle(' + (maxR + (minR - maxR) * b).toFixed(1) + 'px at 50% 50%)' : '';
-    scTitle.style.transform = 'scale(' + (1 - 0.1 * b).toFixed(3) + ')';
-    scCta.style.opacity = b.toFixed(3);
-    scCta.style.transform = 'translateY(' + (10 - 10 * b).toFixed(1) + 'px)';
-    // while the stage is pinned it is the whole screen, nav included
-    scStage.style.zIndex = r.top <= 0 && r.bottom >= vh ? 45 : '';
-  }
-
-  /* hatch: the columns rise as the pinned stage is scrolled through */
-  var riseEl = document.querySelector('.rise'), riseStage = riseEl && riseEl.querySelector('.rise-stage');
-  var riseSteps = riseEl ? [].slice.call(riseEl.querySelectorAll('.rise-steps li')) : [];
-  function rise() {
-    if (!riseEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var run = riseEl.offsetHeight - riseStage.offsetHeight;
-    var raw = Math.min(1, Math.max(0, -riseEl.getBoundingClientRect().top / run));
-    // pinned: it flips from white to the night green at 5%, holds the opening line to 30%, runs the
-    // columns and settles the copy by 72%, then brings the three points in one by one (74% → 98%)
-    riseStage.classList.toggle('is-dark', raw > 0.05);
-    var p = Math.min(1, Math.max(0, (raw - 0.30) / 0.42));
-    riseStage.style.setProperty('--p', p.toFixed(3));
-    riseSteps.forEach(function (li, k) {
-      var e = Math.min(1, Math.max(0, (raw - (0.74 + k * 0.08)) / 0.07));
-      li.style.setProperty('--e', (1 - Math.pow(1 - e, 3)).toFixed(3));
-    });
-  }
-
-  /* the cast steps aside as you scroll into Get JoanX */
-  var castEl = document.querySelector('.cast'), castStage = castEl && castEl.querySelector('.cast-stage');
-  function cast() {
-    if (!castEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var vh = window.innerHeight, top = castEl.getBoundingClientRect().top;
-    var run = castEl.offsetHeight - castStage.offsetHeight;
-    // starts once the section almost fills the screen, done a little before the pin ends
-    var p = Math.min(1, Math.max(0, (vh * 0.15 - top) / (vh * 0.15 + run * 0.9)));
-    castStage.style.setProperty('--p', (1 - Math.pow(1 - p, 2)).toFixed(3));
-  }
-
-  /* every Download link lands on the finished Get JoanX view — characters parted, copy and
-     button showing — not the top of the section, where the cast still covers the copy */
-  function getTarget() {
-    var run = castEl.offsetHeight - castStage.offsetHeight;
-    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return castEl.getBoundingClientRect().top + window.scrollY + (still ? 0 : run * 0.95);
-  }
-  if (castEl) {
-    document.addEventListener('click', function (e) {
-      var a = e.target.closest && e.target.closest('a[href="#get"]');
-      if (!a || e.defaultPrevented) return;   // the desktop Download pill opens its QR instead
-      e.preventDefault();
-      window.scrollTo({ top: getTarget(), behavior: 'smooth' });
-      history.replaceState(null, '', '#get');
-    });
-    if (location.hash === '#get') window.addEventListener('load', function () { window.scrollTo({ top: getTarget(), behavior: 'instant' }); });
   }
 
   /* back to top: on once the first screen has scrolled away */
@@ -2064,28 +1926,12 @@ var MN = {
     });
   });
 
-  /* the dome under the hero follows the scroll */
-  var edge = document.querySelector('.hero-edge');
   /* tall phones: tell the hero how tall its copy is, so the scene below can fill the rest */
   var heroEl = document.querySelector('.hero'), heroIn = heroEl && heroEl.querySelector('.hero-in');
   function heroFit() { if (heroIn) heroEl.style.setProperty('--copy-h', heroIn.offsetHeight + 'px'); }
   heroFit();
   // re-measure when the copy changes height: web font arriving, language switch, resize
   if (heroIn && window.ResizeObserver) new ResizeObserver(heroFit).observe(heroIn);
-  var still = window.matchMedia('(prefers-reduced-motion: reduce)');
-  function curve() {
-    // 0 at the top of the page so the banner shows in full; the dome rises over its bottom edge as you scroll
-    var p = still.matches ? 0 : Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * 0.6)));
-    edge.style.setProperty('--p', p.toFixed(3));
-  }
-  var curving = false;
-  window.addEventListener('scroll', function () {
-    if (curving) return;
-    curving = true;
-    requestAnimationFrame(function () { curve(); takeover(); stack(); showcase(); cast(); rise(); curving = false; });
-  }, { passive: true });
-  window.addEventListener('resize', function () { curve(); takeover(); stack(); showcase(); cast(); rise(); });
-  curve(); takeover(); stack(); showcase(); cast(); rise();
 
   /* full-screen menu */
   var burger = document.querySelector('.burger'), siteMenu = document.getElementById('siteMenu');

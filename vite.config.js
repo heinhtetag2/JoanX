@@ -17,6 +17,7 @@ export default defineConfig({
         overview: resolve(__dirname, 'design/overview.html'),
         website: resolve(__dirname, 'website/index.html'),
         websiteV2: resolve(__dirname, 'website/v2/index.html'),
+        websiteV3: resolve(__dirname, 'website/v3/index.html'),
         store: resolve(__dirname, 'website/store.html'),
         caseStudy: resolve(__dirname, 'website/case-study.html'),
         uxCaseStudy: resolve(__dirname, 'website/ux-case-study/index.html'),

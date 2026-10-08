@@ -10,6 +10,7 @@
 const VERSIONS = [
   { id: 'v1', label: 'V1', note: 'The first draft (AI-generated baseline)', href: '/website/' },
   { id: 'v2', label: 'V2', note: 'The current page — the default', href: '/website/v2/' },
+  { id: 'v3', label: 'V3', note: 'V2 without the scroll animations — static sections', href: '/website/v3/' },
 ];
 
 const path = location.pathname;
