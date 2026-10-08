@@ -151,7 +151,7 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .nav-links { display: none; margin-left: auto; gap: 24px; }
 .nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--accent); }
-@media (min-width: 1000px) { .nav-links { display: flex; } }
+@media (min-width: 1180px) { .nav-links { display: flex; } .nav-links + .nav-cta { margin-left: 8px; } .nav .burger { display: none; } }   /* below this the links hide and the menu button carries every section */
 .nav-cta { margin-left: auto; }   /* logo left; Download and language on the right, language last */
 /* language — an outlined pill that opens a short list of plain words beneath it. Normal: outline. Open: filled.
    The list shows only the languages you are not on, like a store's region picker. */
@@ -251,10 +251,11 @@ section[id], header[id] { scroll-margin-top: 72px; }
 .menu-body { min-height: calc(100vh - var(--nav-h)); display: grid; align-content: center; gap: clamp(40px, 6vw, 80px); padding-block: 32px 56px; }
 @media (min-width: 900px) { .menu-body { grid-template-columns: 1.4fr 1fr; align-items: center; } }
 .menu-links { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(8px, 1.4vw, 16px); }
-.menu-links a { position: relative; display: inline-block; color: #fff; text-decoration: none; font-size: clamp(36px, 5vw, 64px); font-weight: 500; line-height: 1.25; letter-spacing: -.02em; transition: transform .25s ease; }   /* big, the one thing on this screen; medium weight */
+.menu-links a { position: relative; display: inline-block; color: #fff; text-decoration: none; font-size: clamp(32px, 4.2vw, 54px); font-weight: 500; line-height: 1.25; letter-spacing: -.02em; transition: transform .25s ease; }   /* big, the one thing on this screen; medium weight */
 .menu-links a::before { content: ""; position: absolute; left: -.55em; top: 50%; width: .22em; height: .22em; border-radius: 50%; background: #fff; transform: translateY(-50%) scale(0); transition: transform .25s ease; }
 .menu-links a:hover, .menu-links a:focus-visible { transform: translateX(.55em); }
-.menu-links a:hover::before, .menu-links a:focus-visible::before { transform: translateY(-50%) scale(1); }
+.menu-links a:hover::before, .menu-links a:focus-visible::before, .menu-links a[aria-current="true"]::before { transform: translateY(-50%) scale(1); }
+.menu-links a[aria-current="true"] { transform: translateX(.55em); }
 .menu-info { margin: 0; display: grid; gap: 24px; }
 .menu-info dt { font-size: var(--fs-small); color: rgba(255,255,255,.72); margin-bottom: 8px; }
 .menu-info dd { margin: 0; font-size: var(--fs-body); font-weight: 500; }
@@ -950,6 +951,13 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <img class="mark mark-dark" src="../media/brand/logo-wordmark.svg" alt="" aria-hidden="true" width="540" height="96">
       <svg class="mark-sm" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="48" fill="#4B814F"></circle><path d="M62 22 V54 a18 18 0 0 1 -18 18 a18 18 0 0 1 -18 -18" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg>
     </a>
+    <div class="nav-links">
+      <a href="#safety" data-i18n="n.safety">Safety moment</a>
+      <a href="#hatch" data-i18n="n.game">Why it works</a>
+      <a href="#privacy" data-i18n="n.privacy">Privacy</a>
+      <a href="#parents" data-i18n="n.parents">For parents</a>
+      <a href="#faq" data-i18n="n.faq">FAQ</a>
+    </div>
     <a class="nav-cta" href="#get" data-i18n="n.cta">Download</a>
     <div class="lang">
       <button type="button" class="lang-btn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="Language / 언어">
@@ -984,6 +992,8 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
       <li style="--k:2"><a href="#privacy" data-i18n="n.privacy">Privacy</a></li>
       <li style="--k:3"><a href="#parents" data-i18n="n.parents">For parents</a></li>
       <li style="--k:4"><a href="#faq" data-i18n="n.faq">FAQ</a></li>
+      <li style="--k:5"><a href="#story" data-i18n="n.story">The story</a></li>
+      <li style="--k:6"><a href="#get" data-i18n="cta.h">Get JoanX</a></li>
     </ul>
     <dl class="menu-info">
       <div><dt data-i18n="m.app">Get the app</dt><dd><a href="#get" data-i18n="cta.s">Coming soon to Google Play.</a></dd></div>
@@ -1195,7 +1205,7 @@ footer { background: #0E120F; color: rgba(255,255,255,.72); padding-block: clamp
 </section>
 
 <!-- ═══ SHOWCASE — THE STORY OF JOANX ═══════════════════════════════════════════ -->
-<section class="showcase" aria-label="The story of JoanX">
+<section class="showcase" id="story" aria-label="The story of JoanX">
   <div class="sc-stage">
     <!-- background film: shows around the dark circle once it shrinks; muted, looping, inline -->
     <video class="sc-video" muted loop playsinline preload="metadata" poster="../media/Video/showcase-poster.jpg" aria-hidden="true">
@@ -1371,7 +1381,7 @@ var KO = {
   'sec.parents': '보호자용', 'sec.diff': '무엇이 다른가요', 'sec.privacy': '개인정보', 'sec.faq': '자주 묻는 질문',
 
   'n.how': '작동 방식', 'n.safety': '안전 순간', 'n.game': '효과', 'n.parents': '보호자용',
-  'n.privacy': '개인정보', 'n.faq': '자주 묻는 질문', 'n.cta': '다운로드',
+  'n.privacy': '개인정보', 'n.faq': '자주 묻는 질문', 'n.story': '스토리', 'n.cta': '다운로드',
 
   'h.badge': '보호자 그룹 — QR이나 코드로 초대하기', 'h.dl': '조안X 다운로드',
   'rs.tease': '안전하게 걸은 한 걸음 한 걸음이 쌓여요.', 'rs.l': '효과가 있는 이유',
@@ -1554,6 +1564,7 @@ var MN = {
  "n.privacy": "Нууцлал",
  "n.start": "Эхлэх",
  "n.faq": "Түгээмэл асуулт",
+ "n.story": "Түүх",
  "n.cta": "Татах",
  "h.h1": "Утсаа халаасандаа,<br><em class=\"hl\">нүдээ урагшаа.</em>",
  "v.hl": "Утсаа хадгалаад алхвал оноо цугларч, өндөг дэгдээхэйтэй болно. Алхангаа дэлгэц харвал ганц удаа чичирнэ.",
@@ -2083,7 +2094,17 @@ var MN = {
     siteMenu.setAttribute('aria-hidden', String(!open));
     burger.setAttribute('aria-expanded', String(open));
     document.documentElement.style.overflow = open ? 'hidden' : '';
-    if (open) menuClose.focus({ preventScroll: true }); else burger.focus({ preventScroll: true });
+    if (open) { markCurrent(); menuClose.focus({ preventScroll: true }); } else burger.focus({ preventScroll: true });
+  }
+  /* the link for the section on screen gets the same dot as a hovered link */
+  function markCurrent() {
+    var y = window.scrollY + window.innerHeight * 0.35, cur = null;
+    siteMenu.querySelectorAll('.menu-links a').forEach(function (a) {
+      var t = document.querySelector(a.getAttribute('href'));
+      if (t && t.getBoundingClientRect().top + window.scrollY <= y) cur = a;
+    });
+    siteMenu.querySelectorAll('.menu-links a').forEach(function (a) { a.removeAttribute('aria-current'); });
+    if (cur) cur.setAttribute('aria-current', 'true');
   }
   burger.addEventListener('click', function () { setSiteMenu(true); });
   menuClose.addEventListener('click', function () { setSiteMenu(false); });
